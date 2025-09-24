@@ -132,30 +132,55 @@ public class UserDAO extends MyDAO {
     }
 
     public boolean isUserExists(String user) {
-        String sql = "SELECT 1 FROM [User] WHERE Email = ? OR Phone = ?";
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        xSql = "SELECT 1 FROM [User] WHERE Username = ? OR Email = ? OR Phone = ?";
+        try {
+            ps = con.prepareStatement(xSql);
             ps.setString(1, user);
             ps.setString(2, user);
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next();
-            }
+            ps.setString(3, user);
+            rs = ps.executeQuery();
+            return rs.next();
         } catch (Exception e) {
             e.printStackTrace();
             return false;
+        } finally {
+            close();
         }
     }
 
     public boolean resetPassword(String user, String newPass) {
-        String sql = "UPDATE [User] SET Password = ? WHERE Email = ? OR Phone = ?";
-        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        Integer userId = findUserIdByIdentifier(user);
+        if (userId == null) return false;
+
+        xSql = "UPDATE [User] SET Password = ? WHERE UserID = ?";
+        try {
+            ps = con.prepareStatement(xSql);
             ps.setString(1, newPass);
-            ps.setString(2, user);
-            ps.setString(3, user);
+            ps.setInt(2, userId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
+        } finally {
+            close();
         }
+    }
+
+    public Integer findUserIdByIdentifier(String identifier) {
+        xSql = "SELECT UserID FROM [User] WHERE Username = ? OR Email = ? OR Phone = ?";
+        try {
+            ps = con.prepareStatement(xSql);
+            ps.setString(1, identifier);
+            ps.setString(2, identifier);
+            ps.setString(3, identifier);
+            rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close();
+        }
+        return null;
     }
     private void close() {
         try {

@@ -11,4 +11,23 @@
     <welcome-file-list>
         <welcome-file>view/Login.jsp</welcome-file>
     </welcome-file-list>
+
+    <servlet>
+        <servlet-name>ForgotPasswordServlet</servlet-name>
+        <servlet-class>controller.ForgotPasswordServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ForgotPasswordServlet</servlet-name>
+        <url-pattern>/forgot-password</url-pattern>
+    </servlet-mapping>
+
+    <!-- Fallback cho /view/Login (không có .jsp) -->
+    <servlet>
+        <servlet-name>LoginPageServlet</servlet-name>
+        <servlet-class>controller.LoginPageServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LoginPageServlet</servlet-name>
+        <url-pattern>/view/Login</url-pattern>
+    </servlet-mapping>
 </web-app>

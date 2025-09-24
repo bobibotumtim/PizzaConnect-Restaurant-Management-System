@@ -2,19 +2,25 @@ package controller;
 
 import dao.UserDAO;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.security.SecureRandom;
 
-@WebServlet("/forgot-password")
 public class ForgotPasswordServlet extends HttpServlet {
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        request.getRequestDispatcher("view/ForgotPassword.jsp").forward(request, response);
+    }
+
+    
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         String user = request.getParameter("user");
+        if (user != null) user = user.trim();
         HttpSession session = request.getSession();
         UserDAO dao = new UserDAO();
 

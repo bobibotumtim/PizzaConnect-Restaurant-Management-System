@@ -9,7 +9,7 @@
 </head>
 <body>
     <div class="container mt-5" style="max-width: 400px;">
-        <form class="form-signin" action="Login" method="post">
+        <form class="form-signin" action="${pageContext.request.contextPath}/Login" method="post">
             <h1 class="h3 mb-3 font-weight-normal text-center">Sign in</h1>
 
             <%
@@ -31,7 +31,7 @@
             </button>
 
             <hr>
-            <a href="view/Signup.jsp" class="btn btn-primary btn-block">
+            <a href="${pageContext.request.contextPath}/view/Signup.jsp" class="btn btn-primary btn-block">
                 <i class="fas fa-user-plus"></i> Sign up New Account
             </a>
             
@@ -40,7 +40,7 @@
                     <i class="fas fa-home"></i> Back to Home
                 </a>
 
-                <a href="view/ForgotPassword.jsp" class="btn btn-link mt-2">
+                <a href="${pageContext.request.contextPath}/view/ForgotPassword.jsp" class="btn btn-link mt-2">
                     <i class="fas fa-search"></i> Forgot password
                 </a>
             </div>
