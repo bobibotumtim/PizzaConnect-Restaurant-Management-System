@@ -6,9 +6,9 @@ public class Customer extends User{
     private int loyaltyPoint;
 
     public Customer(int customerID, String name, int loyaltyPoint, 
-                    int userID, String username, String Email, String password, 
+                    int userID, String username, String email, String password, 
                     String phone, int role) {
-        super(userID, username, Email, password, phone, role);
+        super(userID, username, email, password, phone, role);
         this.customerID = customerID;
         this.name = name;
         this.loyaltyPoint = loyaltyPoint;
