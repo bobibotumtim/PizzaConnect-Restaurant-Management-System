@@ -113,7 +113,7 @@
             <% if (request.getAttribute("error") != null) { %>
                 <div class="alert alert-danger"><%= request.getAttribute("error") %></div>
             <% } %>
-            <form action="profile" method="post" class="profile_form">
+            <form action="${pageContext.request.contextPath}/profile" method="post" class="profile_form">
                 <!-- Username -->
                 <label>Username:</label>
                 <input type="text" name="username" value="${user.username}" readonly/>
