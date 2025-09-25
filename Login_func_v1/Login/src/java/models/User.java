@@ -21,7 +21,12 @@ public class User {
     public User(int aInt, String string, String string1, String string2, int aInt1) {
     }
 
-    
+    public User(int userID, String username, String Email, String phone) {
+        this.userID = userID;
+        this.username = username;
+        this.Email = Email;
+        this.phone = phone;
+    }
     
     public User(int userID, String username, String Email, String password, String phone, int role) {
         this.userID = userID;

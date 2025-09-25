@@ -38,7 +38,8 @@
             <% } %>
 
             <input name="user" type="text" class="form-control mb-2" placeholder="User name" required autofocus>
-
+            
+            <input name="fullname" type="text" class="form-control mb-2" placeholder="Full Name" required>
 
             <input name="pass" type="password" class="form-control mb-2" placeholder="Password" required>
 

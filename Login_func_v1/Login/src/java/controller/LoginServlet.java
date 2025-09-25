@@ -1,5 +1,6 @@
 package controller;
 
+import dao.CustomerDAO;
 import dao.UserDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
@@ -32,12 +33,15 @@ public class LoginServlet extends HttpServlet {
         }
 
         HttpSession session = request.getSession();
-        session.setAttribute("account", account);   // LƯU duy nhất 1 biến object
+        session.setAttribute("user", account);   // LƯU duy nhất 1 biến object
 
         // Chuyển trang tuỳ role
         if (account.getRole() == 1) {
             response.sendRedirect("admin");   // đổi URL admin của bạn
         } else {
+            CustomerDAO cdao = new CustomerDAO();
+            Customer acc = cdao.getCustomerByUserID(account.getUserID());
+            request.setAttribute("customer", acc);
             request.setAttribute("user", account);
             request.getRequestDispatcher("view/Detail.jsp").forward(request, response);
             //response.sendRedirect("home");
