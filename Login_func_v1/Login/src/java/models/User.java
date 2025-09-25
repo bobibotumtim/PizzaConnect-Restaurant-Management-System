@@ -13,7 +13,7 @@ import java.util.Date;
 public class User {
     private int userID;
     private String username;
-    private String Email;
+    private String email;
     private String password;
     private String phone;
     private int role;    
@@ -21,17 +21,17 @@ public class User {
     public User(int aInt, String string, String string1, String string2, int aInt1) {
     }
 
-    public User(int userID, String username, String Email, String phone) {
+    public User(int userID, String username, String email, String phone) {
         this.userID = userID;
         this.username = username;
-        this.Email = Email;
+        this.email = email;
         this.phone = phone;
     }
     
-    public User(int userID, String username, String Email, String password, String phone, int role) {
+    public User(int userID, String username, String email, String password, String phone, int role) {
         this.userID = userID;
         this.username = username;
-        this.Email = Email;
+        this.email = email;
         this.password = password;
         this.phone = phone;
         this.role = role;
@@ -46,7 +46,7 @@ public class User {
     }
 
     public String getEmail() {
-        return Email;
+        return email;
     }
 
     public String getPassword() {
@@ -69,28 +69,15 @@ public class User {
         this.username = username;
     }
 
-    public void setEmail(String Email) {
-        this.Email = Email;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public void setRole(int role) {
-        this.role = role;
-    }
-
-    @Override
-    public String toString() {
-        return "User{" + "userID=" + userID + ", username=" + username + ", Email=" + Email + ", password=" + password + ", phone=" + phone + ", role=" + role + '}';
+    public vemail=" + email + ", password=" + password + ", phone=" + phone + ", role=" + role + '}';
     }
     
 
     
     
 }
+
