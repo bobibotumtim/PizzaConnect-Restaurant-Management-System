@@ -87,8 +87,13 @@ public class UserProfileServlet extends HttpServlet {
         dao.UserDAO userDAO = new dao.UserDAO();
         boolean updated = false;
 
-        user.setEmail(email);
-        user.setPhone(phone);
+        if (email == null || email.trim().isEmpty() ||
+            phone == null || phone.trim().isEmpty()) {
+            request.setAttribute("error", "Không được để trống các trường bắt buộc!");
+            request.setAttribute("user", user);
+            request.getRequestDispatcher("/view/UserProfile.jsp").forward(request, response);
+            return;
+        }
 
         if (oldPassword != null && !oldPassword.isEmpty()) {
             if (!oldPassword.equals(user.getPassword())) {
