@@ -77,7 +77,9 @@ public class User {
         this.password = password;
     }
 
-    public vemail=" + email + ", password=" + password + ", phone=" + phone + ", role=" + role + '}';
+    public String toString(){
+        
+    return    " email=" + email + ", password=" + password + ", phone=" + phone + ", role=" + role + '}';
     }
     
 
