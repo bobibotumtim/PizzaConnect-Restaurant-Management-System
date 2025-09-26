@@ -73,6 +73,10 @@ public class User {
         this.email = email;
     }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public vemail=" + email + ", password=" + password + ", phone=" + phone + ", role=" + role + '}';
     }
     
@@ -80,4 +84,5 @@ public class User {
     
     
 }
+
 
