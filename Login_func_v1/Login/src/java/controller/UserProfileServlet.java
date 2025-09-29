@@ -65,7 +65,7 @@ public class UserProfileServlet extends HttpServlet {
 
         // Check for changes
         if (!hasChanges(user, email, phone, newPassword)) {
-            request.setAttribute("message", "Không có thay đổi nào được thực hiện!");
+            request.setAttribute("message", "No changes were made!");
             request.setAttribute("user", user);
             request.getRequestDispatcher(JSP_PATH).forward(request, response);
             return;
@@ -81,7 +81,7 @@ public class UserProfileServlet extends HttpServlet {
             updated = userDAO.updateUser(user);
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", "Lỗi khi cập nhật: " + e.getMessage());
+            request.setAttribute("error", "Update failed: " + e.getMessage());
             request.setAttribute("user", user);
             request.getRequestDispatcher(JSP_PATH).forward(request, response);
             return;
@@ -90,9 +90,9 @@ public class UserProfileServlet extends HttpServlet {
         // Update session and response
         if (updated) {
             session.setAttribute("user", user);
-            request.setAttribute("message", "Cập nhật thông tin thành công!");
+            request.setAttribute("message", "Profile updated successfully!");
         } else {
-            request.setAttribute("error", "Cập nhật thất bại!");
+            request.setAttribute("error", "Failed to update profile!");
         }
 
         request.setAttribute("user", user);
@@ -115,26 +115,27 @@ public class UserProfileServlet extends HttpServlet {
                                  String newPassword, String confirmPassword) {
         // Check for empty required fields
         if (email == null || email.isEmpty() || phone == null || phone.isEmpty()) {
-            return "Không được để trống các trường bắt buộc!";
+            return "Required fields cannot be empty!";
         }
 
         // Validate email and phone formats
         if (!email.matches(EMAIL_REGEX)) {
-            return "Định dạng email không hợp lệ!";
+            return "Invalid email format!";
         }
         if (!phone.matches(PHONE_REGEX)) {
-            return "Số điện thoại không hợp lệ!";
+            return "Invalid phone number!";
         }
 
         // Validate password if provided
         if (oldPassword != null && !oldPassword.isEmpty()) {
             if (!oldPassword.equals(user.getPassword())) {
-                return "Mật khẩu cũ không đúng!";
+                return "Old password is incorrect!";
             }
             if (newPassword == null || newPassword.isEmpty() || !newPassword.equals(confirmPassword)) {
-                return "Mật khẩu mới không khớp hoặc không được để trống!";
+                return "New password does not match or is empty!";
             }
         }
+
         return null;
     }
 
