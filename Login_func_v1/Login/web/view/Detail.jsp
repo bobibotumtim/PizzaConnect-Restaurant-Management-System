@@ -42,10 +42,11 @@
         </div>
         
             <div class="form-group text-center">
-                <a href="view/UserProfile.jsp" class="btn btn-primary btn-block mt-3">
+                <a href="profile" class="btn btn-primary btn-block mt-3">
                     <i class="fas fa-edit"></i> Edit
                 </a>
             </div>
     </div>
 </body>
 </html>
+
