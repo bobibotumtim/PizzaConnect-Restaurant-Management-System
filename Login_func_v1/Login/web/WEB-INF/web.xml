@@ -13,6 +13,14 @@
     </welcome-file-list>
 
     <servlet>
+        <servlet-name>UserProfileServlet</servlet-name>
+        <servlet-class>controller.UserProfileServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UserProfileServlet</servlet-name>
+        <url-pattern>/profile</url-pattern>
+    </servlet-mapping>
+    <servlet>
         <servlet-name>ForgotPasswordServlet</servlet-name>
         <servlet-class>controller.ForgotPasswordServlet</servlet-class>
     </servlet>
@@ -31,3 +39,4 @@
         <url-pattern>/view/Login</url-pattern>
     </servlet-mapping>
 </web-app>
+
