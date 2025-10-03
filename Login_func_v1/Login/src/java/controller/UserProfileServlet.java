@@ -48,6 +48,7 @@ public class UserProfileServlet extends HttpServlet {
         }
 
         User user = (User) session.getAttribute("user");
+        User theUser = new User(user.getUserID(), user.getUsername(), user.getEmail(), user.getPassword(), user.getPhone(), user.getRole());
         String email = getTrimmedParameter(request, "email");
         String phone = getTrimmedParameter(request, "phone");
         String oldPassword = getTrimmedParameter(request, "oldPassword");
@@ -55,7 +56,7 @@ public class UserProfileServlet extends HttpServlet {
         String confirmPassword = getTrimmedParameter(request, "confirmPassword");
 
         // Validate inputs
-        String error = validateInputs(user, email, phone, oldPassword, newPassword, confirmPassword);
+        String error = validateInputs(theUser, email, phone, oldPassword, newPassword, confirmPassword);
         if (error != null) {
             request.setAttribute("error", error);
             request.setAttribute("user", user);
@@ -64,7 +65,7 @@ public class UserProfileServlet extends HttpServlet {
         }
 
         // Check for changes
-        if (!hasChanges(user, email, phone, newPassword)) {
+        if (!hasChanges(theUser, email, phone, newPassword)) {
             request.setAttribute("message", "No changes were made!");
             request.setAttribute("user", user);
             request.getRequestDispatcher(JSP_PATH).forward(request, response);
@@ -72,13 +73,13 @@ public class UserProfileServlet extends HttpServlet {
         }
 
         // Update user object
-        updateUser(user, email, phone, newPassword);
+        updateUser(theUser, email, phone, newPassword);
 
         // Save to database
         UserDAO userDAO = new UserDAO();
         boolean updated;
         try {
-            updated = userDAO.updateUser(user);
+            updated = userDAO.updateUser(theUser);
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Update failed: " + e.getMessage());
@@ -89,13 +90,14 @@ public class UserProfileServlet extends HttpServlet {
 
         // Update session and response
         if (updated) {
-            session.setAttribute("user", user);
+            session.setAttribute("user", theUser);
+            request.setAttribute("user", theUser);
             request.setAttribute("message", "Profile updated successfully!");
         } else {
+            request.setAttribute("user", user);
             request.setAttribute("error", "Failed to update profile!");
         }
-
-        request.setAttribute("user", user);
+        
         request.getRequestDispatcher(JSP_PATH).forward(request, response);
     }
 
