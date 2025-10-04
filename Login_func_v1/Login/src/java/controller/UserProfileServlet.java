@@ -1,136 +1,173 @@
 package controller;
 
-import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import models.User;
+import dao.UserDAO;
+import java.io.IOException;
 
 /**
- *
- * @author tjhbx
+ * Servlet for handling user profile display and updates.
  */
-@WebServlet("/profile")
 public class UserProfileServlet extends HttpServlet {
-   
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet UserAccountServlet</title>");  
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet UserAccountServlet at " + request.getContextPath () + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
-    } 
+    private static final String PHONE_REGEX = "^0[1-9]\\d{8}$";
+    private static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+    private static final String JSP_PATH = "/view/UserProfile.jsp";
+    private static final String LOGIN_REDIRECT = "Login";
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /** 
-     * Handles the HTTP <code>GET</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
+    /**
+     * Handles GET requests to display the user profile page.
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        HttpSession session = request.getSession(false);
-        User user = null;
-
-        if (session != null) {
-            user = (User) session.getAttribute("user");
-        }
-
-        if (user == null) {
-            response.sendRedirect("Login");
-            return;
-        }
-        
-        request.setAttribute("user", user);
-        request.getRequestDispatcher("/view/UserProfile.jsp").forward(request, response);
-    }
-
-    /** 
-     * Handles the HTTP <code>POST</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
+            throws ServletException, IOException {
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect("Login");
+            response.sendRedirect(LOGIN_REDIRECT);
             return;
         }
 
         User user = (User) session.getAttribute("user");
-        String email = request.getParameter("email");
-        String phone = request.getParameter("phone");
-        String oldPassword = request.getParameter("oldPassword");
-        String newPassword = request.getParameter("newPassword");
-        String confirmPassword = request.getParameter("confirmPassword");
+        request.setAttribute("user", user);
+        request.getRequestDispatcher(JSP_PATH).forward(request, response);
+    }
 
-        dao.UserDAO userDAO = new dao.UserDAO();
-        boolean updated = false;
-
-        if (email == null || email.trim().isEmpty() ||
-            phone == null || phone.trim().isEmpty()) {
-            request.setAttribute("error", "Không được để trống các trường bắt buộc!");
-            request.setAttribute("user", user);
-            request.getRequestDispatcher("/view/UserProfile.jsp").forward(request, response);
+    /**
+     * Handles POST requests to update user profile information.
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(LOGIN_REDIRECT);
             return;
         }
 
-        if (oldPassword != null && !oldPassword.isEmpty()) {
-            if (!oldPassword.equals(user.getPassword())) {
-                request.setAttribute("error", "Mật khẩu cũ không đúng!");
-                request.setAttribute("user", user);
-                request.getRequestDispatcher("/view/UserProfile.jsp").forward(request, response);
-                return;
-            }
-            if (newPassword == null || !newPassword.equals(confirmPassword)) {
-                request.setAttribute("error", "Mật khẩu mới không khớp!");
-                request.setAttribute("user", user);
-                request.getRequestDispatcher("/view/UserProfile.jsp").forward(request, response);
-                return;
-            }
-            user.setPassword(newPassword);
+        User user = (User) session.getAttribute("user");
+        User theUser = new User(user.getUserID(), user.getUsername(), user.getEmail(), user.getPassword(), user.getPhone(), user.getRole());
+        String email = getTrimmedParameter(request, "email");
+        String phone = getTrimmedParameter(request, "phone");
+        String oldPassword = getTrimmedParameter(request, "oldPassword");
+        String newPassword = getTrimmedParameter(request, "newPassword");
+        String confirmPassword = getTrimmedParameter(request, "confirmPassword");
+
+        // Validate inputs
+        String error = validateInputs(theUser, email, phone, oldPassword, newPassword, confirmPassword);
+        if (error != null) {
+            request.setAttribute("error", error);
+            request.setAttribute("user", user);
+            request.getRequestDispatcher(JSP_PATH).forward(request, response);
+            return;
         }
 
-        updated = userDAO.updateUser(user);
+        // Check for changes
+        if (!hasChanges(theUser, email, phone, newPassword)) {
+            request.setAttribute("message", "No changes were made!");
+            request.setAttribute("user", user);
+            request.getRequestDispatcher(JSP_PATH).forward(request, response);
+            return;
+        }
 
+        // Update user object
+        updateUser(theUser, email, phone, newPassword);
+
+        // Save to database
+        UserDAO userDAO = new UserDAO();
+        boolean updated;
+        try {
+            updated = userDAO.updateUser(theUser);
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Update failed: " + e.getMessage());
+            request.setAttribute("user", user);
+            request.getRequestDispatcher(JSP_PATH).forward(request, response);
+            return;
+        }
+
+        // Update session and response
         if (updated) {
-            session.setAttribute("user", user);
-            request.setAttribute("message", "Cập nhật thông tin thành công!");
+            session.setAttribute("user", theUser);
+            request.setAttribute("user", theUser);
+            request.setAttribute("message", "Profile updated successfully!");
         } else {
-            request.setAttribute("error", "Cập nhật thất bại!");
+            request.setAttribute("user", user);
+            request.setAttribute("error", "Failed to update profile!");
         }
-
-        request.setAttribute("user", user);
-        request.getRequestDispatcher("/view/UserProfile.jsp").forward(request, response);
+        
+        request.getRequestDispatcher(JSP_PATH).forward(request, response);
     }
 
-    /** 
+    /**
+     * Retrieves and trims a parameter from the request, handling null cases.
+     */
+    private String getTrimmedParameter(HttpServletRequest request, String paramName) {
+        String param = request.getParameter(paramName);
+        return param != null ? param.trim() : null;
+    }
+
+    /**
+     * Validates input fields for user profile update.
+     * Returns an error message if validation fails, null otherwise.
+     */
+    private String validateInputs(User user, String email, String phone, String oldPassword,
+                                 String newPassword, String confirmPassword) {
+        // Check for empty required fields
+        if (email == null || email.isEmpty() || phone == null || phone.isEmpty()) {
+            return "Required fields cannot be empty!";
+        }
+
+        // Validate email and phone formats
+        if (!email.matches(EMAIL_REGEX)) {
+            return "Invalid email format!";
+        }
+        if (!phone.matches(PHONE_REGEX)) {
+            return "Invalid phone number!";
+        }
+
+        // Validate password if provided
+        if (oldPassword != null && !oldPassword.isEmpty()) {
+            if (!oldPassword.equals(user.getPassword())) {
+                return "Old password is incorrect!";
+            }
+            if (newPassword == null || newPassword.isEmpty() || !newPassword.equals(confirmPassword)) {
+                return "New password does not match or is empty!";
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Checks if there are any changes in the provided fields compared to the current user data.
+     * Returns true if there are changes, false otherwise.
+     */
+    private boolean hasChanges(User user, String email, String phone, String newPassword) {
+        boolean emailChanged = !email.equalsIgnoreCase(user.getEmail());
+        boolean phoneChanged = !phone.equals(user.getPhone());
+        boolean passwordChanged = newPassword != null && !newPassword.isEmpty();
+        return emailChanged || phoneChanged || passwordChanged;
+    }
+
+    /**
+     * Updates user object with new values.
+     */
+    private void updateUser(User user, String email, String phone, String newPassword) {
+        user.setEmail(email.toLowerCase());
+        user.setPhone(phone);
+        if (newPassword != null && !newPassword.isEmpty()) {
+            user.setPassword(newPassword);
+        }
+    }
+
+    /**
      * Returns a short description of the servlet.
-     * @return a String containing servlet description
      */
     @Override
     public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
+        return "Handles user profile display and updates";
+    }
 }
