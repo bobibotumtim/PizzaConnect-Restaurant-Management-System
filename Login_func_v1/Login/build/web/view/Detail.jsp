@@ -46,6 +46,13 @@
                     <i class="fas fa-edit"></i> Edit
                 </a>
             </div>
+        
+        <div class="form-group text-center">
+                <a href="view/Home.jsp" class="btn btn-primary btn-block mt-3">
+                    <i class="fas fa-edit"></i> Return
+                </a>
+            </div>
+        
     </div>
 </body>
 </html>
