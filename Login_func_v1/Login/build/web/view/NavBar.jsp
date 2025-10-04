@@ -13,7 +13,7 @@
     <div>
         <% if (user == null) { %>
             <!-- Nếu chưa đăng nhập -->
-            <a href="Login.jsp"
+            <a href="view/Login.jsp"
                style="background-color:#28a745; color:white; padding:8px 15px; border-radius:5px; text-decoration:none;">
                Login
             </a>
