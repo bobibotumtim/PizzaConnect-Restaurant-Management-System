@@ -15,7 +15,7 @@ public class SignupServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
         
-        // Lấy dữ liệu từ form
+        // Lay du lieu tu form
         String username = request.getParameter("user");
         String password = request.getParameter("pass");
         String repassword = request.getParameter("repass");
@@ -27,16 +27,16 @@ public class SignupServlet extends HttpServlet {
         UserDAO userDao = new UserDAO();
         CustomerDAO cusDao = new CustomerDAO();
 
-        // Kiểm tra user đã tồn tại
+        // Kiem tra user da ton tai
         if (userDao.isUserExists(username)) {
-            session.setAttribute("error", "Tên đăng nhập hoặc Email/Phone đã tồn tại!");
+            session.setAttribute("error", "Ten dang nhap hoac Email/Phone da ton tai!");
             response.sendRedirect("view/Signup.jsp");
             return;
         }
 
-        // Kiểm tra mật khẩu lặp lại
+        // Kiem tra mat khau lap lai
         if (!password.equals(repassword)) {
-            session.setAttribute("error", "Mật khẩu không trùng khớp!");
+            session.setAttribute("error", "Mat khau khong trung khop!");
             response.sendRedirect("view/Signup.jsp");
             return;
         }
@@ -51,12 +51,12 @@ public class SignupServlet extends HttpServlet {
             boolean cusInserted = cusDao.insertCustomer(cus);
 
             if (cusInserted) {
-                session.setAttribute("success", "Đăng ký thành công!");
+                session.setAttribute("success", "Dang ky thanh cong!");
             } else {
-                session.setAttribute("error", "User đã tạo nhưng không lưu được Customer!");
+                session.setAttribute("error", "User da tao nhung khong luu duoc Customer!");
             }
         } else {
-            session.setAttribute("error", "Có lỗi xảy ra khi đăng ký User!");
+            session.setAttribute("error", "Co loi xay ra khi dang ky User!");
         }
 
         response.sendRedirect("view/Signup.jsp");

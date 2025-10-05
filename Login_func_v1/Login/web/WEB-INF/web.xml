@@ -30,4 +30,14 @@
         <servlet-name>LoginPageServlet</servlet-name>
         <url-pattern>/view/Login</url-pattern>
     </servlet-mapping>
+
+    <!-- Admin Servlet -->
+    <servlet>
+        <servlet-name>AdminServlet</servlet-name>
+        <servlet-class>controller.AdminServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminServlet</servlet-name>
+        <url-pattern>/admin</url-pattern>
+    </servlet-mapping>
 </web-app>

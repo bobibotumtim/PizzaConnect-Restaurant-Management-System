@@ -22,10 +22,10 @@ public class EditUserServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        // Lấy userID từ query string (ví dụ: editUser?userID=1)
+        // Lay userID tu query string (vi du: editUser?userID=1)
         String idParam = request.getParameter("userID");
         if (idParam == null || idParam.isEmpty()) {
-            response.getWriter().println("UserID không hợp lệ.");
+            response.getWriter().println("UserID khong hop le.");
             return;
         }
 
@@ -38,10 +38,10 @@ public class EditUserServlet extends HttpServlet {
                 RequestDispatcher rd = request.getRequestDispatcher("view/EditUser.jsp");
                 rd.forward(request, response);
             } else {
-                response.getWriter().println("Không tìm thấy user.");
+                response.getWriter().println("Khong tim thay user.");
             }
         } catch (NumberFormatException e) {
-            response.getWriter().println("UserID phải là số.");
+            response.getWriter().println("UserID phai la so.");
         }
     }
 }

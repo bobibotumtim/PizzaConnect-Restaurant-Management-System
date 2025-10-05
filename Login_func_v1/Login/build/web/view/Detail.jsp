@@ -13,32 +13,40 @@
 <%
     Customer c = (Customer) request.getAttribute("customer");
     User u = (User) request.getAttribute("user");
+    
+    // Safety check for null values
+    if (c == null && u != null) {
+        // Create a temporary customer object with user data
+        c = new Customer(0, u.getUsername(), 0, u.getUserID(), 
+                        u.getUsername(), u.getEmail(), u.getPassword(), 
+                        u.getPhone(), u.getRole());
+    }
 %>
         <h1 class="h3 mb-3 font-weight-normal text-center">Customer Information</h1>
 
         <div class="form-group">
             <label>Username</label>
-            <input type="text" class="form-control" value="<%= u.getUsername() %>" readonly>
+            <input type="text" class="form-control" value="<%= u != null ? u.getUsername() : "" %>" readonly>
         </div>
 
         <div class="form-group">
             <label>Họ và tên</label>
-            <input type="text" class="form-control" value="<%= c.getName() %>" readonly>
+            <input type="text" class="form-control" value="<%= c != null ? c.getName() : "" %>" readonly>
         </div>
 
         <div class="form-group">
             <label>Số điện thoại</label>
-            <input type="text" class="form-control" value="<%= c.getPhone() %>" readonly>
+            <input type="text" class="form-control" value="<%= c != null ? c.getPhone() : "" %>" readonly>
         </div>
 
         <div class="form-group">
             <label>Email</label>
-            <input type="text" class="form-control" value="<%= c.getEmail() %>" readonly>
+            <input type="text" class="form-control" value="<%= c != null ? c.getEmail() : "" %>" readonly>
         </div>
 
         <div class="form-group">
             <label>Điểm tích luỹ</label>
-            <input type="text" class="form-control" value="<%= c.getLoyaltyPoint() %>" readonly>
+            <input type="text" class="form-control" value="<%= c != null ? c.getLoyaltyPoint() : 0 %>" readonly>
         </div>
         
             <div class="form-group text-center">

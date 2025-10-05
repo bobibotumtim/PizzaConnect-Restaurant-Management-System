@@ -24,30 +24,30 @@ public class ForgotPasswordServlet extends HttpServlet {
         HttpSession session = request.getSession();
         UserDAO dao = new UserDAO();
 
-        // kiểm tra tồn tại
+        // kiem tra ton tai
         if (!dao.isUserExists(user)) {
-            session.setAttribute("error", "Tài khoản không tồn tại!");
+            session.setAttribute("error", "Tai khoan khong ton tai!");
             response.sendRedirect(request.getContextPath() + "/view/ForgotPassword.jsp");
             return;
         }
 
-        // sinh mật khẩu mới tạm thời
+        // sinh mat khau moi tam thoi
         String newPass = generateTempPassword(8);
 
         boolean ok = dao.resetPassword(user, newPass);
 
         if (ok) {
-            // TODO: gửi email chứa mật khẩu/URL reset nếu bạn có SMTP
+            // TODO: gui email chua mat khau/URL reset neu ban co SMTP
             session.setAttribute("success",
-                "Mật khẩu mới đã được đặt: " + newPass + ". Vui lòng đăng nhập và đổi lại.");
+                "Mat khau moi da duoc dat: " + newPass + ". Vui long dang nhap va doi lai.");
         } else {
-            session.setAttribute("error", "Có lỗi xảy ra, thử lại sau!");
+            session.setAttribute("error", "Co loi xay ra, thu lai sau!");
         }
 
         response.sendRedirect(request.getContextPath() + "/view/ForgotPassword.jsp");
     }
 
-    // sinh chuỗi ngẫu nhiên a‑zA‑Z0‑9
+    // sinh chuoi ngau nhien a-zA-Z0-9
     private String generateTempPassword(int len) {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         SecureRandom rnd = new SecureRandom();

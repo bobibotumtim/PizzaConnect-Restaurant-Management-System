@@ -38,7 +38,7 @@ public class UserDAO extends DBContext {
         if (affectedRows > 0) {
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
-                    return rs.getInt(1); // trả về UserID
+                    return rs.getInt(1); // tra ve UserID
                 }
             }
         }
@@ -125,7 +125,7 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    // ✅ Đặt lại mật khẩu bằng username/email/phone
+    // Dat lai mat khau bang username/email/phone
     public boolean resetPassword(String identifier, String newPassword) {
         Integer userId = findUserIdByIdentifier(identifier);
         if (userId == null) return false;

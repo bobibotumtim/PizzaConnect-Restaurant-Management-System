@@ -74,11 +74,26 @@
                 background-color: #0056b3;
                 border-color: #0056b3;
             }
+            a {
+                display: block;
+                text-align: center;
+                margin-top: 20px;
+            }
+            .back-to-home {
+                display: block;
+                text-align: center;
+                margin-top: 20px;
+                color: #007bff;
+            }
+            .back-to-home:hover {
+                color: #0056b3; 
+                text-decoration: none;
+            }
         </style>
         <script>
             function enableEdit(field) {
                 if (field === 'password') {
-                    // Ẩn fake password và nút sửa
+                    // Hide fake password and Edit button
                     document.getElementById('fakePassword').classList.add('hidden');
                     document.getElementById('passwordEditBtn').style.visibility = "hidden";
                     document.getElementById('password_group').classList.remove('hidden');
@@ -105,47 +120,48 @@
     </head>
     <body>
         <div class="edit-form-container">
-            <h2>Thông tin tài khoản</h2>
-            <!-- Thông báo thành công / lỗi -->
+            <h2>Update profile</h2>
+            <!-- Message/Error -->
             <% if (request.getAttribute("message") != null) { %>
                 <div class="alert alert-success"><%= request.getAttribute("message") %></div>
             <% } %>
             <% if (request.getAttribute("error") != null) { %>
                 <div class="alert alert-danger"><%= request.getAttribute("error") %></div>
             <% } %>
-            <form action="${pageContext.request.contextPath}/profile" method="post" class="profile_form">
+            <form action="profile" method="post" class="profile_form">
                 <!-- Username -->
-                <label>Username:</label>
+                <label>Username</label>
                 <input type="text" name="username" value="${user.username}" readonly/>
                 <span></span>
 
                 <!-- Email -->
-                <label>Email:</label>
+                <label>Email</label>
                 <input type="text" id="email" name="email" value="${user.email}" readonly/>
-                <button type="button" id="emailEditBtn" onclick="enableEdit('email')">Sửa</button>
+                <button type="button" id="emailEditBtn" onclick="enableEdit('email')">Edit</button>
 
                 <!-- Password -->
-                <label>Mật khẩu:</label> 
+                <label>Password</label> 
                 <div> 
                     <input type="password" value="************" readonly id="fakePassword"/> 
                     <div id="password_group" class="password_group hidden"> 
-                        <input type="password" name="oldPassword" placeholder="Mật khẩu cũ"/> 
-                        <input type="password" name="newPassword" placeholder="Mật khẩu mới"/> 
-                        <input type="password" name="confirmPassword" placeholder="Xác nhận mật khẩu mới"/> 
+                        <input type="password" name="oldPassword" placeholder="Old password"/> 
+                        <input type="password" name="newPassword" placeholder="New password"/> 
+                        <input type="password" name="confirmPassword" placeholder="Confirm new password"/> 
                     </div> 
                 </div> 
-                <button type="button" id="passwordEditBtn" onclick="enableEdit('password')">Sửa</button>
+                <button type="button" id="passwordEditBtn" onclick="enableEdit('password')">Edit</button>
 
                 <!-- Phone -->
-                <label>Số điện thoại</label>
+                <label>Phone</label>
                 <input type="text" id="phone" name="phone" value="${user.phone}" readonly/>
-                <button type="button" id="phoneEditBtn" onclick="enableEdit('phone')">Sửa</button>
+                <button type="button" id="phoneEditBtn" onclick="enableEdit('phone')">Edit</button>
 
                 <!-- Submit -->
                 <div id="updateBtn" class="hidden">
-                    <input type="submit" class="btn btn-success" value="Cập nhật"/>
+                    <input type="submit" class="btn btn-success" value="Update"/>
                 </div>
             </form>
+            <a href="home" class="back-to-home">Back to Home</a>
         </div>
     </body>
 </html>

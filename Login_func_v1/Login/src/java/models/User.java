@@ -82,8 +82,13 @@ public class User {
     }
 
     public String toString(){
-        
-    return    " email=" + email + ", password=" + password + ", phone=" + phone + ", role=" + role + '}';
+        return "User{" +
+                "userID=" + userID +
+                ", username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", phone='" + phone + '\'' +
+                ", role=" + role +
+                '}';
     }
     
 
