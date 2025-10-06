@@ -3,12 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/view/Detail.jsp</file>
-            <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/models/Customer.java</file>
-            <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/view/Login.jsp</file>
-            <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/dao/UserDAO.java</file>
-            <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/controller/LoginServlet.java</file>
-            <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/dao/CustomerDAO.java</file>
+            <file>file:/C:/Users/Admin/Documents/GitHub/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/dao/UserDAO.java</file>
+            <file>file:/C:/Users/Admin/Documents/GitHub/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/view/ForgotPassword.jsp</file>
+            <file>file:/C:/Users/Admin/Documents/GitHub/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/controller/ForgotPasswordServlet.java</file>
+            <file>file:/C:/Users/Admin/Documents/GitHub/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/dao/DBContext.java</file>
+            <file>file:/C:/Users/Admin/Documents/GitHub/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/WEB-INF/web.xml</file>
         </group>
     </open-files>
 </project-private>
