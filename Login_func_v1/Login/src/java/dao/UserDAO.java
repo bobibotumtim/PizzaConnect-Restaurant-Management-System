@@ -141,6 +141,19 @@ public class UserDAO extends DBContext {
         return false;
     }
 
+    // ✅ Đặt lại mật khẩu theo UserID (phục vụ flow OTP)
+    public boolean resetPasswordByUserId(int userId, String newPassword) {
+        String sql = "UPDATE [User] SET Password = ? WHERE UserID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, newPassword);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     // ✅ Tìm UserID dựa trên username/email/phone
     public Integer findUserIdByIdentifier(String identifier) {
         String sql = "SELECT UserID FROM [User] WHERE Username = ? OR Email = ? OR Phone = ?";
@@ -158,6 +171,9 @@ public class UserDAO extends DBContext {
         }
         return null;
     }
+
+    // ✅ Lấy thông tin user theo UserID (tên hàm hiện có: getUserId)
+    // Giữ nguyên getUserId(int) ở trên để tái sử dụng
 
     // ✅ Hàm tiện ích: chuyển ResultSet -> User
     private User mapUser(ResultSet rs) throws SQLException {

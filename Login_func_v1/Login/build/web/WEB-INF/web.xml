@@ -1,5 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
+    <!-- SMTP configuration for EmailService -->
+    <context-param>
+        <param-name>smtp.host</param-name>
+        <param-value>smtp.gmail.com</param-value>
+    </context-param>
+    <context-param>
+        <param-name>smtp.port</param-name>
+        <param-value>587</param-value>
+    </context-param>
+    <context-param>
+        <param-name>smtp.username</param-name>
+        <param-value>your_gmail_account@gmail.com</param-value>
+    </context-param>
+    <context-param>
+        <param-name>smtp.password</param-name>
+        <param-value>your_app_password</param-value>
+    </context-param>
+    <context-param>
+        <param-name>smtp.from</param-name>
+        <param-value>PizzaConnect Support &lt;your_gmail_account@gmail.com&gt;</param-value>
+    </context-param>
+    <context-param>
+        <param-name>smtp.starttls</param-name>
+        <param-value>true</param-value>
+    </context-param>
+    <context-param>
+        <param-name>smtp.auth</param-name>
+        <param-value>true</param-value>
+    </context-param>
+    <!-- Optional: TLS tweaks for Java 17/Gmail -->
+    <context-param>
+        <param-name>smtp.ssl.protocols</param-name>
+        <param-value>TLSv1.2</param-value>
+    </context-param>
+    <context-param>
+        <param-name>smtp.ssl.trust</param-name>
+        <param-value>smtp.gmail.com</param-value>
+    </context-param>
     <servlet>
         <servlet-name>LoginServlet</servlet-name>
         <servlet-class>controller.LoginServlet</servlet-class>
