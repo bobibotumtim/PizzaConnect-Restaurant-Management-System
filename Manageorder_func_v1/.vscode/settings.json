@@ -1,0 +1,14 @@
+{
+    "java.project.referencedLibraries": [
+        "Login/lib/byte-buddy-1.14.9.jar",
+        "Login/lib/byte-buddy-agent-1.14.9.jar",
+        "Login/lib/jakarta.servlet.jsp.jstl-2.0.0.jar",
+        "Login/lib/jakarta.servlet.jsp.jstl-api-2.0.0.jar",
+        "Login/lib/jaxb-api-2.1.jar",
+        "Login/lib/junit-4.13.2.jar",
+        "Login/lib/mockito-core-5.11.0.jar",
+        "Login/lib/objenesis-3.3.jar",
+        "Login/lib/sqljdbc42.jar",
+        "Login/lib/CopyLibs/org-netbeans-modules-java-j2seproject-copylibstask.jar"
+    ]
+}
