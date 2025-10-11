@@ -7,53 +7,68 @@ import models.User;
 
 public class UserDAO extends DBContext {
 
-    // ✅ Kiểm tra user đã tồn tại hay chưa (username hoặc email)
+    // ✅ Kiểm tra user đã tồn tại hay chưa (Name, Email hoặc Phone)
     public boolean isUserExists(String user) {
-    String sql = "SELECT 1 FROM [User] WHERE Username = ? OR Email = ? OR Phone = ?";
-    try (PreparedStatement ps = connection.prepareStatement(sql)) {
-        ps.setString(1, user);
-        ps.setString(2, user);
-        ps.setString(3, user);
-        try (ResultSet rs = ps.executeQuery()) {
-            return rs.next(); // true nếu tồn tại ít nhất một user
+        String sql = "SELECT 1 FROM [User] WHERE Name = ? OR Email = ? OR Phone = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, user);
+            ps.setString(2, user);
+            ps.setString(3, user);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next(); // true nếu tồn tại ít nhất một user
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-    } catch (SQLException e) {
-        e.printStackTrace();
+        return false;
     }
-    return false;
-}
 
     // ✅ Thêm user mới
-    
     public int insertUser(User user) {
-    String sql = "INSERT INTO [User] (Username, Email, Password, Phone, Role) VALUES (?,?,?,?,?)";
-    try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-        ps.setString(1, user.getUsername());
-        ps.setString(2, user.getEmail());
-        ps.setString(3, user.getPassword());
-        ps.setString(4, user.getPhone());
-        ps.setInt(5, user.getRole());
+        String sql = """
+            INSERT INTO [User] 
+            (Name, Password, Role, Email, Phone, DateOfBirth, Gender, IsActive)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """;
+        try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, user.getName());
+            ps.setString(2, user.getPassword());
+            ps.setInt(3, user.getRole());
+            ps.setString(4, user.getEmail());
+            ps.setString(5, user.getPhone());
+            if (user.getDateOfBirth() != null) {
+                ps.setDate(6, new java.sql.Date(user.getDateOfBirth().getTime()));
+            } else {
+                ps.setNull(6, Types.DATE);
+            }
+            ps.setString(7, user.getGender());
+            ps.setBoolean(8, user.isActive());
 
-        int affectedRows = ps.executeUpdate();
-        if (affectedRows > 0) {
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) {
-                    return rs.getInt(1); // trả về UserID
+            int affectedRows = ps.executeUpdate();
+            if (affectedRows > 0) {
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        return rs.getInt(1); // Trả về UserID
+                    }
                 }
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-    } catch (SQLException e) {
-        e.printStackTrace();
+        return -1; // Thất bại
     }
-    return -1; // thất bại
-}
 
     // ✅ Kiểm tra đăng nhập
-    public User checkLogin(String username, String password) {
-        String sql = "SELECT * FROM [User] WHERE Username = ? AND Password = ?";
+    public User checkLogin(String EmailOrPhone, String password) {
+        String sql = """
+            SELECT * FROM [User] 
+            WHERE (Email = ? OR Phone = ?) 
+              AND Password = ? AND IsActive = 1
+        """;
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, username);
-            ps.setString(2, password);
+            ps.setString(1, EmailOrPhone);
+            ps.setString(2, EmailOrPhone);
+            ps.setString(3, password);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return mapUser(rs);
@@ -65,8 +80,7 @@ public class UserDAO extends DBContext {
         return null;
     }
 
-    // ✅ Lấy thông tin user theo ID
-    public User getUserId(int userId) {
+    public User getUserById(int userId) {
         String sql = "SELECT * FROM [User] WHERE UserID = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, userId);
@@ -98,14 +112,25 @@ public class UserDAO extends DBContext {
 
     // ✅ Cập nhật thông tin user
     public boolean updateUser(User user) {
-        String sql = "UPDATE [User] SET Username=?, Email=?, Password=?, Phone=?, Role=? WHERE UserID=?";
+        String sql = """
+            UPDATE [User]
+            SET Name=?, Password=?, Role=?, Email=?, Phone=?, DateOfBirth=?, Gender=?, IsActive=?
+            WHERE UserID=?
+        """;
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, user.getUsername());
-            ps.setString(2, user.getEmail());
-            ps.setString(3, user.getPassword());
-            ps.setString(4, user.getPhone());
-            ps.setInt(5, user.getRole());
-            ps.setInt(6, user.getUserID());
+            ps.setString(1, user.getName());
+            ps.setString(2, user.getPassword());
+            ps.setInt(3, user.getRole());
+            ps.setString(4, user.getEmail());
+            ps.setString(5, user.getPhone());
+            if (user.getDateOfBirth() != null) {
+                ps.setDate(6, new java.sql.Date(user.getDateOfBirth().getTime()));
+            } else {
+                ps.setNull(6, Types.DATE);
+            }
+            ps.setString(7, user.getGender());
+            ps.setBoolean(8, user.isActive());
+            ps.setInt(9, user.getUserID());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -125,7 +150,7 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    // ✅ Đặt lại mật khẩu bằng username/email/phone
+    // ✅ Đặt lại mật khẩu bằng name/email/phone
     public boolean resetPassword(String identifier, String newPassword) {
         Integer userId = findUserIdByIdentifier(identifier);
         if (userId == null) return false;
@@ -141,9 +166,9 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    // ✅ Tìm UserID dựa trên username/email/phone
+    // ✅ Tìm UserID dựa trên name/email/phone
     public Integer findUserIdByIdentifier(String identifier) {
-        String sql = "SELECT UserID FROM [User] WHERE Username = ? OR Email = ? OR Phone = ?";
+        String sql = "SELECT UserID FROM [User] WHERE Name = ? OR Email = ? OR Phone = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, identifier);
             ps.setString(2, identifier);
@@ -159,15 +184,21 @@ public class UserDAO extends DBContext {
         return null;
     }
 
-    // ✅ Hàm tiện ích: chuyển ResultSet -> User
+    // ✅ Hàm tiện ích: chuyển ResultSet → User
     private User mapUser(ResultSet rs) throws SQLException {
+        java.sql.Date dobSql = rs.getDate("DateOfBirth");
+        java.util.Date dob = (dobSql != null) ? new java.util.Date(dobSql.getTime()) : null;
+
         return new User(
             rs.getInt("UserID"),
-            rs.getString("Username"),
-            rs.getString("Email"),
+            rs.getString("Name"),
             rs.getString("Password"),
+            rs.getInt("Role"),
+            rs.getString("Email"),
             rs.getString("Phone"),
-            rs.getInt("Role")
+            dob,
+            rs.getString("Gender"),
+            rs.getBoolean("IsActive")
         );
     }
 }
