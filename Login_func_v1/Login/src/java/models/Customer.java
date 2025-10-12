@@ -1,16 +1,31 @@
 package models;
 
-public class Customer extends User{
+import java.util.Date;
+
+public class Customer extends User {
     private int customerID;
-    private String name;
     private int loyaltyPoint;
 
-    public Customer(int customerID, String name, int loyaltyPoint, 
-                    int userID, String username, String email, String password, 
-                    String phone, int role) {
-        super(userID, username, email, password, phone, role);
+    public Customer() {
+    }
+
+    public Customer(int customerID, int loyaltyPoint,
+                    int userID, String name, String password, int role,
+                    String email, String phone, Date dateOfBirth,
+                    String gender, boolean isActive) {
+        super(userID, name, password, role, email, phone, dateOfBirth, gender, isActive);
         this.customerID = customerID;
-        this.name = name;
+        this.loyaltyPoint = loyaltyPoint;
+    }
+
+    public Customer(int customerID, int loyaltyPoint, int userID, String name, String email, String phone, int role) {
+        super(userID, name, email, phone, role);
+        this.customerID = customerID;
+        this.loyaltyPoint = loyaltyPoint;
+    }
+    
+    public Customer(int loyaltyPoint, int userID, String name, String email, String phone, int role) {
+        super(userID, name, email, phone, role);
         this.loyaltyPoint = loyaltyPoint;
     }
 
@@ -22,14 +37,6 @@ public class Customer extends User{
         this.customerID = customerID;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public int getLoyaltyPoint() {
         return loyaltyPoint;
     }
@@ -37,6 +44,6 @@ public class Customer extends User{
     public void setLoyaltyPoint(int loyaltyPoint) {
         this.loyaltyPoint = loyaltyPoint;
     }
-    
+
     
 }
