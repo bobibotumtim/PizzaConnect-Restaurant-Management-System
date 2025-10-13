@@ -7,15 +7,13 @@ import models.User;
 
 public class UserDAO extends DBContext {
 
-    // ✅ Kiểm tra user đã tồn tại hay chưa (Name, Email hoặc Phone)
-    public boolean isUserExists(String user) {
-        String sql = "SELECT 1 FROM [User] WHERE Name = ? OR Email = ? OR Phone = ?";
+    // ✅ Kiểm tra user đã tồn tại hay chưa (Email)
+    public boolean isUserExists(String email) {
+        String sql = "SELECT 1 FROM [User] WHERE Email = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, user);
-            ps.setString(2, user);
-            ps.setString(3, user);
+            ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
-                return rs.next(); // true nếu tồn tại ít nhất một user
+                return rs.next();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -150,15 +148,12 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    // ✅ Đặt lại mật khẩu bằng name/email/phone
-    public boolean resetPassword(String identifier, String newPassword) {
-        Integer userId = findUserIdByIdentifier(identifier);
-        if (userId == null) return false;
-
-        String sql = "UPDATE [User] SET Password = ? WHERE UserID = ?";
+    // ✅ Đặt lại mật khẩu bằng email
+    public boolean resetPassword(String email, String newPassword) {
+        String sql = "UPDATE [User] SET Password = ? WHERE Email = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, newPassword);
-            ps.setInt(2, userId);
+            ps.setString(2, email);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
