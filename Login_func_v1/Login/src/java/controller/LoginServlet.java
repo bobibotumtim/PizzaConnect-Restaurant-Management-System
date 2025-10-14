@@ -42,7 +42,7 @@ public class LoginServlet extends HttpServlet {
 
         // Chuyển trang tuỳ role
         if (user.getRole() == 1) {
-            response.sendRedirect("admin"); 
+            response.sendRedirect("dashboard"); 
         } else {
             CustomerDAO cdao = new CustomerDAO();
             {
