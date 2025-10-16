@@ -76,6 +76,44 @@ public class AdminServlet extends HttpServlet {
                     request.setAttribute("error", "Invalid user ID!");
                 }
             }
+        } else if ("suspend".equals(action)) {
+            String userIdStr = request.getParameter("userId");
+            if (userIdStr != null) {
+                try {
+                    int userId = Integer.parseInt(userIdStr);
+                    if (userId != user.getUserID()) { // Khong cho phep suspend chinh minh
+                        User targetUser = userDAO.getUserById(userId);
+                        if (targetUser != null) {
+                            targetUser.setActive(false);
+                            userDAO.updateUser(targetUser);
+                            request.setAttribute("message", "User suspended successfully!");
+                        } else {
+                            request.setAttribute("error", "User not found!");
+                        }
+                    } else {
+                        request.setAttribute("error", "Cannot suspend your own account!");
+                    }
+                } catch (NumberFormatException e) {
+                    request.setAttribute("error", "Invalid user ID!");
+                }
+            }
+        } else if ("activate".equals(action)) {
+            String userIdStr = request.getParameter("userId");
+            if (userIdStr != null) {
+                try {
+                    int userId = Integer.parseInt(userIdStr);
+                    User targetUser = userDAO.getUserById(userId);
+                    if (targetUser != null) {
+                        targetUser.setActive(true);
+                        userDAO.updateUser(targetUser);
+                        request.setAttribute("message", "User activated successfully!");
+                    } else {
+                        request.setAttribute("error", "User not found!");
+                    }
+                } catch (NumberFormatException e) {
+                    request.setAttribute("error", "Invalid user ID!");
+                }
+            }
         }
         
         // Redirect de tranh resubmit

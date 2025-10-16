@@ -263,7 +263,16 @@
     <%
         User currentUser = (User) request.getAttribute("currentUser");
         Integer totalOrders = (Integer) request.getAttribute("totalOrders");
+        Integer totalUsers = (Integer) request.getAttribute("totalUsers");
+        Integer adminCount = (Integer) request.getAttribute("adminCount");
+        Integer employeeCount = (Integer) request.getAttribute("employeeCount");
+        Integer customerCount = (Integer) request.getAttribute("customerCount");
+        
         int orderCount = totalOrders != null ? totalOrders : 0;
+        int userCount = totalUsers != null ? totalUsers : 0;
+        int adminUserCount = adminCount != null ? adminCount : 0;
+        int empUserCount = employeeCount != null ? employeeCount : 0;
+        int custUserCount = customerCount != null ? customerCount : 0;
     %>
     
     <div class="container">
@@ -274,7 +283,7 @@
         
         <div class="nav">
             <div class="welcome">
-                Welcome back, <strong><%= currentUser != null ? currentUser.getUsername() : "Admin" %></strong>! 👋
+                Welcome back, <strong><%= currentUser != null ? currentUser.getName() : "Admin" %></strong>! 👋
             </div>
             <a href="Login?action=logout" class="logout">Logout</a>
         </div>
@@ -282,7 +291,7 @@
         <div class="content">
             <div class="stats">
                 <div class="stat-card users">
-                    <h3>12</h3>
+                    <h3><%= userCount %></h3>
                     <p>👥 Total Users</p>
                 </div>
                 <div class="stat-card orders">
@@ -290,12 +299,32 @@
                     <p>🍕 Total Orders</p>
                 </div>
                 <div class="stat-card revenue">
+                    <h3><%= adminUserCount %></h3>
+                    <p>👑 Admins</p>
+                </div>
+                <div class="stat-card products">
+                    <h3><%= empUserCount %></h3>
+                    <p>👨‍💼 Employees</p>
+                </div>
+            </div>
+            
+            <!-- Additional Stats Row -->
+            <div class="stats" style="margin-top: 20px;">
+                <div class="stat-card" style="background: linear-gradient(135deg, #a29bfe, #6c5ce7);">
+                    <h3><%= custUserCount %></h3>
+                    <p>👥 Customers</p>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #fd79a8, #e84393);">
                     <h3>$2,450</h3>
                     <p>💰 Today's Revenue</p>
                 </div>
-                <div class="stat-card products">
+                <div class="stat-card" style="background: linear-gradient(135deg, #fdcb6e, #e17055);">
                     <h3>25</h3>
                     <p>🍕 Menu Items</p>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #00b894, #00a085);">
+                    <h3>98%</h3>
+                    <p>📊 System Health</p>
                 </div>
             </div>
             
@@ -306,7 +335,7 @@
                     <p>Manage users, roles, and permissions. Add new staff members, update user information, and control access levels.</p>
                     <div class="module-actions">
                         <a href="admin" class="btn btn-primary">Manage Users</a>
-                        <a href="#add-user" class="btn btn-success">Add User</a>
+                        <a href="adduser" class="btn btn-success">Add User</a>
                     </div>
                 </div>
                 
