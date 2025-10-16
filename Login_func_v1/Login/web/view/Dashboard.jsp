@@ -274,7 +274,7 @@
         
         <div class="nav">
             <div class="welcome">
-                Welcome back, <strong><%= currentUser != null ? currentUser.getUsername() : "Admin" %></strong>! 👋
+                Welcome back, <strong><%= currentUser != null ? currentUser.getName() : "Admin" %></strong>! 👋
             </div>
             <a href="Login?action=logout" class="logout">Logout</a>
         </div>
