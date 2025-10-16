@@ -23,7 +23,7 @@
                 }
             %>
 
-            <input name="user" type="text" class="form-control mb-2" placeholder="Username" required autofocus>
+            <input name="phone" type="text" class="form-control mb-2" placeholder="Phone number" required autofocus>
             <input name="pass" type="password" class="form-control mb-2" placeholder="Password" required>
 
             <button class="btn btn-success btn-block" type="submit">

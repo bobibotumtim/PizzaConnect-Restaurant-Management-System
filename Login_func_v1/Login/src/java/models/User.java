@@ -1,38 +1,39 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package models;
 
 import java.util.Date;
 
-/**
- *
- * @author Admin
- */
 public class User {
     private int userID;
-    private String username;
-    private String email;
+    private String name;
     private String password;
+    private int role; 
+    private String email;
     private String phone;
-    private int role;    
+    private Date dateOfBirth;
+    private String gender; 
+    private boolean isActive;
 
-    public User(int aInt, String string, String string1, String string2, int aInt1) {
+
+    public User() {
     }
 
-    public User(int userID, String username, String email, String phone) {
+    public User(int userID, String name, String password, int role, String email, String phone, Date dateOfBirth, String gender, boolean isActive) {
         this.userID = userID;
-        this.username = username;
+        this.name = name;
+        this.password = password;
+        this.role = role;
         this.email = email;
         this.phone = phone;
+        this.dateOfBirth = dateOfBirth;
+        this.gender = gender;
+        this.isActive = isActive;
     }
-    
-    public User(int userID, String username, String email, String password, String phone, int role) {
+
+
+    public User(int userID, String name, String email, String phone, int role) {
         this.userID = userID;
-        this.username = username;
+        this.name = name;
         this.email = email;
-        this.password = password;
         this.phone = phone;
         this.role = role;
     }
@@ -41,55 +42,87 @@ public class User {
         return userID;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public String getEmail() {
-        return email;
+    public String getName() {
+        return name;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public String getPhone() {
-        return phone;
-    }
-
     public int getRole() {
         return role;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public Date getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    // ===== SETTERS =====
     public void setUserID(int userID) {
         this.userID = userID;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setPassword(String password) {
         this.password = password;
     }
 
+    public void setRole(int role) {
+        this.role = role;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     public void setPhone(String phone) {
         this.phone = phone;
     }
 
-    public String toString(){
-        
-    return    " email=" + email + ", password=" + password + ", phone=" + phone + ", role=" + role + '}';
+    public void setDateOfBirth(Date dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
-    
 
-    
-    
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public void setActive(boolean isActive) {
+        this.isActive = isActive;
+    }
+
+    // ===== toString =====
+    @Override
+    public String toString() {
+        return "User{" +
+                "userID=" + userID +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                ", phone='" + phone + '\'' +
+                ", role=" + role +
+                ", gender='" + gender + '\'' +
+                ", dateOfBirth=" + dateOfBirth +
+                ", isActive=" + isActive +
+                '}';
+    }
 }
-
-
-

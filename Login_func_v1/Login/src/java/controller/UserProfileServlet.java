@@ -1,26 +1,19 @@
 package controller;
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.*;
 import models.User;
 import dao.UserDAO;
 import java.io.IOException;
+import java.sql.Date;
 
-/**
- * Servlet for handling user profile display and updates.
- */
 public class UserProfileServlet extends HttpServlet {
+
     private static final String PHONE_REGEX = "^0[1-9]\\d{8}$";
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
     private static final String JSP_PATH = "/view/UserProfile.jsp";
     private static final String LOGIN_REDIRECT = "Login";
 
-    /**
-     * Handles GET requests to display the user profile page.
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -35,100 +28,115 @@ public class UserProfileServlet extends HttpServlet {
         request.getRequestDispatcher(JSP_PATH).forward(request, response);
     }
 
-    /**
-     * Handles POST requests to update user profile information.
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
             response.sendRedirect(LOGIN_REDIRECT);
             return;
         }
 
-        User user = (User) session.getAttribute("user");
-        User theUser = new User(user.getUserID(), user.getUsername(), user.getEmail(), user.getPassword(), user.getPhone(), user.getRole());
+        User currentUser = (User) session.getAttribute("user");
+
+        // ✅ Lấy dữ liệu form
+        String name = getTrimmedParameter(request, "name");
         String email = getTrimmedParameter(request, "email");
         String phone = getTrimmedParameter(request, "phone");
+        String gender = getTrimmedParameter(request, "gender");
+        String dobStr = getTrimmedParameter(request, "dateOfBirth");
         String oldPassword = getTrimmedParameter(request, "oldPassword");
         String newPassword = getTrimmedParameter(request, "newPassword");
         String confirmPassword = getTrimmedParameter(request, "confirmPassword");
 
-        // Validate inputs
-        String error = validateInputs(theUser, email, phone, oldPassword, newPassword, confirmPassword);
+        Date dateOfBirth = null;
+        if (dobStr != null && !dobStr.isEmpty()) {
+            try {
+                dateOfBirth = Date.valueOf(dobStr);
+            } catch (IllegalArgumentException e) {
+                request.setAttribute("error", "Invalid date format!");
+                request.setAttribute("user", currentUser);
+                request.getRequestDispatcher(JSP_PATH).forward(request, response);
+                return;
+            }
+        }
+
+        // ✅ Validate đầu vào
+        String error = validateInputs(currentUser, email, phone, oldPassword, newPassword, confirmPassword);
         if (error != null) {
             request.setAttribute("error", error);
-            request.setAttribute("user", user);
+            request.setAttribute("user", currentUser);
             request.getRequestDispatcher(JSP_PATH).forward(request, response);
             return;
         }
 
-        // Check for changes
-        if (!hasChanges(theUser, email, phone, newPassword)) {
+        // ✅ Kiểm tra thay đổi
+        if (!hasChanges(currentUser, name, email, phone, gender, dateOfBirth, newPassword)) {
             request.setAttribute("message", "No changes were made!");
-            request.setAttribute("user", user);
+            request.setAttribute("user", currentUser);
             request.getRequestDispatcher(JSP_PATH).forward(request, response);
             return;
         }
 
-        // Update user object
-        updateUser(theUser, email, phone, newPassword);
+        // ✅ Cập nhật user object
+        User updatedUser = new User(
+                currentUser.getUserID(),
+                name != null && !name.isEmpty() ? name : currentUser.getName(),
+                (newPassword != null && !newPassword.isEmpty()) ? newPassword : currentUser.getPassword(),
+                currentUser.getRole(),
+                email.toLowerCase(),
+                phone,
+                dateOfBirth != null ? dateOfBirth : currentUser.getDateOfBirth(),
+                gender != null ? gender : currentUser.getGender(),
+                currentUser.isActive()
+        );
 
-        // Save to database
+        // ✅ Ghi vào DB
         UserDAO userDAO = new UserDAO();
         boolean updated;
         try {
-            updated = userDAO.updateUser(theUser);
+            updated = userDAO.updateUser(updatedUser);
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Update failed: " + e.getMessage());
-            request.setAttribute("user", user);
+            request.setAttribute("user", currentUser);
             request.getRequestDispatcher(JSP_PATH).forward(request, response);
             return;
         }
 
-        // Update session and response
         if (updated) {
-            session.setAttribute("user", theUser);
-            request.setAttribute("user", theUser);
+            session.setAttribute("user", updatedUser);
+            request.setAttribute("user", updatedUser);
             request.setAttribute("message", "Profile updated successfully!");
         } else {
-            request.setAttribute("user", user);
             request.setAttribute("error", "Failed to update profile!");
+            request.setAttribute("user", currentUser);
         }
-        
+
         request.getRequestDispatcher(JSP_PATH).forward(request, response);
     }
 
-    /**
-     * Retrieves and trims a parameter from the request, handling null cases.
-     */
     private String getTrimmedParameter(HttpServletRequest request, String paramName) {
         String param = request.getParameter(paramName);
         return param != null ? param.trim() : null;
     }
 
-    /**
-     * Validates input fields for user profile update.
-     * Returns an error message if validation fails, null otherwise.
-     */
-    private String validateInputs(User user, String email, String phone, String oldPassword,
-                                 String newPassword, String confirmPassword) {
-        // Check for empty required fields
+    private String validateInputs(User user, String email, String phone,
+                                  String oldPassword, String newPassword, String confirmPassword) {
+
         if (email == null || email.isEmpty() || phone == null || phone.isEmpty()) {
             return "Required fields cannot be empty!";
         }
 
-        // Validate email and phone formats
         if (!email.matches(EMAIL_REGEX)) {
             return "Invalid email format!";
         }
+
         if (!phone.matches(PHONE_REGEX)) {
-            return "Invalid phone number!";
+            return "Invalid phone number format!";
         }
 
-        // Validate password if provided
         if (oldPassword != null && !oldPassword.isEmpty()) {
             if (!oldPassword.equals(user.getPassword())) {
                 return "Old password is incorrect!";
@@ -141,33 +149,18 @@ public class UserProfileServlet extends HttpServlet {
         return null;
     }
 
-    /**
-     * Checks if there are any changes in the provided fields compared to the current user data.
-     * Returns true if there are changes, false otherwise.
-     */
-    private boolean hasChanges(User user, String email, String phone, String newPassword) {
-        boolean emailChanged = !email.equalsIgnoreCase(user.getEmail());
-        boolean phoneChanged = !phone.equals(user.getPhone());
-        boolean passwordChanged = newPassword != null && !newPassword.isEmpty();
-        return emailChanged || phoneChanged || passwordChanged;
+    private boolean hasChanges(User user, String name, String email, String phone,
+                               String gender, Date dateOfBirth, String newPassword) {
+        return (name != null && !name.equalsIgnoreCase(user.getName()))
+                || (email != null && !email.equalsIgnoreCase(user.getEmail()))
+                || (phone != null && !phone.equals(user.getPhone()))
+                || (gender != null && !gender.equalsIgnoreCase(user.getGender()))
+                || (dateOfBirth != null && !dateOfBirth.equals(user.getDateOfBirth()))
+                || (newPassword != null && !newPassword.isEmpty());
     }
 
-    /**
-     * Updates user object with new values.
-     */
-    private void updateUser(User user, String email, String phone, String newPassword) {
-        user.setEmail(email.toLowerCase());
-        user.setPhone(phone);
-        if (newPassword != null && !newPassword.isEmpty()) {
-            user.setPassword(newPassword);
-        }
-    }
-
-    /**
-     * Returns a short description of the servlet.
-     */
     @Override
     public String getServletInfo() {
-        return "Handles user profile display and updates";
+        return "Handles user profile display and updates based on new User schema";
     }
 }

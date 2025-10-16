@@ -31,7 +31,7 @@ public class EditUserServlet extends HttpServlet {
 
         try {
             int userID = Integer.parseInt(idParam);
-            User user = userDAO.getUserId(userID);
+            User user = userDAO.getUserById(userID);
 
             if (user != null) {
                 request.setAttribute("user", user);
