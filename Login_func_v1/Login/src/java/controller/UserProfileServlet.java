@@ -3,9 +3,12 @@ package controller;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
 import models.User;
+import utils.EmailUtil;
+import dao.TokenDAO;
 import dao.UserDAO;
 import java.io.IOException;
 import java.sql.Date;
+import org.mindrot.jbcrypt.BCrypt;
 
 public class UserProfileServlet extends HttpServlet {
 
@@ -13,6 +16,7 @@ public class UserProfileServlet extends HttpServlet {
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
     private static final String JSP_PATH = "/view/UserProfile.jsp";
     private static final String LOGIN_REDIRECT = "Login";
+    private static final String APP_URL = "http://localhost:8080/Login";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -40,7 +44,6 @@ public class UserProfileServlet extends HttpServlet {
 
         User currentUser = (User) session.getAttribute("user");
 
-        // ✅ Lấy dữ liệu form
         String name = getTrimmedParameter(request, "name");
         String email = getTrimmedParameter(request, "email");
         String phone = getTrimmedParameter(request, "phone");
@@ -62,7 +65,6 @@ public class UserProfileServlet extends HttpServlet {
             }
         }
 
-        // ✅ Validate đầu vào
         String error = validateInputs(currentUser, email, phone, oldPassword, newPassword, confirmPassword);
         if (error != null) {
             request.setAttribute("error", error);
@@ -71,7 +73,6 @@ public class UserProfileServlet extends HttpServlet {
             return;
         }
 
-        // ✅ Kiểm tra thay đổi
         if (!hasChanges(currentUser, name, email, phone, gender, dateOfBirth, newPassword)) {
             request.setAttribute("message", "No changes were made!");
             request.setAttribute("user", currentUser);
@@ -79,20 +80,36 @@ public class UserProfileServlet extends HttpServlet {
             return;
         }
 
-        // ✅ Cập nhật user object
+        if (newPassword != null && !newPassword.isEmpty()) {
+            String hashedNewPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+            String token = TokenDAO.createToken(currentUser.getUserID(), hashedNewPassword);
+
+            if (token != null) {
+                String verifyLink = APP_URL + "/verify?token=" + token;
+                EmailUtil.sendVerificationEmail(currentUser.getEmail(), currentUser.getName(), verifyLink);
+                request.setAttribute("message", "Verification email sent! Please check your inbox.");
+                request.setAttribute("user", currentUser);
+                request.getRequestDispatcher(JSP_PATH).forward(request, response);
+                return;
+            } else {
+                request.setAttribute("error", "Failed to create token. Try again.");
+                request.setAttribute("user", currentUser);
+                request.getRequestDispatcher(JSP_PATH).forward(request, response);
+                return;
+            }
+        }
+
         User updatedUser = new User(
                 currentUser.getUserID(),
                 name != null && !name.isEmpty() ? name : currentUser.getName(),
-                (newPassword != null && !newPassword.isEmpty()) ? newPassword : currentUser.getPassword(),
+                currentUser.getPassword(),
                 currentUser.getRole(),
                 email.toLowerCase(),
                 phone,
                 dateOfBirth != null ? dateOfBirth : currentUser.getDateOfBirth(),
                 gender != null ? gender : currentUser.getGender(),
-                currentUser.isActive()
-        );
+                currentUser.isActive());
 
-        // ✅ Ghi vào DB
         UserDAO userDAO = new UserDAO();
         boolean updated;
         try {
@@ -123,7 +140,7 @@ public class UserProfileServlet extends HttpServlet {
     }
 
     private String validateInputs(User user, String email, String phone,
-                                  String oldPassword, String newPassword, String confirmPassword) {
+            String oldPassword, String newPassword, String confirmPassword) {
 
         if (email == null || email.isEmpty() || phone == null || phone.isEmpty()) {
             return "Required fields cannot be empty!";
@@ -138,7 +155,7 @@ public class UserProfileServlet extends HttpServlet {
         }
 
         if (oldPassword != null && !oldPassword.isEmpty()) {
-            if (!oldPassword.equals(user.getPassword())) {
+            if (!org.mindrot.jbcrypt.BCrypt.checkpw(oldPassword, user.getPassword())) {
                 return "Old password is incorrect!";
             }
             if (newPassword == null || newPassword.isEmpty() || !newPassword.equals(confirmPassword)) {
@@ -150,7 +167,7 @@ public class UserProfileServlet extends HttpServlet {
     }
 
     private boolean hasChanges(User user, String name, String email, String phone,
-                               String gender, Date dateOfBirth, String newPassword) {
+            String gender, Date dateOfBirth, String newPassword) {
         return (name != null && !name.equalsIgnoreCase(user.getName()))
                 || (email != null && !email.equalsIgnoreCase(user.getEmail()))
                 || (phone != null && !phone.equals(user.getPhone()))

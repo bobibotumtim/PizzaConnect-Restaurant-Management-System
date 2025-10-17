@@ -37,7 +37,7 @@ public class ForgotPasswordServlet extends HttpServlet {
         boolean ok = dao.resetPassword(user, newPass);
 
         if (ok) {
-            // TODO: gửi email chứa mật khẩu/URL reset nếu bạn có SMTP
+            // gửi email chứa mật khẩu/URL reset nếu bạn có SMTP
             session.setAttribute("success",
                 "Mật khẩu mới đã được đặt: " + newPass + ". Vui lòng đăng nhập và đổi lại.");
         } else {

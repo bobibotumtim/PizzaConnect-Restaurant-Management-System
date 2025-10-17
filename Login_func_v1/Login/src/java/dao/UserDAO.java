@@ -3,6 +3,9 @@ package dao;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.mindrot.jbcrypt.BCrypt;
+
 import models.User;
 
 public class UserDAO extends DBContext {
@@ -26,13 +29,14 @@ public class UserDAO extends DBContext {
     // ✅ Thêm user mới
     public int insertUser(User user) {
         String sql = """
-            INSERT INTO [User] 
-            (Name, Password, Role, Email, Phone, DateOfBirth, Gender, IsActive)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """;
+                    INSERT INTO [User]
+                    (Name, Password, Role, Email, Phone, DateOfBirth, Gender, IsActive)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """;
         try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            String hashed = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
             ps.setString(1, user.getName());
-            ps.setString(2, user.getPassword());
+            ps.setString(2, hashed);
             ps.setInt(3, user.getRole());
             ps.setString(4, user.getEmail());
             ps.setString(5, user.getPhone());
@@ -47,31 +51,30 @@ public class UserDAO extends DBContext {
             int affectedRows = ps.executeUpdate();
             if (affectedRows > 0) {
                 try (ResultSet rs = ps.getGeneratedKeys()) {
-                    if (rs.next()) {
-                        return rs.getInt(1); // Trả về UserID
-                    }
+                    if (rs.next())
+                        return rs.getInt(1);
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return -1; // Thất bại
+        return -1;
     }
 
     // ✅ Kiểm tra đăng nhập
-    public User checkLogin(String EmailOrPhone, String password) {
+    public User checkLogin(String Phone, String password) {
         String sql = """
-            SELECT * FROM [User] 
-            WHERE (Email = ? OR Phone = ?) 
-              AND Password = ? AND IsActive = 1
-        """;
+                    SELECT * FROM [User]
+                    WHERE Phone = ? AND IsActive = 1
+                """;
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, EmailOrPhone);
-            ps.setString(2, EmailOrPhone);
-            ps.setString(3, password);
+            ps.setString(1, Phone);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return mapUser(rs);
+                    String hash = rs.getString("Password");
+                    if (BCrypt.checkpw(password, hash)) { 
+                        return mapUser(rs);
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -100,7 +103,7 @@ public class UserDAO extends DBContext {
         List<User> list = new ArrayList<>();
         String sql = "SELECT * FROM [User]";
         try (PreparedStatement ps = connection.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(mapUser(rs));
             }
@@ -110,13 +113,26 @@ public class UserDAO extends DBContext {
         return list;
     }
 
+    // ✅ Cập nhật mật khẩu user
+    public boolean updatePassword(int userId, String newPasswordHash) {
+        String sql = "UPDATE [User] SET Password = ? WHERE UserID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, newPasswordHash);
+            ps.setInt(2, userId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     // ✅ Cập nhật thông tin user
     public boolean updateUser(User user) {
         String sql = """
-            UPDATE [User]
-            SET Name=?, Password=?, Role=?, Email=?, Phone=?, DateOfBirth=?, Gender=?, IsActive=?
-            WHERE UserID=?
-        """;
+                    UPDATE [User]
+                    SET Name=?, Password=?, Role=?, Email=?, Phone=?, DateOfBirth=?, Gender=?, IsActive=?
+                    WHERE UserID=?
+                """;
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, user.getName());
             ps.setString(2, user.getPassword());
@@ -153,7 +169,8 @@ public class UserDAO extends DBContext {
     // ✅ Đặt lại mật khẩu bằng name/email/phone
     public boolean resetPassword(String identifier, String newPassword) {
         Integer userId = findUserIdByIdentifier(identifier);
-        if (userId == null) return false;
+        if (userId == null)
+            return false;
 
         String sql = "UPDATE [User] SET Password = ? WHERE UserID = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -190,14 +207,14 @@ public class UserDAO extends DBContext {
         java.util.Date dob = (dobSql != null) ? new java.util.Date(dobSql.getTime()) : null;
 
         return new User(
-            rs.getInt("UserID"),
-            rs.getString("Name"),
-            rs.getString("Password"),
-            rs.getInt("Role"),
-            rs.getString("Email"),
-            rs.getString("Phone"),
-            dob,
-            rs.getString("Gender"),
+                rs.getInt("UserID"),
+                rs.getString("Name"),
+                rs.getString("Password"),
+                rs.getInt("Role"),
+                rs.getString("Email"),
+                rs.getString("Phone"),
+                dob,
+                rs.getString("Gender"),
             rs.getBoolean("IsActive")
         );
     }

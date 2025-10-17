@@ -1,0 +1,15 @@
+{
+    "java.project.sourcePaths": [
+        "Login_func_v1"
+    ],
+    "java.project.referencedLibraries": [
+        "Lib\\jbcrypt-0.4.jar",
+        "d:\\workshop\\SWP\\New folder\\PizzaConnect-Restaurant-Management-System\\lib\\sqljdbc42.jar",
+        "d:\\workshop\\SWP\\New folder\\PizzaConnect-Restaurant-Management-System\\lib\\jaxb-api-2.1.jar",
+        "d:\\workshop\\SWP\\New folder\\PizzaConnect-Restaurant-Management-System\\lib\\jakarta.servlet.jsp.jstl-2.0.0.jar",
+        "d:\\workshop\\SWP\\New folder\\PizzaConnect-Restaurant-Management-System\\Lib\\brevo-1.1.0.jar",
+        "c:\\Users\\tjhbx\\Downloads\\brevo-1.1.0.jar",
+        "d:\\workshop\\SWP\\New folder\\PizzaConnect-Restaurant-Management-System\\lib\\jakarta.servlet.jsp.jstl-api-2.0.0.jar",
+        "d:\\workshop\\SWP\\New folder\\PizzaConnect-Restaurant-Management-System\\Lib\\jakarta.servlet-api-5.0.0.jar"
+    ]
+}
