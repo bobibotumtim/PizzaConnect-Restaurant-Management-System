@@ -10,15 +10,13 @@ import models.User;
 
 public class UserDAO extends DBContext {
 
-    // ✅ Kiểm tra user đã tồn tại hay chưa (Name, Email hoặc Phone)
-    public boolean isUserExists(String user) {
-        String sql = "SELECT 1 FROM [User] WHERE Name = ? OR Email = ? OR Phone = ?";
+    // ✅ Kiểm tra user đã tồn tại hay chưa (Email)
+    public boolean isUserExists(String email) {
+        String sql = "SELECT 1 FROM [User] WHERE Email = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, user);
-            ps.setString(2, user);
-            ps.setString(3, user);
+            ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
-                return rs.next(); // true nếu tồn tại ít nhất một user
+                return rs.next();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -102,6 +100,7 @@ public class UserDAO extends DBContext {
     public List<User> getAllUsers() {
         List<User> list = new ArrayList<>();
         String sql = "SELECT * FROM [User]";
+        try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
         try (PreparedStatement ps = connection.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -157,15 +156,97 @@ public class UserDAO extends DBContext {
     // ✅ Xóa user theo ID
     public boolean deleteUser(int userId) {
         String sql = "DELETE FROM [User] WHERE UserID = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, userId);
-            return ps.executeUpdate() > 0;
+        try {
+            System.out.println("[DEBUG] Starting delete for UserID: " + userId);
+
+            if (connection == null || connection.isClosed()) {
+                System.out.println("[ERROR] Database connection is null or closed!");
+                return false;
+            }
+
+            // ✅ Tắt kiểm tra khóa ngoại tạm thời (SQL Server)
+            try (Statement st = connection.createStatement()) {
+                st.execute("EXEC sp_msforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT ALL'");
+            }
+
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                ps.setInt(1, userId);
+                int rows = ps.executeUpdate();
+                System.out.println("[DEBUG] Rows affected in User table: " + rows);
+                return rows > 0;
+            } finally {
+                // ✅ Bật lại constraint
+                try (Statement st2 = connection.createStatement()) {
+                    st2.execute("EXEC sp_msforeachtable 'ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL'");
+                }
+            }
+
         } catch (SQLException e) {
+            System.out.println("[SQL ERROR] Delete user failed!");
+            System.out.println("Message: " + e.getMessage());
+            System.out.println("SQLState: " + e.getSQLState());
+            System.out.println("ErrorCode: " + e.getErrorCode());
             e.printStackTrace();
         }
         return false;
     }
 
+    // ✅ Test database connection
+    public boolean testConnection() {
+        try {
+            if (connection == null || connection.isClosed()) {
+                System.out.println("Database connection is null or closed!");
+                return false;
+            }
+
+            String sql = "SELECT 1";
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        System.out.println("Database connection test: SUCCESS");
+                        return true;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Database connection test: FAILED - " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // ✅ Kiểm tra user có tồn tại không
+    public boolean userExists(int userId) {
+        System.out.println("Checking if user exists with ID: " + userId);
+
+        // Test connection trước
+        if (!testConnection()) {
+            System.out.println("Cannot check user existence - database connection failed");
+            return false;
+        }
+
+        String sql = "SELECT COUNT(*) FROM [User] WHERE UserID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int count = rs.getInt(1);
+                    System.out.println("User exists check: " + (count > 0) + " (count: " + count + ")");
+                    return count > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("SQL Error in userExists: " + e.getMessage());
+            System.out.println("SQL State: " + e.getSQLState());
+            System.out.println("Error Code: " + e.getErrorCode());
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // ✅ Đặt lại mật khẩu bằng email
+    public boolean resetPassword(String email, String newPassword) {
+        String sql = "UPDATE [User] SET Password = ? WHERE Email = ?";
     // ✅ Đặt lại mật khẩu bằng name/email/phone
     public boolean resetPassword(String identifier, String newPassword) {
         Integer userId = findUserIdByIdentifier(identifier);
@@ -175,7 +256,7 @@ public class UserDAO extends DBContext {
         String sql = "UPDATE [User] SET Password = ? WHERE UserID = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, newPassword);
-            ps.setInt(2, userId);
+            ps.setString(2, email);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -207,6 +288,15 @@ public class UserDAO extends DBContext {
         java.util.Date dob = (dobSql != null) ? new java.util.Date(dobSql.getTime()) : null;
 
         return new User(
+                rs.getInt("UserID"),
+                rs.getString("Name"),
+                rs.getString("Password"),
+                rs.getInt("Role"),
+                rs.getString("Email"),
+                rs.getString("Phone"),
+                dob,
+                rs.getString("Gender"),
+                rs.getBoolean("IsActive")
                 rs.getInt("UserID"),
                 rs.getString("Name"),
                 rs.getString("Password"),
