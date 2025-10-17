@@ -100,7 +100,6 @@ public class UserDAO extends DBContext {
     public List<User> getAllUsers() {
         List<User> list = new ArrayList<>();
         String sql = "SELECT * FROM [User]";
-        try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
         try (PreparedStatement ps = connection.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -244,9 +243,6 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    // ✅ Đặt lại mật khẩu bằng email
-    public boolean resetPassword(String email, String newPassword) {
-        String sql = "UPDATE [User] SET Password = ? WHERE Email = ?";
     // ✅ Đặt lại mật khẩu bằng name/email/phone
     public boolean resetPassword(String identifier, String newPassword) {
         Integer userId = findUserIdByIdentifier(identifier);
@@ -256,7 +252,6 @@ public class UserDAO extends DBContext {
         String sql = "UPDATE [User] SET Password = ? WHERE UserID = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, newPassword);
-            ps.setString(2, email);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -297,15 +292,6 @@ public class UserDAO extends DBContext {
                 dob,
                 rs.getString("Gender"),
                 rs.getBoolean("IsActive")
-                rs.getInt("UserID"),
-                rs.getString("Name"),
-                rs.getString("Password"),
-                rs.getInt("Role"),
-                rs.getString("Email"),
-                rs.getString("Phone"),
-                dob,
-                rs.getString("Gender"),
-            rs.getBoolean("IsActive")
         );
     }
 }
