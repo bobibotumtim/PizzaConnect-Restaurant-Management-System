@@ -139,14 +139,94 @@ public class UserDAO extends DBContext {
     // ✅ Xóa user theo ID
     public boolean deleteUser(int userId) {
         String sql = "DELETE FROM [User] WHERE UserID = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, userId);
-            return ps.executeUpdate() > 0;
+        try {
+            System.out.println("[DEBUG] Starting delete for UserID: " + userId);
+
+            if (connection == null || connection.isClosed()) {
+                System.out.println("[ERROR] Database connection is null or closed!");
+                return false;
+            }
+
+            // ✅ Tắt kiểm tra khóa ngoại tạm thời (SQL Server)
+            try (Statement st = connection.createStatement()) {
+                st.execute("EXEC sp_msforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT ALL'");
+            }
+
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                ps.setInt(1, userId);
+                int rows = ps.executeUpdate();
+                System.out.println("[DEBUG] Rows affected in User table: " + rows);
+                return rows > 0;
+            } finally {
+                // ✅ Bật lại constraint
+                try (Statement st2 = connection.createStatement()) {
+                    st2.execute("EXEC sp_msforeachtable 'ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL'");
+                }
+            }
+
         } catch (SQLException e) {
+            System.out.println("[SQL ERROR] Delete user failed!");
+            System.out.println("Message: " + e.getMessage());
+            System.out.println("SQLState: " + e.getSQLState());
+            System.out.println("ErrorCode: " + e.getErrorCode());
             e.printStackTrace();
         }
         return false;
     }
+    
+    // ✅ Test database connection
+    public boolean testConnection() {
+        try {
+            if (connection == null || connection.isClosed()) {
+                System.out.println("Database connection is null or closed!");
+                return false;
+            }
+            
+            String sql = "SELECT 1";
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        System.out.println("Database connection test: SUCCESS");
+                        return true;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Database connection test: FAILED - " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    // ✅ Kiểm tra user có tồn tại không
+    public boolean userExists(int userId) {
+        System.out.println("Checking if user exists with ID: " + userId);
+        
+        // Test connection trước
+        if (!testConnection()) {
+            System.out.println("Cannot check user existence - database connection failed");
+            return false;
+        }
+        
+        String sql = "SELECT COUNT(*) FROM [User] WHERE UserID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int count = rs.getInt(1);
+                    System.out.println("User exists check: " + (count > 0) + " (count: " + count + ")");
+                    return count > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("SQL Error in userExists: " + e.getMessage());
+            System.out.println("SQL State: " + e.getSQLState());
+            System.out.println("Error Code: " + e.getErrorCode());
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
 
     // ✅ Đặt lại mật khẩu bằng email
     public boolean resetPassword(String email, String newPassword) {
