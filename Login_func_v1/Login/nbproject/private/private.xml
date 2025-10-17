@@ -2,6 +2,16 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/D:/SWP391/PROJECT_/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/view/NavBar.jsp</file>
+            <file>file:/D:/SWP391/PROJECT_/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/view/Login.jsp</file>
+            <file>file:/D:/SWP391/PROJECT_/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/controller/AddOrderServlet.java</file>
+            <file>file:/D:/SWP391/PROJECT_/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/controller/DetailServlet.java</file>
+            <file>file:/D:/SWP391/PROJECT_/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/view/Admin.jsp</file>
+            <file>file:/D:/SWP391/PROJECT_/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/controller/ManageOrderServlet.java</file>
+            <file>file:/D:/SWP391/PROJECT_/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/view/Dashboard.jsp</file>
+            <file>file:/D:/SWP391/PROJECT_/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/view/Home.jsp</file>
+            <file>file:/D:/SWP391/PROJECT_/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/controller/DashboardServlet.java</file>
+        </group>
     </open-files>
 </project-private>
