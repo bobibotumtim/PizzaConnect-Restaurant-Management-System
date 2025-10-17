@@ -306,6 +306,8 @@
         .btn-warning:hover {
             background: linear-gradient(135deg, #e67e22, #f39c12);
         }
+        
+        
     </style>
 </head>
 <body>
@@ -338,7 +340,7 @@
         
         <div class="nav">
             <div class="welcome">
-                Welcome, <strong><%= currentUser != null ? currentUser.getUsername() : "Admin" %></strong> (Admin)
+                Welcome, <strong><%= currentUser != null ? currentUser.getName() : "Admin" %></strong> (Admin)
             </div>
             <div>
                 <a href="dashboard" class="btn btn-info" style="margin-right: 10px;">Dashboard</a>
@@ -381,7 +383,8 @@
                     <h3>User Management</h3>
                     <p>Manage users, roles and permissions</p>
                     <div class="module-actions">
-                        <a href="#user-management" class="btn btn-primary">Manage Users</a>
+                        <a href="adduser" class="btn btn-success" style="margin-right: 10px;" title="Add New User">+ Add User</a>
+                        <a href="#user-management" class="btn btn-primary" onclick="scrollToUserManagement()">Manage Users</a>
                     </div>
                 </div>
                 
@@ -414,8 +417,9 @@
             </div>
             
             <div class="table-container">
-                <div class="table-header">
-                    👥 User Management
+                <div class="table-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>👥 User Management</span>
+                    <a href="adduser" class="btn btn-success" style="margin: 0;" title="Add New User">+ Add New User</a>
                 </div>
                 
                 <% if (users == null || users.isEmpty()) { %>
@@ -429,10 +433,11 @@
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Username</th>
+                                <th>Name</th>
                                 <th>Email</th>
                                 <th>Phone</th>
                                 <th>Role</th>
+                                <th>Status</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -440,19 +445,43 @@
                             <% for (User user : users) { %>
                                 <tr>
                                     <td><%= user.getUserID() %></td>
-                                    <td><strong><%= user.getUsername() %></strong></td>
+                                    <td><strong><%= user.getName() %></strong></td>
                                     <td><%= user.getEmail() %></td>
                                     <td><%= user.getPhone() %></td>
                                     <td>
                                         <% if (user.getRole() == 1) { %>
                                             <span class="role-badge role-admin">Admin</span>
+                                        <% } else if (user.getRole() == 2) { %>
+                                            <span class="role-badge role-user">Employee</span>
                                         <% } else { %>
-                                            <span class="role-badge role-user">User</span>
+                                            <span class="role-badge role-user">Customer</span>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <% if (user.isActive()) { %>
+                                            <span style="color: #27ae60; font-weight: 600;">✓ Active</span>
+                                        <% } else { %>
+                                            <span style="color: #e74c3c; font-weight: 600;">✗ Inactive</span>
                                         <% } %>
                                     </td>
                                     <td>
                                         <% if (currentUser != null && user.getUserID() != currentUser.getUserID()) { %>
                                             <a href="edituser?id=<%= user.getUserID() %>" class="btn btn-edit">Edit</a>
+                                            <% if (user.isActive()) { %>
+                                                <form style="display: inline;" method="post" 
+                                                      onsubmit="return confirm('Are you sure you want to suspend this user?')">
+                                                    <input type="hidden" name="action" value="suspend">
+                                                    <input type="hidden" name="userId" value="<%= user.getUserID() %>">
+                                                    <button type="submit" class="btn btn-warning">Suspend</button>
+                                                </form>
+                                            <% } else { %>
+                                                <form style="display: inline;" method="post" 
+                                                      onsubmit="return confirm('Are you sure you want to activate this user?')">
+                                                    <input type="hidden" name="action" value="activate">
+                                                    <input type="hidden" name="userId" value="<%= user.getUserID() %>">
+                                                    <button type="submit" class="btn btn-success">Activate</button>
+                                                </form>
+                                            <% } %>
                                             <form style="display: inline;" method="post" 
                                                   onsubmit="return confirm('Are you sure you want to delete this user?')">
                                                 <input type="hidden" name="action" value="delete">
@@ -471,5 +500,15 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        // Function to scroll to user management section
+        function scrollToUserManagement() {
+            const userManagementSection = document.querySelector('.table-container');
+            if (userManagementSection) {
+                userManagementSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    </script>
 </body>
 </html>

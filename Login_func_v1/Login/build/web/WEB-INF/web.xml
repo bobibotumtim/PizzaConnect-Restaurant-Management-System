@@ -71,5 +71,45 @@
         <servlet-name>LoginPageServlet</servlet-name>
         <url-pattern>/view/Login</url-pattern>
     </servlet-mapping>
+    
+    <!-- Admin Servlet -->
+    <servlet>
+        <servlet-name>AdminServlet</servlet-name>
+        <servlet-class>controller.AdminServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminServlet</servlet-name>
+        <url-pattern>/admin</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Add User Servlet -->
+    <servlet>
+        <servlet-name>AddUserServlet</servlet-name>
+        <servlet-class>controller.AddUserServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AddUserServlet</servlet-name>
+        <url-pattern>/adduser</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Edit User Servlet -->
+    <servlet>
+        <servlet-name>EditUserServlet</servlet-name>
+        <servlet-class>controller.EditUserServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>EditUserServlet</servlet-name>
+        <url-pattern>/edituser</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Dashboard Servlet -->
+    <servlet>
+        <servlet-name>DashboardServlet</servlet-name>
+        <servlet-class>controller.DashboardServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DashboardServlet</servlet-name>
+        <url-pattern>/dashboard</url-pattern>
+    </servlet-mapping>
 </web-app>
 
