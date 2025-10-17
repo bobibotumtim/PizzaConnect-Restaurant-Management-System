@@ -35,25 +35,11 @@ public class DashboardServlet extends HttpServlet {
         int totalUsers = userDAO.getAllUsers().size();
         int totalOrders = orderDAO.countAllOrders();
         
-        // Tính toán thống kê bổ sung
-        int adminCount = 0;
-        int employeeCount = 0;
-        int customerCount = 0;
-        
-        for (User u : userDAO.getAllUsers()) {
-            if (u.getRole() == 1) adminCount++;
-            else if (u.getRole() == 2) employeeCount++;
-            else if (u.getRole() == 3) customerCount++;
-        }
-        
         request.setAttribute("currentUser", user);
         request.setAttribute("totalOrders", totalOrders);
         request.setAttribute("totalUsers", totalUsers);
-        request.setAttribute("adminCount", adminCount);
-        request.setAttribute("employeeCount", employeeCount);
-        request.setAttribute("customerCount", customerCount);
         
-        request.getRequestDispatcher("/view/Dashboard.jsp").forward(request, response);
+        request.getRequestDispatcher("view/Dashboard.jsp").forward(request, response);
     }
 
     @Override

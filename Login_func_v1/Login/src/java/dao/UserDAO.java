@@ -97,8 +97,7 @@ public class UserDAO extends DBContext {
     public List<User> getAllUsers() {
         List<User> list = new ArrayList<>();
         String sql = "SELECT * FROM [User]";
-        try (PreparedStatement ps = connection.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(mapUser(rs));
             }
@@ -173,7 +172,7 @@ public class UserDAO extends DBContext {
         }
         return false;
     }
-    
+
     // ✅ Test database connection
     public boolean testConnection() {
         try {
@@ -181,7 +180,7 @@ public class UserDAO extends DBContext {
                 System.out.println("Database connection is null or closed!");
                 return false;
             }
-            
+
             String sql = "SELECT 1";
             try (PreparedStatement ps = connection.prepareStatement(sql)) {
                 try (ResultSet rs = ps.executeQuery()) {
@@ -197,17 +196,17 @@ public class UserDAO extends DBContext {
         }
         return false;
     }
-    
+
     // ✅ Kiểm tra user có tồn tại không
     public boolean userExists(int userId) {
         System.out.println("Checking if user exists with ID: " + userId);
-        
+
         // Test connection trước
         if (!testConnection()) {
             System.out.println("Cannot check user existence - database connection failed");
             return false;
         }
-        
+
         String sql = "SELECT COUNT(*) FROM [User] WHERE UserID = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, userId);
@@ -226,7 +225,6 @@ public class UserDAO extends DBContext {
         }
         return false;
     }
-    
 
     // ✅ Đặt lại mật khẩu bằng email
     public boolean resetPassword(String email, String newPassword) {
@@ -265,15 +263,15 @@ public class UserDAO extends DBContext {
         java.util.Date dob = (dobSql != null) ? new java.util.Date(dobSql.getTime()) : null;
 
         return new User(
-            rs.getInt("UserID"),
-            rs.getString("Name"),
-            rs.getString("Password"),
-            rs.getInt("Role"),
-            rs.getString("Email"),
-            rs.getString("Phone"),
-            dob,
-            rs.getString("Gender"),
-            rs.getBoolean("IsActive")
+                rs.getInt("UserID"),
+                rs.getString("Name"),
+                rs.getString("Password"),
+                rs.getInt("Role"),
+                rs.getString("Email"),
+                rs.getString("Phone"),
+                dob,
+                rs.getString("Gender"),
+                rs.getBoolean("IsActive")
         );
     }
 }
