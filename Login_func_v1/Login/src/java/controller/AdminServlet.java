@@ -108,7 +108,6 @@ public class AdminServlet extends HttpServlet {
                         }
                     }
                 }
-                 << << << < HEAD
             } else if ("suspend".equals(action)) {
                 String userIdStr = request.getParameter("userId");
                 if (userIdStr != null) {
@@ -154,14 +153,9 @@ public class AdminServlet extends HttpServlet {
         } catch (Exception e) {
             session.setAttribute("error", "Unexpected error: " + e.getMessage());
             e.printStackTrace();
-             == == == =
         }
-         >>> >>> > 73b2b6d9061dc304e377c544d92ff76bbbcb78d7
-    }
 
-    // Redirect để tránh submit lại form
-    response.sendRedirect (
-
-"admin");
+        // Redirect để tránh submit lại form
+        response.sendRedirect("admin");
     }
 }
