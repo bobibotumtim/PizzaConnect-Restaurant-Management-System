@@ -11,7 +11,7 @@ public class DBContext {
 
     public DBContext() {
         try {
-            String user = "duongbui";
+            String user = "sa";
             String pass = "123";
             String url = "jdbc:sqlserver://localhost:1433;databaseName=pizza_demo_DB2;encrypt=true;trustServerCertificate=true";
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
