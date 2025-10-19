@@ -146,8 +146,11 @@
 
         <%
             String currentPath = request.getRequestURI();
-            User currentUser = (User) session.getAttribute("currentUser");
-
+            User currentUser = (User) session.getAttribute("user");
+            if (currentUser == null || currentUser.getRole() != 1) { 
+                response.sendRedirect(request.getContextPath() + "/view/Home.jsp");
+                return;
+            }
             List<Product> products = (List<Product>) request.getAttribute("products");
             List<Map<String, Object>> ingredientList = (List<Map<String, Object>>) request.getAttribute("ingredientList");
         %>
@@ -233,6 +236,7 @@
 
             <div class="flex-1 p-6 overflow-auto">
                 <div class="bg-gray-50 p-4 rounded-xl mb-6 flex flex-wrap gap-4 items-center">
+                    <%--
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Filter by Status</label>
                         <select class="border border-gray-300 rounded-lg px-3 py-2">
@@ -241,8 +245,8 @@
                             <option>Inactive</option>
                         </select>
                     </div>
+                    --%>
                     <div class="flex gap-2">
-                        <a href="ManageProduct.jsp" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">Refresh</a>
                         <a href="${pageContext.request.contextPath}/view/AddProduct.jsp" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">Add Product</a>
                         <a href="${pageContext.request.contextPath}/dashboard" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg">Dashboard</a>
                     </div>
@@ -301,7 +305,7 @@
                                         <a href="#" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs"
                                            onclick="openIngredients(<%= p.getProductId() %>)">Ingredients</a>
 
-                                        <a href="${pageContext.request.contextPath}/controller/ProductController?action=delete&productId=<%= p.getProductId() %>"
+                                        <a href="${pageContext.request.contextPath}/DeleteProduct?productId=<%= p.getProductId() %>"
                                            onclick="return confirm('Are you sure you want to delete this product?');"
                                            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs">Delete</a>
                                     </div>
