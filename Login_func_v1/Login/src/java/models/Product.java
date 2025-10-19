@@ -26,6 +26,17 @@ public class Product {
         this.isAvailable = isAvailable;
     }
 
+    public Product(String productName, String description, double price, String category, String imageUrl, boolean isAvailable) {
+        this.productName = productName;
+        this.description = description;
+        this.price = price;
+        this.category = category;
+        this.imageUrl = imageUrl;
+        this.isAvailable = isAvailable;
+    }
+
+    
+
     // Getters
     public int getProductId() {
         return productId;

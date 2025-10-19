@@ -10,13 +10,13 @@ public class ProductDAO extends DBContext {
     // Helper method để tránh lặp code
     private Product mapResultSetToProduct(ResultSet rs) throws SQLException {
         return new Product(
-            rs.getInt("ProductID"),
-            rs.getString("ProductName"),
-            rs.getString("Description"),
-            rs.getDouble("Price"),
-            rs.getString("Category"),
-            rs.getString("ImageURL"),
-            rs.getBoolean("IsAvailable")
+                rs.getInt("ProductID"),
+                rs.getString("ProductName"),
+                rs.getString("Description"),
+                rs.getDouble("Price"),
+                rs.getString("Category"),
+                rs.getString("ImageURL"),
+                rs.getBoolean("IsAvailable")
         );
     }
 
@@ -24,9 +24,7 @@ public class ProductDAO extends DBContext {
     public List<Product> getAllProducts() {
         List<Product> list = new ArrayList<>();
         String sql = "SELECT * FROM Product WHERE IsAvailable = 1 ORDER BY Category, ProductName";
-        try (Connection con = getConnection(); 
-             PreparedStatement ps = con.prepareStatement(sql); 
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(mapResultSetToProduct(rs));
             }
@@ -53,20 +51,29 @@ public class ProductDAO extends DBContext {
     }
 
     // Thêm sản phẩm mới
-    public boolean addProduct(Product product) {
+    public int addProduct(Product product) {
         String sql = "INSERT INTO Product (ProductName, Description, Price, Category, ImageURL, IsAvailable) VALUES (?, ?, ?, ?, ?, ?)";
-        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
             ps.setString(1, product.getProductName());
             ps.setString(2, product.getDescription());
             ps.setDouble(3, product.getPrice());
             ps.setString(4, product.getCategory());
             ps.setString(5, product.getImageUrl());
             ps.setBoolean(6, product.isAvailable());
-            return ps.executeUpdate() > 0;
+
+            int affectedRows = ps.executeUpdate();
+            if (affectedRows > 0) {
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        return rs.getInt(1); 
+                    }
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return false;
+        return -1; 
     }
 
     // Cập nhật sản phẩm
@@ -103,9 +110,7 @@ public class ProductDAO extends DBContext {
     public List<String> getAllCategories() {
         List<String> categories = new ArrayList<>();
         String sql = "SELECT DISTINCT Category FROM Product WHERE IsAvailable = 1 ORDER BY Category";
-        try (Connection con = getConnection(); 
-             PreparedStatement ps = con.prepareStatement(sql); 
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 categories.add(rs.getString("Category"));
             }

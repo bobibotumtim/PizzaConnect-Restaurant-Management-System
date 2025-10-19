@@ -6,6 +6,27 @@ import java.util.*;
 
 public class ProductIngredientDAO extends DBContext {
 
+    // 🔹 Lấy danh sách nguyên liệu (Inventory) để hiển thị trong <select>
+    public List<Map<String, Object>> getAllInventories() {
+        List<Map<String, Object>> list = new ArrayList<>();
+        String sql = "SELECT InventoryID, ItemName, Unit FROM Inventory";
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Map<String, Object> item = new HashMap<>();
+                item.put("inventoryID", rs.getInt("InventoryID"));
+                item.put("inventoryName", rs.getString("ItemName"));
+                item.put("unit", rs.getString("Unit"));
+                list.add(item);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+
+    // 🔹 Lấy danh sách nguyên liệu của 1 sản phẩm
     public List<ProductIngredient> getIngredientsByProduct(int productId) {
         List<ProductIngredient> list = new ArrayList<>();
         String sql = """
@@ -33,6 +54,22 @@ public class ProductIngredientDAO extends DBContext {
         return list;
     }
 
+    // 🔹 Thêm nguyên liệu vào sản phẩm
+    public boolean addIngredientToProduct(int productId, int inventoryId, double quantityNeeded, String unit) {
+        String sql = "INSERT INTO ProductIngredients (ProductID, InventoryID, QuantityNeeded, Unit) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, productId);
+            ps.setInt(2, inventoryId);
+            ps.setDouble(3, quantityNeeded);
+            ps.setString(4, unit);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // 🔹 Cập nhật nguyên liệu trong sản phẩm
     public boolean updateIngredient(ProductIngredient pi) {
         String sql = "UPDATE ProductIngredients SET QuantityNeeded=?, Unit=? WHERE ProductID=? AND InventoryID=?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -40,6 +77,19 @@ public class ProductIngredientDAO extends DBContext {
             ps.setString(2, pi.getUnit());
             ps.setInt(3, pi.getProductId());
             ps.setInt(4, pi.getInventoryId());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // 🔹 Xóa nguyên liệu khỏi sản phẩm
+    public boolean deleteIngredientFromProduct(int productId, int inventoryId) {
+        String sql = "DELETE FROM ProductIngredients WHERE ProductID=? AND InventoryID=?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, productId);
+            ps.setInt(2, inventoryId);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();

@@ -1,5 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.util.*" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ page import="java.util.*,java.util.List,java.util.Map" %>
 <%@ page import="models.User,models.Product,dao.ProductDAO" %>
 <!DOCTYPE html>
 <style>
@@ -17,12 +19,15 @@
     }
     .modal-content {
         background-color: #fff;
-        margin: 8% auto; /* Đẩy lên cao hơn một chút */
+        margin: 5% auto;
         padding: 25px 30px;
-        border-radius: 12px; /* Bo góc nhiều hơn */
-        width: 500px; /* Rộng hơn một chút cho form */
+        border-radius: 12px;
+        width: 600px;
+        max-height: 90vh;        /* Giới hạn cao nhất 90% màn hình */
+        overflow-y: auto;        /* Cho phép cuộn nội dung */
         box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
+
     .close {
         float: right;
         font-size: 28px; /* To hơn */
@@ -144,6 +149,7 @@
             User currentUser = (User) session.getAttribute("currentUser");
 
             List<Product> products = (List<Product>) request.getAttribute("products");
+            List<Map<String, Object>> ingredientList = (List<Map<String, Object>>) request.getAttribute("ingredientList");
         %>
 
 
@@ -210,7 +216,7 @@
             }, 3000);
         </script>
         <%
-                session.removeAttribute("message"); // 🔥 Xóa sau khi hiển thị 1 lần
+                session.removeAttribute("message"); 
             }
         %>
 
@@ -369,67 +375,160 @@
             </div>
         </div>
 
+        <%-- ADD PRODUCT POP-UP --%>
+        <div id="addModal" class="modal">
+
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Add New Product</h2>
+
+                <form action="AddProductServlet" method="post" id="addProductForm">
+                    <div class="form-group">
+                        <label for="addProductName">Product Name:</label>
+                        <input type="text" name="productName" id="addProductName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="addDescription">Description:</label>
+                        <textarea name="description" id="addDescription" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="addPrice">Price ($):</label>
+                        <input type="number" name="price" id="addPrice" step="0.01" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="addCategory">Category:</label>
+                        <input type="text" name="category" id="addCategory">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="addImageUrl">Image URL:</label>
+                        <input type="text" name="imageUrl" id="addImageUrl">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="addAvailable">Available:</label>
+                        <select name="isAvailable" id="addAvailable">
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
+                    </div>
+
+
+                    <hr class="my-3">
+
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Ingredients</h3>
+                    <div id="ingredientList">
+                    </div>
+                    <div id="ingredientTemplate" class="ingredient-row flex gap-2 mb-2 hidden">
+                        <select name="ingredientId[]" class="ingredientSelect flex-1 border p-2 rounded"
+                                style="color:black; background:white; appearance:auto; min-width:150px;">
+                            <c:forEach var="ing" items="${ingredientList}">
+                                <option value="${ing.inventoryID}" data-unit="${ing.unit}">
+                                    ${ing.inventoryName}
+                                </option>
+                            </c:forEach>
+                        </select>
+                        <input type="number" name="ingredientQty[]" placeholder="Quantity" step="0.01" class="w-24 border p-2 rounded">
+                        <input type="text" name="ingredientUnit[]" placeholder="Unit" class="unitField w-24 border p-2 rounded" readonly>
+                        <button type="button" class="removeIng bg-red-500 text-white px-2 rounded">✕</button>
+                    </div>
+
+
+                    <button type="button" id="addIngredientBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded mt-2">+ Add Ingredient</button>
+
+                    <button type="submit">Save Product</button>
+                </form>
+            </div>
+        </div>
+
+
 
         <script>
-            lucide.createIcons();
+            document.addEventListener("DOMContentLoaded", () => {
+                lucide.createIcons();
 
-            // === MODAL: EDIT PRODUCT ===
-            const editModal = document.getElementById("editModal");
-            const ingredientModal = document.getElementById("ingredientModal");
-            const closeButtons = document.querySelectorAll(".close"); // Lấy tất cả nút ×
-            const editButtons = document.querySelectorAll(".editBtn");
+                const addModal = document.getElementById("addModal");
+                const addIngredientBtn = document.getElementById("addIngredientBtn");
+                const ingredientList = document.getElementById("ingredientList");
+                const ingredientTemplate = document.getElementById("ingredientTemplate");
+                const editModal = document.getElementById("editModal");
+                const ingredientModal = document.getElementById("ingredientModal");
 
-            // Mở modal Edit
-            editButtons.forEach(btn => {
-                btn.addEventListener("click", () => {
-                    document.getElementById("editProductId").value = btn.dataset.id;
-                    document.getElementById("editProductName").value = btn.dataset.name;
-                    document.getElementById("editDescription").value = btn.dataset.desc;
-                    document.getElementById("editPrice").value = btn.dataset.price;
-                    document.getElementById("editCategory").value = btn.dataset.category;
-                    document.getElementById("editImageUrl").value = btn.dataset.image;
-                    document.getElementById("editAvailable").value = btn.dataset.available;
+                // === OPEN MODAL ADD PRODUCT ===
+                document.querySelector('a[href$="AddProduct.jsp"]').addEventListener("click", e => {
+                    e.preventDefault();
+                    addModal.style.display = "block";
+                });
 
-                    editModal.style.display = "block";
+                // === OPEN MODAL EDIT PRODUCT ===
+                document.querySelectorAll(".editBtn").forEach(btn => {
+                    btn.addEventListener("click", () => {
+                        document.getElementById("editProductId").value = btn.dataset.id;
+                        document.getElementById("editProductName").value = btn.dataset.name;
+                        document.getElementById("editDescription").value = btn.dataset.desc;
+                        document.getElementById("editPrice").value = btn.dataset.price;
+                        document.getElementById("editCategory").value = btn.dataset.category;
+                        document.getElementById("editImageUrl").value = btn.dataset.image;
+                        document.getElementById("editAvailable").value = btn.dataset.available;
+
+                        editModal.style.display = "block";
+                    });
+                });
+
+                // === OPEN MODAL INGREDIENTS ===
+                window.openIngredients = function (productId) {
+                    ingredientModal.style.display = "block";
+                    const content = document.getElementById("ingredientContent");
+                    content.innerHTML = "Loading...";
+                    fetch("<%= request.getContextPath() %>/manageingredients?productId=" + productId)
+                            .then(res => res.ok ? res.text() : Promise.reject(res.status))
+                            .then(html => content.innerHTML = html)
+                            .catch(err => content.innerHTML = "Error loading ingredients: " + err);
+                }
+
+                // === CLOSE MODALS ===
+                document.querySelectorAll(".close").forEach(btn =>
+                    btn.addEventListener("click", () => btn.closest(".modal").style.display = "none")
+                );
+
+                window.addEventListener("click", e => {
+                    if (e.target === addModal)
+                        addModal.style.display = "none";
+                    if (e.target === editModal)
+                        editModal.style.display = "none";
+                    if (e.target === ingredientModal)
+                        ingredientModal.style.display = "none";
+                });
+
+                // === ADD/REMOVE INGREDIENTS ===
+                addIngredientBtn.addEventListener("click", () => {
+                    const clone = ingredientTemplate.cloneNode(true);
+                    clone.id = "";
+                    clone.classList.remove("hidden");
+                    ingredientList.appendChild(clone);
+                });
+
+                document.addEventListener("click", e => {
+                    if (e.target.classList.contains("removeIng")) {
+                        e.target.closest(".ingredient-row").remove();
+                    }
+                });
+
+                document.addEventListener("change", e => {
+                    if (e.target.classList.contains("ingredientSelect")) {
+                        const unit = e.target.selectedOptions[0].dataset.unit || "";
+                        const unitField = e.target.closest(".ingredient-row").querySelector(".unitField");
+                        if (unitField)
+                            unitField.value = unit;
+                    }
                 });
             });
 
-            // Mở modal Ingredients
-            function openIngredients(productId) {
-                ingredientModal.style.display = "block";
-                const content = document.getElementById("ingredientContent");
-                content.innerHTML = "Loading...";
-
-                fetch("<%= request.getContextPath() %>/manageingredients?productId=" + productId)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error("HTTP " + response.status);
-                            }
-                            return response.text();
-                        })
-                        .then(html => {
-                            ingredientContent.innerHTML = html;
-                        })
-                        .catch(error => {
-                            ingredientContent.innerHTML = "Error loading ingredients: " + error;
-                        });
-            }
-
-            // Gán sự kiện ĐÓNG cho tất cả nút ×
-            closeButtons.forEach(btn => {
-                btn.addEventListener("click", function () {
-                    this.closest(".modal").style.display = "none";
-                });
-            });
-
-            // Click ra ngoài modal cũng đóng
-            window.addEventListener("click", function (event) {
-                if (event.target === editModal)
-                    editModal.style.display = "none";
-                if (event.target === ingredientModal)
-                    ingredientModal.style.display = "none";
-            });
         </script>
+
 
 
     </body>
