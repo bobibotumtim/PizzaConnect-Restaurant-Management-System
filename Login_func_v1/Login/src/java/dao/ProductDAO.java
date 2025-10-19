@@ -23,7 +23,7 @@ public class ProductDAO extends DBContext {
     // Lấy tất cả sản phẩm
     public List<Product> getAllProducts() {
         List<Product> list = new ArrayList<>();
-        String sql = "SELECT * FROM Products WHERE IsAvailable = 1 ORDER BY Category, ProductName";
+        String sql = "SELECT * FROM Product WHERE IsAvailable = 1 ORDER BY Category, ProductName";
         try (Connection con = getConnection(); 
              PreparedStatement ps = con.prepareStatement(sql); 
              ResultSet rs = ps.executeQuery()) {
@@ -38,7 +38,7 @@ public class ProductDAO extends DBContext {
 
     // Lấy sản phẩm theo ID
     public Product getProductById(int productId) {
-        String sql = "SELECT * FROM Products WHERE ProductID = ?";
+        String sql = "SELECT * FROM Product WHERE ProductID = ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, productId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -54,7 +54,7 @@ public class ProductDAO extends DBContext {
 
     // Thêm sản phẩm mới
     public boolean addProduct(Product product) {
-        String sql = "INSERT INTO Products (ProductName, Description, Price, Category, ImageURL, IsAvailable) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Product (ProductName, Description, Price, Category, ImageURL, IsAvailable) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, product.getProductName());
             ps.setString(2, product.getDescription());
@@ -71,7 +71,7 @@ public class ProductDAO extends DBContext {
 
     // Cập nhật sản phẩm
     public boolean updateProduct(Product product) {
-        String sql = "UPDATE Products SET ProductName=?, Description=?, Price=?, Category=?, ImageURL=?, IsAvailable=? WHERE ProductID=?";
+        String sql = "UPDATE Product SET ProductName=?, Description=?, Price=?, Category=?, ImageURL=?, IsAvailable=? WHERE ProductID=?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, product.getProductName());
             ps.setString(2, product.getDescription());
@@ -89,7 +89,7 @@ public class ProductDAO extends DBContext {
 
     // Xóa sản phẩm (soft delete)
     public boolean deleteProduct(int productId) {
-        String sql = "UPDATE Products SET IsAvailable = 0 WHERE ProductID = ?";
+        String sql = "UPDATE Product SET IsAvailable = 0 WHERE ProductID = ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, productId);
             return ps.executeUpdate() > 0;
@@ -102,7 +102,7 @@ public class ProductDAO extends DBContext {
     // Lấy tất cả danh mục
     public List<String> getAllCategories() {
         List<String> categories = new ArrayList<>();
-        String sql = "SELECT DISTINCT Category FROM Products WHERE IsAvailable = 1 ORDER BY Category";
+        String sql = "SELECT DISTINCT Category FROM Product WHERE IsAvailable = 1 ORDER BY Category";
         try (Connection con = getConnection(); 
              PreparedStatement ps = con.prepareStatement(sql); 
              ResultSet rs = ps.executeQuery()) {

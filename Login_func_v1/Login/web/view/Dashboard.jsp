@@ -45,7 +45,7 @@
                 </a>
 
                 <!-- Menu -->
-                <a href="${pageContext.request.contextPath}/menu"
+                <a href="${pageContext.request.contextPath}/manageproduct"
                    class="nav-btn <%= currentPath.contains("/menu") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
                    title="Menu">
                     <i data-lucide="utensils" class="w-6 h-6"></i>

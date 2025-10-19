@@ -7,12 +7,14 @@
             <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/dao/UserDAO.java</file>
             <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/controller/LoginPageServlet.java</file>
             <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/utils/EmailUtil.java</file>
+            <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/controller/ManageProductServlet.java</file>
             <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/dao/TokenDAO.java</file>
             <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/view/Detail.jsp</file>
             <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/view/Login.jsp</file>
             <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/view/UserProfile.jsp</file>
             <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/view/NavBar.jsp</file>
             <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/controller/UserProfileServlet.java</file>
+            <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/view/ManageIngredientsPopup.jsp</file>
             <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/view/Home.jsp</file>
             <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/controller/LoginServlet.java</file>
             <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/models/User.java</file>
@@ -22,11 +24,15 @@
             <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/controller/LogoutServlet.java</file>
             <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/view/ManageProduct.jsp</file>
             <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/dao/CustomerDAO.java</file>
+            <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/models/ProductIngredient.java</file>
             <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/dao/DBContext.java</file>
+            <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/controller/ManageIngredientsServlet.java</file>
             <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/WEB-INF/web.xml</file>
             <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/view/Dashboard.jsp</file>
             <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/controller/EditUserServlet.java</file>
+            <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/dao/ProductIngredientDAO.java</file>
             <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/view/ManageOrders.jsp</file>
+            <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/controller/EditProductServlet.java</file>
             <file>file:/D:/%23FPT_Study/2025_FAL/SWP391/New%20folder/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/view/AddOrder.jsp</file>
         </group>
     </open-files>
