@@ -87,7 +87,7 @@
 <div class="flex-1 flex flex-col overflow-hidden">
     <!-- Header -->
     <div class="bg-white border-b px-6 py-4 flex justify-between items-center flex-shrink-0">
-        <h1 class="text-2xl font-bold text-gray-800">Manager Dashboard</h1>
+        <h1 class="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
         <div class="flex space-x-2">
             <button class="tab-btn bg-orange-500 text-white">Today</button>
             <button class="tab-btn bg-gray-100 text-gray-600 hover:bg-gray-200">This Week</button>
