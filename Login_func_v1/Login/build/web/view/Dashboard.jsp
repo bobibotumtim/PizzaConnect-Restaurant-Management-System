@@ -364,7 +364,7 @@
                     <h3>Menu Management</h3>
                     <p>Manage pizza menu, prices, and availability. Add new items, update descriptions, and control inventory.</p>
                     <div class="module-actions">
-                        <a href="#menu" class="btn btn-warning">Manage Menu</a>
+                        <a href="inventory?action=list" class="btn btn-warning">Manage Menu</a>
                         <a href="#add-item" class="btn btn-success">Add Item</a>
                     </div>
                 </div>
