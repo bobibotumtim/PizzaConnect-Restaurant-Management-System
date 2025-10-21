@@ -244,7 +244,7 @@
                 </div>
 
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                    <div class="bg-gray-800 text-white text-lg font-semibold px-6 py-3">📦Product Management</div>
+                    <div class="bg-gray-800 text-white text-lg font-semibold px-6 py-3">Product Management</div>
 
                     <table class="min-w-full border-t">
                         <thead class="bg-gray-100">
@@ -326,11 +326,20 @@
                 lucide.createIcons();
 
                 const addModal = document.getElementById("addModal");
-                const addIngredientBtn = document.getElementById("addIngredientBtn");
                 const ingredientList = document.getElementById("ingredientList");
                 const ingredientTemplate = document.getElementById("ingredientTemplate");
                 const editModal = document.getElementById("editModal");
                 const ingredientModal = document.getElementById("ingredientModal");
+
+                // === ADD INGREDIANT IN ADD PRODUCT
+                document.getElementById("addIngredientBtn").addEventListener("click", function () {
+                    const template = document.getElementById("ingredientTemplate").cloneNode(true);
+                    template.classList.remove("hidden");
+                    const select = template.querySelector("select");
+                    select.setAttribute("required", "required"); // chỉ dòng clone mới có required
+                    document.getElementById("ingredientList").appendChild(template);
+                });
+
 
                 // === OPEN MODAL ADD PRODUCT ===
                 document.querySelector('a[href$="AddProduct.jsp"]').addEventListener("click", e => {
@@ -378,17 +387,23 @@
                         ingredientModal.style.display = "none";
                 });
 
-                // === ADD/REMOVE INGREDIENTS ===
-                addIngredientBtn.addEventListener("click", () => {
-                    const clone = ingredientTemplate.cloneNode(true);
-                    clone.id = "";
-                    clone.classList.remove("hidden");
-                    ingredientList.appendChild(clone);
-                });
 
                 document.addEventListener("click", e => {
                     if (e.target.classList.contains("removeIng")) {
                         e.target.closest(".ingredient-row").remove();
+                    }
+                });
+
+                // === Khi chọn Ingredient thì tự điền Unit ===
+                document.addEventListener("change", e => {
+                    if (e.target.classList.contains("ingredientSelect")) {
+                        const selected = e.target.options[e.target.selectedIndex];
+                        const unit = selected.dataset.unit || "";
+                        const row = e.target.closest(".ingredient-row");
+                        const unitField = row.querySelector(".unitField");
+                        if (unitField) {
+                            unitField.value = unit;
+                        }
                     }
                 });
 

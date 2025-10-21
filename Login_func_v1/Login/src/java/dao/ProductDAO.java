@@ -66,14 +66,14 @@ public class ProductDAO extends DBContext {
             if (affectedRows > 0) {
                 try (ResultSet rs = ps.getGeneratedKeys()) {
                     if (rs.next()) {
-                        return rs.getInt(1); 
+                        return rs.getInt(1);
                     }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return -1; 
+        return -1;
     }
 
     // Cập nhật sản phẩm
@@ -96,14 +96,14 @@ public class ProductDAO extends DBContext {
 
     // Xóa sản phẩm (soft delete)
     public boolean deleteProduct(int productId) {
-        String sql = "UPDATE Product SET IsAvailable = 0 WHERE ProductID = ?";
+        String sql = "UPDATE Product SET IsAvailable = 0 WHERE ProductID = ? AND IsAvailable = 1";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, productId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     // Lấy tất cả danh mục

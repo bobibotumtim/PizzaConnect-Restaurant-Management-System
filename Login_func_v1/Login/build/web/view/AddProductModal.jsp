@@ -49,6 +49,8 @@
             <div id="ingredientTemplate" class="ingredient-row flex gap-2 mb-2 hidden">
                 <select name="ingredientId[]" class="ingredientSelect flex-1 border p-2 rounded"
                         style="color:black; background:white; appearance:auto; min-width:150px;">
+                    <option value="">-- Select Ingredient --</option>
+
                     <c:forEach var="ing" items="${ingredientList}">
                         <option value="${ing.inventoryID}" data-unit="${ing.unit}">
                             ${ing.inventoryName}

@@ -14,20 +14,14 @@ public class DeleteProductServlet extends HttpServlet {
     private ProductDAO productDAO;
 
     @Override
-    public void init() throws ServletException {
-        productDAO = new ProductDAO();
-    }
-
-    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
+        productDAO = new ProductDAO();
         String productIdStr = request.getParameter("productId");
         if (productIdStr != null && !productIdStr.isEmpty()) {
             try {
                 int productId = Integer.parseInt(productIdStr);
                 boolean deleted = productDAO.deleteProduct(productId);
-
                 if (deleted) {
                     request.getSession().setAttribute("message", "Product deleted successfully!");
                 } else {

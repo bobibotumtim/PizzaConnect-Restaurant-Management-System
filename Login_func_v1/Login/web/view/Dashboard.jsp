@@ -4,11 +4,8 @@
     <head>
         <meta charset="UTF-8">
         <title>Manager Dashboard</title>
-        <!--Tailwind CSS CDN--> 
         <script src="https://cdn.tailwindcss.com"></script>
-        <!-- Lucide Icons -->
         <script src="https://unpkg.com/lucide@latest"></script>
-        <!-- Chart.js for charts (thay Recharts trong React) -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     </head>
     <body class="flex h-screen bg-gray-50">
