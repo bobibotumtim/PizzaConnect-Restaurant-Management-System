@@ -94,6 +94,7 @@ public class UserDAO extends DBContext {
     }
 
     // ✅ Lấy danh sách tất cả user
+    // Debug: in ra số bản ghi khi lấy tất cả users
     public List<User> getAllUsers() {
         List<User> list = new ArrayList<>();
         String sql = "SELECT * FROM [User]";
@@ -105,6 +106,41 @@ public class UserDAO extends DBContext {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        System.out.println("[UserDAO] getAllUsers -> " + list.size());
+        return list;
+    }
+
+    // Lấy danh sách user theo Role
+    public List<User> getUsersByRole(int role, int page, int pageSize) {
+        List<User> list = new ArrayList<>();
+        if (page <= 0) page = 1;
+        if (pageSize <= 0) pageSize = 10;
+        int offset = (page - 1) * pageSize;
+
+        StringBuilder sb = new StringBuilder("SELECT * FROM [User]");
+        if (role >= 0) {
+            sb.append(" WHERE Role = ?");
+        }
+        sb.append(" ORDER BY UserID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        String sql = sb.toString();
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            int idx = 1;
+            if (role >= 0) {
+                ps.setInt(idx++, role);
+            }
+            ps.setInt(idx++, offset);
+            ps.setInt(idx, pageSize);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapUser(rs));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("[UserDAO] getUsersByRole(" + role + ", page=" + page + ", size=" + pageSize + ") -> " + list.size());
         return list;
     }
 
@@ -195,5 +231,36 @@ public class UserDAO extends DBContext {
             rs.getString("Gender"),
             rs.getBoolean("IsActive")
         );
+    }
+
+    public int countUsersByRole(int roleInt) {
+        if (roleInt < 0) {
+            return countAllUsers();
+        }
+        String sql = "SELECT COUNT(*) AS cnt FROM [User] WHERE Role = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, roleInt);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("cnt");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public int countAllUsers() {
+        String sql = "SELECT COUNT(*) AS cnt FROM [User]";
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt("cnt");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 }
