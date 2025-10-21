@@ -8,7 +8,7 @@ import jakarta.servlet.annotation.*;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet("/inventory")
+
 public class InventoryServlet extends HttpServlet {
     private InventoryDAO dao = new InventoryDAO();
 
@@ -20,13 +20,13 @@ public class InventoryServlet extends HttpServlet {
 
         switch (action) {
             case "new":
-                request.getRequestDispatcher("inventory-form.jsp").forward(request, response);
+                request.getRequestDispatcher("view/inventory-form.jsp").forward(request, response);
                 break;
             case "edit":
                 int id = Integer.parseInt(request.getParameter("id"));
                 Inventory inv = dao.getById(id);
                 request.setAttribute("inventory", inv);
-                request.getRequestDispatcher("inventory-form.jsp").forward(request, response);
+                request.getRequestDispatcher("view/inventory-form.jsp").forward(request, response);
                 break;
             case "delete":
                 dao.delete(Integer.parseInt(request.getParameter("id")));
@@ -35,7 +35,7 @@ public class InventoryServlet extends HttpServlet {
             default:
                 List<Inventory> list = dao.getAll();
                 request.setAttribute("list", list);
-                request.getRequestDispatcher("inventory-list.jsp").forward(request, response);
+                request.getRequestDispatcher("view/inventory-list.jsp").forward(request, response);
                 break;
         }
     }
