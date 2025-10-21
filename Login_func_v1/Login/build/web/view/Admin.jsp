@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.List" %>
 <%@ page import="models.User" %>
+<%@ page import="java.net.URLEncoder" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -531,7 +532,8 @@
             String message = (String) request.getAttribute("message");
             String error = (String) request.getAttribute("error");
             Integer totalOrders = (Integer) request.getAttribute("totalOrders");
-        
+            String selectedRole = (String) request.getAttribute("selectedRole");
+            if (selectedRole == null || selectedRole.trim().isEmpty()) selectedRole = "all";
             // Calculate stats
             int totalUsers = users != null ? users.size() : 0;
             int adminCount = 0;
@@ -636,10 +638,10 @@
                         <div class="filter-container">
                             <span class="filter-label">Filter by Role:</span>
                             <select id="roleFilter" onchange="filterUsersByRole()">
-                                <option value="all">All Roles</option>
-                                <option value="1">Admin</option>
-                                <option value="2">Employee</option>
-                                <option value="3">Customer</option>
+                                <option value="all" <%= "all".equalsIgnoreCase(selectedRole) ? "selected" : "" %>>All Roles</option>
+                                <option value="1" <%= "1".equals(selectedRole) || "admin".equalsIgnoreCase(selectedRole) ? "selected" : "" %>>Admin</option>
+                                <option value="2" <%= "2".equals(selectedRole) || "employee".equalsIgnoreCase(selectedRole) || "staff".equalsIgnoreCase(selectedRole) ? "selected" : "" %>>Employee</option>
+                                <option value="3" <%= "3".equals(selectedRole) || "customer".equalsIgnoreCase(selectedRole) || "user".equalsIgnoreCase(selectedRole) ? "selected" : "" %>>Customer</option>
                             </select>
                             <a href="adduser" class="btn btn-success" style="margin: 0;" title="Add New User">+ Add New User</a>
                         </div>
@@ -710,21 +712,24 @@
                             <%
                                 int currentPage = (int) request.getAttribute("currentPage");
                                 int totalPages = (int) request.getAttribute("totalPages");
-
+                                String roleParam = "";
+                                if (selectedRole != null && !"all".equalsIgnoreCase(selectedRole)) {
+                                    roleParam = "&role=" + URLEncoder.encode(selectedRole, "UTF-8");
+                                }
                                 if (totalPages > 1) {
                             %>
                             <li class="page-item <%= (currentPage == 1 ? "disabled" : "") %>">
-                                <a class="page-link" href="admin?page=<%= (currentPage - 1) %>">Previous</a>
+                                <a class="page-link" href="admin?page=<%= (currentPage - 1) %><%= roleParam %>">Previous</a>
                             </li>
 
                             <% for (int i = 1; i <= totalPages; i++) { %>
                             <li class="page-item <%= (i == currentPage ? "active" : "") %>">
-                                <a class="page-link" href="admin?page=<%= i %>"><%= i %></a>
+                                <a class="page-link" href="admin?page=<%= i %><%= roleParam %>"><%= i %></a>
                             </li>
                             <% } %>
 
                             <li class="page-item <%= (currentPage == totalPages ? "disabled" : "") %>">
-                                <a class="page-link" href="admin?page=<%= (currentPage + 1) %>">Next</a>
+                                <a class="page-link" href="admin?page=<%= (currentPage + 1) %><%= roleParam %>">Next</a>
                             </li>
                             <% } %>
                         </ul>
@@ -795,15 +800,14 @@
                 }
             }
 
-            // ✅ NEW: Function to filter users by role (server-side redirect)
+            // Function to filter users by role (server-side redirect)
             function filterUsersByRole() {
                 const selectedRole = document.getElementById('roleFilter').value;
-                // Nếu chọn "all" thì xem toàn bộ user
                 if (selectedRole === 'all') {
-                    window.location.href = 'admin?page=1';
+                    window.location.href = 'admin?page=1&role=all';
                 } else {
-                    // Redirect lên servlet admin kèm roleFilter param
-                    window.location.href = 'admin?roleFilter=' + encodeURIComponent(selectedRole) + '&page=1';
+                    // Redirect lên servlet admin kèm role param (tên param "role" để khớp servlet)
+                    window.location.href = 'admin?role=' + encodeURIComponent(selectedRole) + '&page=1';
                 }
             }
 
