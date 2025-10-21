@@ -23,9 +23,7 @@ public class ManageProductServlet extends HttpServlet {
 
         ProductIngredientDAO piDAO = new ProductIngredientDAO();
         List<Map<String, Object>> ingredientList = piDAO.getAllInventories();
-        request.setAttribute("ingredientList", ingredientList);
-        System.out.println("Attribute set check: " + request.getAttribute("ingredientList"));
-
+        request.getSession().setAttribute("ingredientList", ingredientList);
 
 
         RequestDispatcher dispatcher = request.getRequestDispatcher("/view/ManageProduct.jsp");

@@ -152,7 +152,7 @@
                 return;
             }
             List<Product> products = (List<Product>) request.getAttribute("products");
-            List<Map<String, Object>> ingredientList = (List<Map<String, Object>>) request.getAttribute("ingredientList");
+            List<Map<String, Object>> ingredientList = (List<Map<String, Object>>) session.getAttribute("ingredientList");
         %>
 
 
@@ -236,16 +236,7 @@
 
             <div class="flex-1 p-6 overflow-auto">
                 <div class="bg-gray-50 p-4 rounded-xl mb-6 flex flex-wrap gap-4 items-center">
-                    <%--
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Filter by Status</label>
-                        <select class="border border-gray-300 rounded-lg px-3 py-2">
-                            <option>All Products</option>
-                            <option>Active</option>
-                            <option>Inactive</option>
-                        </select>
-                    </div>
-                    --%>
+
                     <div class="flex gap-2">
                         <a href="${pageContext.request.contextPath}/view/AddProduct.jsp" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">Add Product</a>
                         <a href="${pageContext.request.contextPath}/dashboard" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg">Dashboard</a>
@@ -253,7 +244,7 @@
                 </div>
 
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                    <div class="bg-gray-800 text-white text-lg font-semibold px-6 py-3">📦 Product Management</div>
+                    <div class="bg-gray-800 text-white text-lg font-semibold px-6 py-3">📦Product Management</div>
 
                     <table class="min-w-full border-t">
                         <thead class="bg-gray-100">
@@ -318,10 +309,6 @@
             </div>
         </div>
 
-        <script>
-            lucide.createIcons();
-        </script>
-
         <%-- INGREDIENT POP-UP --%>
         <div id="ingredientModal" class="modal">
             <div class="modal-content">
@@ -331,124 +318,8 @@
             </div>
         </div>
 
-        <%-- EDIT POP-UP --%>
-        <div id="editModal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <h2>Edit Product</h2>
-
-                <form action="EditProductServlet" method="post">
-                    <input type="hidden" name="action" value="update">
-                    <input type="hidden" name="productId" id="editProductId">
-
-                    <div class="form-group">
-                        <label for="editProductName">Product Name:</label>
-                        <input type="text" name="productName" id="editProductName" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="editDescription">Description:</label>
-                        <textarea name="description" id="editDescription" rows="3"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="editPrice">Price ($):</label>
-                        <input type="number" name="price" id="editPrice" step="0.01" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="editCategory">Category:</label>
-                        <input type="text" name="category" id="editCategory">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="editImageUrl">Image URL:</label>
-                        <input type="text" name="imageUrl" id="editImageUrl">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="editAvailable">Available:</label>
-                        <select name="isAvailable" id="editAvailable">
-                            <option value="true">Yes</option>
-                            <option value="false">No</option>
-                        </select>
-                    </div>
-
-                    <button type="submit">Save Changes</button>
-                </form>
-            </div>
-        </div>
-
-        <%-- ADD PRODUCT POP-UP --%>
-        <div id="addModal" class="modal">
-
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <h2>Add New Product</h2>
-
-                <form action="AddProductServlet" method="post" id="addProductForm">
-                    <div class="form-group">
-                        <label for="addProductName">Product Name:</label>
-                        <input type="text" name="productName" id="addProductName" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="addDescription">Description:</label>
-                        <textarea name="description" id="addDescription" rows="3"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="addPrice">Price ($):</label>
-                        <input type="number" name="price" id="addPrice" step="0.01" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="addCategory">Category:</label>
-                        <input type="text" name="category" id="addCategory">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="addImageUrl">Image URL:</label>
-                        <input type="text" name="imageUrl" id="addImageUrl">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="addAvailable">Available:</label>
-                        <select name="isAvailable" id="addAvailable">
-                            <option value="true">Yes</option>
-                            <option value="false">No</option>
-                        </select>
-                    </div>
-
-
-                    <hr class="my-3">
-
-                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Ingredients</h3>
-                    <div id="ingredientList">
-                    </div>
-                    <div id="ingredientTemplate" class="ingredient-row flex gap-2 mb-2 hidden">
-                        <select name="ingredientId[]" class="ingredientSelect flex-1 border p-2 rounded"
-                                style="color:black; background:white; appearance:auto; min-width:150px;">
-                            <c:forEach var="ing" items="${ingredientList}">
-                                <option value="${ing.inventoryID}" data-unit="${ing.unit}">
-                                    ${ing.inventoryName}
-                                </option>
-                            </c:forEach>
-                        </select>
-                        <input type="number" name="ingredientQty[]" placeholder="Quantity" step="0.01" class="w-24 border p-2 rounded">
-                        <input type="text" name="ingredientUnit[]" placeholder="Unit" class="unitField w-24 border p-2 rounded" readonly>
-                        <button type="button" class="removeIng bg-red-500 text-white px-2 rounded">✕</button>
-                    </div>
-
-
-                    <button type="button" id="addIngredientBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded mt-2">+ Add Ingredient</button>
-
-                    <button type="submit">Save Product</button>
-                </form>
-            </div>
-        </div>
-
-
+        <jsp:include page="AddProductModal.jsp" />
+        <jsp:include page="EditProductModal.jsp" />
 
         <script>
             document.addEventListener("DOMContentLoaded", () => {
@@ -522,11 +393,25 @@
                 });
 
                 document.addEventListener("change", e => {
+
                     if (e.target.classList.contains("ingredientSelect")) {
                         const unit = e.target.selectedOptions[0].dataset.unit || "";
                         const unitField = e.target.closest(".ingredient-row").querySelector(".unitField");
                         if (unitField)
                             unitField.value = unit;
+                    }
+
+                    if (e.target.name === "inventoryId") {
+
+                        const selectedOption = e.target.options[e.target.selectedIndex];
+                        const unit = selectedOption.dataset.unit;
+
+                        const form = e.target.closest("form");
+
+                        const unitInput = form.querySelector('input[name="unit"]');
+
+                        if (unitInput)
+                            unitInput.value = unit || "";
                     }
                 });
             });
