@@ -1,1 +1,4 @@
 /Login_func_v1/Login/dist/
+*.xml~
+config.properties
+DBContext.java
