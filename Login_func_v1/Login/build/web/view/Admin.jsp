@@ -1,7 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.List" %>
 <%@ page import="models.User" %>
-<%@ page import="java.net.URLEncoder" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -220,6 +219,7 @@
                 display: block;
             }
 
+            /* Dashboard modules styles removed (not used) */
             /* Dashboard Modules */
             .dashboard-modules {
                 display: grid;
@@ -532,8 +532,18 @@
             String message = (String) request.getAttribute("message");
             String error = (String) request.getAttribute("error");
             Integer totalOrders = (Integer) request.getAttribute("totalOrders");
+            // NEW: selected role từ servlet
             String selectedRole = (String) request.getAttribute("selectedRole");
-            if (selectedRole == null || selectedRole.trim().isEmpty()) selectedRole = "all";
+            if (selectedRole == null || selectedRole.trim().isEmpty()) {
+                selectedRole = "all";
+            }
+
+            // NEW: preserve roleFilter param for pagination links
+            String roleParam = "";
+            if (!"all".equalsIgnoreCase(selectedRole)) {
+                roleParam = "&roleFilter=" + selectedRole;
+            }
+        
             // Calculate stats
             int totalUsers = users != null ? users.size() : 0;
             int adminCount = 0;
@@ -592,46 +602,6 @@
                     </div>
                 </div>
 
-                <!-- Dashboard Modules -->
-                <div class="dashboard-modules">
-                    <div class="module-card">
-                        <div class="module-icon">👥</div>
-                        <h3>User Management</h3>
-                        <p>Manage users, roles and permissions</p>
-                        <div class="module-actions">
-                            <a href="adduser" class="btn btn-success" style="margin-right: 10px;" title="Add New User">+ Add User</a>
-                            <a href="#user-management" class="btn btn-primary" onclick="scrollToUserManagement()">Manage Users</a>
-                        </div>
-                    </div>
-
-                    <div class="module-card">
-                        <div class="module-icon">🍕</div>
-                        <h3>Order Management</h3>
-                        <p>View and manage pizza orders</p>
-                        <div class="module-actions">
-                            <a href="manage-orders" class="btn btn-success">Manage Orders</a>
-                        </div>
-                    </div>
-
-                    <div class="module-card">
-                        <div class="module-icon">📊</div>
-                        <h3>Reports & Analytics</h3>
-                        <p>View sales reports and statistics</p>
-                        <div class="module-actions">
-                            <a href="#reports" class="btn btn-info">View Reports</a>
-                        </div>
-                    </div>
-
-                    <div class="module-card">
-                        <div class="module-icon">⚙️</div>
-                        <h3>System Settings</h3>
-                        <p>Configure system parameters</p>
-                        <div class="module-actions">
-                            <a href="#settings" class="btn btn-warning">Settings</a>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="table-container">
                     <div class="table-header" style="display: flex; justify-content: space-between; align-items: center;">
                         <span>👥 User Management</span>
@@ -639,9 +609,9 @@
                             <span class="filter-label">Filter by Role:</span>
                             <select id="roleFilter" onchange="filterUsersByRole()">
                                 <option value="all" <%= "all".equalsIgnoreCase(selectedRole) ? "selected" : "" %>>All Roles</option>
-                                <option value="1" <%= "1".equals(selectedRole) || "admin".equalsIgnoreCase(selectedRole) ? "selected" : "" %>>Admin</option>
-                                <option value="2" <%= "2".equals(selectedRole) || "employee".equalsIgnoreCase(selectedRole) || "staff".equalsIgnoreCase(selectedRole) ? "selected" : "" %>>Employee</option>
-                                <option value="3" <%= "3".equals(selectedRole) || "customer".equalsIgnoreCase(selectedRole) || "user".equalsIgnoreCase(selectedRole) ? "selected" : "" %>>Customer</option>
+                                <option value="1" <%= "1".equals(selectedRole) ? "selected" : "" %>>Admin</option>
+                                <option value="2" <%= "2".equals(selectedRole) ? "selected" : "" %>>Employee</option>
+                                <option value="3" <%= "3".equals(selectedRole) ? "selected" : "" %>>Customer</option>
                             </select>
                             <a href="adduser" class="btn btn-success" style="margin: 0;" title="Add New User">+ Add New User</a>
                         </div>
@@ -712,10 +682,7 @@
                             <%
                                 int currentPage = (int) request.getAttribute("currentPage");
                                 int totalPages = (int) request.getAttribute("totalPages");
-                                String roleParam = "";
-                                if (selectedRole != null && !"all".equalsIgnoreCase(selectedRole)) {
-                                    roleParam = "&role=" + URLEncoder.encode(selectedRole, "UTF-8");
-                                }
+
                                 if (totalPages > 1) {
                             %>
                             <li class="page-item <%= (currentPage == 1 ? "disabled" : "") %>">
@@ -792,22 +759,15 @@
         </div>
 
         <script>
-            // Function to scroll to user management section
-            function scrollToUserManagement() {
-                const userManagementSection = document.querySelector('.table-container');
-                if (userManagementSection) {
-                    userManagementSection.scrollIntoView({behavior: 'smooth'});
-                }
-            }
-
-            // Function to filter users by role (server-side redirect)
+            // ✅ NEW: Function to filter users by role (server-side redirect)
             function filterUsersByRole() {
                 const selectedRole = document.getElementById('roleFilter').value;
+                // Nếu chọn "all" thì xem toàn bộ user
                 if (selectedRole === 'all') {
-                    window.location.href = 'admin?page=1&role=all';
+                    window.location.href = 'admin?page=1';
                 } else {
-                    // Redirect lên servlet admin kèm role param (tên param "role" để khớp servlet)
-                    window.location.href = 'admin?role=' + encodeURIComponent(selectedRole) + '&page=1';
+                    // Redirect lên servlet admin kèm roleFilter param
+                    window.location.href = 'admin?roleFilter=' + encodeURIComponent(selectedRole) + '&page=1';
                 }
             }
 
