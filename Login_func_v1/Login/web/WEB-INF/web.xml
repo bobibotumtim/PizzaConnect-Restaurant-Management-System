@@ -71,5 +71,20 @@
         <servlet-name>LoginPageServlet</servlet-name>
         <url-pattern>/view/Login</url-pattern>
     </servlet-mapping>
+    
+    
+    <servlet>
+        <servlet-name>OrderController</servlet-name>
+        <servlet-class>controller.OrderController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>OrderController</servlet-name>
+        <url-pattern>/OrderController</url-pattern>
+    </servlet-mapping>
+
+    <welcome-file-list>
+        <welcome-file>OrderController</welcome-file>
+    </welcome-file-list>
 </web-app>
 

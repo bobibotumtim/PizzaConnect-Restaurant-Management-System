@@ -1,62 +1,39 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package models;
 
-/**
- *
- * @author Admin
- */
-public class Orderdetail {
-    private int orderDetailId;
-    private int orderId;
-    private int productId;
+public class OrderDetail {
+    private int orderDetailID;
+    private int orderID;
+    private int productID;
     private int quantity;
-    private double unitPrice;
     private double totalPrice;
     private String specialInstructions;
 
-    public Orderdetail() {
-    }
-
-    public Orderdetail(int orderId, int productId, int quantity, double unitPrice) {
-        this.orderId = orderId;
-        this.productId = productId;
+    public OrderDetail(int orderDetailID, int orderID, int productID, int quantity, double totalPrice, String specialInstructions) {
+        this.orderDetailID = orderDetailID;
+        this.orderID = orderID;
+        this.productID = productID;
         this.quantity = quantity;
-        this.unitPrice = unitPrice;
-        this.totalPrice = quantity * unitPrice;
-    }
-
-    public Orderdetail(int orderDetailId, int orderId, int productId, int quantity, double unitPrice, double totalPrice, String specialInstructions) {
-        this.orderDetailId = orderDetailId;
-        this.orderId = orderId;
-        this.productId = productId;
-        this.quantity = quantity;
-        this.unitPrice = unitPrice;
         this.totalPrice = totalPrice;
         this.specialInstructions = specialInstructions;
     }
 
-    // Getters
-    public int getOrderDetailId() {
-        return orderDetailId;
+    public OrderDetail() {
     }
 
-    public int getOrderId() {
-        return orderId;
+    public int getOrderDetailID() {
+        return orderDetailID;
     }
 
-    public int getProductId() {
-        return productId;
+    public int getOrderID() {
+        return orderID;
+    }
+
+    public int getProductID() {
+        return productID;
     }
 
     public int getQuantity() {
         return quantity;
-    }
-
-    public double getUnitPrice() {
-        return unitPrice;
     }
 
     public double getTotalPrice() {
@@ -67,27 +44,20 @@ public class Orderdetail {
         return specialInstructions;
     }
 
-    // Setters
-    public void setOrderDetailId(int orderDetailId) {
-        this.orderDetailId = orderDetailId;
+    public void setOrderDetailID(int orderDetailID) {
+        this.orderDetailID = orderDetailID;
     }
 
-    public void setOrderId(int orderId) {
-        this.orderId = orderId;
+    public void setOrderID(int orderID) {
+        this.orderID = orderID;
     }
 
-    public void setProductId(int productId) {
-        this.productId = productId;
+    public void setProductID(int productID) {
+        this.productID = productID;
     }
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
-        this.totalPrice = quantity * unitPrice; // Auto calculate total price
-    }
-
-    public void setUnitPrice(double unitPrice) {
-        this.unitPrice = unitPrice;
-        this.totalPrice = quantity * unitPrice; // Auto calculate total price
     }
 
     public void setTotalPrice(double totalPrice) {
@@ -100,14 +70,9 @@ public class Orderdetail {
 
     @Override
     public String toString() {
-        return "Orderdetail{" + 
-                "orderDetailId=" + orderDetailId + 
-                ", orderId=" + orderId + 
-                ", productId=" + productId + 
-                ", quantity=" + quantity + 
-                ", unitPrice=" + unitPrice + 
-                ", totalPrice=" + totalPrice + 
-                ", specialInstructions='" + specialInstructions + '\'' + 
-                '}';
+        return "OrderDetail{" + "orderDetailID=" + orderDetailID + ", orderID=" + orderID + ", productID=" + productID + ", quantity=" + quantity + ", totalPrice=" + totalPrice + ", specialInstructions=" + specialInstructions + '}';
     }
+
+    
+    
 }
