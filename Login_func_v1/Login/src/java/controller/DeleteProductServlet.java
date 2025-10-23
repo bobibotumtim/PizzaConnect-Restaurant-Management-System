@@ -6,8 +6,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 
-
-
 @WebServlet(name = "DeleteProductServlet", urlPatterns = {"/DeleteProduct"})
 public class DeleteProductServlet extends HttpServlet {
 
@@ -16,23 +14,36 @@ public class DeleteProductServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         productDAO = new ProductDAO();
+        HttpSession session = request.getSession();
         String productIdStr = request.getParameter("productId");
-        if (productIdStr != null && !productIdStr.isEmpty()) {
-            try {
+
+        String msg = "";
+        String msgType = "error"; // mặc định là lỗi
+
+        try {
+            if (productIdStr == null || productIdStr.isEmpty()) {
+                msg = "Missing product ID.";
+            } else {
                 int productId = Integer.parseInt(productIdStr);
                 boolean deleted = productDAO.deleteProduct(productId);
                 if (deleted) {
-                    request.getSession().setAttribute("message", "Product deleted successfully!");
+                    msg = "Product deleted successfully!";
+                    msgType = "success";
                 } else {
-                    request.getSession().setAttribute("message", "Product not found or could not be deleted.");
+                    msg = "Product not found or could not be deleted.";
                 }
-
-            } catch (NumberFormatException e) {
-                request.getSession().setAttribute("message", "Invalid product ID.");
             }
+        } catch (NumberFormatException e) {
+            msg = "Invalid product ID format.";
+        } catch (Exception e) {
+            e.printStackTrace();
+            msg = "Error deleting product: " + e.getMessage();
         }
+
+        session.setAttribute("message", msg);
+        session.setAttribute("messageType", msgType);
         response.sendRedirect(request.getContextPath() + "/manageproduct");
     }
-
 }

@@ -152,6 +152,7 @@
                 return;
             }
             List<Product> products = (List<Product>) request.getAttribute("products");
+            Map<Integer, Double> availabilityMap = (Map<Integer, Double>) request.getAttribute("availabilityMap");
             List<Map<String, Object>> ingredientList = (List<Map<String, Object>>) session.getAttribute("ingredientList");
         %>
 
@@ -204,24 +205,32 @@
             </div>
         </div>
         <%
-            String message = (String) session.getAttribute("message");
-            if (message != null) {
+    String message = (String) session.getAttribute("message");
+    String messageType = (String) session.getAttribute("messageType");
+    if (message != null) {
+        String bgColor = "bg-green-500"; // mặc định xanh lá
+        if ("error".equals(messageType)) {
+            bgColor = "bg-red-500"; // nếu lỗi thì đỏ
+        }
         %>
-        <div id="alertBox" class="fixed top-5 right-5 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg">
+        <div id="alertBox" class="fixed top-5 right-5 <%= bgColor %> text-white px-4 py-3 rounded-lg shadow-lg transition-opacity duration-500">
             <%= message %>
         </div>
         <script>
-            // Tự động ẩn sau 3 giây
             setTimeout(() => {
                 const box = document.getElementById("alertBox");
-                if (box)
-                    box.style.display = "none";
+                if (box) {
+                    box.style.opacity = "0";
+                    setTimeout(() => box.remove(), 500);
+                }
             }, 3000);
         </script>
         <%
-                session.removeAttribute("message"); 
+                session.removeAttribute("message");
+                session.removeAttribute("messageType");
             }
         %>
+
 
         <div class="flex-1 flex flex-col overflow-hidden">
             <div class="bg-white border-b px-6 py-4 flex justify-between items-center">
@@ -274,8 +283,20 @@
                                 <td class="px-4 py-2 font-semibold text-gray-700">$<%= String.format("%.2f", p.getPrice()) %></td>
                                 <td class="px-4 py-2">
                                     <%
-                                        String statusClass = p.isAvailable() ? "bg-green-500" : "bg-gray-400";
-                                        String statusText = p.isAvailable() ? "Active" : "Inactive";
+                                        double availableQty = 0;
+                                        if (availabilityMap != null && availabilityMap.containsKey(p.getProductId())) {
+                                            availableQty = availabilityMap.get(p.getProductId());
+                                        }
+
+                                        String statusClass, statusText;
+                                        if (availableQty > 0) {
+                                            statusClass = "bg-green-500";
+                                            statusText = "Available";
+                                            //+ String.format("%.0f", availableQty) + ")";
+                                        } else {
+                                            statusClass = "bg-red-500";
+                                            statusText = "Unavailable";
+                                        }
                                     %>
                                     <span class="px-3 py-1 text-white rounded-full text-xs font-semibold <%= statusClass %>">
                                         <%= statusText %>
@@ -305,6 +326,27 @@
                             <% } %>
                         </tbody>
                     </table>
+                    <!-- === PHÂN TRANG === -->
+                    <div class="flex justify-center items-center mt-6 space-x-2">
+                        <c:if test="${currentPage > 1}">
+                            <a href="${pageContext.request.contextPath}/manageproduct?page=${currentPage - 1}"
+                               class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded">Previous</a>
+                        </c:if>
+
+                        <c:forEach var="i" begin="1" end="${totalPages}">
+                            <a href="${pageContext.request.contextPath}/manageproduct?page=${i}"
+                               class="px-3 py-1 rounded
+                               ${i == currentPage ? 'bg-orange-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}">
+                                ${i}
+                            </a>
+                        </c:forEach>
+
+                        <c:if test="${currentPage < totalPages}">
+                            <a href="${pageContext.request.contextPath}/manageproduct?page=${currentPage + 1}"
+                               class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded">Next</a>
+                        </c:if>
+                    </div>
+                    <!-- === HẾT PHÂN TRANG === -->    
                 </div>
             </div>
         </div>
@@ -356,7 +398,6 @@
                         document.getElementById("editPrice").value = btn.dataset.price;
                         document.getElementById("editCategory").value = btn.dataset.category;
                         document.getElementById("editImageUrl").value = btn.dataset.image;
-                        document.getElementById("editAvailable").value = btn.dataset.available;
 
                         editModal.style.display = "block";
                     });

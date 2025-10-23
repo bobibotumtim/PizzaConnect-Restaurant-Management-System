@@ -14,7 +14,7 @@
 
             <div class="form-group">
                 <label for="addDescription">Description:</label>
-                <textarea name="description" id="addDescription" rows="3"></textarea>
+                <textarea name="description" id="addDescription" rows="3" required></textarea>
             </div>
 
             <div class="form-group">
@@ -24,22 +24,13 @@
 
             <div class="form-group">
                 <label for="addCategory">Category:</label>
-                <input type="text" name="category" id="addCategory">
+                <input type="text" name="category" id="addCategory" required>
             </div>
 
             <div class="form-group">
                 <label for="addImageUrl">Image URL:</label>
-                <input type="text" name="imageUrl" id="addImageUrl">
+                <input type="text" name="imageUrl" id="addImageUrl" required>
             </div>
-
-            <div class="form-group">
-                <label for="addAvailable">Available:</label>
-                <select name="isAvailable" id="addAvailable">
-                    <option value="true">Yes</option>
-                    <option value="false">No</option>
-                </select>
-            </div>
-
 
             <hr class="my-3">
 

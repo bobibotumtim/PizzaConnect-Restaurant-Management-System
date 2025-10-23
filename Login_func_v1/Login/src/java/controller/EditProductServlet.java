@@ -17,36 +17,52 @@ public class EditProductServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
 
+        HttpSession session = request.getSession();
+
         try {
             int id = Integer.parseInt(request.getParameter("productId"));
             String name = request.getParameter("productName");
             String desc = request.getParameter("description");
-            double price = Double.parseDouble(request.getParameter("price"));
             String category = request.getParameter("category");
             String image = request.getParameter("imageUrl");
-            boolean isAvailable = Boolean.parseBoolean(request.getParameter("isAvailable"));
+            boolean isAvailable = true;
+
+            // === Kiểm tra giá không âm hoặc sai định dạng ===
+            double price;
+            try {
+                price = Double.parseDouble(request.getParameter("price"));
+                if (price < 0) {
+                    session.setAttribute("message", "⚠️ Price cannot be negative!");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect(request.getContextPath() + "/manageproduct");
+                    return;
+                }
+            } catch (NumberFormatException ex) {
+                session.setAttribute("message", "⚠️ Invalid price format!");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect(request.getContextPath() + "/manageproduct");
+                return;
+            }
 
             Product updated = new Product(id, name, desc, price, category, image, isAvailable);
 
             ProductDAO dao = new ProductDAO();
             boolean success = dao.updateProduct(updated);
 
-            HttpSession session = request.getSession();
-
             if (success) {
-                // 🔥 Ghi thông báo thành công
                 session.setAttribute("message", "✅ Product updated successfully!");
-                response.sendRedirect(request.getContextPath() + "/manageproduct");
+                session.setAttribute("messageType", "success");
             } else {
                 session.setAttribute("message", "❌ Failed to update product!");
-                response.sendRedirect(request.getContextPath() + "/manageproduct");
+                session.setAttribute("messageType", "error");
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            HttpSession session = request.getSession();
-            session.setAttribute("message", "⚠️ Error: " + e.getMessage());
-            response.sendRedirect(request.getContextPath() + "/manageproduct");
+            session.setAttribute("message", "❌ Error: " + e.getMessage());
+            session.setAttribute("messageType", "error");
         }
+
+        response.sendRedirect(request.getContextPath() + "/manageproduct");
     }
 }

@@ -18,18 +18,35 @@ public class ManageIngredientsServlet extends HttpServlet {
         String action = request.getParameter("action");
         String productIdParam = request.getParameter("productId");
         String msg = "";
+        String msgType = "error"; // mặc định là lỗi
         System.out.println("Check1");
+
         try {
             int productId = Integer.parseInt(productIdParam);
             ProductIngredientDAO dao = new ProductIngredientDAO();
             System.out.println("Check2");
+
             switch (action) {
                 case "add":
                     int addInventoryId = Integer.parseInt(request.getParameter("inventoryId"));
                     double addQuantity = Double.parseDouble(request.getParameter("quantity"));
                     String addUnit = request.getParameter("unit");
+
+                    // 🛑 Kiểm tra số lượng âm
+                    if (addQuantity <= 0) {
+                        msg = "⚠️ Quantity must be greater than 0!";
+                        msgType = "error";
+                        break;
+                    }
+
                     boolean addSuccess = dao.addIngredientToProduct(productId, addInventoryId, addQuantity, addUnit);
-                    msg = addSuccess ? "Ingredient added successfully!" : "Ingredient already exists!";
+                    if (addSuccess) {
+                        msg = "✅ Ingredient added successfully!";
+                        msgType = "success";
+                    } else {
+                        msg = "⚠️ Ingredient already exists!";
+                        msgType = "error";
+                    }
                     break;
 
                 case "update":
@@ -37,11 +54,20 @@ public class ManageIngredientsServlet extends HttpServlet {
                     String[] quantities = request.getParameterValues("quantity[]");
                     String[] units = request.getParameterValues("unit[]");
                     System.out.println("Check4");
+
                     if (inventoryIds != null) {
+                        boolean hasInvalid = false;
+
                         for (int i = 0; i < inventoryIds.length; i++) {
                             int invId = Integer.parseInt(inventoryIds[i]);
                             double qty = Double.parseDouble(quantities[i]);
                             String unit = units[i];
+
+                            // 🛑 Kiểm tra số lượng âm
+                            if (qty <= 0) {
+                                hasInvalid = true;
+                                continue; // bỏ qua ingredient không hợp lệ
+                            }
 
                             ProductIngredient pi = new ProductIngredient();
                             pi.setProductId(productId);
@@ -51,28 +77,43 @@ public class ManageIngredientsServlet extends HttpServlet {
 
                             dao.updateIngredient(pi);
                         }
+
+                        if (hasInvalid) {
+                            msg = "⚠️ Some ingredients were not updated because quantity must be > 0!";
+                            msgType = "error";
+                        } else {
+                            msg = "✅ Ingredients updated successfully!";
+                            msgType = "success";
+                        }
                     }
-                    msg = "Ingredients updated successfully!";
                     break;
 
                 case "delete":
                     int delInventoryId = Integer.parseInt(request.getParameter("inventoryId"));
-                    System.out.println(productId);
-                    System.out.println(delInventoryId);
                     boolean delSuccess = dao.deleteIngredientFromProduct(productId, delInventoryId);
-                    msg = delSuccess ? "Ingredient deleted successfully!" : "Failed to delete ingredient!";
+                    if (delSuccess) {
+                        msg = "🗑️ Ingredient deleted successfully!";
+                        msgType = "success";
+                    } else {
+                        msg = "❌ Failed to delete ingredient!";
+                        msgType = "error";
+                    }
                     break;
 
                 default:
-                    msg = "Invalid action!";
+                    msg = "⚠️ Invalid action!";
+                    msgType = "error";
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            msg = "Error: " + e.getMessage();
+            msg = "❌ Error: " + e.getMessage();
+            msgType = "error";
         }
 
-        request.getSession().setAttribute("message", msg);
+        HttpSession session = request.getSession();
+        session.setAttribute("message", msg);
+        session.setAttribute("messageType", msgType);
         response.sendRedirect("manageproduct");
     }
 
@@ -81,8 +122,11 @@ public class ManageIngredientsServlet extends HttpServlet {
             throws ServletException, IOException {
 
         String productIdParam = request.getParameter("productId");
+        HttpSession session = request.getSession();
+
         if (productIdParam == null || productIdParam.isBlank()) {
-            request.getSession().setAttribute("error", "Missing product ID");
+            session.setAttribute("message", "⚠️ Missing product ID!");
+            session.setAttribute("messageType", "error");
             response.sendRedirect("manageproduct");
             return;
         }
@@ -93,11 +137,13 @@ public class ManageIngredientsServlet extends HttpServlet {
             request.setAttribute("ingredients", dao.getIngredientsByProduct(productId));
             request.setAttribute("productId", productId);
         } catch (Exception e) {
-            request.getSession().setAttribute("error", "Error loading ingredients: " + e.getMessage());
+            session.setAttribute("message", "❌ Error loading ingredients: " + e.getMessage());
+            session.setAttribute("messageType", "error");
+            response.sendRedirect("manageproduct");
+            return;
         }
 
         RequestDispatcher dispatcher = request.getRequestDispatcher("/view/ManageIngredientsPopup.jsp");
         dispatcher.forward(request, response);
     }
 }
-

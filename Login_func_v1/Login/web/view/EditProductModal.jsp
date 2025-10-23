@@ -34,14 +34,6 @@
                 <input type="text" name="imageUrl" id="editImageUrl">
             </div>
 
-            <div class="form-group">
-                <label for="editAvailable">Available:</label>
-                <select name="isAvailable" id="editAvailable">
-                    <option value="true">Yes</option>
-                    <option value="false">No</option>
-                </select>
-            </div>
-
             <button type="submit">Save Changes</button>
         </form>
     </div>

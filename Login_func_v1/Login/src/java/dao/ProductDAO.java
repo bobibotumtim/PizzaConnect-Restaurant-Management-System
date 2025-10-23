@@ -2,7 +2,9 @@ package dao;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import models.Product;
 
 public class ProductDAO extends DBContext {
@@ -106,17 +108,27 @@ public class ProductDAO extends DBContext {
         }
     }
 
-    // Lấy tất cả danh mục
-    public List<String> getAllCategories() {
-        List<String> categories = new ArrayList<>();
-        String sql = "SELECT DISTINCT Category FROM Product WHERE IsAvailable = 1 ORDER BY Category";
-        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                categories.add(rs.getString("Category"));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+    public Map<Integer, Double> getProductAvailability() {
+    Map<Integer, Double> map = new HashMap<>();
+    String sql = "SELECT ProductID, AvailableQuantity FROM v_ProductAvailable";
+
+    try (Connection con = getConnection();
+         PreparedStatement ps = con.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+        
+        while (rs.next()) {
+            map.put(rs.getInt("ProductID"), rs.getDouble("AvailableQuantity"));
         }
-        return categories;
+
+        System.out.println("✅ Loaded " + map.size() + " entries");
+        map.forEach((id, qty) -> System.out.println("ProductID=" + id + " | Qty=" + qty));
+
+    } catch (Exception e) {
+        e.printStackTrace();
     }
+
+    return map;
+}
+
+
 }
