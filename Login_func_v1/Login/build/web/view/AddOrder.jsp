@@ -308,7 +308,7 @@
         
         <div class="nav">
             <div class="welcome">
-                Welcome, <strong><%= currentUser != null ? currentUser.getUsername() : "User" %></strong>
+                Welcome, <strong><%= currentUser != null ? currentUser.getName() : "User" %></strong>
             </div>
             <a href="manage-orders" class="back">← Back to Orders</a>
         </div>

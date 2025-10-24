@@ -26,7 +26,7 @@ public class LoginServlet extends HttpServlet {
         try {
             user = dao.checkLogin(phone, pass);   
         } catch (Exception e) {
-            request.setAttribute("mess", "We are unable to process your login at the moment. Please try again later.");
+            request.setAttribute("mess", "We are unable to process your login at the moment. Please try again later." + e.getMessage().toString());
             request.getRequestDispatcher("view/Login.jsp").forward(request, response);
             return;
         }
