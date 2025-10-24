@@ -1,83 +1,80 @@
 package utils;
 
-import brevo.*;
-import brevoApi.*;
-import brevoModel.CreateSmtpEmail;
-import brevoModel.SendSmtpEmail;
-import brevoModel.SendSmtpEmailSender;
-import brevoModel.SendSmtpEmailTo;
-
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Properties;
+import jakarta.mail.*;
+import jakarta.mail.internet.*;
 import java.io.InputStream;
-import java.io.FileInputStream;
+import java.util.Properties;
 
 public class EmailUtil {
 
-    private static final String API_KEY;
+    private static String FROM_EMAIL;
+    private static String APP_PASSWORD;
+
+    private static final String SMTP_HOST = "smtp.gmail.com";
+    private static final String SMTP_PORT = "587";
 
     static {
-        String key = null;
-        try (InputStream input = new FileInputStream("nbproject/config.properties")) {
-            Properties prop = new Properties();
-            prop.load(input);
-            key = prop.getProperty("brevo.apikey");
+        try (InputStream input = EmailUtil.class.getClassLoader().getResourceAsStream("config.properties")) {
+            if (input == null) {
+                throw new RuntimeException("config.properties not found in resources folder!");
+            }
+
+            Properties props = new Properties();
+            props.load(input);
+
+            FROM_EMAIL = props.getProperty("email");
+            APP_PASSWORD = props.getProperty("password");
+
+            if (FROM_EMAIL == null || APP_PASSWORD == null) {
+                throw new RuntimeException("Missing 'email' or 'password' in config.properties");
+            }
+
         } catch (Exception e) {
-            System.err.println("Failed to load API key from config.properties");
             e.printStackTrace();
+            throw new RuntimeException("Failed to load email configuration", e);
         }
-        API_KEY = key;
     }
 
-    public static void sendVerificationEmail(String toEmail, String userName, String verifyLink) {
-        if (API_KEY == null || API_KEY.isEmpty()) {
-            System.err.println("BREVO API key is missing! Please check config.properties");
-            return;
-        }
-
+    public static boolean sendEmail(String toEmail, String subject, String content) {
         try {
-            // Initialize API client
-            ApiClient defaultClient = Configuration.getDefaultApiClient();
-            defaultClient.setApiKey(API_KEY);
+            // config mail server
+            Properties props = new Properties();
+            props.put("mail.smtp.host", SMTP_HOST);
+            props.put("mail.smtp.port", SMTP_PORT);
+            props.put("mail.smtp.auth", "true");
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.ssl.protocols", "TLSv1.2");
 
-            TransactionalEmailsApi apiInstance = new TransactionalEmailsApi();
+            // create session
+            Session session = Session.getInstance(props, new Authenticator() {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(FROM_EMAIL, APP_PASSWORD);
+                }
+            });
+            session.setDebug(true); // thêm dòng này để bật debug
 
-            // Set sender (email đã verify trên Brevo)
-            SendSmtpEmailSender sender = new SendSmtpEmailSender();
-            sender.setEmail("tjhbxgsudz100@gmail.com"); // thay bằng email đã verify
-            sender.setName("PizzaConnect");
+            // create message
+            Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(FROM_EMAIL, "FPT User Portal"));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
+            message.setSubject(subject);
+            message.setText(content);
 
-            // Set recipient
-            List<SendSmtpEmailTo> toList = new ArrayList<>();
-            toList.add(new SendSmtpEmailTo().email(toEmail).name(userName));
-
-            // Email subject & content
-            String subject = "Confirm your password change";
-            String content = "<p>Hello " + userName + ",</p>"
-                    + "<p>Click the link below to confirm your password change:</p>"
-                    + "<a href='" + verifyLink + "'>Verify Now</a>"
-                    + "<p>If you didn’t request this, ignore this email.</p>";
-
-            // Build email object
-            SendSmtpEmail email = new SendSmtpEmail();
-            email.setSender(sender);
-            email.setTo(toList);
-            email.setSubject(subject);
-            email.setHtmlContent(content);
-
-            // Send email
-            CreateSmtpEmail response = apiInstance.sendTransacEmail(email);
-            System.out.println("Email sent! Message ID: " + response.getMessageId());
+            // sending email
+            Transport.send(message);
+            System.out.println("[INFO] Email sent successfully to " + toEmail);
+            return true;
 
         } catch (Exception e) {
-            System.err.println("Failed to send email:");
+            System.err.println("[ERROR] Failed to send email to " + toEmail);
             e.printStackTrace();
+            return false;
         }
     }
-    
-    public static void main(String[] args) {
-        System.out.println("API_KEY=" + API_KEY);
 
+    public static void main(String[] args) {
+        boolean ok = EmailUtil.sendEmail("tjhbxgsudz100@gmail.com", "Test OTP", "123456");
+        System.out.println(ok ? "Sent" : "Failed");
     }
 }

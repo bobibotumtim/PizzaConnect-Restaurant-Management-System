@@ -8,28 +8,29 @@ import dao.TokenDAO;
 import dao.UserDAO;
 import java.io.IOException;
 import java.sql.Date;
+import java.security.SecureRandom;
 import org.mindrot.jbcrypt.BCrypt;
 
 public class UserProfileServlet extends HttpServlet {
 
     private static final String PHONE_REGEX = "^0[1-9]\\d{8}$";
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
-    private static final String JSP_PATH = "/view/UserProfile.jsp";
+    private static final String PROFILE_JSP_PATH = "/view/UserProfile.jsp";
+    private static final String VERIFY_REDIRECT = "verifyCode";
     private static final String LOGIN_REDIRECT = "Login";
-    private static final String APP_URL = "http://localhost:8080/Login";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
             response.sendRedirect(LOGIN_REDIRECT);
             return;
         }
 
-        User user = (User) session.getAttribute("user");
-        request.setAttribute("user", user);
-        request.getRequestDispatcher(JSP_PATH).forward(request, response);
+        request.setAttribute("user", session.getAttribute("user"));
+        request.getRequestDispatcher(PROFILE_JSP_PATH).forward(request, response);
     }
 
     @Override
@@ -43,6 +44,7 @@ public class UserProfileServlet extends HttpServlet {
         }
 
         User currentUser = (User) session.getAttribute("user");
+        UserDAO userDAO = new UserDAO();
 
         String name = getTrimmedParameter(request, "name");
         String email = getTrimmedParameter(request, "email");
@@ -53,52 +55,54 @@ public class UserProfileServlet extends HttpServlet {
         String newPassword = getTrimmedParameter(request, "newPassword");
         String confirmPassword = getTrimmedParameter(request, "confirmPassword");
 
-        Date dateOfBirth = null;
-        if (dobStr != null && !dobStr.isEmpty()) {
-            try {
-                dateOfBirth = Date.valueOf(dobStr);
-            } catch (IllegalArgumentException e) {
-                request.setAttribute("error", "Invalid date format!");
-                request.setAttribute("user", currentUser);
-                request.getRequestDispatcher(JSP_PATH).forward(request, response);
-                return;
-            }
-        }
+        Date dateOfBirth = parseDate(dobStr, request, response, currentUser);
+        if (dateOfBirth == null && dobStr != null && !dobStr.isEmpty())
+            return;
 
-        String error = validateInputs(currentUser, email, phone, oldPassword, newPassword, confirmPassword);
-        if (error != null) {
-            request.setAttribute("error", error);
-            request.setAttribute("user", currentUser);
-            request.getRequestDispatcher(JSP_PATH).forward(request, response);
+        String validationError = validateInputs(currentUser, email, phone, oldPassword, newPassword, confirmPassword,
+                userDAO);
+        if (validationError != null) {
+            forwardWithError(request, response, currentUser, validationError);
             return;
         }
 
+        // Kiểm tra có thay đổi gì không
         if (!hasChanges(currentUser, name, email, phone, gender, dateOfBirth, newPassword)) {
-            request.setAttribute("message", "No changes were made!");
-            request.setAttribute("user", currentUser);
-            request.getRequestDispatcher(JSP_PATH).forward(request, response);
+            forwardWithMessage(request, response, currentUser, "No changes were made!");
             return;
         }
 
+        // Xử lý đổi mật khẩu (gửi OTP)
         if (newPassword != null && !newPassword.isEmpty()) {
             String hashedNewPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
-            String token = TokenDAO.createToken(currentUser.getUserID(), hashedNewPassword);
+            String otpCode = generateOTP(6);
 
-            if (token != null) {
-                String verifyLink = APP_URL + "/verify?token=" + token;
-                EmailUtil.sendVerificationEmail(currentUser.getEmail(), currentUser.getName(), verifyLink);
-                request.setAttribute("message", "Verification email sent! Please check your inbox.");
-                request.setAttribute("user", currentUser);
-                request.getRequestDispatcher(JSP_PATH).forward(request, response);
+            // Lưu OTP và mật khẩu tạm
+            TokenDAO.saveOTP(currentUser.getUserID(), otpCode, hashedNewPassword);
+
+            try {
+                String subject = "Password Change Verification Code";
+                String content = String.format("""
+                        Hello %s,
+
+                        Your verification code is: %s
+                        This code will expire in 5 minutes.
+
+                        If you did not request this, please ignore this email.
+                        """, currentUser.getName(), otpCode);
+
+                EmailUtil.sendEmail(currentUser.getEmail(), subject, content);
+                session.setAttribute("otpUserId", currentUser.getUserID());
+                response.sendRedirect(VERIFY_REDIRECT);
                 return;
-            } else {
-                request.setAttribute("error", "Failed to create token. Try again.");
-                request.setAttribute("user", currentUser);
-                request.getRequestDispatcher(JSP_PATH).forward(request, response);
+
+            } catch (Exception e) {
+                forwardWithError(request, response, currentUser, "Failed to send OTP email: " + e.getMessage());
                 return;
             }
         }
 
+        // Nếu không đổi mật khẩu → cập nhật hồ sơ
         User updatedUser = new User(
                 currentUser.getUserID(),
                 name != null && !name.isEmpty() ? name : currentUser.getName(),
@@ -110,59 +114,64 @@ public class UserProfileServlet extends HttpServlet {
                 gender != null ? gender : currentUser.getGender(),
                 currentUser.isActive());
 
-        UserDAO userDAO = new UserDAO();
-        boolean updated;
         try {
-            updated = userDAO.updateUser(updatedUser);
+            boolean updated = userDAO.updateUser(updatedUser);
+            if (updated) {
+                session.setAttribute("user", updatedUser);
+                forwardWithMessage(request, response, updatedUser, "Profile updated successfully!");
+            } else {
+                forwardWithError(request, response, currentUser, "Failed to update profile!");
+            }
         } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("error", "Update failed: " + e.getMessage());
-            request.setAttribute("user", currentUser);
-            request.getRequestDispatcher(JSP_PATH).forward(request, response);
-            return;
+            forwardWithError(request, response, currentUser, "Update failed: " + e.getMessage());
         }
-
-        if (updated) {
-            session.setAttribute("user", updatedUser);
-            request.setAttribute("user", updatedUser);
-            request.setAttribute("message", "Profile updated successfully!");
-        } else {
-            request.setAttribute("error", "Failed to update profile!");
-            request.setAttribute("user", currentUser);
-        }
-
-        request.getRequestDispatcher(JSP_PATH).forward(request, response);
     }
+
+    // -------------------- Helper Methods --------------------
 
     private String getTrimmedParameter(HttpServletRequest request, String paramName) {
         String param = request.getParameter(paramName);
-        return param != null ? param.trim() : null;
+        return (param != null) ? param.trim() : null;
+    }
+
+    private Date parseDate(String dobStr, HttpServletRequest request, HttpServletResponse response, User user)
+            throws ServletException, IOException {
+        if (dobStr == null || dobStr.isEmpty())
+            return null;
+        try {
+            return Date.valueOf(dobStr);
+        } catch (IllegalArgumentException e) {
+            forwardWithError(request, response, user, "Invalid date format!");
+            return null;
+        }
     }
 
     private String validateInputs(User user, String email, String phone,
-            String oldPassword, String newPassword, String confirmPassword) {
-
+            String oldPassword, String newPassword, String confirmPassword,
+            UserDAO userDAO) {
         if (email == null || email.isEmpty() || phone == null || phone.isEmpty()) {
             return "Required fields cannot be empty!";
         }
-
-        if (!email.matches(EMAIL_REGEX)) {
+        if (!email.matches(EMAIL_REGEX))
             return "Invalid email format!";
-        }
-
-        if (!phone.matches(PHONE_REGEX)) {
+        if (!phone.matches(PHONE_REGEX))
             return "Invalid phone number format!";
+
+        if (userDAO.emailExists(email) && !email.equalsIgnoreCase(user.getEmail())) {
+            return "Email is already registered!";
         }
 
         if (oldPassword != null && !oldPassword.isEmpty()) {
-            if (!org.mindrot.jbcrypt.BCrypt.checkpw(oldPassword, user.getPassword())) {
+            if (!BCrypt.checkpw(oldPassword, user.getPassword())) {
                 return "Old password is incorrect!";
             }
             if (newPassword == null || newPassword.isEmpty() || !newPassword.equals(confirmPassword)) {
                 return "New password does not match or is empty!";
             }
+            if (newPassword.length() < 8) {
+                return "Password must be at least 8 characters!";
+            }
         }
-
         return null;
     }
 
@@ -176,8 +185,31 @@ public class UserProfileServlet extends HttpServlet {
                 || (newPassword != null && !newPassword.isEmpty());
     }
 
+    private String generateOTP(int length) {
+        SecureRandom random = new SecureRandom();
+        String chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        StringBuilder otp = new StringBuilder(length);
+        for (int i = 0; i < length; i++)
+            otp.append(chars.charAt(random.nextInt(chars.length())));
+        return otp.toString();
+    }
+
+    private void forwardWithError(HttpServletRequest request, HttpServletResponse response, User user, String error)
+            throws ServletException, IOException {
+        request.setAttribute("error", error);
+        request.setAttribute("user", user);
+        request.getRequestDispatcher(PROFILE_JSP_PATH).forward(request, response);
+    }
+
+    private void forwardWithMessage(HttpServletRequest request, HttpServletResponse response, User user, String msg)
+            throws ServletException, IOException {
+        request.setAttribute("message", msg);
+        request.setAttribute("user", user);
+        request.getRequestDispatcher(PROFILE_JSP_PATH).forward(request, response);
+    }
+
     @Override
     public String getServletInfo() {
-        return "Handles user profile display and updates based on new User schema";
+        return "Handles user profile updates and password change verification via OTP";
     }
 }

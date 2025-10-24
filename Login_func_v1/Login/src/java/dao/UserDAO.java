@@ -243,6 +243,21 @@ public class UserDAO extends DBContext {
         return false;
     }
 
+    // Verify if email exists
+    public boolean emailExists(String email) {
+        String sql = "SELECT 1 FROM [User] WHERE Email = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next(); // Nếu có dòng dữ liệu → email tồn tại
+            }
+        } catch (SQLException e) {
+            System.err.println("Error checking email existence: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     // ✅ Đặt lại mật khẩu bằng name/email/phone
     public boolean resetPassword(String identifier, String newPassword) {
         Integer userId = findUserIdByIdentifier(identifier);

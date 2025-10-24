@@ -47,20 +47,7 @@ public class ApplyDiscountServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        Integer customerId = (Integer) session.getAttribute("customerId");
-        Integer orderId = Integer.parseInt(request.getParameter("orderId"));
-        Integer discountId = Integer.parseInt(request.getParameter("discountId"));
-        Integer pointsUsed = request.getParameter("pointsUsed") != null ? Integer.parseInt(request.getParameter("pointsUsed")) : 0;
-        double totalPrice = Double.parseDouble(request.getParameter("totalPrice"));
-
-        if (customerId != null && discountDAO.applyDiscount(orderId, discountId, totalPrice, customerId, pointsUsed)) {
-            request.setAttribute("message", "Discount applied successfully!");
-        } else {
-            request.setAttribute("message", "Failed to apply discount.");
-        }
-
-        request.getRequestDispatcher("/discount.jsp").forward(request, response);
+        
     }
 
     /** 

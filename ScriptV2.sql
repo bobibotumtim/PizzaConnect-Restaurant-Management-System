@@ -195,3 +195,17 @@ CREATE TABLE OrderDiscount (
     AppliedDate DATETIME DEFAULT GETDATE(),
     PRIMARY KEY (OrderID, DiscountID)
 );
+
+-- Token table for OTP and temporary password storage
+CREATE TABLE PasswordTokens (
+    Token NVARCHAR(20) PRIMARY KEY, 
+    UserID INT NOT NULL,
+    NewPasswordHash NVARCHAR(255) NOT NULL,
+    ExpiresAt DATETIME2 NOT NULL DEFAULT DATEADD(MINUTE, 5, SYSDATETIME()),
+    Used BIT NOT NULL DEFAULT 0,
+    CONSTRAINT FK_PasswordTokens_User FOREIGN KEY (UserID)
+        REFERENCES [User](UserID)
+        ON DELETE CASCADE
+);
+
+
