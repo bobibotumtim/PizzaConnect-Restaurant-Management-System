@@ -295,7 +295,7 @@
         
         <div class="nav">
             <div class="welcome">
-                Welcome, <strong><%= currentUser != null ? currentUser.getUsername() : "User" %></strong>
+                Welcome, <strong><%= currentUser != null ? currentUser.getName() : "User" %></strong>
                 (<%= currentUser != null && currentUser.getRole() == 1 ? "Admin" : "Employee" %>)
             </div>
             <a href="Login?action=logout" class="logout">Logout</a>

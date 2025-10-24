@@ -25,7 +25,7 @@ public class CustomerDAO extends DBContext {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("❌ Lỗi khi lấy thông tin khách hàng theo UserID: " + e.getMessage());
+            System.err.println("Lỗi khi lấy thông tin khách hàng theo UserID: " + e.getMessage());
         }
         return null;
     }
@@ -41,7 +41,7 @@ public class CustomerDAO extends DBContext {
             ps.setInt(2, customer.getLoyaltyPoint());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.err.println("❌ Lỗi khi thêm khách hàng: " + e.getMessage());
+            System.err.println("Lỗi khi thêm khách hàng: " + e.getMessage());
         }
         return false;
     }
@@ -54,7 +54,7 @@ public class CustomerDAO extends DBContext {
             ps.setInt(2, customerID);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.err.println("❌ Lỗi khi cập nhật điểm thưởng: " + e.getMessage());
+            System.err.println("Lỗi khi cập nhật điểm thưởng: " + e.getMessage());
         }
         return false;
     }

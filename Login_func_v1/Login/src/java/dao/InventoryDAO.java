@@ -1,6 +1,5 @@
 package dao;
 
-
 import models.Inventory;
 import java.sql.*;
 import java.util.*;
@@ -12,18 +11,19 @@ public class InventoryDAO {
 
     public List<Inventory> getAll() {
         List<Inventory> list = new ArrayList<>();
-        String query = "SELECT * FROM Inventory ORDER BY InventoryID DESC";
+        String query = "SELECT * FROM Inventory ORDER BY InventoryID ASC";
         try {
             conn = new DBContext().getConnection();
             ps = conn.prepareStatement(query);
             rs = ps.executeQuery();
             while (rs.next()) {
                 list.add(new Inventory(
-                    rs.getInt("InventoryID"),
-                    rs.getString("ItemName"),
-                    rs.getDouble("Quantity"),
-                    rs.getString("Unit"),
-                    rs.getTimestamp("LastUpdated")
+                        rs.getInt("InventoryID"),
+                        rs.getString("ItemName"),
+                        rs.getDouble("Quantity"),
+                        rs.getString("Unit"),
+                        rs.getString("Status"),
+                        rs.getTimestamp("LastUpdated")
                 ));
             }
         } catch (Exception e) {
@@ -32,59 +32,37 @@ public class InventoryDAO {
         return list;
     }
 
-    public void insert(String name, double quantity, String unit) {
-        String query = "INSERT INTO Inventory (ItemName, Quantity, Unit, LastUpdated) VALUES (?, ?, ?, GETDATE())";
+    public void insert(Inventory i) {
+        String query = "INSERT INTO Inventory (ItemName, Quantity, Unit, Status, LastUpdated) VALUES (?, ?, ?, 'Active', GETDATE())";
         try {
             conn = new DBContext().getConnection();
             ps = conn.prepareStatement(query);
-            ps.setString(1, name);
-            ps.setDouble(2, quantity);
-            ps.setString(3, unit);
+            ps.setString(1, i.getItemName());
+            ps.setDouble(2, i.getQuantity());
+            ps.setString(3, i.getUnit());
             ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public Inventory getById(int id) {
-        String query = "SELECT * FROM Inventory WHERE InventoryID=?";
-        try {
-            conn = new DBContext().getConnection();
-            ps = conn.prepareStatement(query);
-            ps.setInt(1, id);
-            rs = ps.executeQuery();
-            if (rs.next()) {
-                return new Inventory(
-                    rs.getInt("InventoryID"),
-                    rs.getString("ItemName"),
-                    rs.getDouble("Quantity"),
-                    rs.getString("Unit"),
-                    rs.getTimestamp("LastUpdated")
-                );
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public void update(int id, String name, double quantity, String unit) {
+    public void update(Inventory i) {
         String query = "UPDATE Inventory SET ItemName=?, Quantity=?, Unit=?, LastUpdated=GETDATE() WHERE InventoryID=?";
         try {
             conn = new DBContext().getConnection();
             ps = conn.prepareStatement(query);
-            ps.setString(1, name);
-            ps.setDouble(2, quantity);
-            ps.setString(3, unit);
-            ps.setInt(4, id);
+            ps.setString(1, i.getItemName());
+            ps.setDouble(2, i.getQuantity());
+            ps.setString(3, i.getUnit());
+            ps.setInt(4, i.getInventoryID());
             ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void delete(int id) {
-        String query = "DELETE FROM Inventory WHERE InventoryID=?";
+    public void toggleStatus(int id) {
+        String query = "UPDATE Inventory SET Status = CASE WHEN Status = 'Active' THEN 'Inactive' ELSE 'Active' END, LastUpdated=GETDATE() WHERE InventoryID=?";
         try {
             conn = new DBContext().getConnection();
             ps = conn.prepareStatement(query);
