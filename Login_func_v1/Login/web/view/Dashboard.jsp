@@ -47,6 +47,14 @@
                    title="Menu">
                     <i data-lucide="utensils" class="w-6 h-6"></i>
                 </a>
+                   
+                <!-- Inventory -->
+                <a href="${pageContext.request.contextPath}/manageinventory"
+                    class="nav-btn <%= currentPath.contains("/inventory") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                    title="Inventory">
+                     <i data-lucide="boxes" class="w-6 h-6"></i>
+                </a>
+
 
                 <!-- Notifications -->
                 <a href="${pageContext.request.contextPath}/notifications"
