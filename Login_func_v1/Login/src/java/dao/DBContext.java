@@ -13,10 +13,12 @@ public class DBContext {
         try {
             String user = "sa";
             String pass = "123";
-            String url = "jdbc:sqlserver://localhost:1433;databaseName=pizza_demo_DB1;encrypt=true;trustServerCertificate=true";
+            String url = "jdbc:sqlserver://localhost:1433;databaseName=pizza_demo_DB2;encrypt=true;trustServerCertificate=true";
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             connection = DriverManager.getConnection(url, user, pass);
+            System.out.println("✅ Connected to database: pizza_demo_DB2");
         } catch (ClassNotFoundException | SQLException ex) {
+            System.out.println("❌ Database connection failed: " + ex.getMessage());
             Logger.getLogger(DBContext.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

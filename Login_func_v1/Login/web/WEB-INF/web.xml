@@ -82,9 +82,41 @@
         <servlet-name>OrderController</servlet-name>
         <url-pattern>/OrderController</url-pattern>
     </servlet-mapping>
+    
+    <servlet-mapping>
+        <servlet-name>OrderController</servlet-name>
+        <url-pattern>/manage-orders</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+    <servlet-name>OrderListServlet</servlet-name>
+    <servlet-class>controller.OrderListServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>OrderListServlet</servlet-name>
+    <url-pattern>/OrderListServlet</url-pattern>
+</servlet-mapping>
+
+<servlet>
+    <servlet-name>OrderDetailServlet</servlet-name>
+    <servlet-class>controller.OrderDetailServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>OrderDetailServlet</servlet-name>
+    <url-pattern>/OrderDetailServlet</url-pattern>
+</servlet-mapping>
+
+<servlet>
+    <servlet-name>TestDatabaseServlet</servlet-name>
+    <servlet-class>controller.TestDatabaseServlet</servlet-class>
+</servlet>
+<servlet-mapping>
+    <servlet-name>TestDatabaseServlet</servlet-name>
+    <url-pattern>/test-database</url-pattern>
+</servlet-mapping>
 
     <welcome-file-list>
-        <welcome-file>OrderController</welcome-file>
+        <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
 </web-app>
 

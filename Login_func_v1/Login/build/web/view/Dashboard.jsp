@@ -38,7 +38,7 @@
                 </a>
 
                 <!-- Orders -->
-                <a href="${pageContext.request.contextPath}/orders"
+                <a href="${pageContext.request.contextPath}/manage-orders"
                    class="nav-btn <%= currentPath.contains("/orders") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
                    title="Orders">
                     <i data-lucide="file-text" class="w-6 h-6"></i>

@@ -130,6 +130,67 @@ public class Order {
         this.details = details;
     }
 
+    // Helper methods for display
+    public String getStatusText() {
+        switch (status) {
+            case 0: return "Pending";
+            case 1: return "Processing";
+            case 2: return "Completed";
+            case 3: return "Cancelled";
+            default: return "Unknown";
+        }
+    }
+    
+    public String getCustomerName() {
+        // Use the database lookup method
+        return getCustomerNameFromDB();
+    }
+    
+    public String getCustomerNameFromDB() {
+        // Lấy tên khách hàng từ database thật
+        try {
+            dao.DBContext db = new dao.DBContext();
+            java.sql.Connection conn = db.getConnection();
+            if (conn != null) {
+                String sql = "SELECT CustomerName FROM Customer WHERE CustomerID = ?";
+                try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
+                    ps.setInt(1, this.customerID);
+                    try (java.sql.ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            return rs.getString("CustomerName");
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error getting customer name: " + e.getMessage());
+        }
+        
+        // Fallback nếu không lấy được từ database
+        switch (customerID) {
+            case 1: return "Nguyễn Văn A";
+            case 2: return "Trần Thị B";
+            case 3: return "Lê Văn C";
+            default: return "Customer #" + customerID;
+        }
+    }
+    
+    public String getCustomerPhone() {
+        // This would typically be fetched from CustomerDAO
+        // For now, return null
+        return null;
+    }
+    
+    public String getTableNumber() {
+        // This would typically be fetched from TableDAO
+        // For now, return table ID as string
+        return String.valueOf(tableID);
+    }
+    
+    public double getTotalMoney() {
+        return totalPrice;
+    }
+
     @Override
     public String toString() {
         return "Order{" + "orderID=" + orderID + ", customerID=" + customerID + ", employeeID=" + employeeID + ", tableID=" + tableID + ", orderDate=" + orderDate + ", status=" + status + ", paymentStatus=" + paymentStatus + ", totalPrice=" + totalPrice + ", note=" + note + ", details=" + details + '}';
