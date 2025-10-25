@@ -452,6 +452,19 @@
   </div>
 </div>
 
+<!-- View Order Modal -->
+<div id="viewOrderModal" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 9999;">
+  <div style="max-width: 720px; margin: 5% auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25);">
+    <div style="padding: 16px 20px; background: #34495e; color: #fff; display:flex; align-items:center; justify-content:space-between;">
+      <strong>Order Detail</strong>
+      <button onclick="closeViewOrderModal()" style="background: transparent; border: 0; color: #fff; font-size: 18px; cursor: pointer;">✕</button>
+    </div>
+    <div id="viewOrderContent" style="padding: 20px;">
+      Loading...
+    </div>
+  </div>
+</div>
+
 <script>
     function filterByStatus(status) {
         if (status === '') {
