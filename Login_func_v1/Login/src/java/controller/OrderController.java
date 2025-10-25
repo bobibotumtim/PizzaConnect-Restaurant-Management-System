@@ -14,10 +14,12 @@ public class OrderController extends HttpServlet {
             throws ServletException, IOException {
 
         String action = req.getParameter("action");
-        if (action == null) {
-            // Nếu truy cập /manage-orders thì mặc định là action=manage
+        if (action == null || action.isEmpty()) {
+            // Suy luận action từ URL nếu không có tham số action
             String requestURI = req.getRequestURI();
-            if (requestURI.contains("manage-orders")) {
+            if (requestURI.contains("add-order")) {
+                action = "new"; // hỗ trợ đường dẫn /add-order
+            } else if (requestURI.contains("manage-orders")) {
                 action = "manage";
             } else {
                 action = "list";
