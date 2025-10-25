@@ -98,9 +98,9 @@
 
             <div class="filter-group">
                 <label>Quick Actions:</label>
-                <a href="manage-orders" class="btn btn-primary">Refresh</a>
+                <a href="${pageContext.request.contextPath}/manage-orders" class="btn btn-primary">Refresh</a>
                 <a href="#" onclick="openAddOrderModal(); return false;" class="btn btn-success">New Order</a>
-                <a href="dashboard" class="btn btn-info">Dashboard</a>
+                <a href="${pageContext.request.contextPath}/dashboard" class="btn btn-info">Dashboard</a>
             </div>
         </div>
 
