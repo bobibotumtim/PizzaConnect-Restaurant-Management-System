@@ -99,7 +99,7 @@
             <div class="filter-group">
                 <label>Quick Actions:</label>
                 <a href="manage-orders" class="btn btn-primary">Refresh</a>
-                <a href="manage-orders?action=new" class="btn btn-success">New Order</a>
+                <a href="#" onclick="openAddOrderModal(); return false;" class="btn btn-success">New Order</a>
                 <a href="dashboard" class="btn btn-info">Dashboard</a>
             </div>
         </div>
@@ -211,12 +211,109 @@
     </div>
 </div>
 
+<!-- Add Order Modal -->
+<div id="addOrderModal" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 9999;">
+  <div style="max-width: 560px; margin: 6% auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25);">
+    <div style="padding: 16px 20px; background: #34495e; color: #fff; display:flex; align-items:center; justify-content:space-between;">
+      <strong>Add New Order</strong>
+      <button onclick="closeAddOrderModal()" style="background: transparent; border: 0; color: #fff; font-size: 18px; cursor: pointer;">✕</button>
+    </div>
+    <form id="addOrderForm" onsubmit="submitAddOrderForm(event)" style="padding: 20px;">
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div style="grid-column: span 2;">
+          <label>Customer Name</label>
+          <input name="customerName" type="text" placeholder="Nguyen Van A" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;" required />
+        </div>
+        <div>
+          <label>Pizza Type</label>
+          <select name="pizzaType" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+            <option value="Pepperoni">Pepperoni</option>
+            <option value="Hawaiian">Hawaiian</option>
+            <option value="Margherita">Margherita</option>
+          </select>
+        </div>
+        <div>
+          <label>Quantity</label>
+          <input name="quantity" type="number" min="1" value="1" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;" required />
+        </div>
+        <div>
+          <label>Unit Price</label>
+          <input name="price" type="number" min="1000" step="500" value="200000" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;" required />
+        </div>
+        <div>
+          <label>Status</label>
+          <select name="status" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+            <option value="0">Pending</option>
+            <option value="1">Processing</option>
+            <option value="2">Completed</option>
+            <option value="3">Cancelled</option>
+          </select>
+        </div>
+      </div>
+      <div id="addOrderError" style="display:none; margin-top:12px; padding:10px; border-radius:8px; background:#f8d7da; color:#721c24;">Error</div>
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+        <button type="button" class="btn btn-warning" onclick="closeAddOrderModal()">Cancel</button>
+        <button type="submit" class="btn btn-success">Create</button>
+      </div>
+    </form>
+  </div>
+  
+</div>
+
 <script>
     function filterByStatus(status) {
         if (status === '') {
             window.location.href = 'manage-orders';
         } else {
             window.location.href = 'manage-orders?action=filter&status=' + status;
+        }
+    }
+
+    function openAddOrderModal() {
+        document.getElementById('addOrderModal').style.display = 'block';
+        document.getElementById('addOrderError').style.display = 'none';
+        document.getElementById('addOrderError').textContent = '';
+    }
+
+    function closeAddOrderModal() {
+        document.getElementById('addOrderModal').style.display = 'none';
+        const form = document.getElementById('addOrderForm');
+        if (form) form.reset();
+    }
+
+    async function submitAddOrderForm(event) {
+        event.preventDefault();
+        const form = document.getElementById('addOrderForm');
+        const errorBox = document.getElementById('addOrderError');
+
+        const formData = new URLSearchParams();
+        formData.append('action', 'add');
+        formData.append('customerName', form.customerName.value.trim());
+        formData.append('pizzaType', form.pizzaType.value);
+        formData.append('quantity', form.quantity.value);
+        formData.append('price', form.price.value);
+        formData.append('status', form.status.value);
+
+        try {
+            const res = await fetch('OrderController', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData.toString()
+            });
+
+            const text = await res.text();
+            if (!res.ok) {
+                errorBox.style.display = 'block';
+                errorBox.textContent = text || 'Không thể tạo đơn hàng.';
+                return;
+            }
+
+            // Success: close modal and refresh list
+            closeAddOrderModal();
+            window.location.href = 'manage-orders';
+        } catch (e) {
+            errorBox.style.display = 'block';
+            errorBox.textContent = 'Lỗi kết nối: ' + (e && e.message ? e.message : e);
         }
     }
 </script>
