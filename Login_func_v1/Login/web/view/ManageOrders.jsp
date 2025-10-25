@@ -254,9 +254,14 @@
       <strong>Order Detail</strong>
       <button onclick="closeViewOrderModal()" style="background: transparent; border: 0; color: #fff; font-size: 18px; cursor: pointer;">✕</button>
     </div>
-    <div id="viewOrderContent" style="padding: 20px;">
-      Loading...
-    </div>
+    <form id="editOrderForm" onsubmit="submitEditOrderForm(event)" style="padding: 20px;">
+      <div id="viewOrderContent">Loading...</div>
+      <div id="editOrderError" style="display:none; margin-top:12px; padding:10px; border-radius:8px; background:#f8d7da; color:#721c24;">Error</div>
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+        <button type="button" class="btn btn-warning" onclick="closeViewOrderModal()">Close</button>
+        <button type="submit" class="btn btn-success">Save</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -273,6 +278,8 @@
     function openViewOrderModal(orderId) {
         const modal = document.getElementById('viewOrderModal');
         const content = document.getElementById('viewOrderContent');
+        const errorBox = document.getElementById('editOrderError');
+        errorBox.style.display = 'none';
         content.innerHTML = 'Loading...';
         modal.style.display = 'block';
         fetch(`${ctx}/manage-orders?action=getOrder&id=${orderId}`)
@@ -283,29 +290,53 @@
                 return;
             }
             const o = data.order;
-            const detailsRows = (o.details || []).map(d => `
-              <tr>
-                <td>${d.productID}</td>
-                <td>${d.quantity}</td>
-                <td>${d.totalPrice.toLocaleString()}</td>
-                <td>${d.specialInstructions || ''}</td>
-              </tr>
+            const detailsRows = (o.details || []).map((d, idx) => `
+              <div class="order-item-row" style="display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:8px; align-items:end;">
+                <div>
+                  <label>Pizza Type</label>
+                  <input name="pizzaType" type="text" value="${(d.specialInstructions||'').replace('Loại: ', '')}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;" />
+                </div>
+                <div>
+                  <label>Quantity</label>
+                  <input name="quantity" type="number" min="1" value="${d.quantity}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;" required />
+                </div>
+                <div>
+                  <label>Unit Price</label>
+                  <input name="price" type="number" min="1000" step="500" value="${(d.totalPrice/(d.quantity||1)).toFixed(0)}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;" required />
+                </div>
+                <div>
+                  <button type="button" class="btn btn-danger" onclick="this.closest('.order-item-row').remove()">Remove</button>
+                </div>
+              </div>
             `).join('');
             content.innerHTML = `
+              <input type="hidden" name="orderID" value="${o.orderID}" />
               <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
-                <div><strong>Order #</strong> ${o.orderID}</div>
-                <div><strong>Status</strong> ${o.status}</div>
-                <div><strong>Payment</strong> ${o.paymentStatus || 'Unpaid'}</div>
-                <div><strong>Total</strong> ${o.totalPrice.toLocaleString()}</div>
-              </div>
-              <div class="table-container">
-                <div class="table-header">Items</div>
-                <table>
-                  <thead>
-                    <tr><th>Product</th><th>Qty</th><th>Total</th><th>Note</th></tr>
-                  </thead>
-                  <tbody>${detailsRows || '<tr><td colspan="4">No items</td></tr>'}</tbody>
-                </table>
+                <div>
+                  <label>Status</label>
+                  <select name="status" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                    <option value="0" ${o.status===0?'selected':''}>Pending</option>
+                    <option value="1" ${o.status===1?'selected':''}>Processing</option>
+                    <option value="2" ${o.status===2?'selected':''}>Completed</option>
+                    <option value="3" ${o.status===3?'selected':''}>Cancelled</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Payment</label>
+                  <select name="paymentStatus" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                    <option value="Unpaid" ${(!o.paymentStatus||o.paymentStatus==='Unpaid')?'selected':''}>Unpaid</option>
+                    <option value="Paid" ${(o.paymentStatus==='Paid')?'selected':''}>Paid</option>
+                  </select>
+                </div>
+                <div style="grid-column: span 2;">
+                  <label>Note</label>
+                  <input name="note" type="text" value="${o.note||''}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;" />
+                </div>
+                <div style="grid-column: span 2;">
+                  <label>Items</label>
+                  <div id="editOrderItems" style="display:flex; flex-direction:column; gap:8px; margin-top:6px;">${detailsRows||''}</div>
+                  <button type="button" class="btn btn-primary" style="margin-top:8px;" onclick="addEditOrderItemRow()">+ Add pizza</button>
+                </div>
               </div>
             `;
           })
@@ -316,6 +347,79 @@
 
     function closeViewOrderModal() {
         document.getElementById('viewOrderModal').style.display = 'none';
+    }
+
+    function addEditOrderItemRow() {
+        const container = document.getElementById('editOrderItems');
+        if (!container) return;
+        container.insertAdjacentHTML('beforeend', `
+          <div class="order-item-row" style="display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:8px; align-items:end;">
+            <div>
+              <label>Pizza Type</label>
+              <input name="pizzaType" type="text" value="" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;" />
+            </div>
+            <div>
+              <label>Quantity</label>
+              <input name="quantity" type="number" min="1" value="1" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;" required />
+            </div>
+            <div>
+              <label>Unit Price</label>
+              <input name="price" type="number" min="1000" step="500" value="200000" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;" required />
+            </div>
+            <div>
+              <button type="button" class="btn btn-danger" onclick="this.closest('.order-item-row').remove()">Remove</button>
+            </div>
+          </div>
+        `);
+    }
+
+    async function submitEditOrderForm(event) {
+        event.preventDefault();
+        const form = document.getElementById('editOrderForm');
+        const errorBox = document.getElementById('editOrderError');
+        errorBox.style.display = 'none';
+        errorBox.textContent = '';
+
+        const formData = new URLSearchParams();
+        formData.append('action', 'update');
+        formData.append('orderID', form.querySelector('input[name="orderID"]').value);
+        formData.append('status', form.querySelector('select[name="status"]').value);
+        formData.append('paymentStatus', form.querySelector('select[name="paymentStatus"]').value);
+        formData.append('note', form.querySelector('input[name="note"]').value || '');
+
+        const rows = form.querySelectorAll('#editOrderItems .order-item-row');
+        if (rows.length === 0) {
+            errorBox.style.display = 'block';
+            errorBox.textContent = 'Vui lòng thêm ít nhất 1 pizza';
+            return;
+        }
+        for (const row of rows) {
+            const pizzaType = row.querySelector('input[name="pizzaType"]').value;
+            const quantity = row.querySelector('input[name="quantity"]').value;
+            const price = row.querySelector('input[name="price"]').value;
+            formData.append('pizzaType', pizzaType);
+            formData.append('quantity', quantity);
+            formData.append('price', price);
+        }
+
+        try {
+            const res = await fetch(`${ctx}/manage-orders`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData.toString()
+            });
+            const text = await res.text();
+            if (!res.ok) {
+                errorBox.style.display = 'block';
+                errorBox.textContent = text || 'Không thể cập nhật đơn hàng.';
+                return;
+            }
+            closeViewOrderModal();
+            window.location.href = `${ctx}/manage-orders`;
+        } catch (e) {
+            errorBox.style.display = 'block';
+            errorBox.textContent = 'Lỗi kết nối: ' + (e && e.message ? e.message : e);
+        }
     }
 
     function openAddOrderModal() {

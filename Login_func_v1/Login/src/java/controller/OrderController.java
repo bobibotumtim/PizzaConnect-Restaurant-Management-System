@@ -146,7 +146,7 @@ public class OrderController extends HttpServlet {
             // Xử lý thêm đơn hàng từ modal
             handleAddOrderFromModal(req, resp);
         } else if ("update".equals(action)) {
-            // Xử lý cập nhật đơn hàng từ modal
+            // Xử lý cập nhật đơn hàng từ modal (chỉnh sửa nhiều item)
             handleUpdateOrderFromModal(req, resp);
         } else {
             // Xử lý form cũ
@@ -229,73 +229,56 @@ public class OrderController extends HttpServlet {
         
         try {
             System.out.println("=== handleUpdateOrderFromModal START ===");
-            
+
             int orderID = parseIntSafe(req.getParameter("orderID"));
-            int customerID = parseIntSafe(req.getParameter("customerID"));
-            int employeeID = parseIntSafe(req.getParameter("employeeID"));
-            int tableID = parseIntSafe(req.getParameter("tableID"));
-            String orderDateStr = req.getParameter("orderDate");
             int status = parseIntSafe(req.getParameter("status"));
             String paymentStatus = req.getParameter("paymentStatus");
-            double totalPrice = parseDoubleSafe(req.getParameter("totalPrice"));
             String note = req.getParameter("note");
-            
-            System.out.println("Updating Order ID: " + orderID + 
-                            ", Customer: " + customerID + 
-                            ", Employee: " + employeeID + 
-                            ", Table: " + tableID + 
-                            ", Status: " + status);
-            
-            // Validation
+
+            String[] pizzaTypes = req.getParameterValues("pizzaType");
+            String[] quantities = req.getParameterValues("quantity");
+            String[] prices = req.getParameterValues("price");
+
             if (orderID <= 0) {
-                System.out.println("ERROR: Invalid Order ID");
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 resp.getWriter().write("Order ID không hợp lệ");
                 return;
             }
-            
-            if (customerID <= 0 || employeeID <= 0 || tableID <= 0) {
-                System.out.println("ERROR: Invalid IDs");
+
+            if (pizzaTypes == null || quantities == null || prices == null
+                    || pizzaTypes.length == 0 || quantities.length == 0 || prices.length == 0
+                    || !(pizzaTypes.length == quantities.length && quantities.length == prices.length)) {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().write("Customer ID, Employee ID và Table ID phải lớn hơn 0");
+                resp.getWriter().write("Dữ liệu món không hợp lệ");
                 return;
             }
-            
-            // Kiểm tra kết nối database
+
             OrderDAO dao = new OrderDAO();
             if (dao.getConnection() == null) {
-                System.out.println("ERROR: Database connection is null");
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 resp.getWriter().write("Không thể kết nối database");
                 return;
             }
-            
-            // Tạo Order object để update
-            Order order = new Order();
-            order.setOrderID(orderID);
-            order.setCustomerID(customerID);
-            order.setEmployeeID(employeeID);
-            order.setTableID(tableID);
-            order.setStatus(status);
-            order.setPaymentStatus(paymentStatus);
-            order.setTotalPrice(totalPrice);
-            order.setNote(note);
-            
-            // Parse datetime nếu có
-            if (orderDateStr != null && !orderDateStr.trim().isEmpty()) {
-                try {
-                    java.sql.Timestamp orderDate = java.sql.Timestamp.valueOf(orderDateStr.replace("T", " ") + ":00");
-                    order.setOrderDate(orderDate);
-                } catch (Exception e) {
-                    System.out.println("Warning: Could not parse order date: " + orderDateStr);
+
+            List<OrderDetail> details = new ArrayList<>();
+            for (int i = 0; i < pizzaTypes.length; i++) {
+                int qty = parseIntSafe(quantities[i]);
+                double unitPrice = parseDoubleSafe(prices[i]);
+                if (qty <= 0 || unitPrice <= 0) {
+                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    resp.getWriter().write("Số lượng và giá phải lớn hơn 0 (dòng " + (i + 1) + ")");
+                    return;
                 }
+                OrderDetail d = new OrderDetail();
+                d.setProductID(1);
+                d.setQuantity(qty);
+                d.setTotalPrice(qty * unitPrice);
+                d.setSpecialInstructions("Loại: " + pizzaTypes[i]);
+                details.add(d);
             }
-            
-            System.out.println("Updating order with data: " + order.toString());
-            
-            // Cập nhật đơn hàng
-            dao.update(order);
-            
+
+            dao.updateOrderWithDetails(orderID, status, paymentStatus, note, details);
+
             resp.setStatus(HttpServletResponse.SC_OK);
             resp.getWriter().write("Đơn hàng đã được cập nhật thành công");
             System.out.println("=== handleUpdateOrderFromModal SUCCESS ===");

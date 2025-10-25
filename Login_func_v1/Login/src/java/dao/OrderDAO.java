@@ -521,4 +521,57 @@ public class OrderDAO extends DBContext {
             e.printStackTrace();
         }
     }
+
+    // 🟢 Cập nhật đơn hàng cùng danh sách chi tiết (dùng transaction)
+    public void updateOrderWithDetails(int orderId, int status, String paymentStatus, String note, List<OrderDetail> details) throws Exception {
+        Connection con = null;
+        try {
+            con = useConnection();
+            con.setAutoCommit(false);
+
+            // Xóa chi tiết cũ
+            try (PreparedStatement del = con.prepareStatement("DELETE FROM [OrderDetail] WHERE OrderID = ?")) {
+                del.setInt(1, orderId);
+                del.executeUpdate();
+            }
+
+            double total = 0.0;
+            if (details != null && !details.isEmpty()) {
+                String ins = """
+                    INSERT INTO [OrderDetail] (OrderID, ProductID, Quantity, TotalPrice, SpecialInstructions)
+                    VALUES (?, ?, ?, ?, ?)
+                """;
+                try (PreparedStatement ps = con.prepareStatement(ins)) {
+                    for (OrderDetail d : details) {
+                        ps.setInt(1, orderId);
+                        ps.setInt(2, d.getProductID());
+                        ps.setInt(3, d.getQuantity());
+                        ps.setDouble(4, d.getTotalPrice());
+                        ps.setString(5, d.getSpecialInstructions());
+                        ps.addBatch();
+                        total += d.getTotalPrice();
+                    }
+                    ps.executeBatch();
+                }
+            }
+
+            // Cập nhật header đơn hàng
+            String upd = "UPDATE [Order] SET Status=?, PaymentStatus=?, TotalPrice=?, Note=? WHERE OrderID=?";
+            try (PreparedStatement up = con.prepareStatement(upd)) {
+                up.setInt(1, status);
+                up.setString(2, paymentStatus);
+                up.setDouble(3, total);
+                up.setString(4, note);
+                up.setInt(5, orderId);
+                up.executeUpdate();
+            }
+
+            con.commit();
+        } catch (Exception e) {
+            if (con != null) try { con.rollback(); } catch (Exception ignore) {}
+            throw e;
+        } finally {
+            if (externalConn == null && con != null) try { con.close(); } catch (Exception ignore) {}
+        }
+    }
 }
