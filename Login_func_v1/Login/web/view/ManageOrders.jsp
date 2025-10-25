@@ -290,55 +290,60 @@
                 return;
             }
             const o = data.order;
-            const detailsRows = (o.details || []).map((d, idx) => `
-              <div class="order-item-row" style="display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:8px; align-items:end;">
-                <div>
-                  <label>Pizza Type</label>
-                  <input name="pizzaType" type="text" value="${(d.specialInstructions||'').replace('Loại: ', '')}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;" />
-                </div>
-                <div>
-                  <label>Quantity</label>
-                  <input name="quantity" type="number" min="1" value="${d.quantity}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;" required />
-                </div>
-                <div>
-                  <label>Unit Price</label>
-                  <input name="price" type="number" min="1000" step="500" value="${(d.totalPrice/(d.quantity||1)).toFixed(0)}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;" required />
-                </div>
-                <div>
-                  <button type="button" class="btn btn-danger" onclick="this.closest('.order-item-row').remove()">Remove</button>
-                </div>
-              </div>
-            `).join('');
-            content.innerHTML = `
-              <input type="hidden" name="orderID" value="${o.orderID}" />
-              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
-                <div>
-                  <label>Status</label>
-                  <select name="status" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
-                    <option value="0" ${o.status===0?'selected':''}>Pending</option>
-                    <option value="1" ${o.status===1?'selected':''}>Processing</option>
-                    <option value="2" ${o.status===2?'selected':''}>Completed</option>
-                    <option value="3" ${o.status===3?'selected':''}>Cancelled</option>
-                  </select>
-                </div>
-                <div>
-                  <label>Payment</label>
-                  <select name="paymentStatus" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
-                    <option value="Unpaid" ${(!o.paymentStatus||o.paymentStatus==='Unpaid')?'selected':''}>Unpaid</option>
-                    <option value="Paid" ${(o.paymentStatus==='Paid')?'selected':''}>Paid</option>
-                  </select>
-                </div>
-                <div style="grid-column: span 2;">
-                  <label>Note</label>
-                  <input name="note" type="text" value="${o.note||''}" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;" />
-                </div>
-                <div style="grid-column: span 2;">
-                  <label>Items</label>
-                  <div id="editOrderItems" style="display:flex; flex-direction:column; gap:8px; margin-top:6px;">${detailsRows||''}</div>
-                  <button type="button" class="btn btn-primary" style="margin-top:8px;" onclick="addEditOrderItemRow()">+ Add pizza</button>
-                </div>
-              </div>
-            `;
+            const detailsRows = (o.details || []).map(function(d){
+              var typeVal = (d.specialInstructions||'').replace('Loại: ', '');
+              var unit = (d.quantity && d.quantity !== 0) ? (d.totalPrice/d.quantity) : d.totalPrice;
+              return ''+
+              '<div class="order-item-row" style="display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:8px; align-items:end;">'+
+                '<div>'+
+                  '<label>Pizza Type</label>'+
+                  '<input name="pizzaType" type="text" value="'+ (typeVal || '') +'" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;" />'+
+                '</div>'+
+                '<div>'+
+                  '<label>Quantity</label>'+
+                  '<input name="quantity" type="number" min="1" value="'+ d.quantity +'" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;" required />'+
+                '</div>'+
+                '<div>'+
+                  '<label>Unit Price</label>'+
+                  '<input name="price" type="number" min="1000" step="500" value="'+ (unit.toFixed ? unit.toFixed(0) : unit) +'" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;" required />'+
+                '</div>'+
+                '<div>'+
+                  '<button type="button" class="btn btn-danger" onclick="this.closest(\'.order-item-row\').remove()">Remove</button>'+
+                '</div>'+
+              '</div>';
+            }).join('');
+
+            var statusOptions = ''+
+              '<option value="0" '+ (o.status===0?'selected':'') +'>Pending</option>'+
+              '<option value="1" '+ (o.status===1?'selected':'') +'>Processing</option>'+
+              '<option value="2" '+ (o.status===2?'selected':'') +'>Completed</option>'+
+              '<option value="3" '+ (o.status===3?'selected':'') +'>Cancelled</option>';
+
+            var paymentOptions = ''+
+              '<option value="Unpaid" '+ ((!o.paymentStatus||o.paymentStatus==='Unpaid')?'selected':'') +'>Unpaid</option>'+
+              '<option value="Paid" '+ ((o.paymentStatus==='Paid')?'selected':'') +'>Paid</option>';
+
+            content.innerHTML = ''+
+              '<input type="hidden" name="orderID" value="'+ o.orderID +'" />'+
+              '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">'+
+                '<div>'+
+                  '<label>Status</label>'+
+                  '<select name="status" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">'+ statusOptions +'</select>'+
+                '</div>'+
+                '<div>'+
+                  '<label>Payment</label>'+
+                  '<select name="paymentStatus" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">'+ paymentOptions +'</select>'+
+                '</div>'+
+                '<div style="grid-column: span 2;">'+
+                  '<label>Note</label>'+
+                  '<input name="note" type="text" value="'+ (o.note||'') +'" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;" />'+
+                '</div>'+
+                '<div style="grid-column: span 2;">'+
+                  '<label>Items</label>'+
+                  '<div id="editOrderItems" style="display:flex; flex-direction:column; gap:8px; margin-top:6px;">'+ (detailsRows||'') +'</div>'+
+                  '<button type="button" class="btn btn-primary" style="margin-top:8px;" onclick="addEditOrderItemRow()">+ Add pizza</button>'+
+                '</div>'+
+              '</div>';
           })
           .catch(err => {
             content.innerHTML = `<div class="alert error">Lỗi: ${err && err.message ? err.message : err}</div>`;
