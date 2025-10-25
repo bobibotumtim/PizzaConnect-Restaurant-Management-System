@@ -266,15 +266,7 @@
 </div>
 
 <script>
-    const ctx = (function(){
-        try {
-            var c = '${pageContext.request.contextPath}';
-            if (c && c !== '${' + 'pageContext.request.contextPath' + '}') return c;
-            if (c && c !== '') return c;
-        } catch(e) {}
-        var seg = (window.location.pathname || '').split('/');
-        return seg.length > 1 ? ('/' + seg[1]) : '';
-    })();
+    const ctx = '<%= request.getContextPath() %>';
     function filterByStatus(status) {
         if (status === '') {
             window.location.href = `${ctx}/manage-orders`;
