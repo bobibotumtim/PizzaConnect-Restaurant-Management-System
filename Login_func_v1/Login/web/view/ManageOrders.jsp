@@ -266,7 +266,8 @@
 </div>
 
 <script>
-    const ctx = '<%= request.getContextPath() %>';
+    // Use relative URLs to avoid contextPath issues
+    const ctx = '';
     function filterByStatus(status) {
         if (status === '') {
             window.location.href = `${ctx}/manage-orders`;
@@ -286,7 +287,7 @@
             content.innerHTML = '<div class="alert error">Không tìm thấy OrderID để tải chi tiết.</div>';
             return;
         }
-        fetch(`${ctx}/manage-orders?action=getOrder&id=${encodeURIComponent(orderId)}`)
+        fetch(`manage-orders?action=getOrder&id=${encodeURIComponent(orderId)}`)
           .then(r => r.json())
           .then(data => {
             if (!data.success) {
@@ -418,7 +419,7 @@
         }
 
         try {
-            const res = await fetch(`${ctx}/manage-orders`, {
+            const res = await fetch('manage-orders', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: formData.toString()
@@ -430,7 +431,7 @@
                 return;
             }
             closeViewOrderModal();
-            window.location.href = `${ctx}/manage-orders`;
+            window.location.href = 'manage-orders';
         } catch (e) {
             errorBox.style.display = 'block';
             errorBox.textContent = 'Lỗi kết nối: ' + (e && e.message ? e.message : e);
