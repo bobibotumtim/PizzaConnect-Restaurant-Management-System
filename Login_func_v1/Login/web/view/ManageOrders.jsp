@@ -281,9 +281,9 @@
 
                     <div class="filter-group">
                         <label>Quick Actions:</label>
-                        <a href="manage-orders" class="btn btn-primary">Refresh</a>
+                        <a href="${pageContext.request.contextPath}/manage-orders" class="btn btn-primary">Refresh</a>
                         <a href="#" onclick="openAddOrderModal(); return false;" class="btn btn-success">New Order</a>
-                        <a href="dashboard" class="btn btn-info">Dashboard</a>
+                        <a href="${pageContext.request.contextPath}/dashboard" class="btn btn-info">Dashboard</a>
                     </div>
                 </div>
 
@@ -458,7 +458,7 @@
                 const content = document.getElementById('viewOrderContent');
                 content.innerHTML = 'Loading...';
                 modal.style.display = 'block';
-                fetch(`${ctx}/OrderController?action=getOrder&id=${orderId}`)
+                fetch(`${ctx}/manage-orders?action=getOrder&id=${orderId}`)
                         .then(r => r.json())
                         .then(data => {
                             if (!data.success) {
@@ -578,7 +578,7 @@
                 }
 
                 try {
-                    const res = await fetch(`${ctx}/OrderController`, {
+                    const res = await fetch(`${ctx}/manage-orders`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                         body: formData.toString()
