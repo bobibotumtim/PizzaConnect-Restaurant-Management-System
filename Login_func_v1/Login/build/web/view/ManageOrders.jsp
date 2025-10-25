@@ -99,7 +99,7 @@
             <div class="filter-group">
                 <label>Quick Actions:</label>
                 <a href="manage-orders" class="btn btn-primary">Refresh</a>
-                <a href="add-order" class="btn btn-success">New Order</a>
+                <a href="#" onclick="openAddOrderModal(); return false;" class="btn btn-success">New Order</a>
                 <a href="dashboard" class="btn btn-info">Dashboard</a>
             </div>
         </div>
@@ -160,7 +160,7 @@
                                 </td>
                                 <td>
                                     <div class="actions">
-                                        <a href="manage-orders?action=view&orderId=<%= order.getOrderID() %>" class="btn btn-info">View</a>
+                                        <a href="#" onclick="openViewOrderModal(<%= order.getOrderID() %>); return false;" class="btn btn-info">View</a>
                                         <% if (order.getStatus() == 0) { %>
                                             <form style="display: inline;" method="post" onsubmit="return confirm('Mark this order as Processing?')">
                                                 <input type="hidden" name="action" value="updateStatus">
@@ -211,12 +211,205 @@
     </div>
 </div>
 
+<!-- Add Order Modal -->
+<div id="addOrderModal" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 9999;">
+  <div style="max-width: 560px; margin: 6% auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25);">
+    <div style="padding: 16px 20px; background: #34495e; color: #fff; display:flex; align-items:center; justify-content:space-between;">
+      <strong>Add New Order</strong>
+      <button onclick="closeAddOrderModal()" style="background: transparent; border: 0; color: #fff; font-size: 18px; cursor: pointer;">✕</button>
+    </div>
+    <form id="addOrderForm" onsubmit="submitAddOrderForm(event)" style="padding: 20px;">
+      <div style="display:grid; grid-template-columns: 1fr; gap: 12px;">
+        <div>
+          <label>Order Items</label>
+          <div id="orderItems" style="display:flex; flex-direction:column; gap:8px; margin-top:6px;"></div>
+          <button type="button" class="btn btn-primary" style="margin-top:8px;" onclick="addOrderItemRow()">+ Add pizza</button>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label>Status</label>
+            <select name="status" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+              <option value="0">Pending</option>
+              <option value="1">Processing</option>
+              <option value="2">Completed</option>
+              <option value="3">Cancelled</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div id="addOrderError" style="display:none; margin-top:12px; padding:10px; border-radius:8px; background:#f8d7da; color:#721c24;">Error</div>
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+        <button type="button" class="btn btn-warning" onclick="closeAddOrderModal()">Cancel</button>
+        <button type="submit" class="btn btn-success">Create</button>
+      </div>
+    </form>
+  </div>
+  
+</div>
+
+<!-- View Order Modal -->
+<div id="viewOrderModal" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 9999;">
+  <div style="max-width: 720px; margin: 5% auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25);">
+    <div style="padding: 16px 20px; background: #34495e; color: #fff; display:flex; align-items:center; justify-content:space-between;">
+      <strong>Order Detail</strong>
+      <button onclick="closeViewOrderModal()" style="background: transparent; border: 0; color: #fff; font-size: 18px; cursor: pointer;">✕</button>
+    </div>
+    <div id="viewOrderContent" style="padding: 20px;">
+      Loading...
+    </div>
+  </div>
+</div>
+
 <script>
     function filterByStatus(status) {
         if (status === '') {
             window.location.href = 'manage-orders';
         } else {
             window.location.href = 'manage-orders?action=filter&status=' + status;
+        }
+    }
+
+    function openViewOrderModal(orderId) {
+        const modal = document.getElementById('viewOrderModal');
+        const content = document.getElementById('viewOrderContent');
+        content.innerHTML = 'Loading...';
+        modal.style.display = 'block';
+        fetch(`OrderController?action=getOrder&id=${orderId}`)
+          .then(r => r.json())
+          .then(data => {
+            if (!data.success) {
+                content.innerHTML = `<div class="alert error">${data.message || 'Không tải được đơn hàng'}</div>`;
+                return;
+            }
+            const o = data.order;
+            const detailsRows = (o.details || []).map(d => `
+              <tr>
+                <td>${d.productID}</td>
+                <td>${d.quantity}</td>
+                <td>${d.totalPrice.toLocaleString()}</td>
+                <td>${d.specialInstructions || ''}</td>
+              </tr>
+            `).join('');
+            content.innerHTML = `
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                <div><strong>Order #</strong> ${o.orderID}</div>
+                <div><strong>Status</strong> ${o.status}</div>
+                <div><strong>Payment</strong> ${o.paymentStatus || 'Unpaid'}</div>
+                <div><strong>Total</strong> ${o.totalPrice.toLocaleString()}</div>
+              </div>
+              <div class="table-container">
+                <div class="table-header">Items</div>
+                <table>
+                  <thead>
+                    <tr><th>Product</th><th>Qty</th><th>Total</th><th>Note</th></tr>
+                  </thead>
+                  <tbody>${detailsRows || '<tr><td colspan="4">No items</td></tr>'}</tbody>
+                </table>
+              </div>
+            `;
+          })
+          .catch(err => {
+            content.innerHTML = `<div class="alert error">Lỗi: ${err && err.message ? err.message : err}</div>`;
+          });
+    }
+
+    function closeViewOrderModal() {
+        document.getElementById('viewOrderModal').style.display = 'none';
+    }
+
+    function openAddOrderModal() {
+        document.getElementById('addOrderModal').style.display = 'block';
+        document.getElementById('addOrderError').style.display = 'none';
+        document.getElementById('addOrderError').textContent = '';
+    }
+
+    function closeAddOrderModal() {
+        document.getElementById('addOrderModal').style.display = 'none';
+        const form = document.getElementById('addOrderForm');
+        if (form) form.reset();
+    }
+
+    function orderItemRowTemplate() {
+        return `
+        <div class="order-item-row" style="display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:8px; align-items:end;">
+          <div>
+            <label>Pizza Type</label>
+            <select name="pizzaType" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+              <option value="Pepperoni">Pepperoni</option>
+              <option value="Hawaiian">Hawaiian</option>
+              <option value="Margherita">Margherita</option>
+            </select>
+          </div>
+          <div>
+            <label>Quantity</label>
+            <input name="quantity" type="number" min="1" value="1" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;" required />
+          </div>
+          <div>
+            <label>Unit Price</label>
+            <input name="price" type="number" min="1000" step="500" value="200000" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;" required />
+          </div>
+          <div>
+            <button type="button" class="btn btn-danger" onclick="this.closest('.order-item-row').remove()">Remove</button>
+          </div>
+        </div>`;
+    }
+
+    function addOrderItemRow() {
+        const container = document.getElementById('orderItems');
+        container.insertAdjacentHTML('beforeend', orderItemRowTemplate());
+    }
+
+    // init with one row
+    (function initModal() {
+        if (document.getElementById('orderItems').children.length === 0) {
+            addOrderItemRow();
+        }
+    })();
+
+    async function submitAddOrderForm(event) {
+        event.preventDefault();
+        const form = document.getElementById('addOrderForm');
+        const errorBox = document.getElementById('addOrderError');
+
+        const formData = new URLSearchParams();
+        formData.append('action', 'add');
+        formData.append('status', form.status.value);
+
+        const rows = document.querySelectorAll('#orderItems .order-item-row');
+        if (rows.length === 0) {
+            errorBox.style.display = 'block';
+            errorBox.textContent = 'Vui lòng thêm ít nhất 1 pizza';
+            return;
+        }
+        for (const row of rows) {
+            const pizzaType = row.querySelector('select[name="pizzaType"]').value;
+            const quantity = row.querySelector('input[name="quantity"]').value;
+            const price = row.querySelector('input[name="price"]').value;
+            formData.append('pizzaType', pizzaType);
+            formData.append('quantity', quantity);
+            formData.append('price', price);
+        }
+
+        try {
+            const res = await fetch('OrderController', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData.toString()
+            });
+
+            const text = await res.text();
+            if (!res.ok) {
+                errorBox.style.display = 'block';
+                errorBox.textContent = text || 'Không thể tạo đơn hàng.';
+                return;
+            }
+
+            // Success: close modal and refresh list
+            closeAddOrderModal();
+            window.location.href = 'manage-orders';
+        } catch (e) {
+            errorBox.style.display = 'block';
+            errorBox.textContent = 'Lỗi kết nối: ' + (e && e.message ? e.message : e);
         }
     }
 </script>
