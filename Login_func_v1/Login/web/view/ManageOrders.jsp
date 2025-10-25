@@ -99,7 +99,7 @@
             <div class="filter-group">
                 <label>Quick Actions:</label>
                 <a href="manage-orders" class="btn btn-primary">Refresh</a>
-                <a href="add-order" class="btn btn-success">New Order</a>
+                <a href="manage-orders?action=new" class="btn btn-success">New Order</a>
                 <a href="dashboard" class="btn btn-info">Dashboard</a>
             </div>
         </div>
