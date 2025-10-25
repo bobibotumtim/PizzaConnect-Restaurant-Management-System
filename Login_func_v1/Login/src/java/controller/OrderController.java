@@ -43,28 +43,53 @@ public class OrderController extends HttpServlet {
                 req.getRequestDispatcher("/view/order-form.jsp").forward(req, resp);
                 break;
 
-            case "getOrder":
-                // Trả về JSON cho AJAX request
+            case "getOrder": {
+                // Trả về JSON cho AJAX request (bao gồm cả details)
                 int getOrderId = Integer.parseInt(req.getParameter("id"));
-                Order getOrder = dao.getOrderById(getOrderId);
+                Order order = dao.getOrderById(getOrderId);
+                List<OrderDetail> details = dao.getOrderDetailsByOrderId(getOrderId);
                 resp.setContentType("application/json");
                 resp.setCharacterEncoding("UTF-8");
-                if (getOrder != null) {
-                    resp.getWriter().write("{\"success\": true, \"order\": {" +
-                        "\"orderID\": " + getOrder.getOrderID() + "," +
-                        "\"customerID\": " + getOrder.getCustomerID() + "," +
-                        "\"employeeID\": " + getOrder.getEmployeeID() + "," +
-                        "\"tableID\": " + getOrder.getTableID() + "," +
-                        "\"orderDate\": \"" + getOrder.getOrderDate() + "\"," +
-                        "\"status\": " + getOrder.getStatus() + "," +
-                        "\"paymentStatus\": \"" + getOrder.getPaymentStatus() + "\"," +
-                        "\"totalPrice\": " + getOrder.getTotalPrice() + "," +
-                        "\"note\": \"" + (getOrder.getNote() != null ? getOrder.getNote().replace("\"", "\\\"") : "") + "\"" +
-                        "}}");
+                if (order != null) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append('{')
+                      .append("\"success\":true,")
+                      .append("\"order\":{")
+                      .append("\"orderID\":").append(order.getOrderID()).append(',')
+                      .append("\"customerID\":").append(order.getCustomerID()).append(',')
+                      .append("\"employeeID\":").append(order.getEmployeeID()).append(',')
+                      .append("\"tableID\":").append(order.getTableID()).append(',')
+                      .append("\"orderDate\":\"").append(order.getOrderDate()).append("\",")
+                      .append("\"status\":").append(order.getStatus()).append(',')
+                      .append("\"paymentStatus\":\"").append(order.getPaymentStatus() != null ? order.getPaymentStatus() : "").append("\",")
+                      .append("\"totalPrice\":").append(order.getTotalPrice()).append(',')
+                      .append("\"note\":\"");
+                    String safeNote = order.getNote() != null ? order.getNote().replace("\\", "\\\\").replace("\"", "\\\"") : "";
+                    sb.append(safeNote).append("\",");
+                    // details
+                    sb.append("\"details\":[");
+                    for (int i = 0; i < details.size(); i++) {
+                        OrderDetail d = details.get(i);
+                        String si = d.getSpecialInstructions();
+                        String safeSI = si != null ? si.replace("\\", "\\\\").replace("\"", "\\\"") : "";
+                        sb.append('{')
+                          .append("\"orderDetailID\":").append(d.getOrderDetailID()).append(',')
+                          .append("\"productID\":").append(d.getProductID()).append(',')
+                          .append("\"quantity\":").append(d.getQuantity()).append(',')
+                          .append("\"totalPrice\":").append(d.getTotalPrice()).append(',')
+                          .append("\"specialInstructions\":\"").append(safeSI).append("\"")
+                          .append('}');
+                        if (i < details.size() - 1) sb.append(',');
+                    }
+                    sb.append(']');
+                    sb.append('}'); // end order
+                    sb.append('}'); // end root
+                    resp.getWriter().write(sb.toString());
                 } else {
                     resp.getWriter().write("{\"success\": false, \"message\": \"Order not found\"}");
                 }
                 break;
+            }
 
             case "delete":
                 int delId = Integer.parseInt(req.getParameter("id"));

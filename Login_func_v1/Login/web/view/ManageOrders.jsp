@@ -160,7 +160,7 @@
                                 </td>
                                 <td>
                                     <div class="actions">
-                                        <a href="manage-orders?action=view&orderId=<%= order.getOrderID() %>" class="btn btn-info">View</a>
+                                        <a href="#" onclick="openViewOrderModal(<%= order.getOrderID() %>); return false;" class="btn btn-info">View</a>
                                         <% if (order.getStatus() == 0) { %>
                                             <form style="display: inline;" method="post" onsubmit="return confirm('Mark this order as Processing?')">
                                                 <input type="hidden" name="action" value="updateStatus">
@@ -247,6 +247,19 @@
   
 </div>
 
+<!-- View Order Modal -->
+<div id="viewOrderModal" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 9999;">
+  <div style="max-width: 720px; margin: 5% auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25);">
+    <div style="padding: 16px 20px; background: #34495e; color: #fff; display:flex; align-items:center; justify-content:space-between;">
+      <strong>Order Detail</strong>
+      <button onclick="closeViewOrderModal()" style="background: transparent; border: 0; color: #fff; font-size: 18px; cursor: pointer;">✕</button>
+    </div>
+    <div id="viewOrderContent" style="padding: 20px;">
+      Loading...
+    </div>
+  </div>
+</div>
+
 <script>
     function filterByStatus(status) {
         if (status === '') {
@@ -254,6 +267,54 @@
         } else {
             window.location.href = 'manage-orders?action=filter&status=' + status;
         }
+    }
+
+    function openViewOrderModal(orderId) {
+        const modal = document.getElementById('viewOrderModal');
+        const content = document.getElementById('viewOrderContent');
+        content.innerHTML = 'Loading...';
+        modal.style.display = 'block';
+        fetch(`OrderController?action=getOrder&id=${orderId}`)
+          .then(r => r.json())
+          .then(data => {
+            if (!data.success) {
+                content.innerHTML = `<div class="alert error">${data.message || 'Không tải được đơn hàng'}</div>`;
+                return;
+            }
+            const o = data.order;
+            const detailsRows = (o.details || []).map(d => `
+              <tr>
+                <td>${d.productID}</td>
+                <td>${d.quantity}</td>
+                <td>${d.totalPrice.toLocaleString()}</td>
+                <td>${d.specialInstructions || ''}</td>
+              </tr>
+            `).join('');
+            content.innerHTML = `
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                <div><strong>Order #</strong> ${o.orderID}</div>
+                <div><strong>Status</strong> ${o.status}</div>
+                <div><strong>Payment</strong> ${o.paymentStatus || 'Unpaid'}</div>
+                <div><strong>Total</strong> ${o.totalPrice.toLocaleString()}</div>
+              </div>
+              <div class="table-container">
+                <div class="table-header">Items</div>
+                <table>
+                  <thead>
+                    <tr><th>Product</th><th>Qty</th><th>Total</th><th>Note</th></tr>
+                  </thead>
+                  <tbody>${detailsRows || '<tr><td colspan="4">No items</td></tr>'}</tbody>
+                </table>
+              </div>
+            `;
+          })
+          .catch(err => {
+            content.innerHTML = `<div class="alert error">Lỗi: ${err && err.message ? err.message : err}</div>`;
+          });
+    }
+
+    function closeViewOrderModal() {
+        document.getElementById('viewOrderModal').style.display = 'none';
     }
 
     function openAddOrderModal() {
