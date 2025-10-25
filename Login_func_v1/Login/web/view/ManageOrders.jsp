@@ -344,6 +344,12 @@
                   '<button type="button" class="btn btn-primary" style="margin-top:8px;" onclick="addEditOrderItemRow()">+ Add pizza</button>'+
                 '</div>'+
               '</div>';
+
+            // If order has no items, add one editable row by default
+            var itemsWrap = document.getElementById('editOrderItems');
+            if (itemsWrap && itemsWrap.children.length === 0) {
+              addEditOrderItemRow();
+            }
           })
           .catch(err => {
             content.innerHTML = `<div class="alert error">Lỗi: ${err && err.message ? err.message : err}</div>`;
