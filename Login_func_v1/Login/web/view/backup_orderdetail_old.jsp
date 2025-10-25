@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.List" %>
 <%@ page import="models.Order" %>
-<%@ page import="models.Orderdetail" %>
+<%@ page import="models.OrderDetail" %>
 <!DOCTYPE html>
 <html>
 <head>
