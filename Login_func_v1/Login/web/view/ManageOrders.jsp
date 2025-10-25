@@ -444,6 +444,7 @@
         </div>
 
         <script>
+            const ctx = '${pageContext.request.contextPath}';
             function filterByStatus(status) {
                 if (status === '') {
                     window.location.href = 'manage-orders';
@@ -457,7 +458,7 @@
                 const content = document.getElementById('viewOrderContent');
                 content.innerHTML = 'Loading...';
                 modal.style.display = 'block';
-                fetch(`OrderController?action=getOrder&id=${orderId}`)
+                fetch(`${ctx}/OrderController?action=getOrder&id=${orderId}`)
                         .then(r => r.json())
                         .then(data => {
                             if (!data.success) {
@@ -577,7 +578,7 @@
                 }
 
                 try {
-                    const res = await fetch('OrderController', {
+                    const res = await fetch(`${ctx}/OrderController`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
                         body: formData.toString()
