@@ -261,11 +261,12 @@
 </div>
 
 <script>
+    const ctx = '${pageContext.request.contextPath}';
     function filterByStatus(status) {
         if (status === '') {
-            window.location.href = 'manage-orders';
+            window.location.href = `${ctx}/manage-orders`;
         } else {
-            window.location.href = 'manage-orders?action=filter&status=' + status;
+            window.location.href = `${ctx}/manage-orders?action=filter&status=${status}`;
         }
     }
 
@@ -274,7 +275,7 @@
         const content = document.getElementById('viewOrderContent');
         content.innerHTML = 'Loading...';
         modal.style.display = 'block';
-        fetch(`OrderController?action=getOrder&id=${orderId}`)
+        fetch(`${ctx}/manage-orders?action=getOrder&id=${orderId}`)
           .then(r => r.json())
           .then(data => {
             if (!data.success) {
@@ -391,7 +392,7 @@
         }
 
         try {
-            const res = await fetch('OrderController', {
+            const res = await fetch(`${ctx}/manage-orders`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: formData.toString()
@@ -406,7 +407,7 @@
 
             // Success: close modal and refresh list
             closeAddOrderModal();
-            window.location.href = 'manage-orders';
+            window.location.href = `${ctx}/manage-orders`;
         } catch (e) {
             errorBox.style.display = 'block';
             errorBox.textContent = 'Lỗi kết nối: ' + (e && e.message ? e.message : e);
