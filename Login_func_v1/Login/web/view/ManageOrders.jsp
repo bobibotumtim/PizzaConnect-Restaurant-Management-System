@@ -266,7 +266,15 @@
 </div>
 
 <script>
-    const ctx = '${pageContext.request.contextPath}';
+    const ctx = (function(){
+        try {
+            var c = '${pageContext.request.contextPath}';
+            if (c && c !== '${' + 'pageContext.request.contextPath' + '}') return c;
+            if (c && c !== '') return c;
+        } catch(e) {}
+        var seg = (window.location.pathname || '').split('/');
+        return seg.length > 1 ? ('/' + seg[1]) : '';
+    })();
     function filterByStatus(status) {
         if (status === '') {
             window.location.href = `${ctx}/manage-orders`;
@@ -282,7 +290,11 @@
         errorBox.style.display = 'none';
         content.innerHTML = 'Loading...';
         modal.style.display = 'block';
-        fetch(`${ctx}/manage-orders?action=getOrder&id=${orderId}`)
+        if (!orderId || String(orderId).trim() === '') {
+            content.innerHTML = '<div class="alert error">Không tìm thấy OrderID để tải chi tiết.</div>';
+            return;
+        }
+        fetch(`${ctx}/manage-orders?action=getOrder&id=${encodeURIComponent(orderId)}`)
           .then(r => r.json())
           .then(data => {
             if (!data.success) {
