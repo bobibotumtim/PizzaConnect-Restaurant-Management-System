@@ -155,8 +155,8 @@ public class OrderDAO extends DBContext {
                 o.setTotalPrice(rs.getDouble("TotalPrice"));
                 o.setNote(rs.getString("Note"));
                 
-                // Load OrderDetails cho mỗi order
-                List<OrderDetail> details = getOrderDetailsByOrderId(o.getOrderID());
+                // Load OrderDetails cho mỗi order (dùng cùng connection, tránh đóng connection ngoài vòng lặp)
+                List<OrderDetail> details = getOrderDetailsByOrderId(o.getOrderID(), con);
                 o.setDetails(details);
                 
                 list.add(o);
@@ -199,8 +199,8 @@ public class OrderDAO extends DBContext {
         return null;
     }
 
-    // 🟢 Lấy danh sách chi tiết đơn hàng
-    public List<OrderDetail> getOrderDetailsByOrderId(int orderId) {
+    // 🟢 Lấy danh sách chi tiết đơn hàng – sử dụng connection truyền vào (không đóng connection cha)
+    private List<OrderDetail> getOrderDetailsByOrderId(int orderId, Connection con) {
         List<OrderDetail> list = new ArrayList<>();
         String sql = """
             SELECT od.*, p.ProductName 
@@ -208,9 +208,7 @@ public class OrderDAO extends DBContext {
             LEFT JOIN Product p ON od.ProductID = p.ProductID
             WHERE od.OrderID = ?
         """;
-        try (Connection con = useConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, orderId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -220,23 +218,31 @@ public class OrderDAO extends DBContext {
                     detail.setProductID(rs.getInt("ProductID"));
                     detail.setQuantity(rs.getInt("Quantity"));
                     detail.setTotalPrice(rs.getDouble("TotalPrice"));
-                    
-                    // Thêm thông tin sản phẩm vào SpecialInstructions
                     String productName = rs.getString("ProductName");
                     String specialInstructions = rs.getString("SpecialInstructions");
                     if (productName != null) {
-                        detail.setSpecialInstructions("Loại: " + productName + 
-                            (specialInstructions != null ? " - " + specialInstructions : ""));
+                        detail.setSpecialInstructions("Loại: " + productName + (specialInstructions != null ? " - " + specialInstructions : ""));
                     } else {
                         detail.setSpecialInstructions(specialInstructions);
                     }
-                    
                     list.add(detail);
                 }
             }
-
         } catch (Exception e) {
             System.out.println("Error getting order details: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    // 🟢 Lấy danh sách chi tiết đơn hàng – API công khai (dùng connection riêng, an toàn khi gọi độc lập)
+    public List<OrderDetail> getOrderDetailsByOrderId(int orderId) {
+        List<OrderDetail> list = new ArrayList<>();
+        try (Connection con = useConnection()) {
+            if (con == null) return list;
+            return getOrderDetailsByOrderId(orderId, con);
+        } catch (Exception e) {
+            System.out.println("Error getting order details (public): " + e.getMessage());
             e.printStackTrace();
         }
         return list;
