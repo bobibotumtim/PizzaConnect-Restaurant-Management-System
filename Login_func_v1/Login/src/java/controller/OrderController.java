@@ -131,35 +131,23 @@ public class OrderController extends HttpServlet {
     
     private void handleAddOrderFromModal(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        
         try {
             System.out.println("=== handleAddOrderFromModal START ===");
-            
-            String customerName = req.getParameter("customerName");
-            String pizzaType = req.getParameter("pizzaType");
-            int quantity = parseIntSafe(req.getParameter("quantity"));
-            double price = parseDoubleSafe(req.getParameter("price"));
-            double totalPrice = quantity * price;
+
+            String[] pizzaTypes = req.getParameterValues("pizzaType");
+            String[] quantities = req.getParameterValues("quantity");
+            String[] prices = req.getParameterValues("price");
             int status = parseIntSafe(req.getParameter("status"));
-            
-            System.out.println("Customer: " + customerName + ", Pizza: " + pizzaType + 
-                            ", Qty: " + quantity + ", Price: " + price + ", Status: " + status);
-            
-            // Validation
-            if (customerName == null || customerName.trim().isEmpty()) {
-                System.out.println("ERROR: Customer name is empty");
+
+            // Validation: at least 1 item
+            if (pizzaTypes == null || quantities == null || prices == null
+                    || pizzaTypes.length == 0 || quantities.length == 0 || prices.length == 0
+                    || !(pizzaTypes.length == quantities.length && quantities.length == prices.length)) {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().write("Tên khách hàng không được để trống");
+                resp.getWriter().write("Dữ liệu món không hợp lệ");
                 return;
             }
-            
-            if (quantity <= 0 || price <= 0) {
-                System.out.println("ERROR: Invalid quantity or price");
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().write("Số lượng và giá phải lớn hơn 0");
-                return;
-            }
-            
+
             // Kiểm tra kết nối database
             OrderDAO dao = new OrderDAO();
             if (dao.getConnection() == null) {
@@ -168,33 +156,41 @@ public class OrderController extends HttpServlet {
                 resp.getWriter().write("Không thể kết nối database");
                 return;
             }
-            
-            // Tạo OrderDetail cho pizza
+
+            // Tạo danh sách chi tiết từ nhiều dòng
             List<OrderDetail> details = new ArrayList<>();
-            OrderDetail detail = new OrderDetail();
-            detail.setProductID(1); // Giả sử product ID = 1 cho pizza
-            detail.setQuantity(quantity);
-            detail.setTotalPrice(totalPrice);
-            detail.setSpecialInstructions("Loại: " + pizzaType);
-            details.add(detail);
-            
+            for (int i = 0; i < pizzaTypes.length; i++) {
+                int qty = parseIntSafe(quantities[i]);
+                double unitPrice = parseDoubleSafe(prices[i]);
+                if (qty <= 0 || unitPrice <= 0) {
+                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    resp.getWriter().write("Số lượng và giá phải lớn hơn 0 (dòng " + (i + 1) + ")");
+                    return;
+                }
+                OrderDetail d = new OrderDetail();
+                d.setProductID(1); // Map tạm: 1 = pizza chung
+                d.setQuantity(qty);
+                d.setTotalPrice(qty * unitPrice);
+                d.setSpecialInstructions("Loại: " + pizzaTypes[i]);
+                details.add(d);
+            }
+
             System.out.println("Creating order with details: " + details.size());
-            
+
             // Tạo đơn hàng với customerID = 1, employeeID = 1, tableID = 1
-            int orderId = dao.createOrder(1, 1, 1, "Đơn hàng từ modal: " + customerName, details);
-            
+            int orderId = dao.createOrder(1, 1, 1, "Đơn hàng từ modal", details);
             System.out.println("Order created with ID: " + orderId);
-            
+
             // Cập nhật trạng thái nếu khác pending
             if (status != 0) {
                 dao.updateOrderStatus(orderId, status);
                 System.out.println("Order status updated to: " + status);
             }
-            
+
             resp.setStatus(HttpServletResponse.SC_OK);
             resp.getWriter().write("Đơn hàng đã được thêm thành công");
             System.out.println("=== handleAddOrderFromModal SUCCESS ===");
-            
+
         } catch (Exception e) {
             System.out.println("=== handleAddOrderFromModal ERROR ===");
             e.printStackTrace();
