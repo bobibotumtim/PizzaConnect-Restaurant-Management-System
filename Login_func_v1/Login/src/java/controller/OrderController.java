@@ -113,11 +113,11 @@ public class OrderController extends HttpServlet {
                 int completedOrders = 0;
                 double totalRevenue = 0.0;
                 
-                for (Order order : orders) {
-                    if (order.getStatus() == 2) { // Completed
+                for (Order o : orders) {
+                    if (o.getStatus() == 2) { // Completed
                         completedOrders++;
                     }
-                    totalRevenue += order.getTotalPrice();
+                    totalRevenue += o.getTotalPrice();
                 }
                 
                 req.setAttribute("totalOrders", totalOrders);
@@ -169,7 +169,7 @@ public class OrderController extends HttpServlet {
                     || pizzaTypes.length == 0 || quantities.length == 0 || prices.length == 0
                     || !(pizzaTypes.length == quantities.length && quantities.length == prices.length)) {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().write("Dữ liệu món không hợp lệ");
+                resp.getWriter().write("Invalid Product Data");
                 return;
             }
 
