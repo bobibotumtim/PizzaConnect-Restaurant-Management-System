@@ -120,9 +120,6 @@ public class ProductDAO extends DBContext {
             map.put(rs.getInt("ProductID"), rs.getDouble("AvailableQuantity"));
         }
 
-        System.out.println("✅ Loaded " + map.size() + " entries");
-        map.forEach((id, qty) -> System.out.println("ProductID=" + id + " | Qty=" + qty));
-
     } catch (Exception e) {
         e.printStackTrace();
     }
