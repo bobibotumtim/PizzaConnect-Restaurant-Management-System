@@ -235,6 +235,47 @@
             }
         </style>
     </head>
+    <!-- Edit Order Modal -->
+    <div id="editOrderModal" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 9999;">
+        <div style="max-width: 600px; margin: 5% auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25);">
+            <div style="padding: 16px 20px; background: #34495e; color: #fff; display:flex; align-items:center; justify-content:space-between;">
+                <strong id="editModalTitle">Edit Order</strong>
+                <button onclick="closeEditOrderModal()" style="background: transparent; border: 0; color: #fff; font-size: 18px; cursor: pointer;">✕</button>
+            </div>
+
+            <form id="editOrderForm" onsubmit="submitEditOrderForm(event)" style="padding: 20px;">
+                <input type="hidden" id="editOrderID" name="orderID">
+
+                <div style="margin-bottom: 12px;">
+                    <label>Status</label>
+                    <select id="editStatus" name="status" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                        <option value="0">Pending</option>
+                        <option value="1">Processing</option>
+                        <option value="2">Completed</option>
+                        <option value="3">Cancelled</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label>Payment Status</label>
+                    <select id="editPaymentStatus" name="paymentStatus" required style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                        <option value="Unpaid">Unpaid</option>
+                        <option value="Paid">Paid</option>
+                    </select>
+                </div>
+
+                <div id="editOrderError" style="display:none; margin-top:12px; padding:10px; border-radius:8px; background:#f8d7da; color:#721c24;">
+                    Error updating order.
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+                    <button type="button" class="btn btn-warning" onclick="closeEditOrderModal()">Cancel</button>
+                    <button type="submit" class="btn btn-success">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <body>
         <%
             User currentUser = (User) request.getAttribute("currentUser");
@@ -348,7 +389,7 @@
                                 </td>
                                 <td>
                                     <div class="actions">
-                                        <a href="#" onclick="openViewOrderModal(<%= order.getOrderID() %>); return false;" class="btn btn-info">Edit</a>
+                                        <a href="#" onclick="openEditOrderModal(<%= order.getOrderID() %>); return false;" class="btn btn-info">Edit</a>
                                         <% if (order.getStatus() == 0) { %>
                                         <form style="display: inline;" method="post" onsubmit="return confirm('Mark this order as Processing?')">
                                             <input type="hidden" name="action" value="updateStatus">
@@ -431,6 +472,7 @@
                         <button type="submit" class="btn btn-success">Create</button>
                     </div>
                 </form>
+
             </div>
 
         </div>
@@ -604,6 +646,156 @@
                             errorBox.textContent = 'Lỗi kết nối: ' + (e && e.message ? e.message : e);
                         }
                     }
+                    function openEditOrderModal(orderId) {
+                        // Gửi yêu cầu lấy dữ liệu order
+                        fetch(`OrderServlet?action=getOrder&id=${orderId}`)
+                                .then(res => res.json())
+                                .then(order => {
+                                    document.getElementById("modalTitle").textContent = `Edit Order #${order.orderID}`;
+                                    document.getElementById("orderID").value = order.orderID;
+                                    document.getElementById("customerID").value = order.customerID;
+                                    document.getElementById("status").value = order.status;
+
+                                    const table = document.getElementById("pizzaItems");
+                                    table.innerHTML = ""; // clear old
+
+                                    order.items.forEach((item, i) => {
+                                        const row = `
+                <tr>
+                    <td><input name="pizzaName[]" value="${item.pizzaName}" required></td>
+                    <td><input name="quantity[]" type="number" value="${item.quantity}" min="1" required></td>
+                    <td><input name="price[]" type="number" value="${item.price}" min="0" required></td>
+                    <td><button type="button" onclick="this.closest('tr').remove()">X</button></td>
+                </tr>`;
+                                        table.insertAdjacentHTML("beforeend", row);
+                                    });
+
+                                    document.getElementById("orderModal").style.display = "block";
+                                    document.getElementById("saveBtn").textContent = "Save Changes";
+                                    document.getElementById("orderForm").setAttribute("data-mode", "edit");
+                                });
+                    }
+
+                    function closeOrderModal() {
+                        document.getElementById("orderModal").style.display = "none";
+                    }
+
+                    document.getElementById("orderForm").addEventListener("submit", function (e) {
+                        e.preventDefault();
+
+                        const mode = this.getAttribute("data-mode");
+                        const formData = new FormData(this);
+
+                        if (mode === "edit") {
+                            formData.append("action", "update");
+                        } else {
+                            formData.append("action", "create");
+                        }
+
+                        fetch("OrderServlet", {
+                            method: "POST",
+                            body: formData
+                        })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        alert("Order saved successfully!");
+                                        closeOrderModal();
+                                        location.reload();
+                                    } else {
+                                        alert("Failed to save order!");
+                                    }
+                                });
+                    });
+                    
+                    // === EDIT ORDER SECTION ===
+                    function openEditOrderModal(orderId) {
+                        const modal = document.getElementById("editOrderModal");
+                        const errorBox = document.getElementById("editOrderError");
+                        errorBox.style.display = "none";
+
+                        fetch(`${ctx}/manage-orders?action=getOrder&id=${orderId}`)
+                                        .then(res => res.json())
+                                        .then(data => {
+                                            if (!data.success) {
+                                                errorBox.style.display = "block";
+                                                errorBox.textContent = data.message || "Could not load order data.";
+                                                return;
+                                            }
+
+                                            const o = data.order;
+                                            document.getElementById("editOrderID").value = o.orderID;
+                                            document.getElementById("editStatus").value = o.status;
+                                            document.getElementById("editPaymentStatus").value = o.paymentStatus || "Unpaid";
+                                            document.getElementById("editModalTitle").textContent = `Edit Order #${o.orderID}`;
+
+                                            modal.style.display = "block";
+                                        })
+                                        .catch(err => {
+                                            errorBox.style.display = "block";
+                                            errorBox.textContent = "Error: " + err.message;
+                                        });
+                            }
+
+                            function closeEditOrderModal() {
+                                document.getElementById("editOrderModal").style.display = "none";
+                            }
+
+                            async function submitEditOrderForm(event) {
+                                event.preventDefault();
+                                const errorBox = document.getElementById("editOrderError");
+                                errorBox.style.display = "none";
+
+                                const form = document.getElementById("editOrderForm");
+                                const formData = new URLSearchParams();
+                                formData.append("action", "update");
+                                formData.append("orderID", form.orderID.value);
+                                formData.append("status", form.status.value);
+                                formData.append("paymentStatus", form.paymentStatus.value);
+
+                                try {
+                                    const res = await fetch(`${ctx}/manage-orders`, {
+                                        method: "POST",
+                                        headers: {"Content-Type": "application/x-www-form-urlencoded"},
+                                        body: formData.toString()
+                                    });
+                                    const result = await res.json();
+
+                                    if (result.success) {
+                                        closeEditOrderModal();
+                                        alert("✅ Order updated successfully!");
+                                        window.location.reload();
+                                    } else {
+                                        errorBox.style.display = "block";
+                                        errorBox.textContent = result.message || "Failed to update order.";
+                                    }
+                                } catch (err) {
+                                    errorBox.style.display = "block";
+                                    errorBox.textContent = "Network error: " + err.message;
+                                }
+                            }
+document.addEventListener("DOMContentLoaded", function() {
+    // Mở modal Add
+    document.getElementById("btnAddOrder")?.addEventListener("click", function() {
+        document.getElementById("orderForm").reset();
+        document.getElementById("modalTitle").textContent = "Add New Order";
+        document.getElementById("actionType").value = "add";
+        document.getElementById("orderModal").style.display = "block";
+    });
+
+    // Mở modal Edit
+    document.querySelectorAll(".btnEdit").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const orderId = this.getAttribute("data-id");
+            window.location.href = "manage-orders?action=edit&id=" + orderId;
+        });
+    });
+
+    // Đóng modal
+    document.getElementById("btnCloseModal")?.addEventListener("click", function() {
+        document.getElementById("orderModal").style.display = "none";
+    });
+});
         </script>
     </body>
 </html>

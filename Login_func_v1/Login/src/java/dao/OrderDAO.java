@@ -500,25 +500,29 @@ public class OrderDAO extends DBContext {
     }
 
     // 🟢 Cập nhật đơn hàng (form sửa)
-    public void update(Order o) {
-        String sql = """
-            UPDATE [Order]
-            SET CustomerID=?, EmployeeID=?, TableID=?, Status=?, PaymentStatus=?, TotalPrice=?, Note=?
-            WHERE OrderID=?
-        """;
-        try (Connection con = useConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, o.getCustomerID());
-            ps.setInt(2, o.getEmployeeID());
-            ps.setInt(3, o.getTableID());
-            ps.setInt(4, o.getStatus());
-            ps.setString(5, o.getPaymentStatus());
-            ps.setDouble(6, o.getTotalPrice());
-            ps.setString(7, o.getNote());
-            ps.setInt(8, o.getOrderID());
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public boolean update(Order o) {
+    String sql = """
+        UPDATE [Order]
+        SET CustomerID=?, EmployeeID=?, TableID=?, Status=?, PaymentStatus=?, TotalPrice=?, Note=?
+        WHERE OrderID=?
+    """;
+    try (Connection con = useConnection();
+         PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setInt(1, o.getCustomerID());
+        ps.setInt(2, o.getEmployeeID());
+        ps.setInt(3, o.getTableID());
+        ps.setInt(4, o.getStatus());
+        ps.setString(5, o.getPaymentStatus());
+        ps.setDouble(6, o.getTotalPrice());
+        ps.setString(7, o.getNote());
+        ps.setInt(8, o.getOrderID());
+
+        int rows = ps.executeUpdate();
+        return rows > 0;  // ✅ trả về true nếu có ít nhất 1 dòng được cập nhật
+    } catch (Exception e) {
+        e.printStackTrace();
+        return false;  // ✅ nếu lỗi, trả về false
     }
+}
+
 }
