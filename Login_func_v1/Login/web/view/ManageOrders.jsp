@@ -348,7 +348,7 @@
                                 </td>
                                 <td>
                                     <div class="actions">
-                                        <a href="#" onclick="openViewOrderModal(<%= order.getOrderID() %>); return false;" class="btn btn-info">View</a>
+                                        <a href="#" onclick="openViewOrderModal(<%= order.getOrderID() %>); return false;" class="btn btn-info">Edit</a>
                                         <% if (order.getStatus() == 0) { %>
                                         <form style="display: inline;" method="post" onsubmit="return confirm('Mark this order as Processing?')">
                                             <input type="hidden" name="action" value="updateStatus">
