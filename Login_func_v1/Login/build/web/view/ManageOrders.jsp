@@ -251,10 +251,15 @@
             </div>
 
             <div class="nav">
+                <%@ page import="models.User" %>
+                <%
+                    User user = (User) session.getAttribute("user");
+                %>
                 <div class="welcome">
-                    Welcome, <strong><%= currentUser != null ? currentUser.getName() : "User" %></strong>
-                    (<%= currentUser != null && currentUser.getRole() == 1 ? "Admin" : "Employee" %>)
+                    Welcome, <strong><%= user != null ? user.getName() : "User" %></strong>
+                    (<%= user != null && user.getRole() == 1 ? "Admin" : "Employee" %>)
                 </div>
+
                 <a href="Login?action=logout" class="logout">Logout</a>
             </div>
 
@@ -459,14 +464,14 @@
                 content.innerHTML = 'Loading...';
                 modal.style.display = 'block';
                 fetch(`${ctx}/manage-orders?action=getOrder&id=${orderId}`)
-                        .then(r => r.json())
-                        .then(data => {
-                            if (!data.success) {
-                                content.innerHTML = `<div class="alert error">${data.message || 'Không tải được đơn hàng'}</div>`;
-                                return;
-                            }
-                            const o = data.order;
-                            const detailsRows = (o.details || []).map(d => `
+                                .then(r => r.json())
+                                .then(data => {
+                                    if (!data.success) {
+                                        content.innerHTML = `<div class="alert error">${data.message || 'Không tải được đơn hàng'}</div>`;
+                                        return;
+                                    }
+                                    const o = data.order;
+                                    const detailsRows = (o.details || []).map(d => `
                       <tr>
                         <td>${d.productID}</td>
                         <td>${d.quantity}</td>
@@ -474,7 +479,7 @@
                         <td>${d.specialInstructions || ''}</td>
                       </tr>
                     `).join('');
-                            content.innerHTML = `
+                                    content.innerHTML = `
                       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
                         <div><strong>Order #</strong> ${o.orderID}</div>
                         <div><strong>Status</strong> ${o.status}</div>
@@ -491,31 +496,31 @@
                         </table>
                       </div>
                     `;
-                        })
-                        .catch(err => {
-                            content.innerHTML = `<div class="alert error">Lỗi: ${err && err.message ? err.message : err}</div>`;
-                        });
-            }
+                                })
+                                .catch(err => {
+                                    content.innerHTML = `<div class="alert error">Error_notfound: ${err && err.message ? err.message : err}</div>`;
+                                });
+                    }
 
-            function closeViewOrderModal() {
-                document.getElementById('viewOrderModal').style.display = 'none';
-            }
+                    function closeViewOrderModal() {
+                        document.getElementById('viewOrderModal').style.display = 'none';
+                    }
 
-            function openAddOrderModal() {
-                document.getElementById('addOrderModal').style.display = 'block';
-                document.getElementById('addOrderError').style.display = 'none';
-                document.getElementById('addOrderError').textContent = '';
-            }
+                    function openAddOrderModal() {
+                        document.getElementById('addOrderModal').style.display = 'block';
+                        document.getElementById('addOrderError').style.display = 'none';
+                        document.getElementById('addOrderError').textContent = '';
+                    }
 
-            function closeAddOrderModal() {
-                document.getElementById('addOrderModal').style.display = 'none';
-                const form = document.getElementById('addOrderForm');
-                if (form)
-                    form.reset();
-            }
+                    function closeAddOrderModal() {
+                        document.getElementById('addOrderModal').style.display = 'none';
+                        const form = document.getElementById('addOrderForm');
+                        if (form)
+                            form.reset();
+                    }
 
-            function orderItemRowTemplate() {
-                return `
+                    function orderItemRowTemplate() {
+                        return `
                 <div class="order-item-row" style="display:grid; grid-template-columns: 2fr 1fr 1fr auto; gap:8px; align-items:end;">
                   <div>
                     <label>Pizza Type</label>
@@ -539,66 +544,66 @@
                     <button type="button" class="btn btn-danger" onclick="this.closest('.order-item-row').remove()">Remove</button>
                   </div>
                 </div>`;
-            }
-
-            function addOrderItemRow() {
-                const container = document.getElementById('orderItems');
-                container.insertAdjacentHTML('beforeend', orderItemRowTemplate());
-            }
-
-            // init with one row
-            (function initModal() {
-                if (document.getElementById('orderItems').children.length === 0) {
-                    addOrderItemRow();
-                }
-            })();
-
-            async function submitAddOrderForm(event) {
-                event.preventDefault();
-                const form = document.getElementById('addOrderForm');
-                const errorBox = document.getElementById('addOrderError');
-
-                const formData = new URLSearchParams();
-                formData.append('action', 'add');
-                formData.append('status', form.status.value);
-
-                const rows = document.querySelectorAll('#orderItems .order-item-row');
-                if (rows.length === 0) {
-                    errorBox.style.display = 'block';
-                    errorBox.textContent = 'Vui lòng thêm ít nhất 1 pizza';
-                    return;
-                }
-                for (const row of rows) {
-                    const pizzaType = row.querySelector('select[name="pizzaType"]').value;
-                    const quantity = row.querySelector('input[name="quantity"]').value;
-                    const price = row.querySelector('input[name="price"]').value;
-                    formData.append('pizzaType', pizzaType);
-                    formData.append('quantity', quantity);
-                    formData.append('price', price);
-                }
-
-                try {
-                    const res = await fetch(`${ctx}/manage-orders`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                        body: formData.toString()
-                    });
-
-                    const text = await res.text();
-                    if (!res.ok) {
-                        errorBox.style.display = 'block';
-                        errorBox.textContent = text || 'Không thể tạo đơn hàng.';
-                        return;
                     }
 
-                    // Success: close modal and refresh list
-                    closeAddOrderModal();
-                    window.location.href = 'manage-orders';
-                } catch (e) {
-                    errorBox.style.display = 'block';
-                    errorBox.textContent = 'Lỗi kết nối: ' + (e && e.message ? e.message : e);
-                }
-            }
+                    function addOrderItemRow() {
+                        const container = document.getElementById('orderItems');
+                        container.insertAdjacentHTML('beforeend', orderItemRowTemplate());
+                    }
+
+                    // init with one row
+                    (function initModal() {
+                        if (document.getElementById('orderItems').children.length === 0) {
+                            addOrderItemRow();
+                        }
+                    })();
+
+                    async function submitAddOrderForm(event) {
+                        event.preventDefault();
+                        const form = document.getElementById('addOrderForm');
+                        const errorBox = document.getElementById('addOrderError');
+
+                        const formData = new URLSearchParams();
+                        formData.append('action', 'add');
+                        formData.append('status', form.status.value);
+
+                        const rows = document.querySelectorAll('#orderItems .order-item-row');
+                        if (rows.length === 0) {
+                            errorBox.style.display = 'block';
+                            errorBox.textContent = 'Vui lòng thêm ít nhất 1 pizza';
+                            return;
+                        }
+                        for (const row of rows) {
+                            const pizzaType = row.querySelector('select[name="pizzaType"]').value;
+                            const quantity = row.querySelector('input[name="quantity"]').value;
+                            const price = row.querySelector('input[name="price"]').value;
+                            formData.append('pizzaType', pizzaType);
+                            formData.append('quantity', quantity);
+                            formData.append('price', price);
+                        }
+
+                        try {
+                            const res = await fetch(`${ctx}/manage-orders`, {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                                body: formData.toString()
+                            });
+
+                            const text = await res.text();
+                            if (!res.ok) {
+                                errorBox.style.display = 'block';
+                                errorBox.textContent = text || 'Không thể tạo đơn hàng.';
+                                return;
+                            }
+
+                            // Success: close modal and refresh list
+                            closeAddOrderModal();
+                            window.location.href = 'manage-orders';
+                        } catch (e) {
+                            errorBox.style.display = 'block';
+                            errorBox.textContent = 'Lỗi kết nối: ' + (e && e.message ? e.message : e);
+                        }
+                    }
         </script>
     </body>
 </html>
