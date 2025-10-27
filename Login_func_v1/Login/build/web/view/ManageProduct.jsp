@@ -5,120 +5,21 @@
 <%@ page import="models.User,models.Product,dao.ProductDAO" %>
 <!DOCTYPE html>
 <style>
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 999;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.5);
-        /* Thêm hiệu ứng mượt mà */
-        transition: opacity 0.3s ease;
-    }
-    .modal-content {
-        background-color: #fff;
-        margin: 5% auto;
-        padding: 25px 30px;
-        border-radius: 12px;
-        width: 600px;
-        max-height: 90vh;        /* Giới hạn cao nhất 90% màn hình */
-        overflow-y: auto;        /* Cho phép cuộn nội dung */
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    }
-
-    .close {
-        float: right;
-        font-size: 28px; /* To hơn */
-        font-weight: bold;
-        color: #aaa;
-        cursor: pointer;
-    }
-    .close:hover,
-    .close:focus {
-        color: #333;
-        text-decoration: none;
-    }
-
-    /* Nút chung - Giữ nguyên */
-    button {
-        padding: 6px 12px;
-        border: none;
-        background-color: #0078d4;
-        color: white;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-    button:hover {
-        background-color: #005fa3;
-    }
-
-    /* === ✨ CSS MỚI CHO FORM TRONG MODAL ✨ === */
-    .modal-content h2 {
-        margin-top: 0;
-        margin-bottom: 20px;
-        font-size: 24px;
-        font-weight: 600;
-        color: #333;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 15px;
-    }
-
-    /* Bọc cho mỗi trường nhập */
-    .form-group {
-        margin-bottom: 15px;
-    }
-
-    .modal-content label {
-        display: block;
-        margin-bottom: 6px;
-        font-weight: 600;
-        color: #555;
-        font-size: 14px;
-    }
-
-    /* Kiểu chung cho các trường nhập */
-    .modal-content input[type="text"],
-    .modal-content input[type="number"],
-    .modal-content textarea,
-    .modal-content select {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid #ccc; /* Thêm viền */
-        border-radius: 6px; /* Bo góc */
-        box-sizing: border-box;
-        font-size: 15px;
-        transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    /* Hiệu ứng khi focus (click vào) */
-    .modal-content input:focus,
-    .modal-content textarea:focus,
-    .modal-content select:focus {
-        border-color: #0078d4; /* Đổi màu viền */
-        outline: none; /* Bỏ viền outline mặc định */
-        box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.15); /* Thêm hiệu ứng glow */
-    }
-
-    .modal-content textarea {
-        resize: vertical; /* Cho phép thay đổi chiều cao */
-        min-height: 80px;
-    }
-
-    /* Nút "Save" trong modal */
-    .modal-content button[type="submit"] {
-        width: 100%;
-        padding: 12px;
-        font-size: 16px;
-        font-weight: 600;
-        margin-top: 10px;
-        background-color: #10B981; /* Màu xanh lá cây */
-    }
-    .modal-content button[type="submit"]:hover {
-        background-color: #059669;
-    }
-    /* === HẾT CSS MỚI === */
+    /* (Toàn bộ CSS của bạn giữ nguyên, tôi ẩn đi cho gọn) */
+    .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); transition: opacity 0.3s ease; }
+    .modal-content { background-color: #fff; margin: 5% auto; padding: 25px 30px; border-radius: 12px; width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+    .close { float: right; font-size: 28px; font-weight: bold; color: #aaa; cursor: pointer; }
+    .close:hover, .close:focus { color: #333; text-decoration: none; }
+    button { padding: 6px 12px; border: none; background-color: #0078d4; color: white; border-radius: 4px; cursor: pointer; }
+    button:hover { background-color: #005fa3; }
+    .modal-content h2 { margin-top: 0; margin-bottom: 20px; font-size: 24px; font-weight: 600; color: #333; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+    .form-group { margin-bottom: 15px; }
+    .modal-content label { display: block; margin-bottom: 6px; font-weight: 600; color: #555; font-size: 14px; }
+    .modal-content input[type="text"], .modal-content input[type="number"], .modal-content textarea, .modal-content select { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; transition: border-color 0.2s, box-shadow 0.2s; }
+    .modal-content input:focus, .modal-content textarea:focus, .modal-content select:focus { border-color: #0078d4; outline: none; box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.15); }
+    .modal-content textarea { resize: vertical; min-height: 80px; }
+    .modal-content button[type="submit"] { width: 100%; padding: 12px; font-size: 16px; font-weight: 600; margin-top: 10px; background-color: #10B981; }
+    .modal-content button[type="submit"]:hover { background-color: #059669; }
 </style>
 
 <html lang="en">
@@ -128,18 +29,8 @@
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
         <style>
-            .nav-btn {
-                width: 3rem;
-                height: 3rem;
-                border-radius: 0.75rem;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: all 0.2s;
-            }
-            .nav-btn:hover {
-                transform: translateY(-2px);
-            }
+            .nav-btn { width: 3rem; height: 3rem; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+            .nav-btn:hover { transform: translateY(-2px); }
         </style>
     </head>
     <body class="flex h-screen bg-gray-50">
@@ -156,44 +47,38 @@
             List<Map<String, Object>> ingredientList = (List<Map<String, Object>>) session.getAttribute("ingredientList");
         %>
 
-
+        <%-- Sidebar Navigation --%>
         <div class="w-20 bg-gray-800 flex flex-col items-center py-6 justify-between">
             <div class="flex flex-col items-center space-y-6">
                 <a href="${pageContext.request.contextPath}/dashboard"
                    class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg">
                     <i data-lucide="pizza" class="w-7 h-7 text-white"></i>
                 </a>
-
                 <div class="flex flex-col items-center space-y-4 mt-8">
                     <a href="${pageContext.request.contextPath}/dashboard"
                        class="nav-btn <%= currentPath.contains("/dashboard") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
                        title="Dashboard">
                         <i data-lucide="grid" class="w-6 h-6"></i>
                     </a>
-
                     <a href="${pageContext.request.contextPath}/manageproduct"
                        class="nav-btn <%= currentPath.contains("/ManageProduct.jsp") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
                        title="Products">
                         <i data-lucide="box" class="w-6 h-6"></i>
                     </a>
-
                     <a href="${pageContext.request.contextPath}/manage-orders"
                        class="nav-btn text-gray-400 hover:bg-gray-700" title="Orders">
                         <i data-lucide="file-text" class="w-6 h-6"></i>
                     </a>
-
                     <a href="${pageContext.request.contextPath}/manage-customers"
                        class="nav-btn text-gray-400 hover:bg-gray-700" title="Customers">
                         <i data-lucide="users" class="w-6 h-6"></i>
                     </a>
-
                     <a href="${pageContext.request.contextPath}/reports"
                        class="nav-btn text-gray-400 hover:bg-gray-700" title="Reports">
                         <i data-lucide="bar-chart-2" class="w-6 h-6"></i>
                     </a>
                 </div>
             </div>
-
             <div class="flex flex-col items-center space-y-4">
                 <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
                     <i data-lucide="user" class="w-5 h-5 text-gray-200"></i>
@@ -204,14 +89,16 @@
                 </a>
             </div>
         </div>
+        
+        <%-- Alert Message Box (Nếu có) --%>
         <%
-    String message = (String) session.getAttribute("message");
-    String messageType = (String) session.getAttribute("messageType");
-    if (message != null) {
-        String bgColor = "bg-green-500"; // mặc định xanh lá
-        if ("error".equals(messageType)) {
-            bgColor = "bg-red-500"; // nếu lỗi thì đỏ
-        }
+            String message = (String) session.getAttribute("message");
+            String messageType = (String) session.getAttribute("messageType");
+            if (message != null) {
+                String bgColor = "bg-green-500"; // mặc định xanh lá
+                if ("error".equals(messageType)) {
+                    bgColor = "bg-red-500"; // nếu lỗi thì đỏ
+                }
         %>
         <div id="alertBox" class="fixed top-5 right-5 <%= bgColor %> text-white px-4 py-3 rounded-lg shadow-lg transition-opacity duration-500">
             <%= message %>
@@ -231,7 +118,7 @@
             }
         %>
 
-
+        <%-- Main Content --%>
         <div class="flex-1 flex flex-col overflow-hidden">
             <div class="bg-white border-b px-6 py-4 flex justify-between items-center">
                 <div>
@@ -245,7 +132,6 @@
 
             <div class="flex-1 p-6 overflow-auto">
                 <div class="bg-gray-50 p-4 rounded-xl mb-6 flex flex-wrap gap-4 items-center">
-
                     <div class="flex gap-2">
                         <a href="${pageContext.request.contextPath}/view/AddProduct.jsp" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">Add Product</a>
                         <a href="${pageContext.request.contextPath}/dashboard" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg">Dashboard</a>
@@ -292,7 +178,6 @@
                                         if (availableQty > 0) {
                                             statusClass = "bg-green-500";
                                             statusText = "Available";
-                                            //+ String.format("%.0f", availableQty) + ")";
                                         } else {
                                             statusClass = "bg-red-500";
                                             statusText = "Unavailable";
@@ -314,8 +199,9 @@
                                                 data-available="<%= p.isAvailable() %>">
                                             Edit
                                         </button>
-                                        <a href="#" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs"
-                                           onclick="openIngredients(<%= p.getProductId() %>)">Ingredients</a>
+                                        
+                                        <%-- ✅ XOÁ NÚT INGREDIENTS THỪA --%>
+                                        <%-- <a href="#" class="bg-yellow-500 ...">Ingredients</a> --%>
 
                                         <a href="${pageContext.request.contextPath}/DeleteProduct?productId=<%= p.getProductId() %>"
                                            onclick="return confirm('Are you sure you want to delete this product?');"
@@ -326,13 +212,13 @@
                             <% } %>
                         </tbody>
                     </table>
-                    <!-- === PHÂN TRANG === -->
+                    
+                    <%-- Pagination --%>
                     <div class="flex justify-center items-center mt-6 space-x-2">
                         <c:if test="${currentPage > 1}">
                             <a href="${pageContext.request.contextPath}/manageproduct?page=${currentPage - 1}"
                                class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded">Previous</a>
                         </c:if>
-
                         <c:forEach var="i" begin="1" end="${totalPages}">
                             <a href="${pageContext.request.contextPath}/manageproduct?page=${i}"
                                class="px-3 py-1 rounded
@@ -340,141 +226,236 @@
                                 ${i}
                             </a>
                         </c:forEach>
-
                         <c:if test="${currentPage < totalPages}">
                             <a href="${pageContext.request.contextPath}/manageproduct?page=${currentPage + 1}"
                                class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded">Next</a>
                         </c:if>
                     </div>
-                    <!-- === HẾT PHÂN TRANG === -->    
                 </div>
             </div>
         </div>
 
-        <%-- INGREDIENT POP-UP --%>
-        <div id="ingredientModal" class="modal">
+        <%-- ✅ XOÁ POP-UP INGREDIENT THỪA --%>
+        <%-- <div id="ingredientModal" class="modal"> ... </div> --%>
+
+        <div id="editFullModal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
-                <h2>Product Ingredients</h2>
-                <div id="ingredientContent">Loading...</div>
+                <div id="editFullContent">Loading...</div>
             </div>
         </div>
 
+        <%-- Nạp AddProductModal (Giữ nguyên) --%>
         <jsp:include page="AddProductModal.jsp" />
-        <jsp:include page="EditProductModal.jsp" />
 
+
+        <%-- ✅ SCRIPT ĐÃ ĐƯỢC DỌN DẸP --%>
         <script>
             document.addEventListener("DOMContentLoaded", () => {
                 lucide.createIcons();
 
+                // --- 1. LẤY CÁC VỎ BỌC MODAL ---
                 const addModal = document.getElementById("addModal");
-                const ingredientList = document.getElementById("ingredientList");
-                const ingredientTemplate = document.getElementById("ingredientTemplate");
-                const editModal = document.getElementById("editModal");
-                const ingredientModal = document.getElementById("ingredientModal");
+                const editModal = document.getElementById("editFullModal");
+                // const ingredientModal = ... (ĐÃ XOÁ)
 
-                // === ADD INGREDIANT IN ADD PRODUCT
-                document.getElementById("addIngredientBtn").addEventListener("click", function () {
-                    const template = document.getElementById("ingredientTemplate").cloneNode(true);
-                    template.classList.remove("hidden");
-                    const select = template.querySelector("select");
-                    select.setAttribute("required", "required"); // chỉ dòng clone mới có required
-                    document.getElementById("ingredientList").appendChild(template);
-                });
+                // --- 2. LOGIC MỞ MODAL ---
 
-
-                // === OPEN MODAL ADD PRODUCT ===
-                document.querySelector('a[href$="AddProduct.jsp"]').addEventListener("click", e => {
+                // Mở Add Modal
+                document.querySelector('a[href$="AddProduct.jsp"]')?.addEventListener("click", e => {
                     e.preventDefault();
                     addModal.style.display = "block";
                 });
 
-                // === OPEN MODAL EDIT PRODUCT ===
+                // Mở Edit Modal (Fetch nội dung)
                 document.querySelectorAll(".editBtn").forEach(btn => {
-                    btn.addEventListener("click", () => {
-                        document.getElementById("editProductId").value = btn.dataset.id;
-                        document.getElementById("editProductName").value = btn.dataset.name;
-                        document.getElementById("editDescription").value = btn.dataset.desc;
-                        document.getElementById("editPrice").value = btn.dataset.price;
-                        document.getElementById("editCategory").value = btn.dataset.category;
-                        document.getElementById("editImageUrl").value = btn.dataset.image;
+                    btn.addEventListener("click", ev => {
+                        ev.preventDefault();
+                        const productId = btn.dataset.id;
+                        const editContent = document.getElementById("editFullContent");
 
+                        editContent.innerHTML = "Loading...";
                         editModal.style.display = "block";
+
+                        fetch("<%= request.getContextPath() %>/EditProductFullServlet?productId=" + productId)
+                            .then(res => res.ok ? res.text() : Promise.reject(res.status))
+                            .then(html => {
+                                editContent.innerHTML = html;
+                            })
+                            .catch(err => {
+                                editContent.innerHTML = "Error loading form: " + err;
+                                console.error(err);
+                            });
+                    });
+                });
+                
+                // window.openIngredients = ... (ĐÃ XOÁ)
+
+                // --- 3. LOGIC ĐÓNG MODAL (Dùng chung) ---
+                document.querySelectorAll(".close").forEach(btn => {
+                    btn.addEventListener("click", () => {
+                        btn.closest(".modal").style.display = "none";
                     });
                 });
 
-                // === OPEN MODAL INGREDIENTS ===
-                window.openIngredients = function (productId) {
-                    ingredientModal.style.display = "block";
-                    const content = document.getElementById("ingredientContent");
-                    content.innerHTML = "Loading...";
-                    fetch("<%= request.getContextPath() %>/manageingredients?productId=" + productId)
-                            .then(res => res.ok ? res.text() : Promise.reject(res.status))
-                            .then(html => content.innerHTML = html)
-                            .catch(err => content.innerHTML = "Error loading ingredients: " + err);
-                }
-
-                // === CLOSE MODALS ===
-                document.querySelectorAll(".close").forEach(btn =>
-                    btn.addEventListener("click", () => btn.closest(".modal").style.display = "none")
-                );
-
                 window.addEventListener("click", e => {
-                    if (e.target === addModal)
-                        addModal.style.display = "none";
-                    if (e.target === editModal)
-                        editModal.style.display = "none";
-                    if (e.target === ingredientModal)
-                        ingredientModal.style.display = "none";
-                });
-
-
-                document.addEventListener("click", e => {
-                    if (e.target.classList.contains("removeIng")) {
-                        e.target.closest(".ingredient-row").remove();
+                    // (Đã xoá 'ingredientModal' khỏi danh sách này)
+                    if ([addModal, editModal].includes(e.target)) {
+                        e.target.style.display = "none";
                     }
                 });
 
-                // === Khi chọn Ingredient thì tự điền Unit ===
-                document.addEventListener("change", e => {
-                    if (e.target.classList.contains("ingredientSelect")) {
-                        const selected = e.target.options[e.target.selectedIndex];
-                        const unit = selected.dataset.unit || "";
-                        const row = e.target.closest(".ingredient-row");
-                        const unitField = row.querySelector(".unitField");
-                        if (unitField) {
-                            unitField.value = unit;
+                // --- 4. LOGIC XÓA HÀNG (Dùng chung) ---
+                document.addEventListener("click", e => {
+                    if (e.target.classList.contains("removeIng") || e.target.classList.contains("removeBtn")) {
+                        e.target.closest(".ingredient-row, tr")?.remove();
+                    }
+                });
+
+
+                // --- 5. LOGIC CHO ADD MODAL (Giữ nguyên - Đây là code CẦN THIẾT) ---
+
+                // (A) Xử lý nút "+ Add Ingredient" (id: addIngredientBtn)
+                addModal.addEventListener('click', (e) => {
+                    if (e.target.id === 'addIngredientBtn') {
+                        e.preventDefault();
+                        
+                        const template = addModal.querySelector("#ingredientTemplate")?.cloneNode(true);
+                        const list = addModal.querySelector("#ingredientList");
+
+                        if (template && list) {
+                            template.classList.remove("hidden"); 
+                            template.removeAttribute("id");      
+                            
+                            template.querySelector("select")?.setAttribute("required", "required");
+                            template.querySelector("input[name='ingredientQty[]']")?.setAttribute("required", "required");
+                            
+                            list.appendChild(template);
+                        } else {
+                            console.error("Lỗi Add Modal: Không tìm thấy #ingredientTemplate hoặc #ingredientList");
                         }
                     }
                 });
 
-                document.addEventListener("change", e => {
-
-                    if (e.target.classList.contains("ingredientSelect")) {
-                        const unit = e.target.selectedOptions[0].dataset.unit || "";
-                        const unitField = e.target.closest(".ingredient-row").querySelector(".unitField");
-                        if (unitField)
-                            unitField.value = unit;
-                    }
-
-                    if (e.target.name === "inventoryId") {
-
-                        const selectedOption = e.target.options[e.target.selectedIndex];
-                        const unit = selectedOption.dataset.unit;
-
-                        const form = e.target.closest("form");
-
-                        const unitInput = form.querySelector('input[name="unit"]');
-
-                        if (unitInput)
-                            unitInput.value = unit || "";
+                // (B) Tự động điền Unit cho Add Modal (class: ingredientSelect)
+                addModal.addEventListener('change', (e) => {
+                    if (e.target.classList.contains('ingredientSelect')) {
+                        const select = e.target;
+                        const row = select.closest('.ingredient-row'); 
+                        const unitInput = row?.querySelector('.unitField');
+                        
+                        if (unitInput) {
+                            const option = select.selectedOptions[0];
+                            unitInput.value = option.getAttribute('data-unit') || '';
+                        }
                     }
                 });
+
+
+                // --- 6. LOGIC CHO EDIT MODAL (Giữ nguyên - Đây là code CẦN THIẾT) ---
+
+                // (A) Tự động điền Unit cho Edit Modal (id: editNewIngredientSelect)
+                editModal.addEventListener('change', (e) => {
+                    if (e.target.id === 'editNewIngredientSelect') {
+                        const select = e.target;
+                        const unitInput = editModal.querySelector('#editNewUnit');
+                        if (unitInput) {
+                            const option = select.selectedOptions[0];
+                            unitInput.value = option.getAttribute('data-unit') || '';
+                        }
+                    }
+                });
+
+                // (B) Thêm hàng mới cho Edit Modal (id: editAddIngredientBtn)
+                editModal.addEventListener('click', (e) => {
+                    if (e.target.id === 'editAddIngredientBtn') {
+                        e.preventDefault();
+                        console.log("--- DEBUG: Nút 'Edit Add' đã nhấn ---");
+
+                        const tableBody = editModal.querySelector('#ingredientTable tbody');
+                        const select = editModal.querySelector('#editNewIngredientSelect');
+                        const unitInput = editModal.querySelector('#editNewUnit');
+                        const qtyInput = editModal.querySelector('#editNewQuantity');
+
+                        if (!tableBody || !select || !unitInput || !qtyInput) {
+                            console.error("Lỗi Edit Modal: Không tìm thấy element (editNewIngredientSelect, editNewQuantity...)");
+                            return;
+                        }
+
+                        const selectedOption = select.options[select.selectedIndex];
+                        const ingId = selectedOption ? selectedOption.value.trim() : "";
+                        const ingName = selectedOption ? selectedOption.text.trim() : "";
+                        const unit = unitInput.value.trim();
+                        const qty = qtyInput.value.trim();
+
+                        console.log("Values:", { ingId, ingName, unit, qty });
+
+                        if (!ingId || ingId === "" || ingName.includes("--") || !unit || !qty || parseFloat(qty) <= 0) {
+                            alert("[Edit Modal] Vui lòng chọn nguyên liệu và nhập số lượng hợp lệ.");
+                            console.warn("Validation failed");
+                            return;
+                        }
+
+                        const exists = Array.from(tableBody.querySelectorAll('input[name="inventoryId[]"]'))
+                            .some(input => input.value === ingId);
+                        if (exists) {
+                            alert("Nguyên liệu đã được thêm.");
+                            return;
+                        }
+
+                        console.log("Validation OK. Đang thêm hàng (DOM METHOD)...");
+
+                        // (Code tạo hàng bằng DOM)
+                        const tr = document.createElement("tr");
+                        const tdName = document.createElement("td");
+                        tdName.textContent = ingName;
+                        tr.appendChild(tdName);
+
+                        const tdQty = document.createElement("td");
+                        const inputQty = document.createElement("input");
+                        inputQty.type = "number";
+                        inputQty.step = "0.01";
+                        inputQty.name = "quantity[]";
+                        inputQty.value = qty;
+                        inputQty.className = "border p-1 w-24";
+                        tdQty.appendChild(inputQty);
+                        const inputHiddenId = document.createElement("input");
+                        inputHiddenId.type = "hidden";
+                        inputHiddenId.name = "inventoryId[]";
+                        inputHiddenId.value = ingId;
+                        tdQty.appendChild(inputHiddenId);
+                        tr.appendChild(tdQty);
+
+                        const tdUnit = document.createElement("td");
+                        const inputUnit = document.createElement("input");
+                        inputUnit.type = "text";
+                        inputUnit.name = "unit[]";
+                        inputUnit.value = unit;
+                        inputUnit.className = "border p-1 w-20";
+                        inputUnit.readOnly = true;
+                        tdUnit.appendChild(inputUnit);
+                        tr.appendChild(tdUnit);
+
+                                
+                        const tdAction = document.createElement("td");
+                        const removeBtn = document.createElement("button");
+                        removeBtn.type = "button";
+                        removeBtn.className = "removeBtn bg-red-500 text-white px-2 py-1 rounded";
+                        removeBtn.innerHTML = "✕";
+                        tdAction.appendChild(removeBtn);
+                        tr.appendChild(tdAction);
+
+                        tableBody.appendChild(tr);
+                        
+                        // Reset
+                        select.selectedIndex = 0;
+                        qtyInput.value = "";
+                        unitInput.value = "";
+                    }
+                });
+
             });
-
         </script>
-
-
 
     </body>
 </html>
