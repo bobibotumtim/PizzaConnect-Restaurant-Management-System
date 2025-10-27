@@ -33,6 +33,7 @@
         <param-name>mail.debug</param-name>
         <param-value>true</param-value>
     </context-param>
+    
     <servlet>
         <servlet-name>LoginServlet</servlet-name>
         <servlet-class>controller.LoginServlet</servlet-class>
@@ -41,6 +42,7 @@
         <servlet-name>LoginServlet</servlet-name>
         <url-pattern>/Login</url-pattern>
     </servlet-mapping>
+    
     <welcome-file-list>
         <welcome-file>view/Home.jsp</welcome-file>
     </welcome-file-list>
@@ -53,6 +55,7 @@
         <servlet-name>UserProfileServlet</servlet-name>
         <url-pattern>/profile</url-pattern>
     </servlet-mapping>
+    
     <servlet>
         <servlet-name>ForgotPasswordServlet</servlet-name>
         <servlet-class>controller.ForgotPasswordServlet</servlet-class>
@@ -102,13 +105,13 @@
         <url-pattern>/edituser</url-pattern>
     </servlet-mapping>
     
-    <!-- Dashboard Servlet -->
+    <!-- Dashboard Controller (NEW - replaces DashboardServlet) -->
     <servlet>
-        <servlet-name>DashboardServlet</servlet-name>
-        <servlet-class>controller.DashboardServlet</servlet-class>
+        <servlet-name>DashboardController</servlet-name>
+        <servlet-class>controller.DashboardController</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>DashboardServlet</servlet-name>
+        <servlet-name>DashboardController</servlet-name>
         <url-pattern>/dashboard</url-pattern>
     </servlet-mapping>
 
@@ -132,7 +135,7 @@
         <url-pattern>/verifyCode</url-pattern>
     </servlet-mapping>
     
-        <!-- Discount Import Servlet -->
+    <!-- Discount Import Servlet -->
     <servlet>
         <servlet-name>DiscountImportServlet</servlet-name>
         <servlet-class>controller.DiscountImportServlet</servlet-class>
@@ -141,5 +144,58 @@
         <servlet-name>DiscountImportServlet</servlet-name>
         <url-pattern>/discount/import</url-pattern>
     </servlet-mapping>
-</web-app>
+    
+    <!-- Order Management Servlets (FROM Hieu_V33) -->
+    <servlet>
+        <servlet-name>OrderController</servlet-name>
+        <servlet-class>controller.OrderController</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>OrderController</servlet-name>
+        <url-pattern>/OrderController</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>OrderController</servlet-name>
+        <url-pattern>/manage-orders</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>OrderListServlet</servlet-name>
+        <servlet-class>controller.OrderListServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>OrderListServlet</servlet-name>
+        <url-pattern>/OrderListServlet</url-pattern>
+    </servlet-mapping>
 
+    <servlet>
+        <servlet-name>OrderDetailServlet</servlet-name>
+        <servlet-class>controller.OrderDetailServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>OrderDetailServlet</servlet-name>
+        <url-pattern>/OrderDetailServlet</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>TestDatabaseServlet</servlet-name>
+        <servlet-class>controller.TestDatabaseServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TestDatabaseServlet</servlet-name>
+        <url-pattern>/test-database</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>TestOrderServlet</servlet-name>
+        <servlet-class>controller.TestOrderServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TestOrderServlet</servlet-name>
+        <url-pattern>/test-orders</url-pattern>
+    </servlet-mapping>
+
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+</web-app>

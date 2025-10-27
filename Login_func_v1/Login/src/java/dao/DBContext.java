@@ -7,35 +7,37 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DBContext {
-    private static final String USER = "sa";
-    private static final String PASSWORD = "123";
-    private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=pizza_demo_DB2;encrypt=true;trustServerCertificate=true";
+    protected Connection connection;
 
-    // Load the SQL Server JDBC driver
-    static {
+    public DBContext() {
         try {
+            String user = "sa";
+            String pass = "123";
+            String url = "jdbc:sqlserver://localhost:1433;databaseName=pizza_demo_DB2;encrypt=true;trustServerCertificate=true";
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(DBContext.class.getName()).log(Level.SEVERE, "Failed to load SQL Server JDBC Driver", ex);
-            throw new ExceptionInInitializerError(ex);
+            connection = DriverManager.getConnection(url, user, pass);
+            System.out.println("✅ Connected to database: pizza_demo_DB2");
+        } catch (ClassNotFoundException | SQLException ex) {
+            System.out.println("❌ Database connection failed: " + ex.getMessage());
+            Logger.getLogger(DBContext.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    // Get a connection to the database
-    public Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(URL, USER, PASSWORD);
-    }
-
-    // Utility method to close connection
-    public static void closeConnection(Connection connection) {
-        if (connection != null) {
-            try {
-                if (!connection.isClosed()) {
-                    connection.close();
-                }
-            } catch (SQLException e) {
-                Logger.getLogger(DBContext.class.getName()).log(Level.WARNING, "Error closing connection", e);
+    public Connection getConnection() {
+        try {
+            // Kiểm tra connection có còn hoạt động không
+            if (connection == null || connection.isClosed()) {
+                String user = "sa";
+                String pass = "123";
+                String url = "jdbc:sqlserver://localhost:1433;databaseName=pizza_demo_DB2;encrypt=true;trustServerCertificate=true";
+                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                connection = DriverManager.getConnection(url, user, pass);
+                System.out.println("✅ Reconnected to database: pizza_demo_DB2");
             }
+        } catch (ClassNotFoundException | SQLException ex) {
+            System.out.println("❌ Database reconnection failed: " + ex.getMessage());
+            Logger.getLogger(DBContext.class.getName()).log(Level.SEVERE, null, ex);
         }
+        return connection;
     }
 }

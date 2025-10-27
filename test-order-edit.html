@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Order Edit</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🧪 Test Order Edit Functionality</h2>
+        
+        <div id="status"></div>
+        
+        <form id="editOrderForm">
+            <div class="form-group">
+                <label>Order ID:</label>
+                <input type="number" id="orderID" value="1" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Customer ID:</label>
+                <input type="number" id="customerID" value="1" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Employee ID:</label>
+                <input type="number" id="employeeID" value="1" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Table ID:</label>
+                <input type="number" id="tableID" value="5" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Status:</label>
+                <select id="status">
+                    <option value="0">Pending</option>
+                    <option value="1" selected>Processing</option>
+                    <option value="2">Completed</option>
+                    <option value="3">Cancelled</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Payment Status:</label>
+                <select id="paymentStatus">
+                    <option value="Unpaid" selected>Unpaid</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Refunded">Refunded</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Total Price:</label>
+                <input type="number" step="0.01" id="totalPrice" value="45.50">
+            </div>
+            
+            <div class="form-group">
+                <label>Notes:</label>
+                <textarea id="note" rows="3">Updated order notes - test edit functionality</textarea>
+            </div>
+            
+            <button type="submit">💾 Update Order</button>
+        </form>
+        
+        <hr style="margin: 30px 0;">
+        
+        <h3>📋 Test Steps:</h3>
+        <ol>
+            <li>Make sure your Java server is running</li>
+            <li>Database connection is working</li>
+            <li>Fill in the form above and click "Update Order"</li>
+            <li>Check the console for any errors</li>
+            <li>Verify the changes in your database</li>
+        </ol>
+        
+        <h3>🔧 Troubleshooting:</h3>
+        <ul>
+            <li><strong>Connection Error:</strong> Check if SQL Server is running on port 1433</li>
+            <li><strong>404 Error:</strong> Verify servlet mapping in web.xml</li>
+            <li><strong>500 Error:</strong> Check server logs for Java exceptions</li>
+            <li><strong>No Changes:</strong> Check if OrderDAO.update() method is being called</li>
+        </ul>
+    </div>
+
+    <script>
+        document.getElementById('editOrderForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('action', 'updateFromModal');
+            formData.append('orderID', document.getElementById('orderID').value);
+            formData.append('customerID', document.getElementById('customerID').value);
+            formData.append('employeeID', document.getElementById('employeeID').value);
+            formData.append('tableID', document.getElementById('tableID').value);
+            formData.append('status', document.getElementById('status').value);
+            formData.append('paymentStatus', document.getElementById('paymentStatus').value);
+            formData.append('totalPrice', document.getElementById('totalPrice').value);
+            formData.append('note', document.getElementById('note').value);
+            
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = '<div class="status">⏳ Updating order...</div>';
+            
+            // Using the correct URL based on your screenshot
+            fetch('http://localhost:9999/Login/OrderController', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            })
+            .then(data => {
+                statusDiv.innerHTML = `<div class="status success">✅ Success: ${data}</div>`;
+            })
+            .catch(error => {
+                statusDiv.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>

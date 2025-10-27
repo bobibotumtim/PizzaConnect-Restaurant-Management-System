@@ -17,7 +17,7 @@
         <h1 class="h3 mb-3 font-weight-normal text-center">Customer Information</h1>
 
         <div class="form-group">
-            <label>Họ và tên</label>
+            <label>Full Name</label>
             <input type="text" class="form-control" value="<%= u.getName() %>" readonly>
         </div>
 

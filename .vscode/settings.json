@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
     "java.project.sourcePaths": [
         "Login_func_v1",
         "Login_func_v1\\Login\\src\\java"
@@ -25,4 +26,6 @@
         "d:\\workshop\\SWP\\New folder\\PizzaConnect-Restaurant-Management-System\\lib\\jaxb-api-2.1.jar",
         "d:\\workshop\\SWP\\New folder\\PizzaConnect-Restaurant-Management-System\\Lib\\jakarta.servlet-api-5.0.0.jar"
     ]
+=======
+>>>>>>> Hieu_V33
 }
