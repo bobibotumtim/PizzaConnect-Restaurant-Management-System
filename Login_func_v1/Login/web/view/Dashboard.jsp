@@ -69,6 +69,13 @@
                     <i data-lucide="user" class="w-6 h-6"></i>
                 </a>
 
+                <!-- Discount Programs -->
+                <a href="${pageContext.request.contextPath}/discount"
+                   class="nav-btn <%= currentPath.contains("/discount") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Discount Programs">
+                    <i data-lucide="percent" class="w-6 h-6"></i>
+                </a>
+
                 <!-- Settings -->
                 <a href="${pageContext.request.contextPath}/settings"
                    class="nav-btn <%= currentPath.contains("/settings") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"

@@ -111,5 +111,35 @@
         <servlet-name>DashboardServlet</servlet-name>
         <url-pattern>/dashboard</url-pattern>
     </servlet-mapping>
+
+    <!-- Discount Servlet -->
+    <servlet>
+        <servlet-name>DiscountServlet</servlet-name>
+        <servlet-class>controller.DiscountServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DiscountServlet</servlet-name>
+        <url-pattern>/discount</url-pattern>
+    </servlet-mapping>
+
+    <!-- Verify Code Servlet -->
+    <servlet>
+        <servlet-name>VerifyCodeServlet</servlet-name>
+        <servlet-class>controller.VerifyCodeServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>VerifyCodeServlet</servlet-name>
+        <url-pattern>/verifyCode</url-pattern>
+    </servlet-mapping>
+    
+        <!-- Discount Import Servlet -->
+    <servlet>
+        <servlet-name>DiscountImportServlet</servlet-name>
+        <servlet-class>controller.DiscountImportServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DiscountImportServlet</servlet-name>
+        <url-pattern>/discount/import</url-pattern>
+    </servlet-mapping>
 </web-app>
 

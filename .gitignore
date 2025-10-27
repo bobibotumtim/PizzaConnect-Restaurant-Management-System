@@ -1,4 +1,8 @@
+# .gitignore
 /Login_func_v1/Login/dist/
-*.xml~
+.vscode/
 config.properties
 DBContext.java
+*.class
+
+.vscode/settings.json

@@ -5,16 +5,17 @@ import models.Inventory;
 import java.sql.*;
 import java.util.*;
 
-public class InventoryDAO {
+public class InventoryDAO extends DBContext {
     Connection conn = null;
     PreparedStatement ps = null;
     ResultSet rs = null;
 
+    // Get all inventory items
     public List<Inventory> getAll() {
         List<Inventory> list = new ArrayList<>();
         String query = "SELECT * FROM Inventory ORDER BY InventoryID DESC";
         try {
-            conn = new DBContext().getConnection();
+            conn = getConnection();
             ps = conn.prepareStatement(query);
             rs = ps.executeQuery();
             while (rs.next()) {
@@ -32,10 +33,11 @@ public class InventoryDAO {
         return list;
     }
 
+    // Create new inventory item
     public void insert(String name, double quantity, String unit) {
         String query = "INSERT INTO Inventory (ItemName, Quantity, Unit, LastUpdated) VALUES (?, ?, ?, GETDATE())";
         try {
-            conn = new DBContext().getConnection();
+            conn = getConnection();
             ps = conn.prepareStatement(query);
             ps.setString(1, name);
             ps.setDouble(2, quantity);
@@ -46,10 +48,11 @@ public class InventoryDAO {
         }
     }
 
+    // Get inventory item by ID
     public Inventory getById(int id) {
         String query = "SELECT * FROM Inventory WHERE InventoryID=?";
         try {
-            conn = new DBContext().getConnection();
+            conn = getConnection();
             ps = conn.prepareStatement(query);
             ps.setInt(1, id);
             rs = ps.executeQuery();
@@ -68,10 +71,11 @@ public class InventoryDAO {
         return null;
     }
 
+    // Update inventory item
     public void update(int id, String name, double quantity, String unit) {
         String query = "UPDATE Inventory SET ItemName=?, Quantity=?, Unit=?, LastUpdated=GETDATE() WHERE InventoryID=?";
         try {
-            conn = new DBContext().getConnection();
+            conn = getConnection();
             ps = conn.prepareStatement(query);
             ps.setString(1, name);
             ps.setDouble(2, quantity);
@@ -83,10 +87,11 @@ public class InventoryDAO {
         }
     }
 
+    // Delete inventory item
     public void delete(int id) {
         String query = "DELETE FROM Inventory WHERE InventoryID=?";
         try {
-            conn = new DBContext().getConnection();
+            conn = getConnection();
             ps = conn.prepareStatement(query);
             ps.setInt(1, id);
             ps.executeUpdate();
