@@ -40,4 +40,17 @@ public class DBContext {
         }
         return connection;
     }
+    
+    // Utility method to close connection (for compatibility with old code)
+    public static void closeConnection(Connection connection) {
+        if (connection != null) {
+            try {
+                if (!connection.isClosed()) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                Logger.getLogger(DBContext.class.getName()).log(Level.WARNING, "Error closing connection", e);
+            }
+        }
+    }
 }
