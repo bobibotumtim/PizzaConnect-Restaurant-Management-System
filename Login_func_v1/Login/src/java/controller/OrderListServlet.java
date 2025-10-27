@@ -1,5 +1,9 @@
 package controller;
 
+// DISABLED - Using OrderController with ManageOrders.jsp (PizzaConnect) instead
+// This servlet was for the old "Pizza Order Manager" interface
+
+/*
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.IOException;
@@ -21,3 +25,4 @@ public class OrderListServlet extends HttpServlet {
         rd.forward(request, response);
     }
 }
+*/

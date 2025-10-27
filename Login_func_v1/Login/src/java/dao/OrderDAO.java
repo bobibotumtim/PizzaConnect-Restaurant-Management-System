@@ -6,32 +6,31 @@ import models.*;
 
 public class OrderDAO extends DBContext {
 
-    private Connection externalConn; // ⚙️ Dùng nếu servlet truyền vào (trường hợp đặc biệt)
+    private Connection externalConn; // ⚙️ Use if servlet passes in (special case)
 
-    // ✅ Constructor mặc định (dùng phổ biến)
+    // ✅ Default constructor (commonly used)
     public OrderDAO() {
-        super(); // ⚙️ Rất quan trọng — mở connection từ DBContext
-        // Không tự động tạo bảng vì database đã có sẵn
-        System.out.println("✅ OrderDAO initialized with existing database");
+        super(); // ⚙️ Very important — opens connection from DBContext
+        System.out.println("✅ OrderDAO initialized");
     }
 
-    // ✅ Constructor có tham số (ít dùng, chỉ khi cần connection bên ngoài)
+    // ✅ Constructor with parameter (rarely used, only when external connection needed)
     public OrderDAO(Connection conn) {
         this.externalConn = conn;
     }
 
-    // ✅ Hàm lấy connection — ưu tiên external nếu có
+    // ✅ Get connection function — prioritize external if available
     private Connection useConnection() throws SQLException {
         if (externalConn != null) return externalConn;
         return getConnection();
     }
     
-    // ✅ Public method để kiểm tra connection
+    // ✅ Public method to check connection
     public Connection getConnection() {
         return connection;
     }
 
-    // 🟢 Tạo đơn hàng mới cùng chi tiết
+    // 🟢 Create new order with details
     public int createOrder(int customerID, int employeeID, int tableID, String note, List<OrderDetail> orderDetails) throws Exception {
         int orderId = 0;
         Connection con = null;
@@ -40,7 +39,7 @@ public class OrderDAO extends DBContext {
             con = useConnection();
             con.setAutoCommit(false);
 
-            // 1️⃣ Tạo đơn hàng
+            // 1️⃣ Create order
             String sqlOrder = """
                 INSERT INTO [Order] 
                 (CustomerID, EmployeeID, TableID, OrderDate, Status, PaymentStatus, TotalPrice, Note)
@@ -58,7 +57,7 @@ public class OrderDAO extends DBContext {
                 }
             }
 
-            // 2️⃣ Chèn chi tiết (nếu có)
+            // 2️⃣ Insert details (if any)
             if (orderDetails != null && !orderDetails.isEmpty()) {
                 double totalPrice = 0;
                 String sqlDetail = """
@@ -78,7 +77,7 @@ public class OrderDAO extends DBContext {
                     }
                     psDetail.executeBatch();
 
-                    // Cập nhật tổng tiền
+                    // Update total price
                     String sqlUpdate = "UPDATE [Order] SET TotalPrice = ? WHERE OrderID = ?";
                     try (PreparedStatement psUpdate = con.prepareStatement(sqlUpdate)) {
                         psUpdate.setDouble(1, totalPrice);
@@ -96,12 +95,12 @@ public class OrderDAO extends DBContext {
             e.printStackTrace();
             throw e;
         } finally {
-            // ⚙️ Đóng connection chỉ nếu không phải connection bên ngoài
+            // ⚙️ Close connection only if not external connection
             if (externalConn == null && con != null) con.close();
         }
     }
 
-    // 🟢 Lấy danh sách đơn hàng theo trạng thái
+    // 🟢 Get list of orders by status
     public List<Order> getOrdersByStatus(int status) {
         List<Order> list = new ArrayList<>();
         String sql = "SELECT * FROM [Order] WHERE Status = ? ORDER BY OrderDate DESC";
@@ -134,7 +133,7 @@ public class OrderDAO extends DBContext {
         return list;
     }
 
-    // 🟢 Lấy danh sách đơn hàng
+    // 🟢 Get all orders
     public List<Order> getAll() {
         List<Order> list = new ArrayList<>();
         String sql = "SELECT * FROM [Order] ORDER BY OrderDate DESC";
@@ -170,7 +169,7 @@ public class OrderDAO extends DBContext {
         return list;
     }
 
-    // 🟢 Lấy đơn hàng theo ID
+    // 🟢 Get order by ID
     public Order getOrderById(int orderId) {
         String sql = "SELECT * FROM [Order] WHERE OrderID = ?";
         try (Connection con = useConnection();
@@ -199,7 +198,7 @@ public class OrderDAO extends DBContext {
         return null;
     }
 
-    // 🟢 Lấy danh sách chi tiết đơn hàng – sử dụng connection truyền vào (không đóng connection cha)
+    // 🟢 Get order details list – use passed connection (don't close parent connection)
     private List<OrderDetail> getOrderDetailsByOrderId(int orderId, Connection con) {
         List<OrderDetail> list = new ArrayList<>();
         String sql = """
@@ -235,7 +234,7 @@ public class OrderDAO extends DBContext {
         return list;
     }
 
-    // 🟢 Lấy danh sách chi tiết đơn hàng – API công khai (dùng connection riêng, an toàn khi gọi độc lập)
+    // 🟢 Get order details list – Public API (use separate connection, safe when called independently)
     public List<OrderDetail> getOrderDetailsByOrderId(int orderId) {
         List<OrderDetail> list = new ArrayList<>();
         try (Connection con = useConnection()) {
@@ -248,7 +247,7 @@ public class OrderDAO extends DBContext {
         return list;
     }
 
-    // 🟢 Cập nhật trạng thái đơn hàng
+    // 🟢 Update order status
     public boolean updateOrderStatus(int orderId, int status) {
         String sql = "UPDATE [Order] SET Status = ? WHERE OrderID = ?";
         try (Connection con = useConnection();
@@ -262,7 +261,7 @@ public class OrderDAO extends DBContext {
         return false;
     }
 
-    // 🟢 Cập nhật trạng thái thanh toán
+    // 🟢 Update payment status
     public boolean updatePaymentStatus(int orderId, String paymentStatus) {
         String sql = "UPDATE [Order] SET PaymentStatus = ? WHERE OrderID = ?";
         try (Connection con = useConnection();
@@ -276,7 +275,7 @@ public class OrderDAO extends DBContext {
         return false;
     }
 
-    // 🟢 Xóa đơn hàng (và chi tiết)
+    // 🟢 Delete order (and details)
     public boolean deleteOrder(int orderId) {
         String deleteDetails = "DELETE FROM [OrderDetail] WHERE OrderID = ?";
         String deleteOrder = "DELETE FROM [Order] WHERE OrderID = ?";
@@ -303,7 +302,7 @@ public class OrderDAO extends DBContext {
         return false;
     }
 
-    // 🟢 Thêm dữ liệu mẫu để test
+    // 🟢 Insert sample data for testing
     public void insertSampleData() {
         try {
             // Kiểm tra xem đã có dữ liệu chưa
@@ -346,7 +345,7 @@ public class OrderDAO extends DBContext {
         }
     }
     
-    // 🟢 Tạo bảng nếu chưa tồn tại
+    // 🟢 Create tables if not exist
     private void createTablesIfNotExist() {
         try {
             Connection con = useConnection();
@@ -464,7 +463,7 @@ public class OrderDAO extends DBContext {
         }
     }
 
-    // 🟢 Đếm tổng số đơn hàng
+    // 🟢 Count total orders
     public int countAllOrders() {
         String sql = "SELECT COUNT(*) FROM [Order]";
         try (Connection con = useConnection();
@@ -477,7 +476,7 @@ public class OrderDAO extends DBContext {
         return 0;
     }
 
-    // 🟢 Thêm đơn hàng đơn giản (form thêm)
+    // 🟢 Insert simple order (add form)
     public void insert(Order o) {
         String sql = """
             INSERT INTO [Order] 
@@ -499,7 +498,7 @@ public class OrderDAO extends DBContext {
         }
     }
 
-    // 🟢 Cập nhật đơn hàng (form sửa)
+    // 🟢 Update order (edit form)
     public void update(Order o) {
         String sql = """
             UPDATE [Order]
@@ -538,9 +537,259 @@ public class OrderDAO extends DBContext {
             int rowsAffected = ps.executeUpdate();
             System.out.println("✅ Order updated successfully. Rows affected: " + rowsAffected);
             
+            // Force commit nếu autocommit = false
+            if (!con.getAutoCommit()) {
+                con.commit();
+                System.out.println("✅ Transaction committed");
+            }
+            
         } catch (Exception e) {
             System.out.println("❌ Error updating order: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+    
+    // 🟢 Simple method to only update status and payment
+    public boolean updateOrderStatusAndPayment(int orderId, int status, String paymentStatus) {
+        String sql = "UPDATE [Order] SET Status=?, PaymentStatus=? WHERE OrderID=?";
+        try (Connection con = useConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            System.out.println("🔄 Quick update Order ID: " + orderId + ", Status: " + status + ", Payment: " + paymentStatus);
+            
+            ps.setInt(1, status);
+            ps.setString(2, paymentStatus);
+            ps.setInt(3, orderId);
+            
+            int rowsAffected = ps.executeUpdate();
+            System.out.println("✅ Quick update successful. Rows affected: " + rowsAffected);
+            
+            // Force commit
+            if (!con.getAutoCommit()) {
+                con.commit();
+                System.out.println("✅ Transaction committed");
+            }
+            
+            return rowsAffected > 0;
+            
+        } catch (Exception e) {
+            System.out.println("❌ Error in quick update: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    // 🟢 Get next customer ID
+    public int getNextCustomerId() {
+        String sql = "SELECT ISNULL(MAX(CustomerID), 0) + 1 FROM [Order]";
+        try (Connection con = useConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 1; // fallback
+    }
+    
+    // 🟢 Create order with auto-increment customer ID
+    public int createOrderWithAutoCustomerId(int employeeID, int tableID, String note, List<OrderDetail> orderDetails) throws Exception {
+        int orderId = 0;
+        Connection con = null;
+
+        try {
+            con = useConnection();
+            con.setAutoCommit(false);
+
+            // 1️⃣ Lấy customer ID đầu tiên có sẵn trong bảng Customer
+            int customerID = 1;
+            String getCustomerIdSql = "SELECT TOP 1 CustomerID FROM Customer ORDER BY CustomerID";
+            try (PreparedStatement psCustomer = con.prepareStatement(getCustomerIdSql);
+                 ResultSet rsCustomer = psCustomer.executeQuery()) {
+                if (rsCustomer.next()) {
+                    customerID = rsCustomer.getInt(1);
+                    System.out.println("✅ Using existing CustomerID: " + customerID);
+                } else {
+                    // Nếu không có customer nào, tạo một customer mới với User đầu tiên
+                    System.out.println("⚠️ No customers found, creating default customer");
+                    
+                    // Lấy UserID đầu tiên từ bảng User
+                    String getUserSql = "SELECT TOP 1 UserID FROM [User] WHERE Role = 0 ORDER BY UserID";
+                    int userID = 1;
+                    try (PreparedStatement psUser = con.prepareStatement(getUserSql);
+                         ResultSet rsUser = psUser.executeQuery()) {
+                        if (rsUser.next()) {
+                            userID = rsUser.getInt(1);
+                        }
+                    }
+                    
+                    // Tạo customer mới
+                    String insertCustomerSql = "INSERT INTO Customer (UserID, LoyaltyPoint) VALUES (?, 0)";
+                    try (PreparedStatement psInsert = con.prepareStatement(insertCustomerSql, Statement.RETURN_GENERATED_KEYS)) {
+                        psInsert.setInt(1, userID);
+                        psInsert.executeUpdate();
+                        
+                        try (ResultSet rsNew = psInsert.getGeneratedKeys()) {
+                            if (rsNew.next()) {
+                                customerID = rsNew.getInt(1);
+                                System.out.println("✅ Created new CustomerID: " + customerID);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 2️⃣ Tạo đơn hàng
+            String sqlOrder = """
+                INSERT INTO [Order] 
+                (CustomerID, EmployeeID, TableID, OrderDate, Status, PaymentStatus, TotalPrice, Note)
+                VALUES (?, ?, ?, GETDATE(), 0, 'Unpaid', 0, ?)
+            """;
+            try (PreparedStatement psOrder = con.prepareStatement(sqlOrder, Statement.RETURN_GENERATED_KEYS)) {
+                psOrder.setInt(1, customerID);
+                psOrder.setInt(2, employeeID);
+                psOrder.setInt(3, tableID);
+                psOrder.setString(4, note);
+                psOrder.executeUpdate();
+
+                try (ResultSet rs = psOrder.getGeneratedKeys()) {
+                    if (rs.next()) orderId = rs.getInt(1);
+                }
+            }
+
+            // 3️⃣ Chèn chi tiết (nếu có)
+            if (orderDetails != null && !orderDetails.isEmpty()) {
+                double totalPrice = 0;
+                String sqlDetail = """
+                    INSERT INTO [OrderDetail] 
+                    (OrderID, ProductID, Quantity, TotalPrice, SpecialInstructions)
+                    VALUES (?, ?, ?, ?, ?)
+                """;
+                try (PreparedStatement psDetail = con.prepareStatement(sqlDetail)) {
+                    for (OrderDetail d : orderDetails) {
+                        psDetail.setInt(1, orderId);
+                        psDetail.setInt(2, d.getProductID());
+                        psDetail.setInt(3, d.getQuantity());
+                        psDetail.setDouble(4, d.getTotalPrice());
+                        psDetail.setString(5, d.getSpecialInstructions());
+                        psDetail.addBatch();
+                        totalPrice += d.getTotalPrice();
+                    }
+                    psDetail.executeBatch();
+
+                    // Cập nhật tổng tiền
+                    String sqlUpdate = "UPDATE [Order] SET TotalPrice = ? WHERE OrderID = ?";
+                    try (PreparedStatement psUpdate = con.prepareStatement(sqlUpdate)) {
+                        psUpdate.setDouble(1, totalPrice);
+                        psUpdate.setInt(2, orderId);
+                        psUpdate.executeUpdate();
+                    }
+                }
+            }
+
+            con.commit();
+            System.out.println("✅ Order created successfully with ID: " + orderId);
+            return orderId;
+
+        } catch (Exception e) {
+            if (con != null) con.rollback();
+            System.out.println("❌ Error creating order: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        } finally {
+            if (externalConn == null && con != null) {
+                con.setAutoCommit(true);
+                con.close();
+            }
+        }
+    }
+    
+    // 🟢 Ensure sample products exist in database
+    public void ensureSampleProducts() {
+        try (Connection con = useConnection()) {
+            // Kiểm tra xem đã có products chưa
+            String checkSql = "SELECT COUNT(*) FROM Product";
+            try (PreparedStatement ps = con.prepareStatement(checkSql);
+                 ResultSet rs = ps.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    return; // Đã có products
+                }
+            }
+            
+            // Tạo sample products
+            String insertSql = """
+                INSERT INTO Product (ProductName, Price, Description, Category) VALUES 
+                ('Pepperoni Pizza', 25.00, 'Classic pepperoni pizza', 'Pizza'),
+                ('Hawaiian Pizza', 28.00, 'Ham and pineapple pizza', 'Pizza'),
+                ('Margherita Pizza', 22.00, 'Fresh mozzarella and basil', 'Pizza')
+            """;
+            
+            try (PreparedStatement ps = con.prepareStatement(insertSql)) {
+                ps.executeUpdate();
+                System.out.println("✅ Sample products created");
+            }
+            
+        } catch (Exception e) {
+            System.out.println("⚠️ Error creating sample products: " + e.getMessage());
+        }
+    }
+    
+    // 🟢 Ensure sample orders exist in database
+    public void ensureSampleOrders() {
+        try (Connection con = useConnection()) {
+            // Kiểm tra xem đã có orders chưa
+            String checkSql = "SELECT COUNT(*) FROM [Order]";
+            try (PreparedStatement ps = con.prepareStatement(checkSql);
+                 ResultSet rs = ps.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    return; // Đã có orders
+                }
+            }
+            
+            // Tạo sample customers trước (nếu chưa có)
+            String insertCustomerSql = """
+                IF NOT EXISTS (SELECT 1 FROM Customer WHERE CustomerID = 1)
+                INSERT INTO Customer (UserID, LoyaltyPoint) VALUES 
+                (4, 0),
+                (5, 0),
+                (6, 0)
+            """;
+            
+            try (PreparedStatement ps = con.prepareStatement(insertCustomerSql)) {
+                ps.executeUpdate();
+                System.out.println("✅ Sample customers ensured");
+            }
+            
+            // Tạo sample orders
+            String insertOrderSql = """
+                INSERT INTO [Order] (CustomerID, EmployeeID, TableID, OrderDate, Status, PaymentStatus, TotalPrice, Note) VALUES 
+                (1, 1, 1, GETDATE(), 0, 'Unpaid', 25.00, 'Sample order 1'),
+                (2, 1, 2, GETDATE(), 1, 'Unpaid', 56.00, 'Sample order 2'),
+                (3, 1, 3, GETDATE(), 2, 'Paid', 22.00, 'Sample order 3')
+            """;
+            
+            try (PreparedStatement ps = con.prepareStatement(insertOrderSql)) {
+                ps.executeUpdate();
+                System.out.println("✅ Sample orders created");
+            }
+            
+            // Tạo sample order details
+            String insertDetailSql = """
+                INSERT INTO OrderDetail (OrderID, ProductID, Quantity, TotalPrice, SpecialInstructions) VALUES 
+                (1, 1, 1, 25.00, 'Loại: Pepperoni'),
+                (2, 2, 2, 56.00, 'Loại: Hawaiian'),
+                (3, 3, 1, 22.00, 'Loại: Margherita')
+            """;
+            
+            try (PreparedStatement ps = con.prepareStatement(insertDetailSql)) {
+                ps.executeUpdate();
+                System.out.println("✅ Sample order details created");
+            }
+            
+        } catch (Exception e) {
+            System.out.println("⚠️ Error creating sample orders: " + e.getMessage());
         }
     }
 }

@@ -176,7 +176,10 @@
                         </svg>
                         Refresh
                     </a>
-                    <a href="${pageContext.request.contextPath}/dashboard" class="bg-indigo-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-indigo-600 transition-all">
+                    <a href="${pageContext.request.contextPath}/dashboard" class="bg-indigo-500 text-white px-6 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-indigo-600 transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
                         Dashboard
                     </a>
                 </div>
@@ -220,7 +223,7 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="font-medium text-gray-900">
-                                    <%= customerId != null && customerId != 0 ? "Customer #" + customerId : "Walk-in" %>
+                                    <%= customerId != null && customerId != 0 ? customerId : "N/A" %>
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-gray-700 text-sm">
@@ -252,9 +255,9 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="flex items-center justify-center gap-2 flex-wrap">
+                                <div class="flex items-center justify-center gap-1 overflow-x-auto" style="min-width: 300px;">
                                     <button onclick="openEditOrderModal(<%= order.getOrderID() %>)" 
-                                            class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit">
+                                            class="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors" title="Edit">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
@@ -265,7 +268,7 @@
                                         <input type="hidden" name="action" value="updateStatus">
                                         <input type="hidden" name="orderId" value="<%= order.getOrderID() %>">
                                         <input type="hidden" name="status" value="1">
-                                        <button type="submit" class="px-3 py-1 bg-yellow-500 text-white text-xs rounded-lg hover:bg-yellow-600">
+                                        <button type="submit" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600 whitespace-nowrap">
                                             Process
                                         </button>
                                     </form>
@@ -276,7 +279,7 @@
                                         <input type="hidden" name="action" value="updateStatus">
                                         <input type="hidden" name="orderId" value="<%= order.getOrderID() %>">
                                         <input type="hidden" name="status" value="2">
-                                        <button type="submit" class="px-3 py-1 bg-green-500 text-white text-xs rounded-lg hover:bg-green-600">
+                                        <button type="submit" class="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600 whitespace-nowrap">
                                             Complete
                                         </button>
                                     </form>
@@ -287,8 +290,8 @@
                                         <input type="hidden" name="action" value="updatePayment">
                                         <input type="hidden" name="orderId" value="<%= order.getOrderID() %>">
                                         <input type="hidden" name="paymentStatus" value="Paid">
-                                        <button type="submit" class="px-3 py-1 bg-emerald-500 text-white text-xs rounded-lg hover:bg-emerald-600">
-                                            Mark Paid
+                                        <button type="submit" class="px-2 py-1 bg-emerald-500 text-white text-xs rounded hover:bg-emerald-600 whitespace-nowrap">
+                                            Paid
                                         </button>
                                     </form>
                                     <% } %>
@@ -298,7 +301,7 @@
                                         <input type="hidden" name="action" value="updateStatus">
                                         <input type="hidden" name="orderId" value="<%= order.getOrderID() %>">
                                         <input type="hidden" name="status" value="3">
-                                        <button type="submit" class="px-3 py-1 bg-orange-500 text-white text-xs rounded-lg hover:bg-orange-600">
+                                        <button type="submit" class="px-2 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600 whitespace-nowrap">
                                             Cancel
                                         </button>
                                     </form>
@@ -308,7 +311,7 @@
                                     <form style="display: inline;" method="post" onsubmit="return confirm('Delete this order permanently?')">
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="orderId" value="<%= order.getOrderID() %>">
-                                        <button type="submit" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
+                                        <button type="submit" class="p-1 text-red-600 hover:bg-red-50 rounded transition-colors" title="Delete">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                             </svg>
@@ -451,20 +454,24 @@
 
         function orderItemRowTemplate() {
             return `
-                <div class="order-item-row grid grid-cols-4 gap-3 p-3 bg-gray-50 rounded-lg">
+                <div class="order-item-row grid grid-cols-5 gap-3 p-3 bg-gray-50 rounded-lg">
                     <div class="col-span-2">
                         <label class="block text-xs font-semibold text-gray-700 mb-1">Pizza Type</label>
-                        <select name="pizzaType" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
-                            <option value="Pepperoni">Pepperoni</option>
-                            <option value="Hawaiian">Hawaiian</option>
-                            <option value="Margherita">Margherita</option>
-                            <option value="BBQ Chicken">BBQ Chicken</option>
-                            <option value="Veggie">Veggie</option>
+                        <select name="pizzaType" onchange="updatePrice(this)" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <option value="Pepperoni" data-price="25.00">Pepperoni ($25.00)</option>
+                            <option value="Hawaiian" data-price="28.00">Hawaiian ($28.00)</option>
+                            <option value="Margherita" data-price="22.00">Margherita ($22.00)</option>
+                            <option value="BBQ Chicken" data-price="30.00">BBQ Chicken ($30.00)</option>
+                            <option value="Veggie" data-price="24.00">Veggie ($24.00)</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1">Quantity</label>
-                        <input name="quantity" type="number" min="1" value="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" required />
+                        <input name="quantity" type="number" min="1" max="100" value="1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" required />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Price</label>
+                        <input name="price" type="number" step="0.01" value="25.00" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" required />
                     </div>
                     <div class="flex items-end">
                         <button type="button" onclick="this.closest('.order-item-row').remove()" class="w-full px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
@@ -472,6 +479,13 @@
                         </button>
                     </div>
                 </div>`;
+        }
+
+        function updatePrice(selectElement) {
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            const price = selectedOption.getAttribute('data-price');
+            const priceInput = selectElement.closest('.order-item-row').querySelector('input[name="price"]');
+            priceInput.value = price;
         }
 
         function addOrderItemRow() {
@@ -496,9 +510,21 @@
             
             for (const row of rows) {
                 const pizzaType = row.querySelector('select[name="pizzaType"]').value;
-                const quantity = row.querySelector('input[name="quantity"]').value;
+                const quantityInput = row.querySelector('input[name="quantity"]');
+                const quantity = parseInt(quantityInput.value);
+                const price = row.querySelector('input[name="price"]').value;
+                
+                // Validate quantity
+                if (!quantity || quantity < 1 || quantity > 100) {
+                    errorBox.classList.remove('hidden');
+                    errorBox.textContent = 'Quantity must be between 1 and 100';
+                    quantityInput.focus();
+                    return;
+                }
+                
                 formData.append('pizzaType', pizzaType);
                 formData.append('quantity', quantity);
+                formData.append('price', price);
             }
 
             try {

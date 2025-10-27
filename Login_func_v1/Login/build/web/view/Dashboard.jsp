@@ -1,4 +1,28 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ page import="java.util.*" %>
+<%
+    Integer totalOrders = (Integer) request.getAttribute("totalOrders");
+    Integer pendingOrders = (Integer) request.getAttribute("pendingOrders");
+    Integer processingOrders = (Integer) request.getAttribute("processingOrders");
+    Integer completedOrders = (Integer) request.getAttribute("completedOrders");
+    Integer cancelledOrders = (Integer) request.getAttribute("cancelledOrders");
+    Double totalRevenue = (Double) request.getAttribute("totalRevenue");
+    Double totalPaid = (Double) request.getAttribute("totalPaid");
+    Double totalUnpaid = (Double) request.getAttribute("totalUnpaid");
+    List<Map.Entry<String, Integer>> top5Dishes = (List<Map.Entry<String, Integer>>) request.getAttribute("top5Dishes");
+    double[] hourlyRevenue = (double[]) request.getAttribute("hourlyRevenue");
+    String currentFilter = (String) request.getAttribute("currentFilter");
+    
+    // Default values if null
+    if (totalOrders == null) totalOrders = 0;
+    if (totalRevenue == null) totalRevenue = 0.0;
+    if (totalPaid == null) totalPaid = 0.0;
+    if (totalUnpaid == null) totalUnpaid = 0.0;
+    if (pendingOrders == null) pendingOrders = 0;
+    if (processingOrders == null) processingOrders = 0;
+    if (completedOrders == null) completedOrders = 0;
+    if (currentFilter == null) currentFilter = "today";
+%>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -87,12 +111,23 @@
 <div class="flex-1 flex flex-col overflow-hidden">
     <!-- Header -->
     <div class="bg-white border-b px-6 py-4 flex justify-between items-center flex-shrink-0">
-        <h1 class="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
+            <p class="text-sm text-gray-500 mt-1">
+                <% 
+                String filterLabel = "Today";
+                if ("week".equals(currentFilter)) filterLabel = "This Week";
+                else if ("month".equals(currentFilter)) filterLabel = "This Month";
+                else if ("year".equals(currentFilter)) filterLabel = "This Year";
+                %>
+                Showing <%= totalOrders %> orders from <%= filterLabel %>
+            </p>
+        </div>
         <div class="flex space-x-2">
-            <button class="tab-btn bg-orange-500 text-white">Today</button>
-            <button class="tab-btn bg-gray-100 text-gray-600 hover:bg-gray-200">This Week</button>
-            <button class="tab-btn bg-gray-100 text-gray-600 hover:bg-gray-200">This Month</button>
-            <button class="tab-btn bg-gray-100 text-gray-600 hover:bg-gray-200">This Year</button>
+            <button onclick="filterDashboard('today')" class="tab-btn <%= "today".equals(currentFilter) ? "bg-orange-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200" %>">Today</button>
+            <button onclick="filterDashboard('week')" class="tab-btn <%= "week".equals(currentFilter) ? "bg-orange-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200" %>">This Week</button>
+            <button onclick="filterDashboard('month')" class="tab-btn <%= "month".equals(currentFilter) ? "bg-orange-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200" %>">This Month</button>
+            <button onclick="filterDashboard('year')" class="tab-btn <%= "year".equals(currentFilter) ? "bg-orange-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200" %>">This Year</button>
         </div>
     </div>
 
@@ -111,49 +146,63 @@
                 </div>
                 <div class="flex justify-center space-x-3 mt-2 text-xs flex-shrink-0">
                     <div class="flex items-center space-x-1">
+                        <div class="w-2 h-2 rounded bg-green-500"></div>
+                        <span>Completed</span>
+                    </div>
+                    <div class="flex items-center space-x-1">
+                        <div class="w-2 h-2 rounded bg-blue-500"></div>
+                        <span>Processing</span>
+                    </div>
+                    <div class="flex items-center space-x-1">
                         <div class="w-2 h-2 rounded bg-orange-500"></div>
-                        <span>Foodies</span>
+                        <span>Pending</span>
                     </div>
                     <div class="flex items-center space-x-1">
-                        <div class="w-2 h-2 rounded bg-gray-800"></div>
-                        <span>Cold Drink</span>
-                    </div>
-                    <div class="flex items-center space-x-1">
-                        <div class="w-2 h-2 rounded bg-gray-300"></div>
-                        <span>Others</span>
+                        <div class="w-2 h-2 rounded bg-red-500"></div>
+                        <span>Cancelled</span>
                     </div>
                 </div>
             </div>
 
             <!-- Total Balance -->
             <div class="bg-white rounded-xl p-4 shadow-sm flex flex-col h-full">
-                <h2 class="text-base font-bold text-gray-800 mb-2 flex-shrink-0">Total Balance</h2>
-                <div class="text-2xl font-bold text-green-500 mb-3 flex-shrink-0">$30,000</div>
+                <h2 class="text-base font-bold text-gray-800 mb-2 flex-shrink-0">Total Revenue</h2>
+                <div class="text-2xl font-bold text-green-500 mb-3 flex-shrink-0">$<%= String.format("%.2f", totalRevenue) %></div>
                 <div class="flex-1 min-h-0 flex flex-col justify-center space-y-2">
                     <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
                         <div class="flex items-center space-x-2">
-                            <div class="w-8 h-8 bg-black rounded-full flex items-center justify-center flex-shrink-0">
-                                <i data-lucide="trending-up" class="w-4 h-4 text-white"></i>
+                            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="check-circle" class="w-4 h-4 text-white"></i>
                             </div>
                             <div>
-                                <div class="text-xs text-gray-500">Total Income</div>
-                                <div class="text-sm font-bold text-gray-800">$4,500</div>
+                                <div class="text-xs text-gray-500">Paid Orders</div>
+                                <div class="text-sm font-bold text-gray-800">$<%= String.format("%.2f", totalPaid) %></div>
                             </div>
                         </div>
-                        <div class="text-xs text-gray-400">(+20%)</div>
                     </div>
 
                     <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
                         <div class="flex items-center space-x-2">
                             <div class="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
-                                <i data-lucide="dollar-sign" class="w-4 h-4 text-white"></i>
+                                <i data-lucide="clock" class="w-4 h-4 text-white"></i>
                             </div>
                             <div>
-                                <div class="text-xs text-gray-500">Total Expense</div>
-                                <div class="text-sm font-bold text-gray-800">$2,500</div>
+                                <div class="text-xs text-gray-500">Unpaid Orders</div>
+                                <div class="text-sm font-bold text-gray-800">$<%= String.format("%.2f", totalUnpaid) %></div>
                             </div>
                         </div>
-                        <div class="text-xs text-gray-400">(+30%)</div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="shopping-cart" class="w-4 h-4 text-white"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-500">Total Orders</div>
+                                <div class="text-sm font-bold text-gray-800"><%= totalOrders %></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -176,24 +225,28 @@
                     <div class="space-y-2">
                         <div class="flex justify-between text-xs text-gray-500 mb-2">
                             <span>Dishes</span>
-                            <span>Orders</span>
+                            <span>Quantity</span>
                         </div>
+                        <% 
+                        if (top5Dishes != null && !top5Dishes.isEmpty()) {
+                            for (Map.Entry<String, Integer> dish : top5Dishes) {
+                                String emoji = "🍕";
+                                if (dish.getKey().contains("Hawaiian")) emoji = "🍍";
+                                else if (dish.getKey().contains("Pepperoni")) emoji = "🌶️";
+                                else if (dish.getKey().contains("Margherita")) emoji = "🍅";
+                                else if (dish.getKey().contains("BBQ")) emoji = "🍗";
+                                else if (dish.getKey().contains("Veggie")) emoji = "🥗";
+                        %>
                         <div class="flex justify-between items-center border-b py-2 text-sm">
-                            <span>🥪 Grill Sandwich</span>
-                            <span class="font-bold text-gray-700">200</span>
+                            <span><%= emoji %> <%= dish.getKey() %></span>
+                            <span class="font-bold text-gray-700"><%= dish.getValue() %></span>
                         </div>
-                        <div class="flex justify-between items-center border-b py-2 text-sm">
-                            <span>🍗 Chicken Popeyes</span>
-                            <span class="font-bold text-gray-700">400</span>
-                        </div>
-                        <div class="flex justify-between items-center border-b py-2 text-sm">
-                            <span>🍔 Bison Burgers</span>
-                            <span class="font-bold text-gray-700">250</span>
-                        </div>
-                        <div class="flex justify-between items-center py-2 text-sm">
-                            <span>🥪 Grill Sandwich</span>
-                            <span class="font-bold text-gray-700">100</span>
-                        </div>
+                        <% 
+                            }
+                        } else {
+                        %>
+                        <div class="text-center text-gray-500 text-sm py-4">No data available</div>
+                        <% } %>
                     </div>
                 </div>
             </div>
@@ -203,6 +256,12 @@
 
         <!-- JS -->
         <script>
+    const ctx = '${pageContext.request.contextPath}';
+    
+    function filterDashboard(period) {
+        window.location.href = ctx + '/dashboard?filter=' + period;
+    }
+    
     lucide.createIcons();
 
     // Total Income Chart (Pie) - Fixed size
@@ -210,10 +269,10 @@
     new Chart(ctx1, {
         type: 'doughnut',
         data: {
-            labels: ['Foodies', 'Cold Drink', 'Others'],
+            labels: ['Completed', 'Processing', 'Pending', 'Cancelled'],
             datasets: [{
-                data: [12000, 6000, 2000],
-                backgroundColor: ['#FF8C42', '#2D3142', '#E5E5E5']
+                data: [<%= completedOrders %>, <%= processingOrders %>, <%= pendingOrders %>, <%= cancelledOrders %>],
+                backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444']
             }]
         },
         options: {
@@ -228,13 +287,24 @@
 
     // Daily Selling Chart (Area) - Fill container
     const ctx2 = document.getElementById('dailyChart').getContext('2d');
+    <% 
+    StringBuilder hourlyData = new StringBuilder();
+    if (hourlyRevenue != null) {
+        for (int i = 0; i < hourlyRevenue.length; i++) {
+            if (i > 0) hourlyData.append(", ");
+            hourlyData.append(String.format("%.2f", hourlyRevenue[i]));
+        }
+    }
+    %>
     new Chart(ctx2, {
         type: 'line',
         data: {
-            labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+            labels: ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', 
+                     '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00',
+                     '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'],
             datasets: [{
-                label: 'Sales',
-                data: [14000, 13000, 15000, 16000, 14500, 15500, 14800],
+                label: 'Revenue ($)',
+                data: [<%= hourlyData.toString() %>],
                 borderColor: '#FF8C42',
                 backgroundColor: 'rgba(255, 140, 66, 0.2)',
                 fill: true,
@@ -244,9 +314,25 @@
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {legend: {display: false}},
+            plugins: {
+                legend: {display: true},
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Revenue: $' + context.parsed.y.toFixed(2);
+                        }
+                    }
+                }
+            },
             scales: {
-                y: {beginAtZero: false}
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value;
+                        }
+                    }
+                }
             }
         }
     });

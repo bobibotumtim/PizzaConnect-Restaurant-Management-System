@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Order Test</title>
+</head>
+<body>
+    <h2>Simple Order Update Test</h2>
+    <button onclick="testUpdate()">Test Update Order</button>
+    <div id="result"></div>
+
+    <script>
+        function testUpdate() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('action', 'updateFromModal');
+            formData.append('orderID', '4');
+            formData.append('customerID', '1');
+            formData.append('employeeID', '1');
+            formData.append('tableID', '1');
+            formData.append('status', '1');
+            formData.append('paymentStatus', 'Paid');
+            formData.append('totalPrice', '100.00');
+            formData.append('note', 'Test update from simple form');
+            
+            console.log('Sending request to: http://localhost:9999/Login/OrderController');
+            
+            fetch('http://localhost:9999/Login/OrderController', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                console.log('Content-Type:', response.headers.get('content-type'));
+                
+                return response.text();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                resultDiv.innerHTML = `<div style="color: green;">Success: ${data}</div>`;
+            })
+            .catch(error => {
+                console.error('Error details:', error);
+                resultDiv.innerHTML = `<div style="color: red;">Error: ${error.message}</div>`;
+            });
+        }
+    </script>
+</body>
+</html>
