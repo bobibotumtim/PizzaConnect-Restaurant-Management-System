@@ -602,46 +602,6 @@
                     </div>
                 </div>
 
-                <!-- Dashboard Modules -->
-                <div class="dashboard-modules">
-                    <div class="module-card">
-                        <div class="module-icon">👥</div>
-                        <h3>User Management</h3>
-                        <p>Manage users, roles and permissions</p>
-                        <div class="module-actions">
-                            <a href="adduser" class="btn btn-success" style="margin-right: 10px;" title="Add New User">+ Add User</a>
-                            <a href="#user-management" class="btn btn-primary" onclick="scrollToUserManagement()">Manage Users</a>
-                        </div>
-                    </div>
-
-                    <div class="module-card">
-                        <div class="module-icon">🍕</div>
-                        <h3>Order Management</h3>
-                        <p>View and manage pizza orders</p>
-                        <div class="module-actions">
-                            <a href="manage-orders" class="btn btn-success">Manage Orders</a>
-                        </div>
-                    </div>
-
-                    <div class="module-card">
-                        <div class="module-icon">📊</div>
-                        <h3>Reports & Analytics</h3>
-                        <p>View sales reports and statistics</p>
-                        <div class="module-actions">
-                            <a href="#reports" class="btn btn-info">View Reports</a>
-                        </div>
-                    </div>
-
-                    <div class="module-card">
-                        <div class="module-icon">⚙️</div>
-                        <h3>System Settings</h3>
-                        <p>Configure system parameters</p>
-                        <div class="module-actions">
-                            <a href="#settings" class="btn btn-warning">Settings</a>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="table-container">
                     <div class="table-header" style="display: flex; justify-content: space-between; align-items: center;">
                         <span>👥 User Management</span>
@@ -805,7 +765,7 @@
                 // Nếu chọn "all" thì xem toàn bộ user
                 if (selectedRole === 'all') {
                     window.location.href = 'admin?page=1';
-                    } else {
+                } else {
                     // Redirect lên servlet admin kèm roleFilter param
                     window.location.href = 'admin?roleFilter=' + encodeURIComponent(selectedRole) + '&page=1';
                 }
