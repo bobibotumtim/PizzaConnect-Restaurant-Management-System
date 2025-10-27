@@ -5,3 +5,4 @@ config.properties
 DBContext.java
 *.class
 
+.vscode/settings.json

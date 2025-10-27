@@ -182,10 +182,33 @@ CREATE TABLE Discount (
 -- Sample Discount data
 INSERT INTO Discount (Description, DiscountType, Value, MaxDiscount, MinOrderTotal, StartDate, EndDate, IsActive)
 VALUES
+-- Active discounts 
 (N'Loyalty point redemption', 'Loyalty', 100, NULL, 0, '2025-10-01', NULL, 1),
 (N'10% off all drinks', 'Percentage', 10, NULL, 0, '2025-10-01', '2025-10-31', 1),
 (N'20.000VND off for orders over 200.000VND', 'Fixed', 20000, NULL, 200000, '2025-10-15', '2025-11-15', 1),
-(N'15% off for orders over 150.000VND', 'Percentage', 15, 30000, 150000, '2025-10-10', '2025-10-25', 1);
+(N'15% off for orders over 150.000VND', 'Percentage', 15, 30000, 150000, '2025-10-10', '2025-10-25', 1),
+(N'Winter Holiday 35%', 'Percentage', 35, 100000, 180000, '2025-12-01', '2025-12-31', 1),
+(N'Black Friday 50%', 'Percentage', 50, 150000, 350000, '2025-11-25', '2025-11-27', 1),
+(N'Welcome Discount 10%', 'Percentage', 10, NULL, 0, '2024-01-01', '2024-12-31', 1),
+(N'Weekend Special 15%', 'Percentage', 15, 50000, 100000, '2024-01-01', '2024-12-31', 1),
+(N'Free Shipping', 'Fixed', 30000, NULL, 150000, '2024-01-01', NULL, 1),
+(N'Member Loyalty 100pts', 'Loyalty', 100, NULL, 0, '2024-01-01', NULL, 1),
+(N'Early Bird 15%', 'Percentage', 15, 30000, 80000, '2024-01-01', '2024-12-31', 1),
+(N'Family Package 20%', 'Percentage', 20, 60000, 250000, '2024-01-01', '2024-12-31', 1),
+(N'New Product Launch 10%', 'Percentage', 10, NULL, 50000, '2024-01-01', '2024-06-30', 1),
+-- Inactive/Upcoming discounts 
+(N'Summer Sale 2025 40%', 'Percentage', 40, 120000, 300000, '2025-06-01', '2025-08-31', 0),
+(N'New Year Special 25%', 'Percentage', 25, 80000, 120000, '2025-01-01', '2025-01-07', 0),
+(N'Anniversary Sale 30%', 'Percentage', 30, 90000, 150000, '2025-03-15', '2025-03-22', 0),
+(N'Spring Festival 20%', 'Percentage', 20, 50000, 100000, '2025-02-01', '2025-02-15', 0),
+(N'Mid-Autumn 15%', 'Percentage', 15, 40000, 80000, '2025-09-10', '2025-09-12', 0),
+(N'Back to School 25%', 'Percentage', 25, 60000, 90000, '2025-08-15', '2025-09-15', 0),
+(N'Clearance Sale 60%', 'Percentage', 60, 200000, 400000, '2025-01-20', '2025-01-31', 0),
+(N'Member Appreciation 35%', 'Percentage', 35, 110000, 220000, '2025-05-01', '2025-05-07', 0),
+(N'Happy Hour 25%', 'Percentage', 25, 75000, 120000, '2024-01-01', '2024-12-31', 0),
+(N'Birthday Special 30%', 'Percentage', 30, 100000, 200000, '2024-01-01', '2024-12-31', 0),
+(N'Student Discount 20%', 'Percentage', 20, 40000, 50000, '2024-01-01', '2024-12-31', 0);
+
 
 -- OrderDiscount table
 CREATE TABLE OrderDiscount (

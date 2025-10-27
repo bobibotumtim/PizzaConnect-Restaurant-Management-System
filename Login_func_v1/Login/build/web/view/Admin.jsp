@@ -219,6 +219,7 @@
                 display: block;
             }
 
+            /* Dashboard modules styles removed (not used) */
             /* Dashboard Modules */
             .dashboard-modules {
                 display: grid;
@@ -531,6 +532,17 @@
             String message = (String) request.getAttribute("message");
             String error = (String) request.getAttribute("error");
             Integer totalOrders = (Integer) request.getAttribute("totalOrders");
+            // NEW: selected role từ servlet
+            String selectedRole = (String) request.getAttribute("selectedRole");
+            if (selectedRole == null || selectedRole.trim().isEmpty()) {
+                selectedRole = "all";
+            }
+
+            // NEW: preserve roleFilter param for pagination links
+            String roleParam = "";
+            if (!"all".equalsIgnoreCase(selectedRole)) {
+                roleParam = "&roleFilter=" + selectedRole;
+            }
         
             // Calculate stats
             int totalUsers = users != null ? users.size() : 0;
@@ -636,10 +648,10 @@
                         <div class="filter-container">
                             <span class="filter-label">Filter by Role:</span>
                             <select id="roleFilter" onchange="filterUsersByRole()">
-                                <option value="all">All Roles</option>
-                                <option value="1">Admin</option>
-                                <option value="2">Employee</option>
-                                <option value="3">Customer</option>
+                                <option value="all" <%= "all".equalsIgnoreCase(selectedRole) ? "selected" : "" %>>All Roles</option>
+                                <option value="1" <%= "1".equals(selectedRole) ? "selected" : "" %>>Admin</option>
+                                <option value="2" <%= "2".equals(selectedRole) ? "selected" : "" %>>Employee</option>
+                                <option value="3" <%= "3".equals(selectedRole) ? "selected" : "" %>>Customer</option>
                             </select>
                             <a href="adduser" class="btn btn-success" style="margin: 0;" title="Add New User">+ Add New User</a>
                         </div>
@@ -714,17 +726,17 @@
                                 if (totalPages > 1) {
                             %>
                             <li class="page-item <%= (currentPage == 1 ? "disabled" : "") %>">
-                                <a class="page-link" href="admin?page=<%= (currentPage - 1) %>">Previous</a>
+                                <a class="page-link" href="admin?page=<%= (currentPage - 1) %><%= roleParam %>">Previous</a>
                             </li>
 
                             <% for (int i = 1; i <= totalPages; i++) { %>
                             <li class="page-item <%= (i == currentPage ? "active" : "") %>">
-                                <a class="page-link" href="admin?page=<%= i %>"><%= i %></a>
+                                <a class="page-link" href="admin?page=<%= i %><%= roleParam %>"><%= i %></a>
                             </li>
                             <% } %>
 
                             <li class="page-item <%= (currentPage == totalPages ? "disabled" : "") %>">
-                                <a class="page-link" href="admin?page=<%= (currentPage + 1) %>">Next</a>
+                                <a class="page-link" href="admin?page=<%= (currentPage + 1) %><%= roleParam %>">Next</a>
                             </li>
                             <% } %>
                         </ul>
@@ -787,59 +799,20 @@
         </div>
 
         <script>
-            // Function to scroll to user management section
-            function scrollToUserManagement() {
-                const userManagementSection = document.querySelector('.table-container');
-                if (userManagementSection) {
-                    userManagementSection.scrollIntoView({behavior: 'smooth'});
-                }
-            }
-
-            // Function to filter users by role
+            // ✅ NEW: Function to filter users by role (server-side redirect)
             function filterUsersByRole() {
                 const selectedRole = document.getElementById('roleFilter').value;
-                const rows = document.querySelectorAll('tbody tr[data-role]');
-
-                rows.forEach(function (row) {
-                    if (selectedRole === 'all' || row.getAttribute('data-role') === selectedRole) {
-                        row.style.display = '';
+                // Nếu chọn "all" thì xem toàn bộ user
+                if (selectedRole === 'all') {
+                    window.location.href = 'admin?page=1';
                     } else {
-                        row.style.display = 'none';
-                    }
-                });
-
-                // Update table message if no rows are visible
-                updateTableMessage();
-            }
-
-            // Function to update table message based on visible rows
-            function updateTableMessage() {
-                const visibleRows = document.querySelectorAll('tbody tr[data-role]:not([style*="display: none"])');
-                const selectedRole = document.getElementById('roleFilter').value;
-
-                if (visibleRows.length === 0) {
-                    // Show "No users found" message
-                    let noUsersMessage = document.querySelector('.no-users-message');
-                    if (!noUsersMessage) {
-                        noUsersMessage = document.createElement('tr');
-                        noUsersMessage.className = 'no-users-message';
-                        noUsersMessage.innerHTML = '<td colspan="7" style="text-align: center; padding: 50px; color: #7f8c8d; font-style: italic;">No users found for selected role</td>';
-                        document.querySelector('tbody').appendChild(noUsersMessage);
-                    }
-                    noUsersMessage.style.display = '';
-                } else {
-                    // Hide "No users found" message
-                    const noUsersMessage = document.querySelector('.no-users-message');
-                    if (noUsersMessage) {
-                        noUsersMessage.style.display = 'none';
-                    }
+                    // Redirect lên servlet admin kèm roleFilter param
+                    window.location.href = 'admin?roleFilter=' + encodeURIComponent(selectedRole) + '&page=1';
                 }
             }
 
             // Initialize filter on page load
             document.addEventListener('DOMContentLoaded', function () {
-                filterUsersByRole();
-
                 // Add event listeners for action buttons
                 document.querySelectorAll('.delete-btn').forEach(btn => {
                     btn.addEventListener('click', function () {
@@ -888,7 +861,6 @@
 
             function confirmDelete() {
                 if (currentUserId) {
-                    // Create and submit form
                     const form = document.createElement('form');
                     form.method = 'POST';
                     form.action = 'admin';
@@ -912,7 +884,6 @@
 
             function confirmSuspend() {
                 if (currentUserId) {
-                    // Create and submit form
                     const form = document.createElement('form');
                     form.method = 'POST';
                     form.action = 'admin';
@@ -936,7 +907,6 @@
 
             function confirmActivate() {
                 if (currentUserId) {
-                    // Create and submit form
                     const form = document.createElement('form');
                     form.method = 'POST';
                     form.action = 'admin';
@@ -969,5 +939,6 @@
                 });
             }
         </script>
+
     </body>
 </html>

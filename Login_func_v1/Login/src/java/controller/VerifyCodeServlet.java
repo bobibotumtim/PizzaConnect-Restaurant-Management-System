@@ -56,7 +56,8 @@ public class VerifyCodeServlet extends HttpServlet {
         }
 
         // Kiểm tra OTP
-        boolean isValid = TokenDAO.verifyOTP(user.getUserID(), otp);
+        TokenDAO tokenDAO = new TokenDAO();
+        boolean isValid = tokenDAO.verifyOTP(user.getUserID(), otp);
 
         if (isValid) {
             // Cập nhật mật khẩu mới

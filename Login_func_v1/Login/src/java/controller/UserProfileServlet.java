@@ -3,9 +3,9 @@ package controller;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
 import models.User;
-import utils.EmailUtil;
-import dao.TokenDAO;
 import dao.UserDAO;
+import dao.TokenDAO;
+import utils.EmailUtil;
 import java.io.IOException;
 import java.sql.Date;
 import java.security.SecureRandom;
@@ -46,6 +46,7 @@ public class UserProfileServlet extends HttpServlet {
         User currentUser = (User) session.getAttribute("user");
         UserDAO userDAO = new UserDAO();
 
+        // get parameters
         String name = getTrimmedParameter(request, "name");
         String email = getTrimmedParameter(request, "email");
         String phone = getTrimmedParameter(request, "phone");
@@ -66,19 +67,20 @@ public class UserProfileServlet extends HttpServlet {
             return;
         }
 
-        // Kiểm tra có thay đổi gì không
+        // check if any changes were made
         if (!hasChanges(currentUser, name, email, phone, gender, dateOfBirth, newPassword)) {
             forwardWithMessage(request, response, currentUser, "No changes were made!");
             return;
         }
 
-        // Xử lý đổi mật khẩu (gửi OTP)
+        // sending OTP if password is changed
         if (newPassword != null && !newPassword.isEmpty()) {
             String hashedNewPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
             String otpCode = generateOTP(6);
 
-            // Lưu OTP và mật khẩu tạm
-            TokenDAO.saveOTP(currentUser.getUserID(), otpCode, hashedNewPassword);
+            // save OTP and hashed password temporarily
+            TokenDAO tokenDAO = new TokenDAO();
+            tokenDAO.saveOTP(currentUser.getUserID(), otpCode, hashedNewPassword);
 
             try {
                 String subject = "Password Change Verification Code";
@@ -102,20 +104,23 @@ public class UserProfileServlet extends HttpServlet {
             }
         }
 
-        // Nếu không đổi mật khẩu → cập nhật hồ sơ
+        // if no password change, proceed to update other info
         User updatedUser = new User(
                 currentUser.getUserID(),
                 name != null && !name.isEmpty() ? name : currentUser.getName(),
-                currentUser.getPassword(),
+                (newPassword != null && !newPassword.isEmpty()) ? newPassword : currentUser.getPassword(),
                 currentUser.getRole(),
                 email.toLowerCase(),
                 phone,
                 dateOfBirth != null ? dateOfBirth : currentUser.getDateOfBirth(),
                 gender != null ? gender : currentUser.getGender(),
-                currentUser.isActive());
+                currentUser.isActive()
+        );
 
+        // save updates
+        boolean updated;
         try {
-            boolean updated = userDAO.updateUser(updatedUser);
+            updated = userDAO.updateUser(updatedUser);
             if (updated) {
                 session.setAttribute("user", updatedUser);
                 forwardWithMessage(request, response, updatedUser, "Profile updated successfully!");
@@ -176,7 +181,7 @@ public class UserProfileServlet extends HttpServlet {
     }
 
     private boolean hasChanges(User user, String name, String email, String phone,
-            String gender, Date dateOfBirth, String newPassword) {
+                               String gender, Date dateOfBirth, String newPassword) {
         return (name != null && !name.equalsIgnoreCase(user.getName()))
                 || (email != null && !email.equalsIgnoreCase(user.getEmail()))
                 || (phone != null && !phone.equals(user.getPhone()))

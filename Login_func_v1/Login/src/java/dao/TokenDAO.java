@@ -5,16 +5,16 @@ import java.time.LocalDateTime;
 
 public class TokenDAO extends DBContext {
 
-    // 🔹 Lưu mã OTP vào DB, dùng cho xác minh đổi mật khẩu
-    public static boolean saveOTP(int userId, String otpCode, String newPasswordHash) {
+    // Save OTP and new password hash into PasswordTokens table
+    public boolean saveOTP(int userId, String otpCode, String newPasswordHash) {
         String sql = """
                 INSERT INTO PasswordTokens (Token, UserID, NewPasswordHash, ExpiresAt, Used)
                 VALUES (?, ?, ?, DATEADD(MINUTE, 5, GETDATE()), 0)
                 """;
 
-        try (Connection conn = new DBContext().getConnection();
+        try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, otpCode); // OTP 6 ký tự, lưu ở cột Token
+            ps.setString(1, otpCode);
             ps.setInt(2, userId);
             ps.setString(3, newPasswordHash);
             int rows = ps.executeUpdate();
@@ -25,14 +25,14 @@ public class TokenDAO extends DBContext {
         }
     }
 
-    // 🔹 Kiểm tra mã OTP hợp lệ (chưa dùng, chưa hết hạn)
-    public static boolean verifyOTP(int userId, String otpCode) {
+    // Check if OTP is valid
+    public boolean verifyOTP(int userId, String otpCode) {
         String sql = """
                 SELECT 1 FROM PasswordTokens
                 WHERE UserID = ? AND Token = ? AND Used = 0 AND ExpiresAt > GETDATE()
                 """;
 
-        try (Connection conn = new DBContext().getConnection();
+        try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.setString(2, otpCode);
@@ -45,10 +45,10 @@ public class TokenDAO extends DBContext {
         }
     }
 
-    // 🔹 Đánh dấu OTP đã sử dụng
-    public static void markOTPUsed(String otpCode) {
+    // Mark OTP as used
+    public void markOTPUsed(String otpCode) {
         String sql = "UPDATE PasswordTokens SET Used = 1 WHERE Token = ?";
-        try (Connection conn = new DBContext().getConnection();
+        try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, otpCode);
             ps.executeUpdate();
@@ -57,10 +57,10 @@ public class TokenDAO extends DBContext {
         }
     }
 
-    // 🔹 Xóa OTP hết hạn
-    public static void cleanupExpiredTokens() {
+    // Cleanup expired or used tokens
+    public void cleanupExpiredTokens() {
         String sql = "DELETE FROM PasswordTokens WHERE ExpiresAt <= GETDATE() OR Used = 1";
-        try (Connection conn = new DBContext().getConnection();
+        try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.executeUpdate();
         } catch (SQLException e) {

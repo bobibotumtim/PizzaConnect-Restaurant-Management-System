@@ -10,10 +10,11 @@ import models.User;
 
 public class UserDAO extends DBContext {
 
-    // ✅ Kiểm tra user đã tồn tại hay chưa (Email)
+    // Check if user with given email exists
     public boolean isUserExists(String email) {
         String sql = "SELECT 1 FROM [User] WHERE Email = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = getConnection();
+            PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next();
@@ -24,14 +25,15 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    // ✅ Thêm user mới
+    // Add new user and return generated UserID
     public int insertUser(User user) {
         String sql = """
                     INSERT INTO [User]
                     (Name, Password, Role, Email, Phone, DateOfBirth, Gender, IsActive)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """;
-        try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection connection = getConnection();
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             String hashed = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
             ps.setString(1, user.getName());
             ps.setString(2, hashed);
@@ -59,18 +61,19 @@ public class UserDAO extends DBContext {
         return -1;
     }
 
-    // ✅ Kiểm tra đăng nhập
+    // Check login credentials
     public User checkLogin(String Phone, String password) {
         String sql = """
                     SELECT * FROM [User]
                     WHERE Phone = ? AND IsActive = 1
                 """;
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = getConnection();
+            PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, Phone);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     String hash = rs.getString("Password");
-                    if (BCrypt.checkpw(password, hash)) { 
+                    if (BCrypt.checkpw(password, hash)) {
                         return mapUser(rs);
                     }
                 }
@@ -83,7 +86,8 @@ public class UserDAO extends DBContext {
 
     public User getUserById(int userId) {
         String sql = "SELECT * FROM [User] WHERE UserID = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = getConnection();
+            PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -96,11 +100,12 @@ public class UserDAO extends DBContext {
         return null;
     }
 
-    // ✅ Lấy danh sách tất cả user
+    // Get all users
     public List<User> getAllUsers() {
         List<User> list = new ArrayList<>();
         String sql = "SELECT * FROM [User]";
-        try (PreparedStatement ps = connection.prepareStatement(sql);
+        try (Connection connection = getConnection();
+            PreparedStatement ps = connection.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(mapUser(rs));
@@ -111,10 +116,11 @@ public class UserDAO extends DBContext {
         return list;
     }
 
-    // ✅ Cập nhật mật khẩu user
+    // Update user password
     public boolean updatePassword(int userId, String newPasswordHash) {
         String sql = "UPDATE [User] SET Password = ? WHERE UserID = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try ( Connection connection = getConnection();
+            PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, newPasswordHash);
             ps.setInt(2, userId);
             return ps.executeUpdate() > 0;
@@ -124,14 +130,15 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    // ✅ Cập nhật thông tin user
+    // update user info
     public boolean updateUser(User user) {
         String sql = """
                     UPDATE [User]
                     SET Name=?, Password=?, Role=?, Email=?, Phone=?, DateOfBirth=?, Gender=?, IsActive=?
                     WHERE UserID=?
                 """;
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try ( Connection connection = getConnection();
+            PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, user.getName());
             ps.setString(2, user.getPassword());
             ps.setInt(3, user.getRole());
@@ -152,10 +159,10 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    // ✅ Xóa user theo ID
+    // Delete user by ID
     public boolean deleteUser(int userId) {
         String sql = "DELETE FROM [User] WHERE UserID = ?";
-        try {
+        try( Connection connection = getConnection()) {
             System.out.println("[DEBUG] Starting delete for UserID: " + userId);
 
             if (connection == null || connection.isClosed()) {
@@ -190,9 +197,9 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    // ✅ Test database connection
+    // Test database connection
     public boolean testConnection() {
-        try {
+        try ( Connection connection = getConnection()) {
             if (connection == null || connection.isClosed()) {
                 System.out.println("Database connection is null or closed!");
                 return false;
@@ -214,7 +221,7 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    // ✅ Kiểm tra user có tồn tại không
+    // Check if user exists by ID
     public boolean userExists(int userId) {
         System.out.println("Checking if user exists with ID: " + userId);
 
@@ -225,7 +232,8 @@ public class UserDAO extends DBContext {
         }
 
         String sql = "SELECT COUNT(*) FROM [User] WHERE UserID = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try ( Connection connection = getConnection();
+            PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -246,10 +254,11 @@ public class UserDAO extends DBContext {
     // Verify if email exists
     public boolean emailExists(String email) {
         String sql = "SELECT 1 FROM [User] WHERE Email = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try ( Connection connection = getConnection();
+            PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
-                return rs.next(); // Nếu có dòng dữ liệu → email tồn tại
+                return rs.next(); // if at least one record found, email exists
             }
         } catch (SQLException e) {
             System.err.println("Error checking email existence: " + e.getMessage());
@@ -258,14 +267,15 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    // ✅ Đặt lại mật khẩu bằng name/email/phone
+    // Reset password using name/email/phone
     public boolean resetPassword(String identifier, String newPassword) {
         Integer userId = findUserIdByIdentifier(identifier);
         if (userId == null)
             return false;
 
         String sql = "UPDATE [User] SET Password = ? WHERE UserID = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try ( Connection connection = getConnection();
+            PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, newPassword);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -274,10 +284,11 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    // ✅ Tìm UserID dựa trên name/email/phone
+    // Find UserID by name, email, or phone
     public Integer findUserIdByIdentifier(String identifier) {
         String sql = "SELECT UserID FROM [User] WHERE Name = ? OR Email = ? OR Phone = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        try ( Connection connection = getConnection();
+            PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, identifier);
             ps.setString(2, identifier);
             ps.setString(3, identifier);
@@ -292,7 +303,7 @@ public class UserDAO extends DBContext {
         return null;
     }
 
-    // ✅ Hàm tiện ích: chuyển ResultSet → User
+    // Map ResultSet to User object
     private User mapUser(ResultSet rs) throws SQLException {
         java.sql.Date dobSql = rs.getDate("DateOfBirth");
         java.util.Date dob = (dobSql != null) ? new java.util.Date(dobSql.getTime()) : null;
@@ -306,7 +317,41 @@ public class UserDAO extends DBContext {
                 rs.getString("Phone"),
                 dob,
                 rs.getString("Gender"),
-                rs.getBoolean("IsActive")
-        );
+                rs.getBoolean("IsActive"));
+    }
+
+    // Count users by role
+    public int countUsersByRole(int roleInt) {
+        if (roleInt < 0) {
+            return countAllUsers();
+        }
+        String sql = "SELECT COUNT(*) AS cnt FROM [User] WHERE Role = ?";
+        try ( Connection connection = getConnection();
+            PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, roleInt);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("cnt");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    // Count all users
+    public int countAllUsers() {
+        String sql = "SELECT COUNT(*) AS cnt FROM [User]";
+        try ( Connection connection = getConnection();
+            PreparedStatement ps = connection.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt("cnt");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 }

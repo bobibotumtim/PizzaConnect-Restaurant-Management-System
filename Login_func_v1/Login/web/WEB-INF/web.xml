@@ -71,6 +71,7 @@
         <servlet-name>LoginPageServlet</servlet-name>
         <url-pattern>/view/Login</url-pattern>
     </servlet-mapping>
+    
     <!-- Admin Servlet -->
     <servlet>
         <servlet-name>AdminServlet</servlet-name>
@@ -111,7 +112,7 @@
         <url-pattern>/dashboard</url-pattern>
     </servlet-mapping>
 
-    <!-- Dashboard Servlet -->
+    <!-- Discount Servlet -->
     <servlet>
         <servlet-name>DiscountServlet</servlet-name>
         <servlet-class>controller.DiscountServlet</servlet-class>
@@ -121,6 +122,7 @@
         <url-pattern>/discount</url-pattern>
     </servlet-mapping>
 
+    <!-- Verify Code Servlet -->
     <servlet>
         <servlet-name>VerifyCodeServlet</servlet-name>
         <servlet-class>controller.VerifyCodeServlet</servlet-class>
@@ -128,6 +130,16 @@
     <servlet-mapping>
         <servlet-name>VerifyCodeServlet</servlet-name>
         <url-pattern>/verifyCode</url-pattern>
+    </servlet-mapping>
+    
+        <!-- Discount Import Servlet -->
+    <servlet>
+        <servlet-name>DiscountImportServlet</servlet-name>
+        <servlet-class>controller.DiscountImportServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DiscountImportServlet</servlet-name>
+        <url-pattern>/discount/import</url-pattern>
     </servlet-mapping>
 </web-app>
 

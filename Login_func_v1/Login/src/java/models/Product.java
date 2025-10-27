@@ -12,12 +12,11 @@ public class Product {
     private String category;
     private String imageUrl;
     private boolean isAvailable;
-    private int stockQuantity;
 
     public Product() {
     }
 
-    public Product(int productId, String productName, String description, double price, String category, String imageUrl, boolean isAvailable, int stockQuantity) {
+    public Product(int productId, String productName, String description, double price, String category, String imageUrl, boolean isAvailable) {
         this.productId = productId;
         this.productName = productName;
         this.description = description;
@@ -25,8 +24,18 @@ public class Product {
         this.category = category;
         this.imageUrl = imageUrl;
         this.isAvailable = isAvailable;
-        this.stockQuantity = stockQuantity;
     }
+
+    public Product(String productName, String description, double price, String category, String imageUrl, boolean isAvailable) {
+        this.productName = productName;
+        this.description = description;
+        this.price = price;
+        this.category = category;
+        this.imageUrl = imageUrl;
+        this.isAvailable = isAvailable;
+    }
+
+    
 
     // Getters
     public int getProductId() {
@@ -57,9 +66,6 @@ public class Product {
         return isAvailable;
     }
 
-    public int getStockQuantity() {
-        return stockQuantity;
-    }
 
     // Setters
     public void setProductId(int productId) {
@@ -90,9 +96,6 @@ public class Product {
         isAvailable = available;
     }
 
-    public void setStockQuantity(int stockQuantity) {
-        this.stockQuantity = stockQuantity;
-    }
 
     @Override
     public String toString() {
@@ -104,7 +107,6 @@ public class Product {
                 ", category='" + category + '\'' +
                 ", imageUrl='" + imageUrl + '\'' +
                 ", isAvailable=" + isAvailable +
-                ", stockQuantity=" + stockQuantity + // Đã thêm stockQuantity
                 '}';
     }
 }

@@ -9,14 +9,15 @@ public class Discount {
     private double minOrderTotal;
     private String startDate;
     private String endDate;
-    private boolean isActive;
+    private boolean active;
 
     // Constructors
     public Discount() {
     }
 
-    public Discount(int discountId, String description, String discountType, double value, Double maxDiscount,
-            double minOrderTotal, String startDate, String endDate, boolean isActive) {
+    public Discount(int discountId, String description, String discountType, double value,
+            Double maxDiscount, double minOrderTotal, String startDate,
+            String endDate, boolean active) {
         this.discountId = discountId;
         this.description = description;
         this.discountType = discountType;
@@ -25,7 +26,7 @@ public class Discount {
         this.minOrderTotal = minOrderTotal;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.isActive = isActive;
+        this.active = active;
     }
 
     // Getters and Setters
@@ -94,10 +95,10 @@ public class Discount {
     }
 
     public boolean isActive() {
-        return isActive;
+        return active;
     }
 
     public void setActive(boolean active) {
-        isActive = active;
+        this.active = active;
     }
 }

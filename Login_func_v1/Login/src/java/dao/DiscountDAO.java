@@ -2,264 +2,341 @@ package dao;
 
 import models.Discount;
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
 public class DiscountDAO extends DBContext {
     private static final Logger LOGGER = Logger.getLogger(DiscountDAO.class.getName());
-    private static final String SELECT_ALL_DISCOUNTS = "SELECT * FROM Discount WHERE IsActive = 1 AND StartDate <= ? AND (EndDate IS NULL OR EndDate >= ?)";
-    private static final String SELECT_ALL_WITH_INACTIVE = "SELECT * FROM Discount";
-    private static final String INSERT_DISCOUNT = "INSERT INTO Discount (Description, DiscountType, Value, MaxDiscount, MinOrderTotal, StartDate, EndDate, IsActive) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String UPDATE_DISCOUNT = "UPDATE Discount SET Description = ?, DiscountType = ?, Value = ?, MaxDiscount = ?, MinOrderTotal = ?, StartDate = ?, EndDate = ?, IsActive = ? WHERE DiscountID = ?";
-    private static final String DEACTIVATE_DISCOUNT = "UPDATE Discount SET IsActive = 0 WHERE DiscountID = ?";
-    private static final String SELECT_DISCOUNT_BY_ID = "SELECT * FROM Discount WHERE DiscountID = ?";
 
-    public List<Discount> getAllActiveDiscounts() {
-        return getDiscounts(SELECT_ALL_DISCOUNTS, true);
-    }
+    // Constants
+    private static final int PAGE_SIZE = 10;
+    private static final String TYPE_PERCENTAGE = "Percentage";
+    private static final String TYPE_FIXED = "Fixed";
+    private static final String TYPE_LOYALTY = "Loyalty";
 
-    public List<Discount> getAllDiscounts() {
-        return getDiscounts(SELECT_ALL_WITH_INACTIVE, false);
-    }
+    // SQL Queries
+    private static final String SQL_UPDATE_EXPIRED_DISCOUNTS = "UPDATE Discount SET IsActive = 0 WHERE IsActive = 1 AND EndDate IS NOT NULL AND EndDate < CAST(GETDATE() AS DATE)";
 
-    private List<Discount> getDiscounts(String sql, boolean activeOnly) {
+    private static final String SQL_SELECT_DISCOUNTS_BY_STATUS = "SELECT * FROM Discount WHERE IsActive = ? ORDER BY DiscountID DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+    private static final String SQL_COUNT_DISCOUNTS_BY_STATUS = "SELECT COUNT(*) FROM Discount WHERE IsActive = ?";
+
+    private static final String SQL_INSERT_DISCOUNT = "INSERT INTO Discount (Description, DiscountType, Value, MaxDiscount, MinOrderTotal, StartDate, EndDate, IsActive) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+    private static final String SQL_DEACTIVATE_DISCOUNT = "UPDATE Discount SET IsActive = 0 WHERE DiscountID = ?";
+
+    private static final String SQL_CHECK_LOYALTY_DISCOUNT = "SELECT COUNT(*) FROM Discount WHERE DiscountType = 'Loyalty' AND IsActive = 1";
+
+    private static final String SQL_CHECK_LOYALTY_EXCLUDING = "SELECT COUNT(*) FROM Discount WHERE DiscountType = 'Loyalty' AND IsActive = 1 AND DiscountID != ?";
+
+    private static final String SQL_SELECT_DISCOUNT_BY_ID = "SELECT * FROM Discount WHERE DiscountID = ?";
+
+    /**
+     * Get discounts by status with pagination
+     */
+    public List<Discount> getDiscountsByStatus(boolean isActive, int page) {
+        autoUpdateDiscountStatus();
         List<Discount> discounts = new ArrayList<>();
+        int offset = (page - 1) * PAGE_SIZE;
+
         try (Connection connection = getConnection();
-                PreparedStatement ps = connection.prepareStatement(sql)) {
-            if (activeOnly) {
-                java.util.Date currentDate = new java.util.Date();
-                java.sql.Date sqlDate = new java.sql.Date(currentDate.getTime());
-                ps.setDate(1, sqlDate);
-                ps.setDate(2, sqlDate);
-            }
+                PreparedStatement ps = connection.prepareStatement(SQL_SELECT_DISCOUNTS_BY_STATUS)) {
+
+            ps.setBoolean(1, isActive);
+            ps.setInt(2, offset);
+            ps.setInt(3, PAGE_SIZE);
+
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    Discount discount = new Discount();
-                    discount.setDiscountId(rs.getInt("DiscountID"));
-                    discount.setDescription(rs.getString("Description"));
-                    discount.setDiscountType(rs.getString("DiscountType"));
-                    discount.setValue(rs.getDouble("Value"));
-                    Double maxDiscount = rs.getDouble("MaxDiscount");
-                    discount.setMaxDiscount(rs.wasNull() ? null : maxDiscount);
-                    discount.setMinOrderTotal(rs.getDouble("MinOrderTotal"));
-                    discount.setStartDate(rs.getDate("StartDate").toString());
-                    discount.setEndDate(rs.getDate("EndDate") != null ? rs.getDate("EndDate").toString() : null);
-                    discount.setActive(rs.getBoolean("IsActive"));
-                    discounts.add(discount);
+                    discounts.add(extractDiscountFromResultSet(rs));
                 }
             }
-            LOGGER.info("Fetched " + discounts.size() + " discounts (activeOnly=" + activeOnly + ")");
+
+            LOGGER.info(String.format("Fetched %d %s discounts for page %d",
+                    discounts.size(), isActive ? "ACTIVE" : "INACTIVE", page));
+
         } catch (SQLException e) {
             LOGGER.severe("Error fetching discounts: " + e.getMessage());
         }
         return discounts;
     }
 
-    public void addDiscount(Discount discount) throws SQLException {
+    /**
+     * Get count of discounts by status
+     */
+    public int getDiscountsCountByStatus(boolean isActive) {
+        autoUpdateDiscountStatus();
         try (Connection connection = getConnection();
-                PreparedStatement ps = connection.prepareStatement(INSERT_DISCOUNT)) {
-            connection.setAutoCommit(false);
-            try {
-                ps.setString(1, discount.getDescription());
-                ps.setString(2, discount.getDiscountType());
-                ps.setDouble(3, discount.getValue());
-                if (discount.getMaxDiscount() != null) {
-                    ps.setDouble(4, discount.getMaxDiscount());
-                } else {
-                    ps.setNull(4, Types.DOUBLE);
-                }
-                ps.setDouble(5, discount.getMinOrderTotal());
-                ps.setDate(6, Date.valueOf(discount.getStartDate()));
-                if (discount.getEndDate() != null) {
-                    ps.setDate(7, Date.valueOf(discount.getEndDate()));
-                } else {
-                    ps.setNull(7, Types.DATE);
-                }
-                ps.setBoolean(8, discount.isActive());
-                int rowsAffected = ps.executeUpdate();
-                if (rowsAffected == 0) {
-                    throw new SQLException("Failed to insert discount: " + discount.getDescription());
-                }
-                connection.commit();
-                LOGGER.info("Discount inserted: " + discount.getDescription());
-            } catch (SQLException e) {
-                connection.rollback();
-                LOGGER.severe("Error inserting discount: " + e.getMessage());
-                throw e;
-            }
-        }
-    }
+                PreparedStatement ps = connection.prepareStatement(SQL_COUNT_DISCOUNTS_BY_STATUS)) {
 
-    public void updateDiscount(Discount discount) throws SQLException {
-        try (Connection connection = getConnection();
-                PreparedStatement ps = connection.prepareStatement(UPDATE_DISCOUNT)) {
-            connection.setAutoCommit(false);
-            try {
-                ps.setString(1, discount.getDescription());
-                ps.setString(2, discount.getDiscountType());
-                ps.setDouble(3, discount.getValue());
-                if (discount.getMaxDiscount() != null) {
-                    ps.setDouble(4, discount.getMaxDiscount());
-                } else {
-                    ps.setNull(4, Types.DOUBLE);
-                }
-                ps.setDouble(5, discount.getMinOrderTotal());
-                ps.setDate(6, Date.valueOf(discount.getStartDate()));
-                if (discount.getEndDate() != null) {
-                    ps.setDate(7, Date.valueOf(discount.getEndDate()));
-                } else {
-                    ps.setNull(7, Types.DATE);
-                }
-                ps.setBoolean(8, discount.isActive());
-                ps.setInt(9, discount.getDiscountId());
-                int rowsAffected = ps.executeUpdate();
-                if (rowsAffected == 0) {
-                    throw new SQLException("Failed to update discount ID: " + discount.getDiscountId());
-                }
-                connection.commit();
-                LOGGER.info("Discount updated: ID " + discount.getDiscountId());
-            } catch (SQLException e) {
-                connection.rollback();
-                LOGGER.severe("Error updating discount ID " + discount.getDiscountId() + ": " + e.getMessage());
-                throw e;
-            }
-        }
-    }
-
-    public boolean deactivateDiscount(int discountId) throws SQLException {
-        if (discountId <= 0) {
-            LOGGER.warning("Invalid discount ID: " + discountId);
-            throw new IllegalArgumentException("Invalid discount ID: " + discountId);
-        }
-        try (Connection connection = getConnection();
-                PreparedStatement ps = connection.prepareStatement(DEACTIVATE_DISCOUNT)) {
-            connection.setAutoCommit(false);
-            try {
-                ps.setInt(1, discountId);
-                int rowsAffected = ps.executeUpdate();
-                if (rowsAffected == 0) {
-                    throw new SQLException("Failed to deactivate discount ID: " + discountId);
-                }
-                connection.commit();
-                LOGGER.info("Discount deactivated: ID " + discountId);
-                return true;
-            } catch (SQLException e) {
-                connection.rollback();
-                LOGGER.severe("Error deactivating discount ID " + discountId + ": " + e.getMessage());
-                throw e;
-            }
-        }
-    }
-
-    public Discount getDiscountById(int discountId) {
-        try (Connection connection = getConnection();
-                PreparedStatement ps = connection.prepareStatement(SELECT_DISCOUNT_BY_ID)) {
-            ps.setInt(1, discountId);
+            ps.setBoolean(1, isActive);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Discount discount = new Discount();
-                    discount.setDiscountId(rs.getInt("DiscountID"));
-                    discount.setDescription(rs.getString("Description"));
-                    discount.setDiscountType(rs.getString("DiscountType"));
-                    discount.setValue(rs.getDouble("Value"));
-                    Double maxDiscount = rs.getDouble("MaxDiscount");
-                    discount.setMaxDiscount(rs.wasNull() ? null : maxDiscount);
-                    discount.setMinOrderTotal(rs.getDouble("MinOrderTotal"));
-                    discount.setStartDate(rs.getDate("StartDate").toString());
-                    discount.setEndDate(rs.getDate("EndDate") != null ? rs.getDate("EndDate").toString() : null);
-                    discount.setActive(rs.getBoolean("IsActive"));
-                    return discount;
+                    return rs.getInt(1);
                 }
             }
         } catch (SQLException e) {
-            LOGGER.severe("Error fetching discount ID " + discountId + ": " + e.getMessage());
+            LOGGER.severe("Error counting discounts: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    /**
+     * Add new discount
+     */
+    public boolean addDiscount(Discount discount) {
+        if (!validateDiscount(discount)) {
+            return false;
+        }
+
+        try (Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(SQL_INSERT_DISCOUNT)) {
+
+            setDiscountParameters(ps, discount);
+            ps.setBoolean(8, true);
+
+            int rowsAffected = ps.executeUpdate();
+            if (rowsAffected > 0) {
+                LOGGER.info("Discount added successfully: " + discount.getDescription());
+                return true;
+            }
+        } catch (SQLException e) {
+            LOGGER.severe("Error adding discount: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Update discount - creates new discount and deactivates old one
+     */
+    public boolean updateDiscount(Discount discount) {
+        if (!validateDiscount(discount) || discount.getDiscountId() <= 0) {
+            return false;
+        }
+
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            connection.setAutoCommit(false);
+
+            // Deactivate old discount
+            if (!deactivateDiscount(connection, discount.getDiscountId())) {
+                throw new SQLException("Failed to deactivate old discount");
+            }
+
+            // Insert new discount
+            if (!insertNewDiscount(connection, discount)) {
+                throw new SQLException("Failed to insert new discount");
+            }
+
+            connection.commit();
+            LOGGER.info("Discount updated successfully: ID " + discount.getDiscountId());
+            return true;
+
+        } catch (SQLException e) {
+            rollbackTransaction(connection);
+            LOGGER.severe("Error updating discount: " + e.getMessage());
+            return false;
+        } finally {
+            closeConnection(connection);
+        }
+    }
+
+    /**
+     * Deactivate discount
+     */
+    public boolean deactivateDiscount(int discountId) {
+        if (discountId <= 0) {
+            LOGGER.warning("Invalid discount ID for deactivation");
+            return false;
+        }
+
+        try (Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(SQL_DEACTIVATE_DISCOUNT)) {
+
+            ps.setInt(1, discountId);
+            int rowsAffected = ps.executeUpdate();
+
+            if (rowsAffected > 0) {
+                LOGGER.info("Discount deactivated: ID " + discountId);
+                return true;
+            }
+        } catch (SQLException e) {
+            LOGGER.severe("Error deactivating discount: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Check if there is already an active loyalty discount
+     */
+    public boolean hasActiveLoyaltyDiscount() {
+        return getCount(SQL_CHECK_LOYALTY_DISCOUNT) > 0;
+    }
+
+    /**
+     * Check if there is already an active loyalty discount excluding a specific ID
+     */
+    public boolean hasActiveLoyaltyDiscountExcluding(int excludeDiscountId) {
+        try (Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(SQL_CHECK_LOYALTY_EXCLUDING)) {
+
+            ps.setInt(1, excludeDiscountId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            LOGGER.severe("Error checking active loyalty discounts: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Get discount by ID
+     */
+    public Discount getDiscountById(int discountId) {
+        try (Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(SQL_SELECT_DISCOUNT_BY_ID)) {
+
+            ps.setInt(1, discountId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return extractDiscountFromResultSet(rs);
+                }
+            }
+        } catch (SQLException e) {
+            LOGGER.severe("Error fetching discount: " + e.getMessage());
         }
         return null;
     }
 
-    public boolean applyDiscount(int orderId, int discountId, double totalPrice, int customerId, int pointsUsed) {
-        Discount discount = getDiscountById(discountId);
-        if (discount == null || !discount.isActive()) {
-            LOGGER.warning("Discount ID " + discountId + " is null or inactive");
-            return false;
-        }
+    // Private helper methods
+    private void autoUpdateDiscountStatus() {
+        try (Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(SQL_UPDATE_EXPIRED_DISCOUNTS)) {
 
-        double discountAmount = calculateDiscountAmount(discount, totalPrice, pointsUsed);
-        if (discountAmount <= 0) {
-            LOGGER.warning("Invalid discount amount for discount ID " + discountId);
-            return false;
-        }
-
-        try (Connection connection = getConnection()) {
-            connection.setAutoCommit(false);
-            try {
-                try (PreparedStatement ps = connection.prepareStatement(
-                        "INSERT INTO OrderDiscount (OrderID, DiscountID, Amount) VALUES (?, ?, ?)")) {
-                    ps.setInt(1, orderId);
-                    ps.setInt(2, discountId);
-                    ps.setDouble(3, discountAmount);
-                    ps.executeUpdate();
-                }
-
-                if ("Loyalty".equals(discount.getDiscountType())) {
-                    try (PreparedStatement ps = connection.prepareStatement(
-                            "UPDATE Customer SET LoyaltyPoint = LoyaltyPoint - ?, LastEarnedDate = NULL WHERE CustomerID = ?")) {
-                        ps.setInt(1, pointsUsed);
-                        ps.setInt(2, customerId);
-                        ps.executeUpdate();
-                    }
-                }
-
-                try (PreparedStatement ps = connection.prepareStatement(
-                        "UPDATE [Order] SET TotalPrice = TotalPrice - ? WHERE OrderID = ?")) {
-                    ps.setDouble(1, discountAmount);
-                    ps.setInt(2, orderId);
-                    ps.executeUpdate();
-                }
-
-                connection.commit();
-                LOGGER.info("Discount applied: Order ID " + orderId + ", Discount ID " + discountId);
-                return true;
-            } catch (SQLException e) {
-                try {
-                    connection.rollback();
-                    LOGGER.severe("Error applying discount ID " + discountId + " to order ID " + orderId + ": "
-                            + e.getMessage());
-                } catch (SQLException rollbackEx) {
-                    LOGGER.severe(
-                            "Error during rollback for discount ID " + discountId + ": " + rollbackEx.getMessage());
-                }
-                return false;
+            int expiredCount = ps.executeUpdate();
+            if (expiredCount > 0) {
+                LOGGER.info("Auto-deactivated " + expiredCount + " expired discounts");
             }
         } catch (SQLException e) {
-            LOGGER.severe("Error getting connection for applyDiscount: " + e.getMessage());
+            LOGGER.severe("Error auto-updating discount status: " + e.getMessage());
+        }
+    }
+
+    private boolean validateDiscount(Discount discount) {
+        if (discount.getDescription() == null || discount.getDescription().trim().isEmpty()) {
+            LOGGER.warning("Discount description cannot be empty");
+            return false;
+        }
+        if (discount.getValue() <= 0) {
+            LOGGER.warning("Discount value must be positive");
+            return false;
+        }
+        return validateDiscountDates(discount);
+    }
+
+    private boolean validateDiscountDates(Discount discount) {
+        try {
+            LocalDate today = LocalDate.now();
+            LocalDate startDate = LocalDate.parse(discount.getStartDate());
+
+            if (startDate.isBefore(today)) {
+                LOGGER.warning("Start date cannot be in the past");
+                return false;
+            }
+
+            if (discount.getEndDate() != null && !discount.getEndDate().trim().isEmpty()) {
+                LocalDate endDate = LocalDate.parse(discount.getEndDate());
+                if (endDate.isBefore(startDate)) {
+                    LOGGER.warning("End date cannot be before start date");
+                    return false;
+                }
+            }
+            return true;
+        } catch (Exception e) {
+            LOGGER.warning("Invalid date format: " + e.getMessage());
             return false;
         }
     }
 
-    private double calculateDiscountAmount(Discount discount, double totalPrice, int pointsUsed) {
-        if (discount.getMinOrderTotal() > totalPrice) {
-            LOGGER.warning("Order total " + totalPrice + " is below minimum " + discount.getMinOrderTotal());
+    private void setDiscountParameters(PreparedStatement ps, Discount discount) throws SQLException {
+        ps.setString(1, discount.getDescription().trim());
+        ps.setString(2, discount.getDiscountType());
+        ps.setDouble(3, discount.getValue());
+
+        if (discount.getMaxDiscount() != null && discount.getMaxDiscount() > 0) {
+            ps.setDouble(4, discount.getMaxDiscount());
+        } else {
+            ps.setNull(4, Types.DOUBLE);
+        }
+
+        ps.setDouble(5, discount.getMinOrderTotal());
+        ps.setDate(6, Date.valueOf(discount.getStartDate()));
+
+        if (discount.getEndDate() != null && !discount.getEndDate().trim().isEmpty()) {
+            ps.setDate(7, Date.valueOf(discount.getEndDate()));
+        } else {
+            ps.setNull(7, Types.DATE);
+        }
+    }
+
+    private Discount extractDiscountFromResultSet(ResultSet rs) throws SQLException {
+        Discount discount = new Discount();
+        discount.setDiscountId(rs.getInt("DiscountID"));
+        discount.setDescription(rs.getString("Description"));
+        discount.setDiscountType(rs.getString("DiscountType"));
+        discount.setValue(rs.getDouble("Value"));
+
+        double maxDiscount = rs.getDouble("MaxDiscount");
+        discount.setMaxDiscount(rs.wasNull() ? null : maxDiscount);
+
+        discount.setMinOrderTotal(rs.getDouble("MinOrderTotal"));
+        discount.setStartDate(rs.getDate("StartDate").toString());
+
+        Date endDate = rs.getDate("EndDate");
+        discount.setEndDate(endDate != null ? endDate.toString() : null);
+
+        discount.setActive(rs.getBoolean("IsActive"));
+        return discount;
+    }
+
+    private boolean deactivateDiscount(Connection connection, int discountId) throws SQLException {
+        try (PreparedStatement ps = connection.prepareStatement(SQL_DEACTIVATE_DISCOUNT)) {
+            ps.setInt(1, discountId);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    private boolean insertNewDiscount(Connection connection, Discount discount) throws SQLException {
+        try (PreparedStatement ps = connection.prepareStatement(SQL_INSERT_DISCOUNT)) {
+            setDiscountParameters(ps, discount);
+            ps.setBoolean(8, true);
+            return ps.executeUpdate() > 0;
+        }
+    }
+
+    private int getCount(String sql) {
+        try (Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+
+            return rs.next() ? rs.getInt(1) : 0;
+        } catch (SQLException e) {
+            LOGGER.severe("Error counting records: " + e.getMessage());
             return 0;
         }
-        switch (discount.getDiscountType()) {
-            case "Percentage":
-                double amount = totalPrice * (discount.getValue() / 100);
-                double result = discount.getMaxDiscount() != null ? Math.min(amount, discount.getMaxDiscount())
-                        : amount;
-                LOGGER.info("Calculated Percentage discount: " + result);
-                return result;
-            case "Fixed":
-                LOGGER.info("Calculated Fixed discount: " + discount.getValue());
-                return discount.getValue();
-            case "Loyalty":
-                double loyaltyDiscount = pointsUsed * discount.getValue();
-                LOGGER.info("Calculated Loyalty discount: " + loyaltyDiscount);
-                return loyaltyDiscount;
-            default:
-                LOGGER.warning("Unknown discount type: " + discount.getDiscountType());
-                return 0;
+    }
+
+    private void rollbackTransaction(Connection connection) {
+        if (connection != null) {
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                LOGGER.severe("Error rolling back transaction: " + ex.getMessage());
+            }
         }
     }
 }
