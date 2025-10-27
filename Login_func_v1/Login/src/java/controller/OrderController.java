@@ -140,12 +140,17 @@ public class OrderController extends HttpServlet {
 
         req.setCharacterEncoding("UTF-8");
         
+        // Add CORS headers
+        resp.setHeader("Access-Control-Allow-Origin", "*");
+        resp.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+        resp.setHeader("Access-Control-Allow-Headers", "Content-Type");
+        
         String action = req.getParameter("action");
         
-        if ("add".equals(action)) {
+        if ("add".equals(action) || "addFromModal".equals(action)) {
             // Xử lý thêm đơn hàng từ modal
             handleAddOrderFromModal(req, resp);
-        } else if ("update".equals(action)) {
+        } else if ("update".equals(action) || "updateFromModal".equals(action)) {
             // Xử lý cập nhật đơn hàng từ modal
             handleUpdateOrderFromModal(req, resp);
         } else {
@@ -229,6 +234,14 @@ public class OrderController extends HttpServlet {
         
         try {
             System.out.println("=== handleUpdateOrderFromModal START ===");
+            System.out.println("Request method: " + req.getMethod());
+            System.out.println("Content type: " + req.getContentType());
+            
+            // Set response type and CORS headers immediately
+            resp.setContentType("text/plain; charset=UTF-8");
+            resp.setHeader("Access-Control-Allow-Origin", "*");
+            resp.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+            resp.setHeader("Access-Control-Allow-Headers", "Content-Type");
             
             int orderID = parseIntSafe(req.getParameter("orderID"));
             int customerID = parseIntSafe(req.getParameter("customerID"));
@@ -297,6 +310,7 @@ public class OrderController extends HttpServlet {
             dao.update(order);
             
             resp.setStatus(HttpServletResponse.SC_OK);
+            resp.setContentType("text/plain; charset=UTF-8");
             resp.getWriter().write("Đơn hàng đã được cập nhật thành công");
             System.out.println("=== handleUpdateOrderFromModal SUCCESS ===");
             
@@ -304,7 +318,8 @@ public class OrderController extends HttpServlet {
             System.out.println("=== handleUpdateOrderFromModal ERROR ===");
             e.printStackTrace();
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.getWriter().write("Có lỗi xảy ra khi cập nhật đơn hàng: " + e.getMessage());
+            resp.setContentType("text/plain; charset=UTF-8");
+            resp.getWriter().write("ERROR: " + e.getMessage());
         }
     }
     
@@ -324,8 +339,9 @@ public class OrderController extends HttpServlet {
 
         // Nếu nhập sai (ví dụ chữ, rỗng) → báo lỗi
         if (customerID <= 0 || employeeID <= 0 || tableID <= 0) {
-            req.setAttribute("error", "❌ Vui lòng nhập đúng định dạng số cho Customer ID, Employee ID và Table ID.");
-            req.getRequestDispatcher("order-form.jsp").forward(req, resp);
+            resp.setContentType("text/plain; charset=UTF-8");
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("❌ Vui lòng nhập đúng định dạng số cho Customer ID, Employee ID và Table ID.");
             return;
         }
 
@@ -338,8 +354,9 @@ public class OrderController extends HttpServlet {
             resp.sendRedirect("OrderController?action=list");
         } catch (Exception e) {
             e.printStackTrace();
-            req.setAttribute("error", "⚠️ Không thể lưu đơn hàng. Vui lòng thử lại.");
-            req.getRequestDispatcher("order-form.jsp").forward(req, resp);
+            resp.setContentType("text/plain; charset=UTF-8");
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().write("⚠️ Không thể lưu đơn hàng. Vui lòng thử lại: " + e.getMessage());
         }
     }
 

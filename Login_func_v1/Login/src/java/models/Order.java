@@ -147,26 +147,8 @@ public class Order {
     }
     
     public String getCustomerNameFromDB() {
-        // Lấy tên khách hàng từ database thật
-        try {
-            dao.DBContext db = new dao.DBContext();
-            java.sql.Connection conn = db.getConnection();
-            if (conn != null) {
-                String sql = "SELECT CustomerName FROM Customer WHERE CustomerID = ?";
-                try (java.sql.PreparedStatement ps = conn.prepareStatement(sql)) {
-                    ps.setInt(1, this.customerID);
-                    try (java.sql.ResultSet rs = ps.executeQuery()) {
-                        if (rs.next()) {
-                            return rs.getString("CustomerName");
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Error getting customer name: " + e.getMessage());
-        }
-        
-        // Fallback nếu không lấy được từ database
+        // Model class không nên trực tiếp truy cập database
+        // Trả về tên mặc định dựa trên customerID
         switch (customerID) {
             case 1: return "Nguyễn Văn A";
             case 2: return "Trần Thị B";

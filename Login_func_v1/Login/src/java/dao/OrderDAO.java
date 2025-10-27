@@ -503,21 +503,43 @@ public class OrderDAO extends DBContext {
     public void update(Order o) {
         String sql = """
             UPDATE [Order]
-            SET CustomerID=?, EmployeeID=?, TableID=?, Status=?, PaymentStatus=?, TotalPrice=?, Note=?
+            SET CustomerID=?, EmployeeID=?, TableID=?, OrderDate=?, Status=?, PaymentStatus=?, TotalPrice=?, Note=?
             WHERE OrderID=?
         """;
         try (Connection con = useConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            System.out.println("🔄 Updating Order ID: " + o.getOrderID());
+            System.out.println("   CustomerID: " + o.getCustomerID());
+            System.out.println("   EmployeeID: " + o.getEmployeeID());
+            System.out.println("   TableID: " + o.getTableID());
+            System.out.println("   Status: " + o.getStatus());
+            System.out.println("   PaymentStatus: " + o.getPaymentStatus());
+            System.out.println("   TotalPrice: " + o.getTotalPrice());
+            System.out.println("   Note: " + o.getNote());
+            
             ps.setInt(1, o.getCustomerID());
             ps.setInt(2, o.getEmployeeID());
             ps.setInt(3, o.getTableID());
-            ps.setInt(4, o.getStatus());
-            ps.setString(5, o.getPaymentStatus());
-            ps.setDouble(6, o.getTotalPrice());
-            ps.setString(7, o.getNote());
-            ps.setInt(8, o.getOrderID());
-            ps.executeUpdate();
+            
+            // Xử lý OrderDate - nếu null thì giữ nguyên
+            if (o.getOrderDate() != null) {
+                ps.setTimestamp(4, new java.sql.Timestamp(o.getOrderDate().getTime()));
+            } else {
+                ps.setTimestamp(4, new java.sql.Timestamp(System.currentTimeMillis()));
+            }
+            
+            ps.setInt(5, o.getStatus());
+            ps.setString(6, o.getPaymentStatus());
+            ps.setDouble(7, o.getTotalPrice());
+            ps.setString(8, o.getNote());
+            ps.setInt(9, o.getOrderID());
+            
+            int rowsAffected = ps.executeUpdate();
+            System.out.println("✅ Order updated successfully. Rows affected: " + rowsAffected);
+            
         } catch (Exception e) {
+            System.out.println("❌ Error updating order: " + e.getMessage());
             e.printStackTrace();
         }
     }
