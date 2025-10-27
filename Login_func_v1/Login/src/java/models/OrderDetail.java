@@ -72,7 +72,4 @@ public class OrderDetail {
     public String toString() {
         return "OrderDetail{" + "orderDetailID=" + orderDetailID + ", orderID=" + orderID + ", productID=" + productID + ", quantity=" + quantity + ", totalPrice=" + totalPrice + ", specialInstructions=" + specialInstructions + '}';
     }
-
-    
-    
 }
