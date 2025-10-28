@@ -448,15 +448,15 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Value</label>
-                        <input type="number" step="0.01" name="value" id="addValue" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" required>
+                        <input type="number" step="0.1" name="value" id="addValue" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" min="1" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Max Discount (Optional)</label>
-                        <input type="number" step="0.01" name="maxDiscount" id="addMaxDiscount" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        <input type="number" step="0.1" name="maxDiscount" id="addMaxDiscount" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" min="1000">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Min Order Total</label>
-                        <input type="number" step="0.01" name="minOrderTotal" id="addMinOrderTotal" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" required>
+                        <input type="number" step="0.1" name="minOrderTotal" id="addMinOrderTotal" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" min="0" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
@@ -505,15 +505,15 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Value</label>
-                        <input type="number" step="0.01" name="value" id="editValue" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" required>
+                        <input type="number" step="0.1" name="value" id="editValue" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" min="1" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Max Discount (Optional)</label>
-                        <input type="number" step="0.01" name="maxDiscount" id="editMaxDiscount" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        <input type="number" step="0.1" name="maxDiscount" id="editMaxDiscount" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" min="1000">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Min Order Total</label>
-                        <input type="number" step="0.01" name="minOrderTotal" id="editMinOrderTotal" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" required>
+                        <input type="number" step="0.1" name="minOrderTotal" id="editMinOrderTotal" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500" min="0" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
