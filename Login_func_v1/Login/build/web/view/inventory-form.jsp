@@ -15,6 +15,14 @@
             <h4 class="mb-0">${inventory != null ? "Edit Inventory" : "Add New Inventory"}</h4>
         </div>
         <div class="card-body">
+            <!-- ✅ Hiển thị lỗi validate -->
+            <c:if test="${not empty error}">
+                <div class="alert alert-danger" role="alert">
+                    ${error}
+                </div>
+            </c:if>
+            <!-- ✅ Kết thúc hiển thị lỗi -->
+            
             <form action="manageinventory" method="post">
                 <c:if test="${inventory != null}">
                     <input type="hidden" name="id" value="${inventory.inventoryID}">
