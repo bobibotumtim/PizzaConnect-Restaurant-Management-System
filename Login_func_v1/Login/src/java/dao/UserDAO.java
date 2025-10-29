@@ -98,8 +98,7 @@ public class UserDAO extends DBContext {
     public List<User> getAllUsers() {
         List<User> list = new ArrayList<>();
         String sql = "SELECT * FROM [User]";
-        try (PreparedStatement ps = connection.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(mapUser(rs));
             }
@@ -113,8 +112,12 @@ public class UserDAO extends DBContext {
     // Lấy danh sách user theo Role
     public List<User> getUsersByRole(int role, int page, int pageSize) {
         List<User> list = new ArrayList<>();
-        if (page <= 0) page = 1;
-        if (pageSize <= 0) pageSize = 10;
+        if (page <= 0) {
+            page = 1;
+        }
+        if (pageSize <= 0) {
+            pageSize = 10;
+        }
         int offset = (page - 1) * pageSize;
 
         StringBuilder sb = new StringBuilder("SELECT * FROM [User]");
@@ -184,6 +187,17 @@ public class UserDAO extends DBContext {
         return false;
     }
 
+    public boolean suspendUser(int userId) {
+        String sql = "UPDATE [User] SET IsActive = 0 WHERE UserID = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     // ✅ Đặt lại mật khẩu bằng email
     public boolean resetPassword(String email, String newPassword) {
         String sql = "UPDATE [User] SET Password = ? WHERE Email = ?";
@@ -221,15 +235,15 @@ public class UserDAO extends DBContext {
         java.util.Date dob = (dobSql != null) ? new java.util.Date(dobSql.getTime()) : null;
 
         return new User(
-            rs.getInt("UserID"),
-            rs.getString("Name"),
-            rs.getString("Password"),
-            rs.getInt("Role"),
-            rs.getString("Email"),
-            rs.getString("Phone"),
-            dob,
-            rs.getString("Gender"),
-            rs.getBoolean("IsActive")
+                rs.getInt("UserID"),
+                rs.getString("Name"),
+                rs.getString("Password"),
+                rs.getInt("Role"),
+                rs.getString("Email"),
+                rs.getString("Phone"),
+                dob,
+                rs.getString("Gender"),
+                rs.getBoolean("IsActive")
         );
     }
 
@@ -253,8 +267,7 @@ public class UserDAO extends DBContext {
 
     public int countAllUsers() {
         String sql = "SELECT COUNT(*) AS cnt FROM [User]";
-        try (PreparedStatement ps = connection.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (PreparedStatement ps = connection.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt("cnt");
             }
