@@ -391,7 +391,11 @@
                         console.log("Values:", { ingId, ingName, unit, qty });
 
                         if (!ingId || ingId === "" || ingName.includes("--") || !unit || !qty || parseFloat(qty) <= 0) {
-                            alert("[Edit Modal] Vui lòng chọn nguyên liệu và nhập số lượng hợp lệ.");
+                            if(!ingId || ingId === "" || ingName.includes("--") ) {
+                                alert("Vui lòng chọn nguyên liệu hợp lệ.");                                
+                            } else if (!unit || !qty || parseFloat(qty) <= 0) {
+                                alert("Vui lòng nhập số lượng lớn hơn 0.");
+                            }
                             console.warn("Validation failed");
                             return;
                         }
