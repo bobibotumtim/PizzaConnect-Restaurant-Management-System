@@ -2,400 +2,275 @@
 <%@ page import="models.User" %>
 <%@ page import="java.text.SimpleDateFormat" %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit User - PizzaConnect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #f39c12, #e67e22);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-        
-        .nav {
-            background: #2c3e50;
-            padding: 15px 30px;
+        .nav-btn {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.75rem;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-        }
-        
-        .nav .welcome {
-            color: white;
-            font-weight: 500;
-        }
-        
-        .nav .logout {
-            background: #e74c3c;
-            color: white;
-            padding: 8px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
-        
-        .nav .logout:hover {
-            background: #c0392b;
-        }
-        
-        .content {
-            padding: 40px;
-        }
-        
-        .alert {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            font-weight: 500;
-        }
-        
-        .alert.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .alert.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .form-container {
-            background: #f8f9fa;
-            padding: 30px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-        }
-        
-        .form-group {
-            margin-bottom: 25px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: border-color 0.3s;
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-        }
-        
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        
-        .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 1em;
-            font-weight: 600;
-            transition: all 0.3s;
-            text-align: center;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-        }
-        
-        .btn-success {
-            background: linear-gradient(135deg, #27ae60, #2ecc71);
-            color: white;
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
-            color: white;
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            color: white;
-        }
-        
-        .form-actions {
-            display: flex;
-            gap: 15px;
             justify-content: center;
-            margin-top: 30px;
+            transition: all 0.2s;
         }
-        
-        .user-info {
-            background: #e8f4fd;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #3498db;
-        }
-        
-        .user-info h4 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-        
-        .user-info p {
-            color: #555;
-            margin-bottom: 5px;
-        }
-        
-        .status-badge {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        
-        .status-active {
-            background: #27ae60;
-            color: white;
-        }
-        
-        .status-inactive {
-            background: #e74c3c;
-            color: white;
-        }
-        
-        .password-section {
-            background: #fff3cd;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #ffc107;
-        }
-        
-        .password-section h5 {
-            color: #856404;
-            margin-bottom: 10px;
-        }
-        
-        .password-section p {
-            color: #856404;
-            font-size: 0.9em;
+        .nav-btn:hover {
+            transform: translateY(-2px);
         }
     </style>
 </head>
-<body>
+<body class="flex h-screen bg-gray-50">
+
     <%
+        String currentPath = request.getRequestURI();
         User currentUser = (User) request.getAttribute("currentUser");
         User editUser = (User) request.getAttribute("editUser");
         String message = (String) request.getAttribute("message");
         String error = (String) request.getAttribute("error");
         
-        if (editUser == null) {
-            response.sendRedirect("admin");
-            return;
-        }
-        
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String dateOfBirthStr = "";
-        if (editUser.getDateOfBirth() != null) {
-            dateOfBirthStr = sdf.format(editUser.getDateOfBirth());
+        String dobString = "";
+        if (editUser != null && editUser.getDateOfBirth() != null) {
+            dobString = sdf.format(editUser.getDateOfBirth());
         }
     %>
     
-    <div class="container">
-        <div class="header">
-            <h1>✏️ Edit User</h1>
-            <p>PizzaConnect Restaurant Management System</p>
+    <!-- Sidebar Navigation -->
+    <div class="w-20 bg-gray-800 flex flex-col items-center py-6 space-y-8 flex-shrink-0">
+        <a href="${pageContext.request.contextPath}/dashboard"
+           class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+            <i data-lucide="pizza" class="w-7 h-7 text-white"></i>
+        </a>
+        
+        <div class="flex-1 flex flex-col space-y-6 mt-8">
+            <a href="${pageContext.request.contextPath}/dashboard"
+               class="nav-btn text-gray-400 hover:bg-gray-700" title="Dashboard">
+                <i data-lucide="grid" class="w-6 h-6"></i>
+            </a>
+            
+            <a href="${pageContext.request.contextPath}/admin"
+               class="nav-btn bg-orange-500 text-white" title="Manage Users">
+                <i data-lucide="users" class="w-6 h-6"></i>
+            </a>
+            
+            <a href="${pageContext.request.contextPath}/manage-orders"
+               class="nav-btn text-gray-400 hover:bg-gray-700" title="Orders">
+                <i data-lucide="file-text" class="w-6 h-6"></i>
+            </a>
+            
+            <a href="${pageContext.request.contextPath}/manageproduct"
+               class="nav-btn text-gray-400 hover:bg-gray-700" title="Products">
+                <i data-lucide="box" class="w-6 h-6"></i>
+            </a>
+            
+            <a href="${pageContext.request.contextPath}/discount"
+               class="nav-btn text-gray-400 hover:bg-gray-700" title="Discounts">
+                <i data-lucide="percent" class="w-6 h-6"></i>
+            </a>
         </div>
         
-        <div class="nav">
-            <div class="welcome">
-                Welcome, <strong><%= currentUser != null ? currentUser.getName() : "Admin" %></strong> (Admin)
+        <div class="flex flex-col items-center space-y-4">
+            <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
+                <i data-lucide="user" class="w-5 h-5 text-gray-200"></i>
             </div>
+            <a href="${pageContext.request.contextPath}/logout"
+               class="nav-btn text-gray-400 hover:bg-red-500 hover:text-white" title="Logout">
+                <i data-lucide="log-out" class="w-6 h-6"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Header -->
+        <div class="bg-white border-b px-6 py-4 flex justify-between items-center">
             <div>
-                <a href="admin" class="btn btn-secondary" style="margin-right: 10px;">← Back to Users</a>
-                <a href="dashboard" class="btn btn-primary" style="margin-right: 10px;">Dashboard</a>
-                <a href="Login?action=logout" class="logout">Logout</a>
+                <h1 class="text-2xl font-bold text-gray-800">Edit User</h1>
+                <p class="text-sm text-gray-500">PizzaConnect Restaurant Management System</p>
+            </div>
+            <div class="text-gray-600">
+                Welcome, <strong><%= currentUser != null ? currentUser.getName() : "Admin" %></strong>
             </div>
         </div>
-        
-        <div class="content">
+
+        <!-- Content -->
+        <div class="flex-1 p-6 overflow-auto">
+            <!-- Navigation Breadcrumb -->
+            <div class="bg-gray-50 p-4 rounded-xl mb-6 flex items-center space-x-2">
+                <a href="admin" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center">
+                    <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
+                    Back to Users
+                </a>
+                <a href="dashboard" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg">Dashboard</a>
+            </div>
+
+            <!-- Alert Messages -->
             <% if (message != null && !message.isEmpty()) { %>
-                <div class="alert success"><%= message %></div>
+            <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+                <div class="flex items-center">
+                    <i data-lucide="check-circle" class="w-5 h-5 mr-2"></i>
+                    <span><%= message %></span>
+                </div>
+            </div>
             <% } %>
             
             <% if (error != null && !error.isEmpty()) { %>
-                <div class="alert error"><%= error %></div>
+            <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                <div class="flex items-center">
+                    <i data-lucide="alert-circle" class="w-5 h-5 mr-2"></i>
+                    <span><%= error %></span>
+                </div>
+            </div>
             <% } %>
             
-            <div class="user-info">
-                <h4>👤 User Information</h4>
-                <p><strong>User ID:</strong> <%= editUser.getUserID() %></p>
-                <p><strong>Current Status:</strong> 
-                    <span class="status-badge <%= editUser.isActive() ? "status-active" : "status-inactive" %>">
-                        <%= editUser.isActive() ? "Active" : "Inactive" %>
-                    </span>
-                </p>
-                <p><strong>Role:</strong> 
-                    <% if (editUser.getRole() == 1) { %>
-                        Admin
-                    <% } else if (editUser.getRole() == 2) { %>
-                        Employee
-                    <% } else { %>
-                        Customer
-                    <% } %>
-                </p>
+            <% if (editUser != null) { %>
+            <!-- User Information Card -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h4 class="text-lg font-semibold text-blue-800 mb-3 flex items-center">
+                    <i data-lucide="user" class="w-5 h-5 mr-2"></i>
+                    User Information
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-blue-700">
+                    <div>
+                        <strong>User ID:</strong> #<%= editUser.getUserID() %>
+                    </div>
+                    <div>
+                        <strong>Current Status:</strong>
+                        <span class="px-2 py-1 rounded-full text-xs <%= editUser.isActive() ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800" %>">
+                            <%= editUser.isActive() ? "Active" : "Inactive" %>
+                        </span>
+                    </div>
+                    <div>
+                        <strong>Role:</strong>
+                        <% if (editUser.getRole() == 1) { %>
+                            <span class="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">Admin</span>
+                        <% } else if (editUser.getRole() == 2) { %>
+                            <span class="px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-800">Employee</span>
+                        <% } else { %>
+                            <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">Customer</span>
+                        <% } %>
+                    </div>
+                </div>
             </div>
             
-            <div class="form-container">
-                <form method="post" action="edituser">
+            <!-- Edit User Form -->
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div class="bg-gray-800 text-white px-6 py-4">
+                    <h2 class="text-lg font-semibold flex items-center">
+                        <i data-lucide="edit" class="w-5 h-5 mr-2"></i>
+                        Edit User Account
+                    </h2>
+                </div>
+                
+                <form method="post" action="edituser" class="p-6">
                     <input type="hidden" name="userId" value="<%= editUser.getUserID() %>">
                     
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="name">Full Name *</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
                             <input type="text" id="name" name="name" required 
-                                   value="<%= editUser.getName() %>" placeholder="Enter full name">
+                                   value="<%= editUser.getName() != null ? editUser.getName() : "" %>"
+                                   class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                   placeholder="Enter full name">
                         </div>
-                        <div class="form-group">
-                            <label for="email">Email Address *</label>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
                             <input type="email" id="email" name="email" required 
-                                   value="<%= editUser.getEmail() %>" placeholder="Enter email address">
+                                   value="<%= editUser.getEmail() != null ? editUser.getEmail() : "" %>"
+                                   class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                   placeholder="Enter email address">
                         </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="phone">Phone Number *</label>
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
                             <input type="tel" id="phone" name="phone" required 
-                                   value="<%= editUser.getPhone() %>" placeholder="Enter phone number">
+                                   value="<%= editUser.getPhone() != null ? editUser.getPhone() : "" %>"
+                                   class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                   placeholder="Enter phone number">
                         </div>
-                        <div class="form-group">
-                            <label for="role">User Role *</label>
-                            <select id="role" name="role" required>
-                                <option value="">Select Role</option>
+                        <div>
+                            <label for="role" class="block text-sm font-medium text-gray-700 mb-2">User Role *</label>
+                            <select id="role" name="role" required 
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
                                 <option value="1" <%= editUser.getRole() == 1 ? "selected" : "" %>>Admin</option>
                                 <option value="2" <%= editUser.getRole() == 2 ? "selected" : "" %>>Employee</option>
                                 <option value="3" <%= editUser.getRole() == 3 ? "selected" : "" %>>Customer</option>
                             </select>
                         </div>
-                    </div>
-                    
-                    <div class="password-section">
-                        <h5>🔒 Password Management</h5>
-                        <p>Leave password fields empty to keep current password unchanged.</p>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="password">New Password</label>
-                            <input type="password" id="password" name="password" 
-                                   placeholder="Enter new password (leave empty to keep current)">
+                        <div>
+                            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">New Password (Leave blank to keep current)</label>
+                            <input type="password" id="password" name="password" minlength="6"
+                                   class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                   placeholder="Enter new password">
                         </div>
-                        <div class="form-group">
-                            <label for="confirmPassword">Confirm New Password</label>
+                        <div>
+                            <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
                             <input type="password" id="confirmPassword" name="confirmPassword" 
+                                   class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                                    placeholder="Confirm new password">
                         </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="dateOfBirth">Date of Birth</label>
-                            <input type="date" id="dateOfBirth" name="dateOfBirth" 
-                                   value="<%= dateOfBirthStr %>">
+                        <div>
+                            <label for="dateOfBirth" class="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                            <input type="date" id="dateOfBirth" name="dateOfBirth" value="<%= dobString %>"
+                                   class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
                         </div>
-                        <div class="form-group">
-                            <label for="gender">Gender</label>
-                            <select id="gender" name="gender">
+                        <div>
+                            <label for="gender" class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                            <select id="gender" name="gender" 
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
                                 <option value="">Select Gender</option>
                                 <option value="Male" <%= "Male".equals(editUser.getGender()) ? "selected" : "" %>>Male</option>
                                 <option value="Female" <%= "Female".equals(editUser.getGender()) ? "selected" : "" %>>Female</option>
                                 <option value="Other" <%= "Other".equals(editUser.getGender()) ? "selected" : "" %>>Other</option>
                             </select>
                         </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="isActive">Account Status</label>
-                            <select id="isActive" name="isActive">
+                        <div>
+                            <label for="isActive" class="block text-sm font-medium text-gray-700 mb-2">Account Status</label>
+                            <select id="isActive" name="isActive" 
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
                                 <option value="true" <%= editUser.isActive() ? "selected" : "" %>>Active</option>
                                 <option value="false" <%= !editUser.isActive() ? "selected" : "" %>>Inactive</option>
                             </select>
                         </div>
                     </div>
                     
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-success">Update User</button>
-                        <a href="admin" class="btn btn-secondary">Cancel</a>
+                    <div class="flex justify-center space-x-4 mt-8">
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg flex items-center">
+                            <i data-lucide="save" class="w-4 h-4 mr-2"></i>
+                            Save Changes
+                        </button>
+                        <a href="admin" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg flex items-center">
+                            <i data-lucide="x" class="w-4 h-4 mr-2"></i>
+                            Cancel
+                        </a>
                     </div>
                 </form>
             </div>
+            <% } else { %>
+            <div class="text-center py-12">
+                <i data-lucide="user-x" class="w-16 h-16 text-gray-400 mx-auto mb-4"></i>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">User Not Found</h3>
+                <p class="text-gray-500 mb-4">The user you're trying to edit could not be found.</p>
+                <a href="admin" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">Back to Users</a>
+            </div>
+            <% } %>
         </div>
     </div>
     
     <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
         // Password confirmation validation
         document.getElementById('confirmPassword').addEventListener('input', function() {
             const password = document.getElementById('password').value;
             const confirmPassword = this.value;
             
-            if (password !== confirmPassword && password !== '') {
+            if (password && confirmPassword && password !== confirmPassword) {
                 this.setCustomValidity('Passwords do not match');
             } else {
                 this.setCustomValidity('');
@@ -407,13 +282,13 @@
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             
-            if (password !== '' && password !== confirmPassword) {
+            if (password && confirmPassword && password !== confirmPassword) {
                 e.preventDefault();
                 alert('Passwords do not match!');
                 return false;
             }
             
-            if (password !== '' && password.length < 6) {
+            if (password && password.length < 6) {
                 e.preventDefault();
                 alert('Password must be at least 6 characters long!');
                 return false;
@@ -422,3 +297,4 @@
     </script>
 </body>
 </html>
+
