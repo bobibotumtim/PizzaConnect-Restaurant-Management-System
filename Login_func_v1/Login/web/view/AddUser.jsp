@@ -1,304 +1,206 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="models.User" %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add New User - PizzaConnect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-        
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-        
-        .nav {
-            background: #2c3e50;
-            padding: 15px 30px;
+        .nav-btn {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.75rem;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-        }
-        
-        .nav .welcome {
-            color: white;
-            font-weight: 500;
-        }
-        
-        .nav .logout {
-            background: #e74c3c;
-            color: white;
-            padding: 8px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
-        
-        .nav .logout:hover {
-            background: #c0392b;
-        }
-        
-        .content {
-            padding: 40px;
-        }
-        
-        .alert {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            font-weight: 500;
-        }
-        
-        .alert.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .alert.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .form-container {
-            background: #f8f9fa;
-            padding: 30px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-        }
-        
-        .form-group {
-            margin-bottom: 25px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: border-color 0.3s;
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-        }
-        
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        
-        .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 1em;
-            font-weight: 600;
-            transition: all 0.3s;
-            text-align: center;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-        }
-        
-        .btn-success {
-            background: linear-gradient(135deg, #27ae60, #2ecc71);
-            color: white;
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
-            color: white;
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            color: white;
-        }
-        
-        .form-actions {
-            display: flex;
-            gap: 15px;
             justify-content: center;
-            margin-top: 30px;
+            transition: all 0.2s;
         }
-        
-        .role-info {
-            background: #e8f4fd;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #3498db;
-        }
-        
-        .role-info h4 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-        
-        .role-info ul {
-            margin-left: 20px;
-            color: #555;
-        }
-        
-        .role-info li {
-            margin-bottom: 5px;
+        .nav-btn:hover {
+            transform: translateY(-2px);
         }
     </style>
 </head>
-<body>
+<body class="flex h-screen bg-gray-50">
     <%
+        String currentPath = request.getRequestURI();
         User currentUser = (User) request.getAttribute("currentUser");
         String message = (String) request.getAttribute("message");
         String error = (String) request.getAttribute("error");
     %>
     
-    <div class="container">
-        <div class="header">
-            <h1>👤 Add New User</h1>
-            <p>PizzaConnect Restaurant Management System</p>
+    <!-- Sidebar Navigation -->
+    <div class="w-20 bg-gray-800 flex flex-col items-center py-6 space-y-8 flex-shrink-0">
+        <a href="${pageContext.request.contextPath}/dashboard"
+           class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+            <i data-lucide="pizza" class="w-7 h-7 text-white"></i>
+        </a>
+        
+        <div class="flex-1 flex flex-col space-y-6 mt-8">
+            <a href="${pageContext.request.contextPath}/dashboard"
+               class="nav-btn text-gray-400 hover:bg-gray-700" title="Dashboard">
+                <i data-lucide="grid" class="w-6 h-6"></i>
+            </a>
+            
+            <a href="${pageContext.request.contextPath}/admin"
+               class="nav-btn bg-orange-500 text-white" title="Manage Users">
+                <i data-lucide="users" class="w-6 h-6"></i>
+            </a>
+            
+            <a href="${pageContext.request.contextPath}/manage-orders"
+               class="nav-btn text-gray-400 hover:bg-gray-700" title="Orders">
+                <i data-lucide="file-text" class="w-6 h-6"></i>
+            </a>
+            
+            <a href="${pageContext.request.contextPath}/manageproduct"
+               class="nav-btn text-gray-400 hover:bg-gray-700" title="Products">
+                <i data-lucide="box" class="w-6 h-6"></i>
+            </a>
+            
+            <a href="${pageContext.request.contextPath}/discount"
+               class="nav-btn text-gray-400 hover:bg-gray-700" title="Discounts">
+                <i data-lucide="percent" class="w-6 h-6"></i>
+            </a>
         </div>
         
-        <div class="nav">
-            <div class="welcome">
-                Welcome, <strong><%= currentUser != null ? currentUser.getName() : "Admin" %></strong> (Admin)
+        <div class="flex flex-col items-center space-y-4">
+            <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
+                <i data-lucide="user" class="w-5 h-5 text-gray-200"></i>
             </div>
+            <a href="${pageContext.request.contextPath}/logout"
+               class="nav-btn text-gray-400 hover:bg-red-500 hover:text-white" title="Logout">
+                <i data-lucide="log-out" class="w-6 h-6"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Header -->
+        <div class="bg-white border-b px-6 py-4 flex justify-between items-center">
             <div>
-                <a href="admin" class="btn btn-secondary" style="margin-right: 10px;">← Back to Users</a>
-                <a href="dashboard" class="btn btn-primary" style="margin-right: 10px;">Dashboard</a>
-                <a href="Login?action=logout" class="logout">Logout</a>
+                <h1 class="text-2xl font-bold text-gray-800">Add New User</h1>
+                <p class="text-sm text-gray-500">PizzaConnect Restaurant Management System</p>
+            </div>
+            <div class="text-gray-600">
+                Welcome, <strong><%= currentUser != null ? currentUser.getName() : "Admin" %></strong>
             </div>
         </div>
-        
-        <div class="content">
+
+        <!-- Content -->
+        <div class="flex-1 p-6 overflow-auto">
+            <!-- Navigation Breadcrumb -->
+            <div class="bg-gray-50 p-4 rounded-xl mb-6 flex items-center space-x-2">
+                <a href="admin" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center">
+                    <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
+                    Back to Users
+                </a>
+                <a href="dashboard" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg">Dashboard</a>
+            </div>
+
+            <!-- Alert Messages -->
             <% if (message != null && !message.isEmpty()) { %>
-                <div class="alert success"><%= message %></div>
+            <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+                <div class="flex items-center">
+                    <i data-lucide="check-circle" class="w-5 h-5 mr-2"></i>
+                    <span><%= message %></span>
+                </div>
+            </div>
             <% } %>
             
             <% if (error != null && !error.isEmpty()) { %>
-                <div class="alert error"><%= error %></div>
+            <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                <div class="flex items-center">
+                    <i data-lucide="alert-circle" class="w-5 h-5 mr-2"></i>
+                    <span><%= error %></span>
+                </div>
+            </div>
             <% } %>
             
-            <div class="role-info">
-                <h4>📋 User Role Information</h4>
-                <ul>
-                    <li><strong>Admin (1):</strong> Full system access, can manage all users and orders</li>
-                    <li><strong>Employee (2):</strong> Can manage orders and view customer information</li>
-                    <li><strong>Customer (3):</strong> Can place orders and view their own information</li>
+            <!-- Role Information -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h4 class="text-lg font-semibold text-blue-800 mb-3 flex items-center">
+                    <i data-lucide="info" class="w-5 h-5 mr-2"></i>
+                    User Role Information
+                </h4>
+                <ul class="space-y-2 text-blue-700">
+                    <li class="flex items-center">
+                        <i data-lucide="shield" class="w-4 h-4 mr-2 text-red-500"></i>
+                        <strong>Admin (1):</strong> Full system access, can manage all users and orders
+                    </li>
+                    <li class="flex items-center">
+                        <i data-lucide="briefcase" class="w-4 h-4 mr-2 text-orange-500"></i>
+                        <strong>Employee (2):</strong> Can manage orders and view customer information
+                    </li>
+                    <li class="flex items-center">
+                        <i data-lucide="user-check" class="w-4 h-4 mr-2 text-green-500"></i>
+                        <strong>Customer (3):</strong> Can place orders and view their own information
+                    </li>
                 </ul>
             </div>
             
-            <div class="form-container">
-                <form method="post" action="adduser">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="name">Full Name *</label>
+            <!-- Add User Form -->
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div class="bg-gray-800 text-white px-6 py-4">
+                    <h2 class="text-lg font-semibold flex items-center">
+                        <i data-lucide="user-plus" class="w-5 h-5 mr-2"></i>
+                        Create New User Account
+                    </h2>
+                </div>
+                
+                <form method="post" action="adduser" class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
                             <input type="text" id="name" name="name" required 
+                                   class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                                    placeholder="Enter full name">
                         </div>
-                        <div class="form-group">
-                            <label for="email">Email Address *</label>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
                             <input type="email" id="email" name="email" required 
+                                   class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                                    placeholder="Enter email address">
                         </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="phone">Phone Number *</label>
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
                             <input type="tel" id="phone" name="phone" required 
+                                   class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                                    placeholder="Enter phone number">
                         </div>
-                        <div class="form-group">
-                            <label for="role">User Role *</label>
-                            <select id="role" name="role" required>
+                        <div>
+                            <label for="role" class="block text-sm font-medium text-gray-700 mb-2">User Role *</label>
+                            <select id="role" name="role" required 
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
                                 <option value="">Select Role</option>
                                 <option value="1">Admin</option>
                                 <option value="2">Employee</option>
                                 <option value="3">Customer</option>
                             </select>
                         </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="password">Password *</label>
-                            <input type="password" id="password" name="password" required 
-                                   placeholder="Enter password" minlength="6">
+                        <div>
+                            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password *</label>
+                            <input type="password" id="password" name="password" required minlength="6"
+                                   class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                   placeholder="Enter password">
                         </div>
-                        <div class="form-group">
-                            <label for="confirmPassword">Confirm Password *</label>
+                        <div>
+                            <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">Confirm Password *</label>
                             <input type="password" id="confirmPassword" name="confirmPassword" required 
+                                   class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                                    placeholder="Confirm password">
                         </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="dateOfBirth">Date of Birth</label>
-                            <input type="date" id="dateOfBirth" name="dateOfBirth">
+                        <div>
+                            <label for="dateOfBirth" class="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                            <input type="date" id="dateOfBirth" name="dateOfBirth"
+                                   class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
                         </div>
-                        <div class="form-group">
-                            <label for="gender">Gender</label>
-                            <select id="gender" name="gender">
+                        <div>
+                            <label for="gender" class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                            <select id="gender" name="gender" 
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
                                 <option value="">Select Gender</option>
                                 <option value="Male">Male</option>
                                 <option value="Female">Female</option>
@@ -307,9 +209,15 @@
                         </div>
                     </div>
                     
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-success">Create User</button>
-                        <a href="admin" class="btn btn-secondary">Cancel</a>
+                    <div class="flex justify-center space-x-4 mt-8">
+                        <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg flex items-center">
+                            <i data-lucide="user-plus" class="w-4 h-4 mr-2"></i>
+                            Create User
+                        </button>
+                        <a href="admin" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg flex items-center">
+                            <i data-lucide="x" class="w-4 h-4 mr-2"></i>
+                            Cancel
+                        </a>
                     </div>
                 </form>
             </div>
@@ -317,6 +225,9 @@
     </div>
     
     <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
         // Password confirmation validation
         document.getElementById('confirmPassword').addEventListener('input', function() {
             const password = document.getElementById('password').value;
