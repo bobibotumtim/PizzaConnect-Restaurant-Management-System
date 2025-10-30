@@ -6,3 +6,4 @@ DBContext.java
 *.class
 
 .vscode/settings.json
+/Login_func_v1/Login/build/
