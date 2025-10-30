@@ -63,7 +63,8 @@ public class DashboardController extends HttpServlet {
             List<OrderDetail> details = order.getDetails();
             if (details != null) {
                 for (OrderDetail detail : details) {
-                    String dishName = extractDishName(detail.getSpecialInstructions());
+                    // Get product name from ProductID instead of SpecialInstructions
+                    String dishName = getProductNameById(detail.getProductID());
                     dishCounts.put(dishName, dishCounts.getOrDefault(dishName, 0) + detail.getQuantity());
                 }
             }
@@ -159,16 +160,12 @@ public class DashboardController extends HttpServlet {
         return filteredOrders;
     }
     
-    private String extractDishName(String specialInstructions) {
-        if (specialInstructions == null) return "Unknown";
-        
-        // Extract from "Type: Pepperoni" -> "Pepperoni"
-        if (specialInstructions.startsWith("Type: ") || specialInstructions.startsWith("Loại: ")) {
-            String[] parts = specialInstructions.split(" - ");
-            String dishPart = parts[0].replace("Type: ", "").replace("Loại: ", "").trim();
-            return dishPart;
+    private String getProductNameById(int productId) {
+        ProductDAO productDAO = new ProductDAO();
+        Product product = productDAO.getProductById(productId);
+        if (product != null) {
+            return product.getProductName();
         }
-        
-        return specialInstructions;
+        return "Unknown Product";
     }
 }

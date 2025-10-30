@@ -75,6 +75,13 @@
                     <i data-lucide="utensils" class="w-6 h-6"></i>
                 </a>
 
+                <!-- POS -->
+                <a href="${pageContext.request.contextPath}/pos"
+                   class="nav-btn <%= currentPath.contains("/pos") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="POS">
+                    <i data-lucide="shopping-cart" class="w-6 h-6"></i>
+                </a>
+
                 <!-- Notifications -->
                 <a href="${pageContext.request.contextPath}/notifications"
                    class="nav-btn <%= currentPath.contains("/notifications") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
@@ -167,7 +174,7 @@
             <!-- Total Balance -->
             <div class="bg-white rounded-xl p-4 shadow-sm flex flex-col h-full">
                 <h2 class="text-base font-bold text-gray-800 mb-2 flex-shrink-0">Total Revenue</h2>
-                <div class="text-2xl font-bold text-green-500 mb-3 flex-shrink-0">$<%= String.format("%.2f", totalRevenue) %></div>
+                <div class="text-2xl font-bold text-green-500 mb-3 flex-shrink-0"><%= String.format("%,.0f", totalRevenue) %> VND</div>
                 <div class="flex-1 min-h-0 flex flex-col justify-center space-y-2">
                     <div class="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
                         <div class="flex items-center space-x-2">
@@ -176,7 +183,7 @@
                             </div>
                             <div>
                                 <div class="text-xs text-gray-500">Paid Orders</div>
-                                <div class="text-sm font-bold text-gray-800">$<%= String.format("%.2f", totalPaid) %></div>
+                                <div class="text-sm font-bold text-gray-800"><%= String.format("%,.0f", totalPaid) %> VND</div>
                             </div>
                         </div>
                     </div>
@@ -188,7 +195,7 @@
                             </div>
                             <div>
                                 <div class="text-xs text-gray-500">Unpaid Orders</div>
-                                <div class="text-sm font-bold text-gray-800">$<%= String.format("%.2f", totalUnpaid) %></div>
+                                <div class="text-sm font-bold text-gray-800"><%= String.format("%,.0f", totalUnpaid) %> VND</div>
                             </div>
                         </div>
                     </div>
@@ -229,23 +236,24 @@
                         </div>
                         <% 
                         if (top5Dishes != null && !top5Dishes.isEmpty()) {
+                            int rank = 1;
                             for (Map.Entry<String, Integer> dish : top5Dishes) {
-                                String emoji = "🍕";
-                                if (dish.getKey().contains("Hawaiian")) emoji = "🍍";
-                                else if (dish.getKey().contains("Pepperoni")) emoji = "🌶️";
-                                else if (dish.getKey().contains("Margherita")) emoji = "🍅";
-                                else if (dish.getKey().contains("BBQ")) emoji = "🍗";
-                                else if (dish.getKey().contains("Veggie")) emoji = "🥗";
                         %>
-                        <div class="flex justify-between items-center border-b py-2 text-sm">
-                            <span><%= emoji %> <%= dish.getKey() %></span>
-                            <span class="font-bold text-gray-700"><%= dish.getValue() %></span>
+                        <div class="flex justify-between items-center border-b py-2 text-sm hover:bg-gray-50">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs font-semibold text-gray-400 w-6">#<%= rank %></span>
+                                <span class="text-gray-700"><%= dish.getKey() %></span>
+                            </div>
+                            <span class="font-bold text-orange-600"><%= dish.getValue() %></span>
                         </div>
                         <% 
+                                rank++;
                             }
                         } else {
                         %>
-                        <div class="text-center text-gray-500 text-sm py-4">No data available</div>
+                        <div class="text-center text-gray-400 text-sm py-8">
+                            <p>No data available</p>
+                        </div>
                         <% } %>
                     </div>
                 </div>
@@ -303,7 +311,7 @@
                      '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00',
                      '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'],
             datasets: [{
-                label: 'Revenue ($)',
+                label: 'Revenue (VND)',
                 data: [<%= hourlyData.toString() %>],
                 borderColor: '#FF8C42',
                 backgroundColor: 'rgba(255, 140, 66, 0.2)',
@@ -319,7 +327,7 @@
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return 'Revenue: $' + context.parsed.y.toFixed(2);
+                            return 'Revenue: ' + context.parsed.y.toLocaleString('vi-VN') + ' VND';
                         }
                     }
                 }
@@ -329,7 +337,7 @@
                     beginAtZero: true,
                     ticks: {
                         callback: function(value) {
-                            return '$' + value;
+                            return value.toLocaleString('vi-VN');
                         }
                     }
                 }
