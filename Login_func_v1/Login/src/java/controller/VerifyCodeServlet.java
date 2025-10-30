@@ -60,12 +60,14 @@ public class VerifyCodeServlet extends HttpServlet {
         boolean isValid = tokenDAO.verifyOTP(user.getUserID(), otp);
 
         if (isValid) {
-            // Cập nhật mật khẩu mới
+            // Cập nhật mật khẩu mới (updatePassword will hash it)
             UserDAO userDAO = new UserDAO();
             boolean updated = userDAO.updatePassword(user.getUserID(), pendingPassword);
 
             if (updated) {
-                user.setPassword(pendingPassword);
+                // Hash the password before storing in session
+                String hashedPassword = org.mindrot.jbcrypt.BCrypt.hashpw(pendingPassword, org.mindrot.jbcrypt.BCrypt.gensalt());
+                user.setPassword(hashedPassword);
                 session.setAttribute("user", user);
                 session.removeAttribute("pendingPassword");
                 request.setAttribute("message", "Password changed successfully!");

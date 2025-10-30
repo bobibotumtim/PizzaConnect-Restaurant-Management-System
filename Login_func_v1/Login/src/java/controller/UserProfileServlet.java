@@ -75,12 +75,11 @@ public class UserProfileServlet extends HttpServlet {
 
         // sending OTP if password is changed
         if (newPassword != null && !newPassword.isEmpty()) {
-            String hashedNewPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
             String otpCode = generateOTP(6);
 
-            // save OTP and hashed password temporarily
+            // save OTP and plain password temporarily (will be hashed when updating)
             TokenDAO tokenDAO = new TokenDAO();
-            tokenDAO.saveOTP(currentUser.getUserID(), otpCode, hashedNewPassword);
+            tokenDAO.saveOTP(currentUser.getUserID(), otpCode, newPassword);
 
             try {
                 String subject = "Password Change Verification Code";

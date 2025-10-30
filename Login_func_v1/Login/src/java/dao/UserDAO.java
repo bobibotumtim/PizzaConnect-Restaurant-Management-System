@@ -116,12 +116,13 @@ public class UserDAO extends DBContext {
         return list;
     }
 
-    // Update user password
-    public boolean updatePassword(int userId, String newPasswordHash) {
+    // Update user password (expects plain text password, will hash it)
+    public boolean updatePassword(int userId, String newPassword) {
         String sql = "UPDATE [User] SET Password = ? WHERE UserID = ?";
         try ( Connection connection = getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, newPasswordHash);
+            String hashed = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+            ps.setString(1, hashed);
             ps.setInt(2, userId);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -140,7 +141,12 @@ public class UserDAO extends DBContext {
         try ( Connection connection = getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, user.getName());
-            ps.setString(2, user.getPassword());
+            // Hash password if it's not already hashed (BCrypt hashes start with $2a$, $2b$, or $2y$)
+            String password = user.getPassword();
+            if (password != null && !password.startsWith("$2")) {
+                password = BCrypt.hashpw(password, BCrypt.gensalt());
+            }
+            ps.setString(2, password);
             ps.setInt(3, user.getRole());
             ps.setString(4, user.getEmail());
             ps.setString(5, user.getPhone());
@@ -276,7 +282,9 @@ public class UserDAO extends DBContext {
         String sql = "UPDATE [User] SET Password = ? WHERE UserID = ?";
         try ( Connection connection = getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, newPassword);
+            String hashed = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+            ps.setString(1, hashed);
+            ps.setInt(2, userId);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
