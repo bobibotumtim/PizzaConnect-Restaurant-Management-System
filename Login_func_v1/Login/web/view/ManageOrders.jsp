@@ -316,7 +316,12 @@
                                                                                 </td>
                                                                                 <td
                                                                                     class="px-6 py-4 text-gray-700 text-sm">
-                                                                                    <%= order.getOrderDate() != null ? new java.text.SimpleDateFormat("MMM dd, yyyy HH:mm").format(order.getOrderDate()) : "N/A" %>
+                                                                                    <%= order.getOrderDate() !=null ?
+                                                                                        new
+                                                                                        java.text.SimpleDateFormat("MMM
+                                                                                        dd, yyyy
+                                                                                        HH:mm").format(order.getOrderDate())
+                                                                                        : "N/A" %>
                                                                                 </td>
 
                                                                                 <td class="px-6 py-4">
@@ -360,54 +365,32 @@
                                                                                 <td class="px-6 py-4">
                                                                                     <div class="flex items-center justify-center gap-1 overflow-x-auto"
                                                                                         style="min-width: 300px;">
-                                                                                        <button
-                                                                                            onclick="openEditOrderModal(<%= order.getOrderID() %>)"
-                                                                                            class="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                                                                                            title="Edit">
-                                                                                            <svg class="w-5 h-5"
-                                                                                                fill="none"
-                                                                                                stroke="currentColor"
-                                                                                                viewBox="0 0 24 24">
-                                                                                                <path
-                                                                                                    stroke-linecap="round"
-                                                                                                    stroke-linejoin="round"
-                                                                                                    stroke-width="2"
-                                                                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                                                            </svg>
-                                                                                        </button>
-
-                                                                                        <% if (order.getStatus()==0) {
+                                                                                        <% if (order.getStatus() !=3) {
                                                                                             %>
-                                                                                            <form
-                                                                                                style="display: inline;"
-                                                                                                method="post"
-                                                                                                onsubmit="return confirm('Mark this order as Processing?')">
-                                                                                                <input type="hidden"
-                                                                                                    name="action"
-                                                                                                    value="updateStatus"
-                                                                                                    aria-label="Action">
-                                                                                                <input type="hidden"
-                                                                                                    name="orderId"
-                                                                                                    value="<%= order.getOrderID() %>"
-                                                                                                    aria-label="Order ID">
-                                                                                                <input type="hidden"
-                                                                                                    name="status"
-                                                                                                    value="1"
-                                                                                                    aria-label="Status">
-                                                                                                <button type="submit"
-                                                                                                    class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600 whitespace-nowrap">
-                                                                                                    Process
-                                                                                                </button>
-                                                                                            </form>
+                                                                                            <button
+                                                                                                onclick="openEditOrderModal(<%= order.getOrderID() %>)"
+                                                                                                class="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                                                                                title="Edit">
+                                                                                                <svg class="w-5 h-5"
+                                                                                                    fill="none"
+                                                                                                    stroke="currentColor"
+                                                                                                    viewBox="0 0 24 24">
+                                                                                                    <path
+                                                                                                        stroke-linecap="round"
+                                                                                                        stroke-linejoin="round"
+                                                                                                        stroke-width="2"
+                                                                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                                                </svg>
+                                                                                            </button>
                                                                                             <% } %>
 
                                                                                                 <% if
-                                                                                                    (order.getStatus()==1)
+                                                                                                    (order.getStatus()==0)
                                                                                                     { %>
                                                                                                     <form
                                                                                                         style="display: inline;"
                                                                                                         method="post"
-                                                                                                        onsubmit="return confirm('Mark this order as Completed?')">
+                                                                                                        onsubmit="return confirm('Mark this order as Processing?')">
                                                                                                         <input
                                                                                                             type="hidden"
                                                                                                             name="action"
@@ -421,31 +404,27 @@
                                                                                                         <input
                                                                                                             type="hidden"
                                                                                                             name="status"
-                                                                                                            value="2"
+                                                                                                            value="1"
                                                                                                             aria-label="Status">
                                                                                                         <button
                                                                                                             type="submit"
-                                                                                                            class="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600 whitespace-nowrap">
-                                                                                                            Complete
+                                                                                                            class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600 whitespace-nowrap">
+                                                                                                            Process
                                                                                                         </button>
                                                                                                     </form>
                                                                                                     <% } %>
 
                                                                                                         <% if
-                                                                                                            ((paymentStatus==null
-                                                                                                            ||
-                                                                                                            !"Paid".equals(paymentStatus))
-                                                                                                            &&
-                                                                                                            order.getStatus()
-                                                                                                            !=3) { %>
+                                                                                                            (order.getStatus()==1)
+                                                                                                            { %>
                                                                                                             <form
                                                                                                                 style="display: inline;"
                                                                                                                 method="post"
-                                                                                                                onsubmit="return confirm('Mark this order as Paid?')">
+                                                                                                                onsubmit="return confirm('Mark this order as Completed?')">
                                                                                                                 <input
                                                                                                                     type="hidden"
                                                                                                                     name="action"
-                                                                                                                    value="updatePayment"
+                                                                                                                    value="updateStatus"
                                                                                                                     aria-label="Action">
                                                                                                                 <input
                                                                                                                     type="hidden"
@@ -454,20 +433,21 @@
                                                                                                                     aria-label="Order ID">
                                                                                                                 <input
                                                                                                                     type="hidden"
-                                                                                                                    name="paymentStatus"
-                                                                                                                    value="Paid"
-                                                                                                                    aria-label="Payment Status">
+                                                                                                                    name="status"
+                                                                                                                    value="2"
+                                                                                                                    aria-label="Status">
                                                                                                                 <button
                                                                                                                     type="submit"
-                                                                                                                    class="px-2 py-1 bg-emerald-500 text-white text-xs rounded hover:bg-emerald-600 whitespace-nowrap">
-                                                                                                                    Paid
+                                                                                                                    class="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600 whitespace-nowrap">
+                                                                                                                    Complete
                                                                                                                 </button>
                                                                                                             </form>
                                                                                                             <% } %>
 
                                                                                                                 <% if
-                                                                                                                    (order.getStatus()
-                                                                                                                    !=2
+                                                                                                                    ((paymentStatus==null
+                                                                                                                    ||
+                                                                                                                    !"Paid".equals(paymentStatus))
                                                                                                                     &&
                                                                                                                     order.getStatus()
                                                                                                                     !=3)
@@ -475,11 +455,11 @@
                                                                                                                     <form
                                                                                                                         style="display: inline;"
                                                                                                                         method="post"
-                                                                                                                        onsubmit="return confirm('Cancel this order?')">
+                                                                                                                        onsubmit="return confirm('Mark this order as Paid?')">
                                                                                                                         <input
                                                                                                                             type="hidden"
                                                                                                                             name="action"
-                                                                                                                            value="updateStatus"
+                                                                                                                            value="updatePayment"
                                                                                                                             aria-label="Action">
                                                                                                                         <input
                                                                                                                             type="hidden"
@@ -488,58 +468,94 @@
                                                                                                                             aria-label="Order ID">
                                                                                                                         <input
                                                                                                                             type="hidden"
-                                                                                                                            name="status"
-                                                                                                                            value="3"
-                                                                                                                            aria-label="Status">
+                                                                                                                            name="paymentStatus"
+                                                                                                                            value="Paid"
+                                                                                                                            aria-label="Payment Status">
                                                                                                                         <button
                                                                                                                             type="submit"
-                                                                                                                            class="px-2 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600 whitespace-nowrap">
-                                                                                                                            Cancel
+                                                                                                                            class="px-2 py-1 bg-emerald-500 text-white text-xs rounded hover:bg-emerald-600 whitespace-nowrap">
+                                                                                                                            Paid
                                                                                                                         </button>
                                                                                                                     </form>
                                                                                                                     <% }
                                                                                                                         %>
 
                                                                                                                         <% if
-                                                                                                                            ((order.getStatus()==0
-                                                                                                                            ||
-                                                                                                                            order.getStatus()==3)
+                                                                                                                            (order.getStatus()
+                                                                                                                            !=2
                                                                                                                             &&
-                                                                                                                            !"Paid".equals(paymentStatus))
+                                                                                                                            order.getStatus()
+                                                                                                                            !=3)
                                                                                                                             {
                                                                                                                             %>
                                                                                                                             <form
                                                                                                                                 style="display: inline;"
                                                                                                                                 method="post"
-                                                                                                                                onsubmit="return confirm('Delete this order permanently?')">
+                                                                                                                                onsubmit="return confirm('Cancel this order?')">
                                                                                                                                 <input
                                                                                                                                     type="hidden"
                                                                                                                                     name="action"
-                                                                                                                                    value="delete"
+                                                                                                                                    value="updateStatus"
                                                                                                                                     aria-label="Action">
                                                                                                                                 <input
                                                                                                                                     type="hidden"
                                                                                                                                     name="orderId"
                                                                                                                                     value="<%= order.getOrderID() %>"
                                                                                                                                     aria-label="Order ID">
+                                                                                                                                <input
+                                                                                                                                    type="hidden"
+                                                                                                                                    name="status"
+                                                                                                                                    value="3"
+                                                                                                                                    aria-label="Status">
                                                                                                                                 <button
                                                                                                                                     type="submit"
-                                                                                                                                    class="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
-                                                                                                                                    title="Delete">
-                                                                                                                                    <svg class="w-5 h-5"
-                                                                                                                                        fill="none"
-                                                                                                                                        stroke="currentColor"
-                                                                                                                                        viewBox="0 0 24 24">
-                                                                                                                                        <path
-                                                                                                                                            stroke-linecap="round"
-                                                                                                                                            stroke-linejoin="round"
-                                                                                                                                            stroke-width="2"
-                                                                                                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                                                                                                    </svg>
+                                                                                                                                    class="px-2 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600 whitespace-nowrap">
+                                                                                                                                    Cancel
                                                                                                                                 </button>
                                                                                                                             </form>
                                                                                                                             <% }
                                                                                                                                 %>
+
+                                                                                                                                <% if
+                                                                                                                                    ((order.getStatus()==0
+                                                                                                                                    ||
+                                                                                                                                    order.getStatus()==3)
+                                                                                                                                    &&
+                                                                                                                                    !"Paid".equals(paymentStatus))
+                                                                                                                                    {
+                                                                                                                                    %>
+                                                                                                                                    <form
+                                                                                                                                        style="display: inline;"
+                                                                                                                                        method="post"
+                                                                                                                                        onsubmit="return confirm('Delete this order permanently?')">
+                                                                                                                                        <input
+                                                                                                                                            type="hidden"
+                                                                                                                                            name="action"
+                                                                                                                                            value="delete"
+                                                                                                                                            aria-label="Action">
+                                                                                                                                        <input
+                                                                                                                                            type="hidden"
+                                                                                                                                            name="orderId"
+                                                                                                                                            value="<%= order.getOrderID() %>"
+                                                                                                                                            aria-label="Order ID">
+                                                                                                                                        <button
+                                                                                                                                            type="submit"
+                                                                                                                                            class="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                                                                                                                                            title="Delete">
+                                                                                                                                            <svg class="w-5 h-5"
+                                                                                                                                                fill="none"
+                                                                                                                                                stroke="currentColor"
+                                                                                                                                                viewBox="0 0 24 24">
+                                                                                                                                                <path
+                                                                                                                                                    stroke-linecap="round"
+                                                                                                                                                    stroke-linejoin="round"
+                                                                                                                                                    stroke-width="2"
+                                                                                                                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                                                                                                            </svg>
+                                                                                                                                        </button>
+                                                                                                                                    </form>
+                                                                                                                                    <% }
+                                                                                                                                        %>
                                                                                     </div>
                                                                                 </td>
                                                                             </tr>
