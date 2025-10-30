@@ -180,7 +180,7 @@
                                                             <% double totalRevenue=0; if (orders !=null) { for (Order
                                                                 order : orders) { totalRevenue +=order.getTotalPrice();
                                                                 } } %>
-                                                                $<%= String.format("%.2f", totalRevenue) %>
+                                                                <%= String.format("%,.0f", totalRevenue) %>đ
                                                         </div>
                                                     </div>
                                                 </div>
@@ -259,37 +259,37 @@
                                                                 yet.</p>
                                                         </div>
                                                         <% } else { %>
-                                                            <div class="overflow-x-auto">
-                                                                <table class="w-full">
+                                                            <div class="overflow-visible">
+                                                                <table class="w-full table-fixed">
                                                                     <thead
                                                                         class="bg-gray-50 border-b-2 border-gray-200">
                                                                         <tr>
                                                                             <th
-                                                                                class="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                                                                                class="px-4 py-4 text-left text-sm font-semibold text-gray-700" style="width: 8%;">
                                                                                 Order ID</th>
                                                                             <th
-                                                                                class="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                                                                                class="px-4 py-4 text-left text-sm font-semibold text-gray-700" style="width: 6%;">
                                                                                 Table</th>
                                                                             <th
-                                                                                class="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                                                                                class="px-4 py-4 text-left text-sm font-semibold text-gray-700" style="width: 8%;">
                                                                                 Customer</th>
                                                                             <th
-                                                                                class="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                                                                                class="px-4 py-4 text-left text-sm font-semibold text-gray-700" style="width: 12%;">
                                                                                 Date</th>
                                                                             <th
-                                                                                class="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                                                                                class="px-4 py-4 text-left text-sm font-semibold text-gray-700" style="width: 10%;">
                                                                                 Total</th>
                                                                             <th
-                                                                                class="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                                                                                class="px-4 py-4 text-left text-sm font-semibold text-gray-700" style="width: 10%;">
                                                                                 Status</th>
                                                                             <th
-                                                                                class="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                                                                                class="px-4 py-4 text-left text-sm font-semibold text-gray-700" style="width: 8%;">
                                                                                 Payment</th>
                                                                             <th
-                                                                                class="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                                                                                class="px-4 py-4 text-left text-sm font-semibold text-gray-700" style="width: 15%;">
                                                                                 Note</th>
                                                                             <th
-                                                                                class="px-6 py-4 text-center text-sm font-semibold text-gray-700">
+                                                                                class="px-4 py-4 text-center text-sm font-semibold text-gray-700" style="width: 23%;">
                                                                                 Actions</th>
                                                                         </tr>
                                                                     </thead>
@@ -299,39 +299,39 @@
                                                                             customerId=order.getCustomerID(); %>
                                                                             <tr
                                                                                 class="hover:bg-gray-50 transition-colors">
-                                                                                <td class="px-6 py-4">
+                                                                                <td class="px-4 py-4">
                                                                                     <span
-                                                                                        class="font-semibold text-gray-900">#
+                                                                                        class="font-semibold text-gray-900 text-sm">#
                                                                                         <%= order.getOrderID() %>
                                                                                     </span>
                                                                                 </td>
-                                                                                <td class="px-6 py-4 text-gray-700">
+                                                                                <td class="px-4 py-4 text-gray-700 text-sm">
                                                                                     <%= tableId !=null && tableId !=0 ?
                                                                                         tableId : "N/A" %>
                                                                                 </td>
-                                                                                <td class="px-6 py-4">
+                                                                                <td class="px-4 py-4">
                                                                                     <div
-                                                                                        class="font-medium text-gray-900">
+                                                                                        class="font-medium text-gray-900 text-sm">
                                                                                         <%= customerId !=null &&
                                                                                             customerId !=0 ? customerId
                                                                                             : "N/A" %>
                                                                                     </div>
                                                                                 </td>
                                                                                 <td
-                                                                                    class="px-6 py-4 text-gray-700 text-sm">
+                                                                                    class="px-4 py-4 text-gray-700 text-xs">
                                                                                     <%= order.getOrderDate() !=null ?
                                                                                         order.getOrderDate().toString()
                                                                                         : "N/A" %>
                                                                                 </td>
 
-                                                                                <td class="px-6 py-4">
+                                                                                <td class="px-4 py-4">
                                                                                     <span
-                                                                                        class="font-bold text-gray-900">$
-                                                                                        <%= String.format("%.2f",
-                                                                                            order.getTotalPrice()) %>
+                                                                                        class="font-bold text-gray-900 text-sm">
+                                                                                        <%= String.format("%,.0f",
+                                                                                            order.getTotalPrice()) %>đ
                                                                                     </span>
                                                                                 </td>
-                                                                                <td class="px-6 py-4">
+                                                                                <td class="px-4 py-4">
                                                                                     <% String statusClass="" ;
                                                                                         switch(order.getStatus()) { case
                                                                                         0: statusClass="status-pending"
@@ -343,11 +343,11 @@
                                                                                         statusClass="status-cancelled" ;
                                                                                         break; } %>
                                                                                         <span
-                                                                                            class="status-badge <%= statusClass %>">
+                                                                                            class="status-badge <%= statusClass %>" style="font-size: 0.65rem; padding: 4px 10px;">
                                                                                             <%= order.getStatusText() %>
                                                                                         </span>
                                                                                 </td>
-                                                                                <td class="px-6 py-4">
+                                                                                <td class="px-4 py-4">
                                                                                     <% String
                                                                                         paymentClass="payment-unpaid" ;
                                                                                         String
@@ -356,14 +356,14 @@
                                                                                         ("Paid".equals(paymentStatus))
                                                                                         paymentClass="payment-paid" ; %>
                                                                                         <span
-                                                                                            class="px-3 py-1 rounded-full text-xs font-semibold <%= paymentClass %>">
+                                                                                            class="px-2 py-1 rounded-full text-xs font-semibold <%= paymentClass %>">
                                                                                             <%= paymentStatus !=null ?
                                                                                                 paymentStatus : "Unpaid"
                                                                                                 %>
                                                                                         </span>
                                                                                 </td>
                                                                                 <td
-                                                                                    class="px-6 py-4 text-gray-700 text-sm max-w-xs">
+                                                                                    class="px-4 py-4 text-gray-700 text-xs">
                                                                                     <% String noteText=(order.getNote()
                                                                                         !=null &&
                                                                                         !order.getNote().isEmpty()) ?
@@ -373,31 +373,28 @@
                                                                                             <%= noteText %>
                                                                                         </div>
                                                                                 </td>
-                                                                                <td class="px-6 py-4">
-                                                                                    <div class="flex items-center justify-center gap-1 overflow-x-auto"
-                                                                                        style="min-width: 300px;">
-                                                                                        <% if (order.getStatus() !=3) {
-                                                                                            %>
+                                                                                <td class="px-2 py-4">
+                                                                                    <div class="flex items-center justify-center gap-1 flex-wrap">
+                                                                                        <%
+                                                                                        // Get order status and payment status
+                                                                                        int status = order.getStatus();
+                                                                                        boolean isPaid = "Paid".equals(paymentStatus);
+                                                                                        
+                                                                                        // 1. EDIT BUTTON - Show for all except Cancelled
+                                                                                        if (status != 3) {
+                                                                                        %>
                                                                                             <button
                                                                                                 onclick="openEditOrderModal(<%= order.getOrderID() %>)"
-                                                                                                class="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                                                                                class="px-2 py-1 text-white bg-blue-500 hover:bg-blue-600 rounded text-xs font-medium whitespace-nowrap"
                                                                                                 title="Edit">
-                                                                                                <svg class="w-5 h-5"
-                                                                                                    fill="none"
-                                                                                                    stroke="currentColor"
-                                                                                                    viewBox="0 0 24 24">
-                                                                                                    <path
-                                                                                                        stroke-linecap="round"
-                                                                                                        stroke-linejoin="round"
-                                                                                                        stroke-width="2"
-                                                                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                                                                </svg>
+                                                                                                Edit
                                                                                             </button>
-                                                                                            <% } %>
+                                                                                        <% } %>
 
-                                                                                                <% if
-                                                                                                    (order.getStatus()==0)
-                                                                                                    { %>
+                                                                                                <%
+                                                                                                // 2. PROCESS BUTTON - Only for Pending
+                                                                                                if (status == 0) {
+                                                                                                %>
                                                                                                     <form
                                                                                                         style="display: inline;"
                                                                                                         method="post"
@@ -423,46 +420,43 @@
                                                                                                             Process
                                                                                                         </button>
                                                                                                     </form>
-                                                                                                    <% } %>
+                                                                                                <% } %>
 
-                                                                                                        <% if
-                                                                                                            (order.getStatus()==1)
-                                                                                                            { %>
-                                                                                                            <form
-                                                                                                                style="display: inline;"
-                                                                                                                method="post"
-                                                                                                                onsubmit="return confirm('Mark this order as Completed?')">
-                                                                                                                <input
-                                                                                                                    type="hidden"
-                                                                                                                    name="action"
-                                                                                                                    value="updateStatus"
-                                                                                                                    aria-label="Action">
-                                                                                                                <input
-                                                                                                                    type="hidden"
-                                                                                                                    name="orderId"
-                                                                                                                    value="<%= order.getOrderID() %>"
-                                                                                                                    aria-label="Order ID">
-                                                                                                                <input
-                                                                                                                    type="hidden"
-                                                                                                                    name="status"
-                                                                                                                    value="2"
-                                                                                                                    aria-label="Status">
-                                                                                                                <button
-                                                                                                                    type="submit"
-                                                                                                                    class="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600 whitespace-nowrap">
-                                                                                                                    Complete
-                                                                                                                </button>
+                                                                                                <%
+                                                                                                // 3. COMPLETE BUTTON - Only for Processing
+                                                                                                if (status == 1) {
+                                                                                                %>
+                                                                                                    <form
+                                                                                                        style="display: inline;"
+                                                                                                        method="post"
+                                                                                                        onsubmit="return confirm('Mark this order as Completed?')">
+                                                                                                        <input
+                                                                                                            type="hidden"
+                                                                                                            name="action"
+                                                                                                            value="updateStatus"
+                                                                                                            aria-label="Action">
+                                                                                                        <input
+                                                                                                            type="hidden"
+                                                                                                            name="orderId"
+                                                                                                            value="<%= order.getOrderID() %>"
+                                                                                                            aria-label="Order ID">
+                                                                                                        <input
+                                                                                                            type="hidden"
+                                                                                                            name="status"
+                                                                                                            value="2"
+                                                                                                            aria-label="Status">
+                                                                                                        <button
+                                                                                                            type="submit"
+                                                                                                            class="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600 whitespace-nowrap">
+                                                                                                            Complete
+                                                                                                        </button>
                                                                                                             </form>
                                                                                                             <% } %>
 
-                                                                                                                <% if
-                                                                                                                    ((paymentStatus==null
-                                                                                                                    ||
-                                                                                                                    !"Paid".equals(paymentStatus))
-                                                                                                                    &&
-                                                                                                                    order.getStatus()
-                                                                                                                    !=3)
-                                                                                                                    { %>
+                                                                                                                <%
+                                                                                                                // 4. PAID BUTTON - Show for Unpaid orders except Cancelled
+                                                                                                                if (!isPaid && status != 3) {
+                                                                                                                %>
                                                                                                                     <form
                                                                                                                         style="display: inline;"
                                                                                                                         method="post"
@@ -488,17 +482,12 @@
                                                                                                                             Paid
                                                                                                                         </button>
                                                                                                                     </form>
-                                                                                                                    <% }
-                                                                                                                        %>
+                                                                                                                <% } %>
 
-                                                                                                                        <% if
-                                                                                                                            (order.getStatus()
-                                                                                                                            !=2
-                                                                                                                            &&
-                                                                                                                            order.getStatus()
-                                                                                                                            !=3)
-                                                                                                                            {
-                                                                                                                            %>
+                                                                                                                <%
+                                                                                                                // 5. CANCEL BUTTON - Show for Pending and Processing only
+                                                                                                                if (status != 2 && status != 3) {
+                                                                                                                %>
                                                                                                                             <form
                                                                                                                                 style="display: inline;"
                                                                                                                                 method="post"
@@ -527,14 +516,10 @@
                                                                                                                             <% }
                                                                                                                                 %>
 
-                                                                                                                                <% if
-                                                                                                                                    ((order.getStatus()==0
-                                                                                                                                    ||
-                                                                                                                                    order.getStatus()==3)
-                                                                                                                                    &&
-                                                                                                                                    !"Paid".equals(paymentStatus))
-                                                                                                                                    {
-                                                                                                                                    %>
+                                                                                                                                <%
+                                                                                                                                // 6. DELETE BUTTON - Show for Cancelled OR (Pending + Unpaid)
+                                                                                                                                if (status == 3 || (status == 0 && !isPaid)) {
+                                                                                                                                %>
                                                                                                                                     <form
                                                                                                                                         style="display: inline;"
                                                                                                                                         method="post"
@@ -934,6 +919,38 @@
                                         errorBox.textContent = "Network error: " + err.message;
                                     }
                                 }
+
+                                // Price validation function
+                                function validatePrice(input) {
+                                    const value = parseFloat(input.value);
+                                    const min = 10000;
+                                    const max = 99000000;
+                                    
+                                    if (isNaN(value) || value < min || value > max) {
+                                        input.setCustomValidity(`Giá phải từ ${min.toLocaleString('vi-VN')}đ đến ${max.toLocaleString('vi-VN')}đ`);
+                                        input.reportValidity();
+                                        return false;
+                                    } else {
+                                        input.setCustomValidity('');
+                                        return true;
+                                    }
+                                }
+
+                                // Add validation to all price inputs
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const priceInputs = document.querySelectorAll('input[name="totalPrice"], input[type="number"][placeholder*="price"], input[type="number"][placeholder*="Price"]');
+                                    priceInputs.forEach(input => {
+                                        input.setAttribute('min', '10000');
+                                        input.setAttribute('max', '99000000');
+                                        input.setAttribute('step', '1000');
+                                        input.addEventListener('blur', function() {
+                                            validatePrice(this);
+                                        });
+                                        input.addEventListener('input', function() {
+                                            this.setCustomValidity('');
+                                        });
+                                    });
+                                });
 
                                 // Close modal when clicking outside
                                 window.onclick = function (event) {

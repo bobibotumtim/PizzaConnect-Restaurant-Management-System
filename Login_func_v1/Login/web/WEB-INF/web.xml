@@ -195,6 +195,50 @@
         <url-pattern>/test-orders</url-pattern>
     </servlet-mapping>
 
+    <!-- POS System -->
+    <servlet>
+        <servlet-name>POSServlet</servlet-name>
+        <servlet-class>controller.POSServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>POSServlet</servlet-name>
+        <url-pattern>/pos</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>POSServlet</servlet-name>
+        <url-pattern>/POS</url-pattern>
+    </servlet-mapping>
+
+    <!-- Simple POS Servlet -->
+    <servlet>
+        <servlet-name>SimplePOSServlet</servlet-name>
+        <servlet-class>controller.SimplePOSServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SimplePOSServlet</servlet-name>
+        <url-pattern>/simple-pos</url-pattern>
+    </servlet-mapping>
+
+    <!-- Test DB Servlet -->
+    <servlet>
+        <servlet-name>TestDBServlet</servlet-name>
+        <servlet-class>controller.TestDBServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TestDBServlet</servlet-name>
+        <url-pattern>/test-db</url-pattern>
+    </servlet-mapping>
+
+    <!-- Quick Test Servlet -->
+    <servlet>
+        <servlet-name>QuickTestServlet</servlet-name>
+        <servlet-class>controller.QuickTestServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>QuickTestServlet</servlet-name>
+        <url-pattern>/quick-test</url-pattern>
+    </servlet-mapping>
+
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
