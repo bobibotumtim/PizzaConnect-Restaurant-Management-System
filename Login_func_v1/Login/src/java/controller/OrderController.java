@@ -76,9 +76,9 @@ public class OrderController extends HttpServlet {
                     sb.append("\"tableID\": ").append(orderData.getTableID()).append(',');
                     sb.append("\"orderDate\": \"").append(orderData.getOrderDate() != null ? orderData.getOrderDate() : "").append("\",");
                     sb.append("\"status\": ").append(orderData.getStatus()).append(',');
-                    sb.append("\"paymentStatus\": \"").append(orderData.getPaymentStatus() != null ? orderData.getPaymentStatus() : "Unpaid").append("\",");
+                    sb.append("\"paymentStatus\": \"").append(escapeJson(orderData.getPaymentStatus() != null ? orderData.getPaymentStatus() : "Unpaid")).append("\",");
                     sb.append("\"totalPrice\": ").append(orderData.getTotalPrice()).append(',');
-                    sb.append("\"note\": \"").append(orderData.getNote() != null ? orderData.getNote().replace("\"", "\\\"") : "").append("\"");
+                    sb.append("\"note\": \"").append(escapeJson(orderData.getNote() != null ? orderData.getNote() : "")).append("\"");
                     sb.append("}}");
                     resp.getWriter().write(sb.toString());
                 } else {
@@ -253,10 +253,12 @@ public class OrderController extends HttpServlet {
             int orderID = parseIntSafe(req.getParameter("orderID"));
             int status = parseIntSafe(req.getParameter("status"));
             String paymentStatus = req.getParameter("paymentStatus");
+            String note = req.getParameter("note");
             
             System.out.println("Updating Order ID: " + orderID + 
                             ", Status: " + status + 
-                            ", PaymentStatus: " + paymentStatus);
+                            ", PaymentStatus: " + paymentStatus +
+                            ", Note: " + note);
             
             // Validation
             if (orderID <= 0) {
@@ -277,8 +279,8 @@ public class OrderController extends HttpServlet {
                 return;
             }
             
-            // Sử dụng method đơn giản để update
-            boolean success = dao.updateOrderStatusAndPayment(orderID, status, paymentStatus);
+            // Update status, payment and note
+            boolean success = dao.updateOrderStatusPaymentAndNote(orderID, status, paymentStatus, note);
             
             if (!success) {
                 System.out.println("ERROR: Failed to update order");
@@ -436,5 +438,19 @@ public class OrderController extends HttpServlet {
             case "Veggie": return 2; // fallback to 2
             default: return 1; // default fallback
         }
+    }
+    
+    /**
+     * Escape string for JSON - handle special characters
+     */
+    private String escapeJson(String str) {
+        if (str == null) return "";
+        return str.replace("\\", "\\\\")
+                  .replace("\"", "\\\"")
+                  .replace("\n", "\\n")
+                  .replace("\r", "\\r")
+                  .replace("\t", "\\t")
+                  .replace("\b", "\\b")
+                  .replace("\f", "\\f");
     }
 }

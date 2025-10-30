@@ -275,6 +275,22 @@ public class OrderDAO extends DBContext {
         return false;
     }
 
+    // 🟢 Update order status, payment and note
+    public boolean updateOrderStatusPaymentAndNote(int orderId, int status, String paymentStatus, String note) {
+        String sql = "UPDATE [Order] SET Status = ?, PaymentStatus = ?, Note = ? WHERE OrderID = ?";
+        try (Connection con = useConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, status);
+            ps.setString(2, paymentStatus);
+            ps.setString(3, note);
+            ps.setInt(4, orderId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     // 🟢 Delete order (and details)
     public boolean deleteOrder(int orderId) {
         String deleteDetails = "DELETE FROM [OrderDetail] WHERE OrderID = ?";

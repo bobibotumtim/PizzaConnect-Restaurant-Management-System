@@ -286,6 +286,9 @@
                                                                                 class="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                                                                                 Payment</th>
                                                                             <th
+                                                                                class="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                                                                                Note</th>
+                                                                            <th
                                                                                 class="px-6 py-4 text-center text-sm font-semibold text-gray-700">
                                                                                 Actions</th>
                                                                         </tr>
@@ -316,7 +319,9 @@
                                                                                 </td>
                                                                                 <td
                                                                                     class="px-6 py-4 text-gray-700 text-sm">
-                                                                                    <%= order.getOrderDate() != null ? new java.text.SimpleDateFormat("MMM dd, yyyy HH:mm").format(order.getOrderDate()) : "N/A" %>
+                                                                                    <%= order.getOrderDate() !=null ?
+                                                                                        order.getOrderDate().toString()
+                                                                                        : "N/A" %>
                                                                                 </td>
 
                                                                                 <td class="px-6 py-4">
@@ -356,6 +361,17 @@
                                                                                                 paymentStatus : "Unpaid"
                                                                                                 %>
                                                                                         </span>
+                                                                                </td>
+                                                                                <td
+                                                                                    class="px-6 py-4 text-gray-700 text-sm max-w-xs">
+                                                                                    <% String noteText=(order.getNote()
+                                                                                        !=null &&
+                                                                                        !order.getNote().isEmpty()) ?
+                                                                                        order.getNote() : "None" ; %>
+                                                                                        <div class="truncate"
+                                                                                            title="<%= noteText %>">
+                                                                                            <%= noteText %>
+                                                                                        </div>
                                                                                 </td>
                                                                                 <td class="px-6 py-4">
                                                                                     <div class="flex items-center justify-center gap-1 overflow-x-auto"
@@ -668,6 +684,16 @@
                                                     <option value="Paid">Paid</option>
                                                 </select>
                                             </div>
+
+                                            <div>
+                                                <label for="editNote"
+                                                    class="block text-sm font-semibold text-gray-700 mb-2">
+                                                    Note
+                                                </label>
+                                                <textarea id="editNote" name="note" rows="3"
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    placeholder="Add special instructions or notes..."></textarea>
+                                            </div>
                                         </div>
 
                                         <div id="editOrderError"
@@ -733,9 +759,9 @@
                     <div>
                         <label for="price-input" class="block text-xs font-semibold text-gray-700 mb-1">
                             Price
-                            <span class="text-xs font-normal text-gray-500">(10,000-99,000,000)</span>
+                            <span class="text-xs font-normal text-gray-500">($5-$9000)</span>
                         </label>
-                        <input id="price-input" name="price" type="number" step="0.01" min="10000" max="99000000" value="25.00" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" required />
+                        <input id="price-input" name="price" type="number" step="0.01" min="5" max="9000" value="25.00" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" required />
                     </div>
                     <div class="flex items-end">
                         <button type="button" onclick="this.closest('.order-item-row').remove()" class="w-full px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
@@ -789,9 +815,9 @@
                                         }
 
                                         // Validate price
-                                        if (!price || price < 10000 || price > 99000000) {
+                                        if (!price || price < 5 || price > 9000) {
                                             errorBox.classList.remove('hidden');
-                                            errorBox.textContent = 'Price must be between 10,000 and 99,000,000';
+                                            errorBox.textContent = 'Price must be between $5 and $9000';
                                             priceInput.focus();
                                             return;
                                         }
@@ -803,9 +829,9 @@
                                     }
 
                                     // Validate total price
-                                    if (totalPrice < 10000 || totalPrice > 99000000) {
+                                    if (totalPrice < 5 || totalPrice > 9000) {
                                         errorBox.classList.remove('hidden');
-                                        errorBox.textContent = 'Total order must be between 10,000 and 99,000,000';
+                                        errorBox.textContent = 'Total order must be between $5 and $9000';
                                         return;
                                     }
 
@@ -833,13 +859,19 @@
 
                                 // Edit Order Modal Functions
                                 function openEditOrderModal(orderId) {
+                                    console.log("Opening edit modal for order:", orderId);
                                     const modal = document.getElementById("editOrderModal");
                                     const errorBox = document.getElementById("editOrderError");
                                     errorBox.classList.add("hidden");
 
+                                    console.log("Fetching order data...");
                                     fetch(ctx + '/manage-orders?action=getOrder&id=' + orderId)
-                                        .then(res => res.json())
+                                        .then(res => {
+                                            console.log("Response status:", res.status);
+                                            return res.json();
+                                        })
                                         .then(data => {
+                                            console.log("Order data received:", data);
                                             if (!data.success) {
                                                 errorBox.classList.remove("hidden");
                                                 errorBox.textContent = data.message || "Could not load order data.";
@@ -850,11 +882,15 @@
                                             document.getElementById("editOrderID").value = o.orderID;
                                             document.getElementById("editStatus").value = o.status;
                                             document.getElementById("editPaymentStatus").value = o.paymentStatus || "Unpaid";
+                                            document.getElementById("editNote").value = o.note || "";
                                             document.getElementById("editModalTitle").textContent = 'Edit Order #' + o.orderID;
 
+                                            console.log("Opening modal...");
                                             modal.classList.add("show");
+                                            console.log("Modal classes:", modal.className);
                                         })
                                         .catch(err => {
+                                            console.error("Error fetching order:", err);
                                             errorBox.classList.remove("hidden");
                                             errorBox.textContent = "Error: " + err.message;
                                         });
@@ -875,6 +911,7 @@
                                     formData.append("orderID", form.orderID.value);
                                     formData.append("status", form.status.value);
                                     formData.append("paymentStatus", form.paymentStatus.value);
+                                    formData.append("note", form.note.value);
 
                                     try {
                                         const res = await fetch(ctx + '/manage-orders', {
