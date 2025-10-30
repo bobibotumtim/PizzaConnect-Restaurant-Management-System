@@ -2,543 +2,41 @@
 <%@ page import="java.util.List" %>
 <%@ page import="models.User" %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Admin Dashboard - PizzaConnect</title>
+        <title>User Management - PizzaConnect</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://unpkg.com/lucide@latest"></script>
         <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
-
-            body {
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                min-height: 100vh;
-                padding: 20px;
-            }
-
-            .container {
-                max-width: 1200px;
-                margin: 0 auto;
-                background: white;
-                border-radius: 15px;
-                box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-                overflow: hidden;
-            }
-
-            .header {
-                background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-                color: white;
-                padding: 30px;
-                text-align: center;
-            }
-
-            .header h1 {
-                font-size: 2.5em;
-                margin-bottom: 10px;
-            }
-
-            .header p {
-                font-size: 1.1em;
-                opacity: 0.9;
-            }
-
-            .nav {
-                background: #2c3e50;
-                padding: 15px 30px;
+            .nav-btn {
+                width: 3rem;
+                height: 3rem;
+                border-radius: 0.75rem;
                 display: flex;
-                justify-content: space-between;
                 align-items: center;
-            }
-
-            .nav .welcome {
-                color: white;
-                font-weight: 500;
-            }
-
-            .nav .logout {
-                background: #e74c3c;
-                color: white;
-                padding: 8px 20px;
-                text-decoration: none;
-                border-radius: 5px;
-                transition: background 0.3s;
-            }
-
-            .nav .logout:hover {
-                background: #c0392b;
-            }
-
-            .content {
-                padding: 30px;
-            }
-
-            .alert {
-                padding: 15px;
-                margin-bottom: 20px;
-                border-radius: 5px;
-                font-weight: 500;
-            }
-
-            .alert.success {
-                background: #d4edda;
-                color: #155724;
-                border: 1px solid #c3e6cb;
-            }
-
-            .alert.error {
-                background: #f8d7da;
-                color: #721c24;
-                border: 1px solid #f5c6cb;
-            }
-
-            .stats {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 20px;
-                margin-bottom: 30px;
-            }
-
-            .stat-card {
-                background: linear-gradient(135deg, #74b9ff, #0984e3);
-                color: white;
-                padding: 25px;
-                border-radius: 10px;
-                text-align: center;
-            }
-
-            .stat-card h3 {
-                font-size: 2em;
-                margin-bottom: 10px;
-            }
-
-            .stat-card p {
-                font-size: 1.1em;
-                opacity: 0.9;
-            }
-
-            .table-container {
-                background: white;
-                border-radius: 10px;
-                overflow: hidden;
-                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            }
-
-            .table-header {
-                background: #34495e;
-                color: white;
-                padding: 20px;
-                font-size: 1.2em;
-                font-weight: 600;
-            }
-
-            table {
-                width: 100%;
-                border-collapse: collapse;
-            }
-
-            th, td {
-                padding: 15px;
-                text-align: left;
-                border-bottom: 1px solid #ecf0f1;
-            }
-
-            th {
-                background: #f8f9fa;
-                font-weight: 600;
-                color: #2c3e50;
-            }
-
-            tr:hover {
-                background: #f8f9fa;
-            }
-
-            .role-badge {
-                padding: 5px 12px;
-                border-radius: 20px;
-                font-size: 0.85em;
-                font-weight: 600;
-                text-transform: uppercase;
-            }
-
-            .role-admin {
-                background: #e74c3c;
-                color: white;
-            }
-
-            .role-user {
-                background: #3498db;
-                color: white;
-            }
-
-            .btn {
-                padding: 8px 16px;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                text-decoration: none;
-                display: inline-block;
-                font-size: 0.9em;
-                transition: all 0.3s;
-            }
-
-            .btn-danger {
-                background: #e74c3c;
-                color: white;
-            }
-
-            .btn-danger:hover {
-                background: #c0392b;
-                transform: translateY(-1px);
-            }
-
-            .btn-edit {
-                background: #f39c12;
-                color: white;
-                margin-right: 5px;
-            }
-
-            .btn-edit:hover {
-                background: #e67e22;
-                transform: translateY(-1px);
-            }
-
-            .empty-state {
-                text-align: center;
-                padding: 50px;
-                color: #7f8c8d;
-            }
-
-            .empty-state i {
-                font-size: 4em;
-                margin-bottom: 20px;
-                display: block;
-            }
-
-            /* Dashboard modules styles removed (not used) */
-            /* Dashboard Modules */
-            .dashboard-modules {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 25px;
-                margin-bottom: 40px;
-            }
-
-            .module-card {
-                background: white;
-                border-radius: 15px;
-                padding: 30px;
-                box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-                transition: all 0.3s ease;
-                border: 1px solid #e9ecef;
-            }
-
-            .module-card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 15px 35px rgba(0,0,0,0.15);
-            }
-
-            .module-icon {
-                font-size: 3em;
-                text-align: center;
-                margin-bottom: 20px;
-            }
-
-            .module-card h3 {
-                color: #2c3e50;
-                font-size: 1.4em;
-                margin-bottom: 15px;
-                text-align: center;
-            }
-
-            .module-card p {
-                color: #7f8c8d;
-                text-align: center;
-                margin-bottom: 25px;
-                line-height: 1.5;
-            }
-
-            .module-actions {
-                text-align: center;
-            }
-
-            .module-actions .btn {
-                padding: 12px 25px;
-                font-size: 1em;
-                font-weight: 600;
-                border-radius: 8px;
-                transition: all 0.3s ease;
-                text-decoration: none;
-                display: inline-block;
-            }
-
-            .module-actions .btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            }
-
-            .btn-success {
-                background: linear-gradient(135deg, #27ae60, #2ecc71);
-                color: white;
-            }
-
-            .btn-success:hover {
-                background: linear-gradient(135deg, #229954, #27ae60);
-            }
-
-            .btn-info {
-                background: linear-gradient(135deg, #3498db, #5dade2);
-                color: white;
-            }
-
-            .btn-info:hover {
-                background: linear-gradient(135deg, #2980b9, #3498db);
-            }
-
-            .btn-warning {
-                background: linear-gradient(135deg, #f39c12, #f4d03f);
-                color: white;
-            }
-
-            .btn-warning:hover {
-                background: linear-gradient(135deg, #e67e22, #f39c12);
-            }
-
-            /* Role Filter Styles */
-            #roleFilter {
-                padding: 8px 12px;
-                border: 2px solid #e9ecef;
-                border-radius: 5px;
-                background: white;
-                font-size: 0.9em;
-                font-weight: 500;
-                color: #2c3e50;
-                cursor: pointer;
-                transition: all 0.3s ease;
-            }
-
-            #roleFilter:focus {
-                outline: none;
-                border-color: #3498db;
-                box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-            }
-
-            #roleFilter:hover {
-                border-color: #3498db;
-            }
-
-            .filter-container {
-                display: flex;
-                gap: 10px;
-                align-items: center;
-            }
-
-            .filter-label {
-                color: white;
-                font-weight: 500;
-                font-size: 0.9em;
-            }
-
-            /* Modal Styles */
-            .modal {
-                display: none;
-                position: fixed;
-                z-index: 1000;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0,0,0,0.5);
-                animation: fadeIn 0.3s ease;
-            }
-
-            .modal-content {
-                background-color: white;
-                margin: 15% auto;
-                padding: 0;
-                border-radius: 15px;
-                width: 400px;
-                box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-                animation: slideIn 0.3s ease;
-                overflow: hidden;
-            }
-
-            .modal-header {
-                background: linear-gradient(135deg, #e74c3c, #c0392b);
-                color: white;
-                padding: 20px;
-                text-align: center;
-                position: relative;
-            }
-
-            .modal-header .warning-icon {
-                font-size: 3em;
-                margin-bottom: 10px;
-                display: block;
-            }
-
-            .modal-body {
-                padding: 30px;
-                text-align: center;
-            }
-
-            .modal-title {
-                font-size: 1.5em;
-                font-weight: 700;
-                color: #2c3e50;
-                margin-bottom: 15px;
-            }
-
-            .modal-message {
-                color: #7f8c8d;
-                font-size: 1.1em;
-                line-height: 1.5;
-                margin-bottom: 30px;
-            }
-
-            .modal-actions {
-                display: flex;
-                gap: 15px;
                 justify-content: center;
+                transition: all 0.2s;
             }
-
-            .modal-btn {
-                padding: 12px 30px;
-                border: none;
-                border-radius: 8px;
-                font-size: 1em;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                min-width: 100px;
-            }
-
-            .modal-btn-yes {
-                background: linear-gradient(135deg, #e74c3c, #c0392b);
-                color: white;
-            }
-
-            .modal-btn-yes:hover {
-                background: linear-gradient(135deg, #c0392b, #a93226);
+            .nav-btn:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
             }
-
-            .modal-btn-no {
-                background: linear-gradient(135deg, #34495e, #2c3e50);
-                color: white;
-            }
-
-            .modal-btn-no:hover {
-                background: linear-gradient(135deg, #2c3e50, #1b2631);
-                transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(52, 73, 94, 0.4);
-            }
-
-            .modal-btn-warning {
-                background: linear-gradient(135deg, #f39c12, #e67e22);
-                color: white;
-            }
-
-            .modal-btn-warning:hover {
-                background: linear-gradient(135deg, #e67e22, #d35400);
-                transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
-            }
-
-            @keyframes fadeIn {
-                from {
-                    opacity: 0;
-                }
-                to {
-                    opacity: 1;
-                }
-            }
-
-            @keyframes slideIn {
-                from {
-                    opacity: 0;
-                    transform: translateY(-50px) scale(0.9);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0) scale(1);
-                }
-            }
-
-            /* Pagination styles (added) */
-            .pagination-container {
-                padding: 18px 20px;
-                display: flex;
-                justify-content: center;
-                background: white;
-            }
-
-            .pagination {
-                list-style: none;
-                padding: 0;
-                margin: 0;
-                display: flex;
-                gap: 8px;
-                align-items: center;
-                flex-wrap: wrap;
-            }
-
-            .page-item {
-                display: inline-block;
-            }
-
-            .page-link {
-                text-decoration: none;
-                padding: 8px 12px;
-                border-radius: 8px;
-                font-weight: 600;
-                color: #ffffff;
-                background: linear-gradient(135deg, #3498db, #5dade2);
-                transition: all 0.18s ease;
-                display: inline-block;
-            }
-
-            .page-link:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-            }
-
-            .page-item.active .page-link {
-                background: linear-gradient(135deg, #f39c12, #f4d03f);
-                color: #ffffff;
-                box-shadow: 0 8px 24px rgba(243,156,18,0.18);
-            }
-
-            .page-item.disabled .page-link {
-                background: #bdc3c7;
-                color: #2c3e50;
-                opacity: 0.65;
-                pointer-events: none;
-                transform: none;
-                box-shadow: none;
-            }
-
         </style>
     </head>
-    <body>
+    <body class="flex h-screen bg-gray-50">
         <%
+            String currentPath = request.getRequestURI();
             User currentUser = (User) request.getAttribute("currentUser");
             List<User> users = (List<User>) request.getAttribute("users");
             String message = (String) request.getAttribute("message");
             String error = (String) request.getAttribute("error");
             Integer totalOrders = (Integer) request.getAttribute("totalOrders");
-            // NEW: selected role từ servlet
             String selectedRole = (String) request.getAttribute("selectedRole");
             if (selectedRole == null || selectedRole.trim().isEmpty()) {
                 selectedRole = "all";
             }
 
-            // NEW: preserve roleFilter param for pagination links
             String roleParam = "";
             if (!"all".equalsIgnoreCase(selectedRole)) {
                 roleParam = "&roleFilter=" + selectedRole;
@@ -547,160 +45,293 @@
             // Calculate stats
             int totalUsers = users != null ? users.size() : 0;
             int adminCount = 0;
+            int employeeCount = 0;
+            int customerCount = 0;
             if (users != null) {
                 for (User user : users) {
-                    if (user.getRole() == 1) {
-                        adminCount++;
-                    }
+                    if (user.getRole() == 1) adminCount++;
+                    else if (user.getRole() == 2) employeeCount++;
+                    else if (user.getRole() == 3) customerCount++;
                 }
             }
-            int regularUsers = totalUsers - adminCount;
             int orderCount = totalOrders != null ? totalOrders : 0;
         %>
 
-        <div class="container">
-            <div class="header">
-                <h1>🍕 PizzaConnect Admin</h1>
-                <p>Restaurant Management System</p>
+        <!-- Sidebar Navigation -->
+        <div class="w-20 bg-gray-800 flex flex-col items-center py-6 space-y-8 flex-shrink-0">
+            <a href="${pageContext.request.contextPath}/dashboard"
+               class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg">
+                <i data-lucide="pizza" class="w-7 h-7 text-white"></i>
+            </a>
+            
+            <div class="flex-1 flex flex-col space-y-6 mt-8">
+                <a href="${pageContext.request.contextPath}/dashboard"
+                   class="nav-btn <%= currentPath.contains("/dashboard") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Dashboard">
+                    <i data-lucide="grid" class="w-6 h-6"></i>
+                </a>
+                
+                <a href="${pageContext.request.contextPath}/admin"
+                   class="nav-btn <%= currentPath.contains("/admin") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Manage Users">
+                    <i data-lucide="users" class="w-6 h-6"></i>
+                </a>
+                
+                <a href="${pageContext.request.contextPath}/manage-orders"
+                   class="nav-btn text-gray-400 hover:bg-gray-700" title="Orders">
+                    <i data-lucide="file-text" class="w-6 h-6"></i>
+                </a>
+                
+                <a href="${pageContext.request.contextPath}/manageproduct"
+                   class="nav-btn text-gray-400 hover:bg-gray-700" title="Products">
+                    <i data-lucide="box" class="w-6 h-6"></i>
+                </a>
+                
+                <a href="${pageContext.request.contextPath}/discount"
+                   class="nav-btn text-gray-400 hover:bg-gray-700" title="Discounts">
+                    <i data-lucide="percent" class="w-6 h-6"></i>
+                </a>
+                
+                <a href="${pageContext.request.contextPath}/reports"
+                   class="nav-btn text-gray-400 hover:bg-gray-700" title="Reports">
+                    <i data-lucide="bar-chart-2" class="w-6 h-6"></i>
+                </a>
             </div>
-
-            <div class="nav">
-                <div class="welcome">
-                    Welcome, <strong><%= currentUser != null ? currentUser.getName() : "Admin" %></strong> (Admin)
+            
+            <div class="flex flex-col items-center space-y-4">
+                <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
+                    <i data-lucide="user" class="w-5 h-5 text-gray-200"></i>
                 </div>
+                <a href="${pageContext.request.contextPath}/logout"
+                   class="nav-btn text-gray-400 hover:bg-red-500 hover:text-white" title="Logout">
+                    <i data-lucide="log-out" class="w-6 h-6"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header -->
+            <div class="bg-white border-b px-6 py-4 flex justify-between items-center">
                 <div>
-                    <a href="dashboard" class="btn btn-info" style="margin-right: 10px;">Dashboard</a>
-                    <a href="Login?action=logout" class="logout">Logout</a>
+                    <h1 class="text-2xl font-bold text-gray-800">User Management</h1>
+                    <p class="text-sm text-gray-500">PizzaConnect Restaurant Management System</p>
+                </div>
+                <div class="text-gray-600">
+                    Welcome, <strong><%= currentUser != null ? currentUser.getName() : "Admin" %></strong>
                 </div>
             </div>
 
-            <div class="content">
+            <!-- Content -->
+            <div class="flex-1 p-6 overflow-auto">
+                <!-- Alert Messages -->
                 <% if (message != null && !message.isEmpty()) { %>
-                <div class="alert success"><%= message %></div>
+                <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+                    <div class="flex items-center">
+                        <i data-lucide="check-circle" class="w-5 h-5 mr-2"></i>
+                        <span><%= message %></span>
+                    </div>
+                </div>
                 <% } %>
 
                 <% if (error != null && !error.isEmpty()) { %>
-                <div class="alert error"><%= error %></div>
+                <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                    <div class="flex items-center">
+                        <i data-lucide="alert-circle" class="w-5 h-5 mr-2"></i>
+                        <span><%= error %></span>
+                    </div>
+                </div>
                 <% } %>
 
-                <div class="stats">
-                    <div class="stat-card">
-                        <h3><%= totalUsers %></h3>
-                        <p>Total Users</p>
+                <!-- Statistics Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Total Users</p>
+                                <p class="text-2xl font-bold text-gray-800 mt-1"><%= totalUsers %></p>
+                            </div>
+                            <div class="p-3 bg-blue-100 rounded-lg">
+                                <i data-lucide="users" class="w-6 h-6 text-blue-600"></i>
+                            </div>
+                        </div>
                     </div>
-                    <div class="stat-card">
-                        <h3><%= adminCount %></h3>
-                        <p>Admins</p>
+
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Admins</p>
+                                <p class="text-2xl font-bold text-red-600 mt-1"><%= adminCount %></p>
+                            </div>
+                            <div class="p-3 bg-red-100 rounded-lg">
+                                <i data-lucide="shield" class="w-6 h-6 text-red-600"></i>
+                            </div>
+                        </div>
                     </div>
-                    <div class="stat-card">
-                        <h3><%= regularUsers %></h3>
-                        <p>Regular Users</p>
+
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Employees</p>
+                                <p class="text-2xl font-bold text-orange-600 mt-1"><%= employeeCount %></p>
+                            </div>
+                            <div class="p-3 bg-orange-100 rounded-lg">
+                                <i data-lucide="briefcase" class="w-6 h-6 text-orange-600"></i>
+                            </div>
+                        </div>
                     </div>
-                    <div class="stat-card">
-                        <h3><%= orderCount %></h3>
-                        <p>Total Orders</p>
+
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Customers</p>
+                                <p class="text-2xl font-bold text-green-600 mt-1"><%= customerCount %></p>
+                            </div>
+                            <div class="p-3 bg-green-100 rounded-lg">
+                                <i data-lucide="user-check" class="w-6 h-6 text-green-600"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="table-container">
-                    <div class="table-header" style="display: flex; justify-content: space-between; align-items: center;">
-                        <span>👥 User Management</span>
-                        <div class="filter-container">
-                            <span class="filter-label">Filter by Role:</span>
-                            <select id="roleFilter" onchange="filterUsersByRole()">
+                <!-- User Management Table -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <div class="bg-gray-800 text-white px-6 py-4 flex justify-between items-center">
+                        <div class="flex items-center">
+                            <i data-lucide="users" class="w-5 h-5 mr-2"></i>
+                            <span class="text-lg font-semibold">User Management</span>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <select id="roleFilter" onchange="filterUsersByRole()" 
+                                    class="border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-500">
                                 <option value="all" <%= "all".equalsIgnoreCase(selectedRole) ? "selected" : "" %>>All Roles</option>
                                 <option value="1" <%= "1".equals(selectedRole) ? "selected" : "" %>>Admin</option>
                                 <option value="2" <%= "2".equals(selectedRole) ? "selected" : "" %>>Employee</option>
                                 <option value="3" <%= "3".equals(selectedRole) ? "selected" : "" %>>Customer</option>
                             </select>
-                            <a href="adduser" class="btn btn-success" style="margin: 0;" title="Add New User">+ Add New User</a>
+                            <a href="adduser" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center">
+                                <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                                Add User
+                            </a>
                         </div>
                     </div>
 
                     <% if (users == null || users.isEmpty()) { %>
-                    <div class="empty-state">
-                        <i>👤</i>
-                        <h3>No Users Found</h3>
-                        <p>There are no users in the system yet.</p>
+                    <div class="text-center py-12">
+                        <i data-lucide="users" class="w-16 h-16 text-gray-400 mx-auto mb-4"></i>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">No Users Found</h3>
+                        <p class="text-gray-500">There are no users in the system yet.</p>
                     </div>
                     <% } else { %>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% for (User user : users) { %>
-                            <tr data-role="<%= user.getRole() %>">
-                                <td><%= user.getUserID() %></td>
-                                <td><strong><%= user.getName() %></strong></td>
-                                <td><%= user.getEmail() %></td>
-                                <td><%= user.getPhone() %></td>
-                                <td>
-                                    <% if (user.getRole() == 1) { %>
-                                    <span class="role-badge role-admin">Admin</span>
-                                    <% } else if (user.getRole() == 2) { %>
-                                    <span class="role-badge role-user">Employee</span>
-                                    <% } else { %>
-                                    <span class="role-badge role-user">Customer</span>
-                                    <% } %>
-                                </td>
-                                <td>
-                                    <% if (user.isActive()) { %>
-                                    <span style="color: #27ae60; font-weight: 600;">✓ Active</span>
-                                    <% } else { %>
-                                    <span style="color: #e74c3c; font-weight: 600;">✗ Inactive</span>
-                                    <% } %>
-                                </td>
-                                <td>
-                                    <% if (currentUser != null && user.getUserID() != currentUser.getUserID()) { %>
-                                    <a href="edituser?id=<%= user.getUserID() %>" class="btn btn-edit">Edit</a>
-                                    <% if (user.isActive()) { %>
-                                    <button type="button" class="btn btn-warning suspend-btn" data-user-id="<%= user.getUserID() %>">Suspend</button>
-                                    <% } else { %>
-                                    <button type="button" class="btn btn-success activate-btn" data-user-id="<%= user.getUserID() %>">Activate</button>
-                                    <% } %>
-                                    <button type="button" class="btn btn-danger delete-btn" data-user-id="<%= user.getUserID() %>">Delete</button>
-                                    <% } else { %>
-                                    <span style="color: #7f8c8d; font-style: italic;">Current User</span>
-                                    <% } %>
-                                </td>
-                            </tr>
-                            <% } %>
-                        </tbody>
-                    </table>
-                    <!-- Pagination (updated markup to use button-like styles) -->
-                    <div class="pagination-container">
-                        <ul class="pagination">
-                            <%
-                                int currentPage = (int) request.getAttribute("currentPage");
-                                int totalPages = (int) request.getAttribute("totalPages");
-
-                                if (totalPages > 1) {
-                            %>
-                            <li class="page-item <%= (currentPage == 1 ? "disabled" : "") %>">
-                                <a class="page-link" href="admin?page=<%= (currentPage - 1) %><%= roleParam %>">Previous</a>
-                            </li>
-
-                            <% for (int i = 1; i <= totalPages; i++) { %>
-                            <li class="page-item <%= (i == currentPage ? "active" : "") %>">
-                                <a class="page-link" href="admin?page=<%= i %><%= roleParam %>"><%= i %></a>
-                            </li>
-                            <% } %>
-
-                            <li class="page-item <%= (currentPage == totalPages ? "disabled" : "") %>">
-                                <a class="page-link" href="admin?page=<%= (currentPage + 1) %><%= roleParam %>">Next</a>
-                            </li>
-                            <% } %>
-                        </ul>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <% for (User user : users) { %>
+                                <tr class="hover:bg-gray-50" data-role="<%= user.getRole() %>">
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#<%= user.getUserID() %></td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><%= user.getName() %></td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500"><%= user.getEmail() %></td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500"><%= user.getPhone() %></td>
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        <% if (user.getRole() == 1) { %>
+                                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Admin</span>
+                                        <% } else if (user.getRole() == 2) { %>
+                                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">Employee</span>
+                                        <% } else { %>
+                                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Customer</span>
+                                        <% } %>
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        <% if (user.isActive()) { %>
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            <i data-lucide="check-circle" class="w-3 h-3 mr-1"></i>
+                                            Active
+                                        </span>
+                                        <% } else { %>
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                            <i data-lucide="x-circle" class="w-3 h-3 mr-1"></i>
+                                            Inactive
+                                        </span>
+                                        <% } %>
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                                        <% if (currentUser != null && user.getUserID() != currentUser.getUserID()) { %>
+                                        <div class="flex space-x-2">
+                                            <a href="edituser?id=<%= user.getUserID() %>" 
+                                               class="text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded text-xs">
+                                                <i data-lucide="edit" class="w-3 h-3 inline mr-1"></i>Edit
+                                            </a>
+                                            <% if (user.isActive()) { %>
+                                            <button type="button" class="text-yellow-600 hover:text-yellow-800 bg-yellow-50 hover:bg-yellow-100 px-3 py-1 rounded text-xs suspend-btn" data-user-id="<%= user.getUserID() %>">
+                                                <i data-lucide="pause" class="w-3 h-3 inline mr-1"></i>Suspend
+                                            </button>
+                                            <% } else { %>
+                                            <button type="button" class="text-green-600 hover:text-green-800 bg-green-50 hover:bg-green-100 px-3 py-1 rounded text-xs activate-btn" data-user-id="<%= user.getUserID() %>">
+                                                <i data-lucide="play" class="w-3 h-3 inline mr-1"></i>Activate
+                                            </button>
+                                            <% } %>
+                                            <button type="button" class="text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-3 py-1 rounded text-xs delete-btn" data-user-id="<%= user.getUserID() %>">
+                                                <i data-lucide="trash-2" class="w-3 h-3 inline mr-1"></i>Delete
+                                            </button>
+                                        </div>
+                                        <% } else { %>
+                                        <span class="text-gray-400 text-xs italic">Current User</span>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
                     </div>
+                    <!-- Pagination -->
+                    <%
+                        int currentPage = (int) request.getAttribute("currentPage");
+                        int totalPages = (int) request.getAttribute("totalPages");
+                        if (totalPages > 1) {
+                    %>
+                    <div class="flex justify-between items-center mt-6 px-6 py-4 bg-gray-50">
+                        <div class="text-sm text-gray-500">
+                            Showing page <%= currentPage %> of <%= totalPages %>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <a href="admin?page=1<%= roleParam %>" 
+                               class="px-3 py-2 border border-gray-300 rounded <%= currentPage == 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "hover:bg-gray-100 text-gray-700" %>">
+                                <i data-lucide="chevrons-left" class="w-4 h-4"></i>
+                            </a>
+                            <a href="admin?page=<%= (currentPage - 1) %><%= roleParam %>" 
+                               class="px-3 py-2 border border-gray-300 rounded <%= currentPage == 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "hover:bg-gray-100 text-gray-700" %>">
+                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            </a>
+                            
+                            <% for (int i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) { %>
+                            <a href="admin?page=<%= i %><%= roleParam %>" 
+                               class="px-3 py-2 border border-gray-300 rounded <%= i == currentPage ? "bg-orange-500 text-white" : "hover:bg-gray-100 text-gray-700" %>">
+                                <%= i %>
+                            </a>
+                            <% } %>
+                            
+                            <a href="admin?page=<%= (currentPage + 1) %><%= roleParam %>" 
+                               class="px-3 py-2 border border-gray-300 rounded <%= currentPage == totalPages ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "hover:bg-gray-100 text-gray-700" %>">
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </a>
+                            <a href="admin?page=<%= totalPages %><%= roleParam %>" 
+                               class="px-3 py-2 border border-gray-300 rounded <%= currentPage == totalPages ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "hover:bg-gray-100 text-gray-700" %>">
+                                <i data-lucide="chevrons-right" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <% } %>
 
                     <% } %>
                 </div>
@@ -708,114 +339,99 @@
         </div>
 
         <!-- Delete Confirmation Modal -->
-        <div id="deleteModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <span class="warning-icon">⚠️</span>
+        <div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50">
+            <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800 flex items-center">
+                        <i data-lucide="alert-triangle" class="w-5 h-5 mr-2 text-red-500"></i>
+                        Delete User
+                    </h2>
+                    <button onclick="closeModal('deleteModal')" class="text-gray-400 hover:text-gray-600">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
                 </div>
-                <div class="modal-body">
-                    <div class="modal-title">Delete This User?</div>
-                    <div class="modal-message">Are you sure you want to delete this user? This action cannot be undone.</div>
-                    <div class="modal-actions">
-                        <button class="modal-btn modal-btn-yes" onclick="confirmDelete()">Yes</button>
-                        <button class="modal-btn modal-btn-no" onclick="closeModal('deleteModal')">No</button>
-                    </div>
+                <p class="text-gray-600 mb-6">Are you sure you want to delete this user? This action cannot be undone.</p>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeModal('deleteModal')" class="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg">Cancel</button>
+                    <button onclick="confirmDelete()" class="px-4 py-2 bg-red-500 text-white hover:bg-red-600 rounded-lg">Delete</button>
                 </div>
             </div>
         </div>
 
         <!-- Suspend Confirmation Modal -->
-        <div id="suspendModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
-                    <span class="warning-icon">⚠️</span>
+        <div id="suspendModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50">
+            <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800 flex items-center">
+                        <i data-lucide="pause-circle" class="w-5 h-5 mr-2 text-yellow-500"></i>
+                        Suspend User
+                    </h2>
+                    <button onclick="closeModal('suspendModal')" class="text-gray-400 hover:text-gray-600">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
                 </div>
-                <div class="modal-body">
-                    <div class="modal-title">Suspend This User?</div>
-                    <div class="modal-message">Are you sure you want to suspend this user? They will not be able to access the system.</div>
-                    <div class="modal-actions">
-                        <button class="modal-btn modal-btn-warning" onclick="confirmSuspend()">Yes</button>
-                        <button class="modal-btn modal-btn-no" onclick="closeModal('suspendModal')">No</button>
-                    </div>
+                <p class="text-gray-600 mb-6">Are you sure you want to suspend this user? They will not be able to access the system.</p>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeModal('suspendModal')" class="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg">Cancel</button>
+                    <button onclick="confirmSuspend()" class="px-4 py-2 bg-yellow-500 text-white hover:bg-yellow-600 rounded-lg">Suspend</button>
                 </div>
             </div>
         </div>
 
         <!-- Activate Confirmation Modal -->
-        <div id="activateModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">
-                    <span class="warning-icon">✅</span>
+        <div id="activateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50">
+            <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800 flex items-center">
+                        <i data-lucide="play-circle" class="w-5 h-5 mr-2 text-green-500"></i>
+                        Activate User
+                    </h2>
+                    <button onclick="closeModal('activateModal')" class="text-gray-400 hover:text-gray-600">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
                 </div>
-                <div class="modal-body">
-                    <div class="modal-title">Activate This User?</div>
-                    <div class="modal-message">Are you sure you want to activate this user? They will be able to access the system again.</div>
-                    <div class="modal-actions">
-                        <button class="modal-btn modal-btn-yes" style="background: linear-gradient(135deg, #27ae60, #2ecc71);" onclick="confirmActivate()">Yes</button>
-                        <button class="modal-btn modal-btn-no" onclick="closeModal('activateModal')">No</button>
-                    </div>
+                <p class="text-gray-600 mb-6">Are you sure you want to activate this user? They will be able to access the system again.</p>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeModal('activateModal')" class="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg">Cancel</button>
+                    <button onclick="confirmActivate()" class="px-4 py-2 bg-green-500 text-white hover:bg-green-600 rounded-lg">Activate</button>
                 </div>
             </div>
         </div>
 
         <script>
-            // ✅ NEW: Function to filter users by role (server-side redirect)
+            // Initialize Lucide icons
+            lucide.createIcons();
+
+            // Filter users by role
             function filterUsersByRole() {
                 const selectedRole = document.getElementById('roleFilter').value;
-                // Nếu chọn "all" thì xem toàn bộ user
                 if (selectedRole === 'all') {
                     window.location.href = 'admin?page=1';
                 } else {
-                    // Redirect lên servlet admin kèm roleFilter param
                     window.location.href = 'admin?roleFilter=' + encodeURIComponent(selectedRole) + '&page=1';
                 }
             }
-
-            // Initialize filter on page load
-            document.addEventListener('DOMContentLoaded', function () {
-                // Add event listeners for action buttons
-                document.querySelectorAll('.delete-btn').forEach(btn => {
-                    btn.addEventListener('click', function () {
-                        const userId = this.getAttribute('data-user-id');
-                        showDeleteModal(userId);
-                    });
-                });
-
-                document.querySelectorAll('.suspend-btn').forEach(btn => {
-                    btn.addEventListener('click', function () {
-                        const userId = this.getAttribute('data-user-id');
-                        showSuspendModal(userId);
-                    });
-                });
-
-                document.querySelectorAll('.activate-btn').forEach(btn => {
-                    btn.addEventListener('click', function () {
-                        const userId = this.getAttribute('data-user-id');
-                        showActivateModal(userId);
-                    });
-                });
-            });
 
             // Modal functions
             let currentUserId = null;
 
             function showDeleteModal(userId) {
                 currentUserId = userId;
-                document.getElementById('deleteModal').style.display = 'block';
+                document.getElementById('deleteModal').classList.remove('hidden');
             }
 
             function showSuspendModal(userId) {
                 currentUserId = userId;
-                document.getElementById('suspendModal').style.display = 'block';
+                document.getElementById('suspendModal').classList.remove('hidden');
             }
 
             function showActivateModal(userId) {
                 currentUserId = userId;
-                document.getElementById('activateModal').style.display = 'block';
+                document.getElementById('activateModal').classList.remove('hidden');
             }
 
             function closeModal(modalId) {
-                document.getElementById(modalId).style.display = 'none';
+                document.getElementById(modalId).classList.add('hidden');
                 currentUserId = null;
             }
 
@@ -888,16 +504,42 @@
                 }
             }
 
-            // Close modal when clicking outside
-            window.onclick = function (event) {
-                const modals = document.querySelectorAll('.modal');
-                modals.forEach(modal => {
-                    if (event.target === modal) {
-                        modal.style.display = 'none';
-                        currentUserId = null;
-                    }
+            // Initialize event listeners
+            document.addEventListener('DOMContentLoaded', function () {
+                // Add event listeners for action buttons
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const userId = this.getAttribute('data-user-id');
+                        showDeleteModal(userId);
+                    });
                 });
-            }
+
+                document.querySelectorAll('.suspend-btn').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const userId = this.getAttribute('data-user-id');
+                        showSuspendModal(userId);
+                    });
+                });
+
+                document.querySelectorAll('.activate-btn').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const userId = this.getAttribute('data-user-id');
+                        showActivateModal(userId);
+                    });
+                });
+
+                // Close modal when clicking outside
+                window.onclick = function (event) {
+                    const modals = ['deleteModal', 'suspendModal', 'activateModal'];
+                    modals.forEach(modalId => {
+                        const modal = document.getElementById(modalId);
+                        if (event.target === modal) {
+                            modal.classList.add('hidden');
+                            currentUserId = null;
+                        }
+                    });
+                }
+            });
         </script>
 
     </body>
