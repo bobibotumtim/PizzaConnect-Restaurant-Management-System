@@ -316,12 +316,7 @@
                                                                                 </td>
                                                                                 <td
                                                                                     class="px-6 py-4 text-gray-700 text-sm">
-                                                                                    <%= order.getOrderDate() !=null ?
-                                                                                        new
-                                                                                        java.text.SimpleDateFormat("MMM
-                                                                                        dd, yyyy
-                                                                                        HH:mm").format(order.getOrderDate())
-                                                                                        : "N/A" %>
+                                                                                    <%= order.getOrderDate() != null ? new java.text.SimpleDateFormat("MMM dd, yyyy HH:mm").format(order.getOrderDate()) : "N/A" %>
                                                                                 </td>
 
                                                                                 <td class="px-6 py-4">
