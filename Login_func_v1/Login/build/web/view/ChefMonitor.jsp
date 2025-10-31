@@ -1,12 +1,13 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <title>Chef Dashboard</title>
 
-    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
         body {
             background-color: #f9f9fb;
@@ -96,85 +97,68 @@
             border-radius: 6px;
         }
 
-        .btn-start {
-            background-color: #b0c4ff;
-        }
-
-        .btn-ready {
-            background-color: #63f063;
-        }
-
-        .btn-cancel {
-            background-color: #ff6666;
-            color: white;
-        }
+        .btn-start { background-color: #b0c4ff; }
+        .btn-ready { background-color: #63f063; }
+        .btn-cancel { background-color: #ff6666; color: white; }
     </style>
 </head>
+
 <body>
 
     <div class="top-bar">
         <h2 class="fw-bold">Chef Dashboard</h2>
-        <button class="btn-done">Done dishes</button>
+        <form action="ChefServlet" method="get">
+            <button type="submit" name="action" value="doneList" class="btn-done">Done dishes</button>
+        </form>
     </div>
 
+    <!-- ==================== Waiting Section ==================== -->
     <div>
         <div class="section-title">Waiting dishes</div>
         <div id="waiting" class="dish-container">
-            <div class="dish-card waiting" onclick="selectDish(this)">
-                <div class="order-id">#12</div>
-                <div class="name">Pizza A</div>
-                <div class="quantity">2</div>
-                <div class="topping">+ Cheese</div>
-            </div>
-
-            <div class="dish-card waiting" onclick="selectDish(this)">
-                <div class="order-id">#12</div>
-                <div class="name">Pizza B</div>
-                <div class="quantity">1</div>
-            </div>
-
-            <div class="dish-card waiting" onclick="selectDish(this)">
-                <div class="order-id">#13</div>
-                <div class="name">Pizza C</div>
-                <div class="quantity">1</div>
-            </div>
-
-            <div class="dish-card waiting" onclick="selectDish(this)">
-                <div class="order-id">#14</div>
-                <div class="name">Spaghetti Carbonara</div>
-                <div class="quantity">2</div>
-            </div>
+            <c:forEach var="dish" items="${pendingList}">
+                <div class="dish-card waiting" onclick="selectDish(this)" data-id="${dish.orderDetailId}">
+                    <div class="order-id">#${dish.orderId}</div>
+                    <div class="name">${dish.productName}</div>
+                    <div class="quantity">${dish.quantity}</div>
+                    <div class="topping">${dish.specialInstructions}</div>
+                </div>
+            </c:forEach>
         </div>
 
         <div class="button-row">
-            <button class="btn-action btn-start" onclick="startCooking()">▼ Start cooking ▼</button>
+            <form id="startForm" action="ChefServlet" method="post">
+                <input type="hidden" name="action" value="startCooking">
+                <input type="hidden" id="selectedIdStart" name="orderDetailId">
+                <button type="submit" class="btn-action btn-start">▼ Start cooking ▼</button>
+            </form>
         </div>
 
+        <!-- ==================== Ongoing Section ==================== -->
         <div class="section-title">Ongoing dishes</div>
         <div id="ongoing" class="dish-container">
-            <div class="dish-card ongoing" onclick="selectDish(this)">
-                <div class="order-id">#9</div>
-                <div class="name">Pizza A</div>
-                <div class="quantity">1</div>
-                <div class="topping">+ Tomato</div>
-            </div>
-
-            <div class="dish-card ongoing" onclick="selectDish(this)">
-                <div class="order-id">#10</div>
-                <div class="name">Caesar Salad</div>
-                <div class="quantity">3</div>
-            </div>
-
-            <div class="dish-card ongoing" onclick="selectDish(this)">
-                <div class="order-id">#11</div>
-                <div class="name">Pizza B</div>
-                <div class="quantity">1</div>
-            </div>
+            <c:forEach var="dish" items="${cookingList}">
+                <div class="dish-card ongoing" onclick="selectDish(this)" data-id="${dish.orderDetailId}">
+                    <div class="order-id">#${dish.orderId}</div>
+                    <div class="name">${dish.productName}</div>
+                    <div class="quantity">${dish.quantity}</div>
+                    <div class="topping">${dish.specialInstructions}</div>
+                </div>
+            </c:forEach>
         </div>
 
         <div class="button-row">
-            <button class="btn-action btn-ready" onclick="readyToServe()">Ready to serve</button>
-            <button class="btn-action btn-cancel" onclick="cancelDish()">Cancel dishes</button>
+            <form id="doneForm" action="ChefServlet" method="post" style="display:inline;">
+                <input type="hidden" name="action" value="doneDish">
+                <input type="hidden" id="selectedIdDone" name="orderDetailId">
+                <button type="submit" class="btn-action btn-ready">Ready to serve</button>
+            </form>
+
+            <form id="cancelForm" action="ChefServlet" method="post" style="display:inline;">
+                <input type="hidden" name="action" value="cancelDish">
+                <input type="hidden" id="selectedIdCancel" name="orderDetailId">
+                <button type="submit" class="btn-action btn-cancel">Cancel dishes</button>
+            </form>
         </div>
     </div>
 
@@ -185,37 +169,11 @@
             document.querySelectorAll('.dish-card').forEach(d => d.classList.remove('selected'));
             el.classList.add('selected');
             selectedDish = el;
-        }
 
-        function startCooking() {
-            if (!selectedDish || !selectedDish.classList.contains('waiting')) {
-                alert("Please select a waiting dish first!");
-                return;
-            }
-            selectedDish.classList.remove('waiting');
-            selectedDish.classList.add('ongoing');
-            document.getElementById('ongoing').appendChild(selectedDish);
-            selectedDish.classList.remove('selected');
-            selectedDish = null;
-        }
-
-        function readyToServe() {
-            if (!selectedDish || !selectedDish.classList.contains('ongoing')) {
-                alert("Please select an ongoing dish to mark ready!");
-                return;
-            }
-            selectedDish.remove();
-            selectedDish = null;
-            alert("Dish marked as ready to serve!");
-        }
-
-        function cancelDish() {
-            if (!selectedDish) {
-                alert("Select a dish to cancel!");
-                return;
-            }
-            selectedDish.remove();
-            selectedDish = null;
+            const id = el.getAttribute('data-id');
+            document.getElementById('selectedIdStart').value = id;
+            document.getElementById('selectedIdDone').value = id;
+            document.getElementById('selectedIdCancel').value = id;
         }
     </script>
 

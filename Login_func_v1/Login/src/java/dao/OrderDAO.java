@@ -47,7 +47,8 @@ public class OrderDAO extends DBContext {
 
             // 2. Insert into OrderDetails table
             double totalMoney = 0;
-            String sql2 = "INSERT INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice, TotalPrice, SpecialInstructions) VALUES (?, ?, ?, ?, ?, ?)";
+            String sql2 = "INSERT INTO OrderDetail (OrderID, ProductID, Quantity, UnitPrice, TotalPrice, SpecialInstructions, EmployeeID, Status, StartTime, EndTime) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, NULL, 'Waiting', NULL, NULL)";
             ps2 = con.prepareStatement(sql2);
             for (Orderdetail detail : orderDetails) {
                 detail.setOrderId(orderId);
@@ -73,13 +74,21 @@ public class OrderDAO extends DBContext {
             con.commit();
 
         } catch (Exception e) {
-            if (con != null) con.rollback();
+            if (con != null) {
+                con.rollback();
+            }
             throw e;
         } finally {
             try {
-                if (rs != null) rs.close();
-                if (ps1 != null) ps1.close();
-                if (ps2 != null) ps2.close();
+                if (rs != null) {
+                    rs.close();
+                }
+                if (ps1 != null) {
+                    ps1.close();
+                }
+                if (ps2 != null) {
+                    ps2.close();
+                }
                 if (con != null) {
                     con.setAutoCommit(true);
                     con.close();
@@ -90,8 +99,6 @@ public class OrderDAO extends DBContext {
         }
         return orderId;
     }
-
-
 
     // Get all orders
     public List<Order> getAllOrders() {
@@ -147,12 +154,40 @@ public class OrderDAO extends DBContext {
     }
 
     // Get order details by OrderID
+//    public List<Orderdetail> getOrderDetailsByOrderId(int orderId) {
+//        List<Orderdetail> list = new ArrayList<>();
+//        String sql = "SELECT od.*, p.ProductName FROM OrderDetails od " +
+//                    "JOIN Product p ON od.ProductID = p.ProductID " +
+//                    "WHERE od.OrderID = ?";
+//        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+//            ps.setInt(1, orderId);
+//            try (ResultSet rs = ps.executeQuery()) {
+//                while (rs.next()) {
+//                    Orderdetail detail = new Orderdetail(
+//                            rs.getInt("OrderDetailID"),
+//                            rs.getInt("OrderID"),
+//                            rs.getInt("ProductID"),
+//                            rs.getInt("Quantity"),
+//                            rs.getDouble("UnitPrice"),
+//                            rs.getDouble("TotalPrice"),
+//                            rs.getString("SpecialInstructions")
+//                    );
+//                    list.add(detail);
+//                }
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return list;
+//    }
     public List<Orderdetail> getOrderDetailsByOrderId(int orderId) {
         List<Orderdetail> list = new ArrayList<>();
-        String sql = "SELECT od.*, p.ProductName FROM OrderDetails od " +
-                    "JOIN Products p ON od.ProductID = p.ProductID " +
-                    "WHERE od.OrderID = ?";
+        String sql = "SELECT od.*, p.ProductName "
+                + "FROM OrderDetail od "
+                + "JOIN Product p ON od.ProductID = p.ProductID "
+                + "WHERE od.OrderID = ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
             ps.setInt(1, orderId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -160,10 +195,15 @@ public class OrderDAO extends DBContext {
                             rs.getInt("OrderDetailID"),
                             rs.getInt("OrderID"),
                             rs.getInt("ProductID"),
+                            rs.getString("ProductName"), // ✅ thêm product name
                             rs.getInt("Quantity"),
                             rs.getDouble("UnitPrice"),
                             rs.getDouble("TotalPrice"),
-                            rs.getString("SpecialInstructions")
+                            rs.getString("SpecialInstructions"),
+                            rs.getObject("EmployeeID") != null ? rs.getInt("EmployeeID") : null,
+                            rs.getString("Status"),
+                            rs.getTimestamp("StartTime"),
+                            rs.getTimestamp("EndTime")
                     );
                     list.add(detail);
                 }
@@ -187,6 +227,28 @@ public class OrderDAO extends DBContext {
         return false;
     }
 
+    public boolean updateOrderDetailStatus(int orderDetailId, String status, Integer employeeId) {
+        String sql = "UPDATE OrderDetail SET Status = ?, EmployeeID = ?, "
+                + "StartTime = CASE WHEN ? = 'Cooking' THEN GETDATE() ELSE StartTime END, "
+                + "EndTime = CASE WHEN ? = 'Done' THEN GETDATE() ELSE EndTime END "
+                + "WHERE OrderDetailID = ?";
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, status);
+            if (employeeId != null) {
+                ps.setInt(2, employeeId);
+            } else {
+                ps.setNull(2, java.sql.Types.INTEGER);
+            }
+            ps.setString(3, status);
+            ps.setString(4, status);
+            ps.setInt(5, orderDetailId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     // Update payment status
     public boolean updatePaymentStatus(int orderId, String paymentStatus) {
         String sql = "UPDATE Orders SET PaymentStatus = ? WHERE OrderID = ?";
@@ -202,11 +264,11 @@ public class OrderDAO extends DBContext {
 
     // Delete order by ID
     public boolean deleteOrder(int orderId) {
-        String deleteDetailsSql = "DELETE FROM OrderDetails WHERE OrderID = ?";
+        String deleteDetailsSql = "DELETE FROM OrderDetail WHERE OrderID = ?";
         String deleteOrderSql = "DELETE FROM Orders WHERE OrderID = ?";
         try (Connection con = getConnection()) {
             con.setAutoCommit(false);
-            
+
             // 1. Delete order details first
             try (PreparedStatement ps1 = con.prepareStatement(deleteDetailsSql)) {
                 ps1.setInt(1, orderId);
@@ -269,4 +331,63 @@ public class OrderDAO extends DBContext {
         }
         return count;
     }
+
+    // === OrderDetail DAO Section (bổ sung vào cuối OrderDAO) ===
+    public List<Orderdetail> getOrderDetailsByStatus(String status) {
+        List<Orderdetail> list = new ArrayList<>();
+        String sql = """
+        SELECT od.*, p.ProductName 
+        FROM OrderDetail od
+        JOIN Product p ON od.ProductID = p.ProductID
+        WHERE od.Status = ?
+        ORDER BY od.StartTime DESC
+    """;
+
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, status);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Orderdetail d = new Orderdetail();
+                    d.setOrderDetailId(rs.getInt("OrderDetailID"));
+                    d.setOrderId(rs.getInt("OrderID"));
+                    d.setProductId(rs.getInt("ProductID"));
+                    d.setQuantity(rs.getInt("Quantity"));
+                    d.setTotalPrice(rs.getDouble("TotalPrice"));
+                    d.setSpecialInstructions(rs.getString("SpecialInstructions"));
+                    d.setEmployeeId(rs.getInt("EmployeeID"));
+                    d.setStatus(rs.getString("Status"));
+                    d.setStartTime(rs.getTimestamp("StartTime"));
+                    d.setEndTime(rs.getTimestamp("EndTime"));
+                    d.setProductName(rs.getString("ProductName"));
+                    list.add(d);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public boolean updateOrderDetailStatus(int orderDetailId, String status, int employeeId) {
+        String sql = """
+        UPDATE OrderDetail 
+        SET Status = ?, 
+            EmployeeID = ?, 
+            StartTime = CASE WHEN ? = 'Cooking' THEN GETDATE() ELSE StartTime END,
+            EndTime = CASE WHEN ? = 'Done' THEN GETDATE() ELSE EndTime END
+        WHERE OrderDetailID = ?
+    """;
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setInt(2, employeeId);
+            ps.setString(3, status);
+            ps.setString(4, status);
+            ps.setInt(5, orderDetailId);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 }
