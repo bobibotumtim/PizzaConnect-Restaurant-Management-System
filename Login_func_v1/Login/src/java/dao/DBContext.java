@@ -7,21 +7,35 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DBContext {
-    protected Connection connection;
+    private static final String USER = "duongbui";
+    private static final String PASSWORD = "123";
+    private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=pizza_demo_DB2;encrypt=true;trustServerCertificate=true";
 
-    public DBContext() {
+    // Load the SQL Server JDBC driver
+    static {
         try {
-            String user = "sa";
-            String pass = "123";
-            String url = "jdbc:sqlserver://localhost:1433;databaseName=pizza_demo_DB2;encrypt=true;trustServerCertificate=true";
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            connection = DriverManager.getConnection(url, user, pass);
-        } catch (ClassNotFoundException | SQLException ex) {
-            Logger.getLogger(DBContext.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(DBContext.class.getName()).log(Level.SEVERE, "Failed to load SQL Server JDBC Driver", ex);
+            throw new ExceptionInInitializerError(ex);
         }
     }
 
-    public Connection getConnection() {
-        return connection;
+    // Get a connection to the database
+    public Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(URL, USER, PASSWORD);
+    }
+
+    // Utility method to close connection
+    public static void closeConnection(Connection connection) {
+        if (connection != null) {
+            try {
+                if (!connection.isClosed()) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                Logger.getLogger(DBContext.class.getName()).log(Level.WARNING, "Error closing connection", e);
+            }
+        }
     }
 }

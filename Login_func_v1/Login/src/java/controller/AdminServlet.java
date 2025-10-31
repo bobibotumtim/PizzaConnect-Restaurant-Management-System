@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 import models.User;
 
 public class AdminServlet extends HttpServlet {
@@ -29,7 +30,51 @@ public class AdminServlet extends HttpServlet {
         }
 
         UserDAO userDAO = new UserDAO();
+
+        // === Phần lọc role (đã sửa) ===
+        String roleFilter = request.getParameter("roleFilter");
+        if (roleFilter == null || roleFilter.trim().isEmpty()) {
+            roleFilter = request.getParameter("role");
+        }
+        if (roleFilter == null || roleFilter.trim().isEmpty()) {
+            roleFilter = "all";
+        }
+
         List<User> allUsers = userDAO.getAllUsers();
+        List<User> filteredUsers;
+
+        if ("all".equalsIgnoreCase(roleFilter)) {
+            filteredUsers = allUsers;
+        } else {
+            Integer roleInt = null;
+            try {
+                roleInt = Integer.parseInt(roleFilter);
+            } catch (NumberFormatException ex) {
+                String rf = roleFilter.trim().toLowerCase();
+                if (rf.startsWith("admin")) {
+                    roleInt = 1;
+                } else if (rf.startsWith("staff") || rf.startsWith("employee")) {
+                    roleInt = 2;
+                } else if (rf.startsWith("customer") || rf.startsWith("user")) {
+                    roleInt = 0;
+                }
+            }
+            if (roleInt != null) {
+                final Integer finalRoleInt = roleInt;
+                filteredUsers = allUsers.stream()
+                        .filter(u -> u.getRole() == finalRoleInt)
+                        .collect(Collectors.toList());
+
+            } else {
+                filteredUsers = allUsers;
+            }
+        }
+
+        // Debug thông tin lọc
+        System.out.println("[AdminServlet] roleParam=" + request.getParameter("role")
+                + " roleFilter=" + roleFilter
+                + ", filteredUsers.size=" + (filteredUsers == null ? 0 : filteredUsers.size()));
+
         OrderDAO orderDAO = new OrderDAO();
         int totalOrders = orderDAO.countAllOrders();
 
@@ -43,12 +88,19 @@ public class AdminServlet extends HttpServlet {
             }
         }
 
-        // Tính toán phân trang
-        int totalUsers = allUsers.size();
-        int totalPages = (int) Math.ceil((double) totalUsers / USERS_PER_PAGE);
+        // Phân trang dựa trên filteredUsers
+        int totalUsers = filteredUsers.size();
+        int totalPages = Math.max(1, (int) Math.ceil((double) totalUsers / USERS_PER_PAGE));
+        if (page < 1) {
+            page = 1;
+        }
+        if (page > totalPages) {
+            page = totalPages;
+        }
+
         int start = (page - 1) * USERS_PER_PAGE;
         int end = Math.min(start + USERS_PER_PAGE, totalUsers);
-        List<User> paginatedUsers = allUsers.subList(start, end);
+        List<User> paginatedUsers = filteredUsers.subList(start, end);
 
         // Gửi dữ liệu sang JSP
         request.setAttribute("users", paginatedUsers);
@@ -56,6 +108,7 @@ public class AdminServlet extends HttpServlet {
         request.setAttribute("totalOrders", totalOrders);
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
+        request.setAttribute("selectedRole", roleFilter);
 
         String message = (String) session.getAttribute("message");
         String error = (String) session.getAttribute("error");
@@ -65,6 +118,7 @@ public class AdminServlet extends HttpServlet {
         if (error != null) {
             session.removeAttribute("error");
         }
+
         request.setAttribute("message", message);
         request.setAttribute("error", error);
 
@@ -75,7 +129,7 @@ public class AdminServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Kiem tra session va quyen admin
+        // Kiểm tra session và quyền admin
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
             response.sendRedirect("Login");

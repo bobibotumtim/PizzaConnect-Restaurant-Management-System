@@ -9,7 +9,7 @@ import models.Product;
 
 public class ProductDAO extends DBContext {
 
-    // Helper method để tránh lặp code
+    // Map ResultSet to Product object
     private Product mapResultSetToProduct(ResultSet rs) throws SQLException {
         return new Product(
                 rs.getInt("ProductID"),
@@ -22,7 +22,7 @@ public class ProductDAO extends DBContext {
         );
     }
 
-    // Lấy tất cả sản phẩm
+    // Get all available products
     public List<Product> getAllProducts() {
         List<Product> list = new ArrayList<>();
         String sql = "SELECT * FROM Product WHERE IsAvailable = 1 ORDER BY Category, ProductName";
@@ -36,7 +36,7 @@ public class ProductDAO extends DBContext {
         return list;
     }
 
-    // Lấy sản phẩm theo ID
+    // Get product by ID
     public Product getProductById(int productId) {
         String sql = "SELECT * FROM Product WHERE ProductID = ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -52,7 +52,7 @@ public class ProductDAO extends DBContext {
         return null;
     }
 
-    // Thêm sản phẩm mới
+    // Add new product
     public int addProduct(Product product) {
         String sql = "INSERT INTO Product (ProductName, Description, Price, Category, ImageURL, IsAvailable) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -78,7 +78,7 @@ public class ProductDAO extends DBContext {
         return -1;
     }
 
-    // Cập nhật sản phẩm
+    // Update product
     public boolean updateProduct(Product product) {
         String sql = "UPDATE Product SET ProductName=?, Description=?, Price=?, Category=?, ImageURL=?, IsAvailable=? WHERE ProductID=?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -96,7 +96,7 @@ public class ProductDAO extends DBContext {
         return false;
     }
 
-    // Xóa sản phẩm (soft delete)
+    // Delete product (soft delete)
     public boolean deleteProduct(int productId) {
         String sql = "UPDATE Product SET IsAvailable = 0 WHERE ProductID = ? AND IsAvailable = 1";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
@@ -108,6 +108,7 @@ public class ProductDAO extends DBContext {
         }
     }
 
+    // Get product availability map
     public Map<Integer, Double> getProductAvailability() {
     Map<Integer, Double> map = new HashMap<>();
     String sql = "SELECT ProductID, AvailableQuantity FROM v_ProductAvailable";

@@ -136,6 +136,28 @@
                         <a href="${pageContext.request.contextPath}/view/AddProduct.jsp" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">Add Product</a>
                         <a href="${pageContext.request.contextPath}/dashboard" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg">Dashboard</a>
                     </div>
+                    
+                    <form action="${pageContext.request.contextPath}/manageproduct" method="GET" class="flex-1 flex flex-wrap gap-4 items-center justify-end">
+                        
+                        <input type="text" name="searchName" value="${searchName}" placeholder="Search by name..."
+                               class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
+                               style="min-width: 200px;">
+                        
+                        <select name="statusFilter" 
+                                class="px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-400">
+                            <%-- 
+                                Dùng JSTL để kiểm tra và 'selected' giá trị đã lọc trước đó.
+                                'empty statusFilter' sẽ chọn 'All Status' làm mặc định khi tải trang lần đầu.
+                            --%>
+                            <option value="all" ${statusFilter == 'all' || empty statusFilter ? 'selected' : ''}>All Status</option>
+                            <option value="available" ${statusFilter == 'available' ? 'selected' : ''}>Available</option>
+                            <option value="unavailable" ${statusFilter == 'unavailable' ? 'selected' : ''}>Unavailable</option>
+                        </select>
+                        
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-1">
+                            <i data-lucide="search" class="w-4 h-4"></i> Filter
+                        </button>
+                    </form>
                 </div>
 
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -214,20 +236,43 @@
                     </table>
                     
                     <%-- Pagination --%>
+                    <%-- ✅ PHÂN TRANG ĐÃ CẬP NHẬT (Dùng c:url) --%>
                     <div class="flex justify-center items-center mt-6 space-x-2">
+                        
+                        <%-- Nút Previous --%>
                         <c:if test="${currentPage > 1}">
-                            <a href="${pageContext.request.contextPath}/manageproduct?page=${currentPage - 1}"
+                            <%-- Tạo URL với đầy đủ tham số --%>
+                            <c:url var="prevUrl" value="/manageproduct">
+                                <c:param name="page" value="${currentPage - 1}" />
+                                <c:param name="searchName" value="${searchName}" />     <%-- Thêm tham số --%>
+                                <c:param name="statusFilter" value="${statusFilter}" /> <%-- Thêm tham số --%>
+                            </c:url>
+                            <a href="${prevUrl}"
                                class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded">Previous</a>
                         </c:if>
+
+                        <%-- Các nút số trang --%>
                         <c:forEach var="i" begin="1" end="${totalPages}">
-                            <a href="${pageContext.request.contextPath}/manageproduct?page=${i}"
+                            <c:url var="pageUrl" value="/manageproduct">
+                                <c:param name="page" value="${i}" />
+                                <c:param name="searchName" value="${searchName}" />     <%-- Thêm tham số --%>
+                                <c:param name="statusFilter" value="${statusFilter}" /> <%-- Thêm tham số --%>
+                            </c:url>
+                            <a href="${pageUrl}"
                                class="px-3 py-1 rounded
                                ${i == currentPage ? 'bg-orange-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}">
                                 ${i}
                             </a>
                         </c:forEach>
+
+                        <%-- Nút Next --%>
                         <c:if test="${currentPage < totalPages}">
-                            <a href="${pageContext.request.contextPath}/manageproduct?page=${currentPage + 1}"
+                            <c:url var="nextUrl" value="/manageproduct">
+                                <c:param name="page" value="${currentPage + 1}" />
+                                <c:param name="searchName" value="${searchName}" />     <%-- Thêm tham số --%>
+                                <c:param name="statusFilter" value="${statusFilter}" /> <%-- Thêm tham số --%>
+                            </c:url>
+                            <a href="${nextUrl}"
                                class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded">Next</a>
                         </c:if>
                     </div>
@@ -391,7 +436,11 @@
                         console.log("Values:", { ingId, ingName, unit, qty });
 
                         if (!ingId || ingId === "" || ingName.includes("--") || !unit || !qty || parseFloat(qty) <= 0) {
-                            alert("[Edit Modal] Vui lòng chọn nguyên liệu và nhập số lượng hợp lệ.");
+                            if(!ingId || ingId === "" || ingName.includes("--") ) {
+                                alert("Vui lòng chọn nguyên liệu hợp lệ.");                                
+                            } else if (!unit || !qty || parseFloat(qty) <= 0) {
+                                alert("Vui lòng nhập số lượng lớn hơn 0.");
+                            }
                             console.warn("Validation failed");
                             return;
                         }

@@ -1,70 +1,76 @@
-create database pizza_demo_DB2
+-- Create the database
+CREATE DATABASE pizza_demo_DB2;
+GO
 
-use pizza_demo_DB2
+USE pizza_demo_DB2;
+GO
 
--- B?ng User: thông tin chung c?a t?t c? ng??i dùng (Admin, Employee, Customer)
+-- Table: User - general information for all users (Admin, Employee, Customer)
 CREATE TABLE [User] (
     UserID INT IDENTITY(1,1) PRIMARY KEY,
     Name NVARCHAR(100) NOT NULL,
-    Password NVARCHAR(255) NOT NULL,
-    Role INT NOT NULL, -- 1=Admin, 2=Employee, 3=Customer
+    Password NVARCHAR(60) NOT NULL,
+    Role INT NOT NULL CHECK (Role IN (1, 2, 3)), -- 1=Admin, 2=Employee, 3=Customer
     Email NVARCHAR(100) UNIQUE,
     Phone NVARCHAR(20) UNIQUE,
     [DateOfBirth] DATE NULL,
-    Gender NVARCHAR(10) CHECK (Gender IN ('Male', 'Female', 'Other')),
+    Gender NVARCHAR(10) CHECK (Gender IN ('Male', 'Female', 'Other')), -- 'Male', 'Female', 'Other'
     IsActive BIT DEFAULT 1
 );
 
--- B?ng Employee: l?u thông tin riêng c?a nhân viên
+-- Table: Employee - specific information for employees
 CREATE TABLE Employee (
     EmployeeID INT IDENTITY(1,1) PRIMARY KEY,
     UserID INT NOT NULL UNIQUE,
-    Role NVARCHAR(50) NOT NULL, -- vai trò công vi?c (VD: Cashier, Waiter)
+    Role NVARCHAR(50) NOT NULL CHECK (Role IN ('Manager', 'Cashier', 'Waiter', 'Chef')), -- 'Manager', 'Cashier', 'Waiter', 'Chef'
     FOREIGN KEY (UserID) REFERENCES [User](UserID)
 );
 
--- B?ng Customer: l?u thông tin riêng c?a khách hàng
+-- Table: Customer - specific information for customers
 CREATE TABLE Customer (
     CustomerID INT IDENTITY(1,1) PRIMARY KEY,
     UserID INT NOT NULL UNIQUE,
     LoyaltyPoint INT DEFAULT 0,
+    LastEarnedDate DATETIME NULL,
     FOREIGN KEY (UserID) REFERENCES [User](UserID)
 );
 
--- ==========================
--- D? LI?U M?U
--- ==========================
+-- ===========================
+-- SAMPLE DATA
+-- ===========================
 
 -- Admin
 INSERT INTO [User] (Name, Password, Role, Email, Phone, [DateOfBirth], Gender, IsActive)
 VALUES 
-('Admin 01', 'admin123', 1, 'admin01@pizzastore.com', '0909000001', '1990-01-01', 'Male', 1);
+('Admin 01', '$2a$10$wA1.VHtxxp1i0a.SY2SFO.f45v.G/syMrruqnfJHGIEYCjiFTUSgW', 1, 'admin01@pizzastore.com', '0909000001', '1990-01-01', 'Male', 1);
 
 -- Employee
 INSERT INTO [User] (Name, Password, Role, Email, Phone, [DateOfBirth], Gender, IsActive)
 VALUES
-('Nguyen Van A', 'emp123', 2, 'employee01@pizzastore.com', '0909000002', '1995-03-15', 'Male', 1),
-('Tran Thi B', 'emp456', 2, 'employee02@pizzastore.com', '0909000003', '1998-08-20', 'Female', 1);
+('Nguyen Van A', '$2a$10$bJskj.kelsRTuCHDBHkQJu2z0NQSUzivBArkjVNmiybd7ab4IxEC2', 2, 'employee01@pizzastore.com', '0909000002', '1995-03-15', 'Male', 1),
+('Tran Thi B', '$2a$10$bxDhNBnj3nQoTq2vNVhBUeKXQovbEGigBGtNdm2LLZNSQ5VYMrdbG', 2, 'employee02@pizzastore.com', '0909000003', '1998-08-20', 'Female', 1);
 
 -- Customer
 INSERT INTO [User] (Name, Password, Role, Email, Phone, [DateOfBirth], Gender, IsActive)
 VALUES
-('Le Van C', 'cust123', 3, 'customer01@gmail.com', '0909000004', '2000-02-02', 'Male', 1),
-('Pham Thi D', 'cust456', 3, 'customer02@gmail.com', '0909000005', '2001-05-12', 'Female', 1),
-('Hoang Van E', 'cust789', 3, 'customer03@gmail.com', '0909000006', '1999-09-09', 'Male', 1);
+('Le Van C', '$2a$10$8T7NzU1acsG44ojiWCaMyuc1/hj690KUvnnBLLSHYRfrK5.dqw3MG', 3, 'customer01@gmail.com', '0909000004', '2000-02-02', 'Male', 1),
+('Pham Thi D', '$2a$10$/a5l7E7hEMhx1Wm.I/GDxuySxSqz8Sud.ZcwMNBT02VJB9XNL5h7i', 3, 'customer02@gmail.com', '0909000005', '2001-05-12', 'Female', 1),
+('Hoang Van E', '$2a$10$H/hz51dfW781VMlzSO4nROCjjvadpx4qHbi/GAnjKcvgUct4Mvc1q', 3, 'customer03@gmail.com', '0909000006', '1999-09-09', 'Male', 1);
 
--- Thêm d? li?u Employee
+-- Employee
 INSERT INTO Employee (UserID, Role)
 VALUES
 (2, 'Cashier'),
 (3, 'Waiter');
 
--- Thêm d? li?u Customer
-INSERT INTO Customer (UserID, LoyaltyPoint)
+-- Customer
+INSERT INTO Customer (UserID, LoyaltyPoint, LastEarnedDate)
 VALUES
-(4, 10),
-(5, 20),
-(6, 5);
+(4, 20, '2025-10-20 14:30:00'),
+(5, 20, '2025-10-18 10:15:00'),
+(6, 5, '2025-10-19 16:45:00');
+
+-- Product table
 
 CREATE TABLE Product (
     ProductID INT IDENTITY(1,1) PRIMARY KEY,
@@ -76,16 +82,14 @@ CREATE TABLE Product (
     IsAvailable BIT DEFAULT 1
 );
 
--- D? LI?U M?U
+-- Sample Product data
 INSERT INTO Product (ProductName, Description, Price, Category, ImageURL)
 VALUES 
-(N'Cà phê s?a ?á', N'Cà phê pha v?i s?a ??c', 25000, N'Cà phê', N'coffee_suada.jpg'),
-(N'Trà ?ào cam s?', N'Trà ?ào t??i th?m mát', 30000, N'Trà', N'tradao.jpg'),
-(N'Sinh t? xoài', N'Sinh t? trái cây t??i', 35000, N'Sinh t?', N'sinhtoxoi.jpg');
+(N'Iced Milk Coffee', N'Coffee brewed with condensed milk', 25000, N'Coffee', N'icedMilkCoffee.jpg'),
+(N'Peach Orange Tea', N'Fresh peach tea with orange', 30000, N'Tea', N'peachOrangeTea.jpg'),
+(N'Mango Smoothie', N'Fresh fruit smoothie', 35000, N'Smoothie', N'mangSmoothie.jpg');
 
--- =====================
--- B?NG INVENTORY
--- =====================
+-- Inventory table
 CREATE TABLE Inventory (
     InventoryID INT IDENTITY(1,1) PRIMARY KEY,
     ItemName NVARCHAR(100) NOT NULL,
@@ -94,18 +98,16 @@ CREATE TABLE Inventory (
     LastUpdated DATETIME DEFAULT GETDATE()
 );
 
--- D? LI?U M?U
+-- Sample Inventory data
 INSERT INTO Inventory (ItemName, Quantity, Unit)
 VALUES 
-(N'Cà phê b?t', 10, N'kg'),
-(N'S?a ??c', 5, N'lít'),
-(N'?ào lát', 2, N'kg'),
-(N'Trà khô', 3, N'kg'),
-(N'Xoài t??i', 8, N'kg');
+(N'Ground Coffee', 10, N'kg'),
+(N'Condensed Milk', 5, N'liter'),
+(N'Sliced Peach', 2, N'kg'),
+(N'Dried Tea', 3, N'kg'),
+(N'Fresh Mango', 8, N'kg');
 
--- =====================
--- B?NG PRODUCT INGREDIENTS
--- =====================
+-- ProductIngredients table
 CREATE TABLE ProductIngredients (
     ProductID INT FOREIGN KEY REFERENCES Product(ProductID),
     InventoryID INT FOREIGN KEY REFERENCES Inventory(InventoryID),
@@ -114,40 +116,38 @@ CREATE TABLE ProductIngredients (
     PRIMARY KEY (ProductID, InventoryID)
 );
 
--- D? LI?U M?U
+-- Sample ProductIngredients data
 INSERT INTO ProductIngredients (ProductID, InventoryID, QuantityNeeded, Unit)
 VALUES 
-(1, 1, 0.05, N'kg'),  -- Cà phê s?a ?á dùng cà phê b?t
-(1, 2, 0.02, N'lít'), -- và s?a ??c
-(2, 3, 0.05, N'kg'),  -- Trà ?ào cam s? dùng ?ào lát
-(2, 4, 0.02, N'kg'),  -- và trà khô
-(3, 5, 0.15, N'kg');  -- Sinh t? xoài dùng xoài t??i
+(1, 1, 0.05, N'kg'),      -- Iced Milk Coffee uses Ground Coffee
+(1, 2, 0.02, N'liter'),   -- Condensed Milk
+(2, 3, 0.05, N'kg'),      -- Peach Orange Tea uses Sliced Peach
+(2, 4, 0.02, N'kg'),      -- Dried Tea
+(3, 5, 0.15, N'kg');      -- Mango Smoothie uses Fresh Mango
 
--- =====================
--- B?NG ORDER
--- =====================
+-- Order table
 CREATE TABLE [Order] (
     OrderID INT IDENTITY(1,1) PRIMARY KEY,
     CustomerID INT FOREIGN KEY REFERENCES Customer(CustomerID),
     EmployeeID INT FOREIGN KEY REFERENCES Employee(EmployeeID),
     TableID INT NULL,
     OrderDate DATETIME DEFAULT GETDATE(),
-    [Status] INT DEFAULT 0,              -- 0 = Pending, 1 = Preparing, 2 = Served, 3 = Completed, 4 = Cancelled
-    PaymentStatus NVARCHAR(50),
+    [Status] INT DEFAULT 0,         -- 0 = Pending, 1 = Preparing, 2 = Served, 3 = Completed, 4 = Cancelled
+    PaymentStatus NVARCHAR(50) CHECK (PaymentStatus IN ('Unpaid', 'Paid')),     -- 'Unpaid', 'Paid'
     TotalPrice DECIMAL(10,2) DEFAULT 0,
     Note NVARCHAR(255)
 );
+ALTER TABLE [Order]
+ADD CONSTRAINT CHK_Status CHECK ([Status] IN (0, 1, 2, 3, 4));
 
--- D? LI?U M?U
+-- Sample Order data
 INSERT INTO [Order] (CustomerID, EmployeeID, TableID, [Status], PaymentStatus, TotalPrice, Note)
 VALUES 
-(1, 1, 5, 0, N'Unpaid', 55000, N'Khách mu?n ít ???ng'),
-(1, 2, 3, 1, N'Paid', 35000, N'Khách quen'),
-(2, 2, 2, 3, N'Paid', 60000, N'?ã giao xong');
+(1, 1, 5, 0, N'Unpaid', 55000, N'Customer wants less sugar'),
+(1, 2, 3, 1, N'Paid', 35000, N'Regular customer'),
+(2, 2, 2, 3, N'Paid', 60000, N'Delivery completed');
 
--- =====================
--- B?NG ORDER DETAIL
--- =====================
+-- OrderDetail table
 CREATE TABLE OrderDetail (
     OrderDetailID INT IDENTITY(1,1) PRIMARY KEY,
     OrderID INT FOREIGN KEY REFERENCES [Order](OrderID),
@@ -157,11 +157,78 @@ CREATE TABLE OrderDetail (
     SpecialInstructions NVARCHAR(255)
 );
 
--- D? LI?U M?U
+-- Sample OrderDetail data
 INSERT INTO OrderDetail (OrderID, ProductID, Quantity, TotalPrice, SpecialInstructions)
 VALUES
-(1, 1, 1, 25000, N'Ít ?á'),
-(1, 2, 1, 30000, N'Không s?'),
+(1, 1, 1, 25000, N'Less ice'),
+(1, 2, 1, 30000, N'No sugar'),
 (2, 3, 1, 35000, NULL),
 (3, 1, 2, 50000, NULL),
-(3, 2, 1, 10000, N'Gi?m giá combo');
+(3, 2, 1, 10000, N'Combo discount');
+
+-- Discount table
+CREATE TABLE Discount (
+    DiscountID INT IDENTITY(1,1) PRIMARY KEY,   
+    Description NVARCHAR(255),
+    DiscountType NVARCHAR(50) CHECK (DiscountType IN ('Percentage', 'Fixed', 'Loyalty')), -- 'Percentage', 'Fixed', 'Loyalty'
+    Value DECIMAL(10,2),
+    MaxDiscount DECIMAL(10,2),
+    MinOrderTotal DECIMAL(10,2) DEFAULT 0,
+    StartDate DATE,
+    EndDate DATE,
+    IsActive BIT DEFAULT 1
+);
+
+-- Sample Discount data
+INSERT INTO Discount (Description, DiscountType, Value, MaxDiscount, MinOrderTotal, StartDate, EndDate, IsActive)
+VALUES
+-- Active discounts 
+(N'Loyalty point redemption', 'Loyalty', 100, NULL, 0, '2025-10-01', NULL, 1),
+(N'10% off all drinks', 'Percentage', 10, NULL, 0, '2025-10-01', '2025-10-31', 1),
+(N'20.000VND off for orders over 200.000VND', 'Fixed', 20000, NULL, 200000, '2025-10-15', '2025-11-15', 1),
+(N'15% off for orders over 150.000VND', 'Percentage', 15, 30000, 150000, '2025-10-10', '2025-10-25', 1),
+(N'Winter Holiday 35%', 'Percentage', 35, 100000, 180000, '2025-12-01', '2025-12-31', 1),
+(N'Black Friday 50%', 'Percentage', 50, 150000, 350000, '2025-11-25', '2025-11-27', 1),
+(N'Welcome Discount 10%', 'Percentage', 10, NULL, 0, '2024-01-01', '2024-12-31', 1),
+(N'Weekend Special 15%', 'Percentage', 15, 50000, 100000, '2024-01-01', '2024-12-31', 1),
+(N'Free Shipping', 'Fixed', 30000, NULL, 150000, '2024-01-01', NULL, 1),
+(N'Member Loyalty 100pts', 'Loyalty', 100, NULL, 0, '2024-01-01', NULL, 1),
+(N'Early Bird 15%', 'Percentage', 15, 30000, 80000, '2024-01-01', '2024-12-31', 1),
+(N'Family Package 20%', 'Percentage', 20, 60000, 250000, '2024-01-01', '2024-12-31', 1),
+(N'New Product Launch 10%', 'Percentage', 10, NULL, 50000, '2024-01-01', '2024-06-30', 1),
+-- Inactive/Upcoming discounts 
+(N'Summer Sale 2025 40%', 'Percentage', 40, 120000, 300000, '2025-06-01', '2025-08-31', 0),
+(N'New Year Special 25%', 'Percentage', 25, 80000, 120000, '2025-01-01', '2025-01-07', 0),
+(N'Anniversary Sale 30%', 'Percentage', 30, 90000, 150000, '2025-03-15', '2025-03-22', 0),
+(N'Spring Festival 20%', 'Percentage', 20, 50000, 100000, '2025-02-01', '2025-02-15', 0),
+(N'Mid-Autumn 15%', 'Percentage', 15, 40000, 80000, '2025-09-10', '2025-09-12', 0),
+(N'Back to School 25%', 'Percentage', 25, 60000, 90000, '2025-08-15', '2025-09-15', 0),
+(N'Clearance Sale 60%', 'Percentage', 60, 200000, 400000, '2025-01-20', '2025-01-31', 0),
+(N'Member Appreciation 35%', 'Percentage', 35, 110000, 220000, '2025-05-01', '2025-05-07', 0),
+(N'Happy Hour 25%', 'Percentage', 25, 75000, 120000, '2024-01-01', '2024-12-31', 0),
+(N'Birthday Special 30%', 'Percentage', 30, 100000, 200000, '2024-01-01', '2024-12-31', 0),
+(N'Student Discount 20%', 'Percentage', 20, 40000, 50000, '2024-01-01', '2024-12-31', 0);
+
+
+-- OrderDiscount table
+CREATE TABLE OrderDiscount (
+    OrderID INT FOREIGN KEY REFERENCES [Order](OrderID),
+    DiscountID INT FOREIGN KEY REFERENCES Discount(DiscountID),
+    Amount DECIMAL(10,2) NOT NULL,
+    AppliedDate DATETIME DEFAULT GETDATE(),
+    PRIMARY KEY (OrderID, DiscountID)
+);
+
+-- Token table for OTP and temporary password storage
+CREATE TABLE PasswordTokens (
+    Token NVARCHAR(20) PRIMARY KEY, 
+    UserID INT NOT NULL,
+    NewPasswordHash NVARCHAR(255) NOT NULL,
+    ExpiresAt DATETIME2 NOT NULL DEFAULT DATEADD(MINUTE, 5, SYSDATETIME()),
+    Used BIT NOT NULL DEFAULT 0,
+    CONSTRAINT FK_PasswordTokens_User FOREIGN KEY (UserID)
+        REFERENCES [User](UserID)
+        ON DELETE CASCADE
+);
+
+

@@ -18,7 +18,7 @@ import models.*;
  */
 public class OrderDAO extends DBContext {
 
-    // Tạo đơn hàng mới
+    // Create a new order with order details
     public int createOrder(int staffId, String tableNumber, String customerName, String customerPhone, String notes, List<Orderdetail> orderDetails) throws Exception {
         int orderId = 0;
         Connection con = null;
@@ -30,7 +30,7 @@ public class OrderDAO extends DBContext {
             con = getConnection();
             con.setAutoCommit(false);
 
-            // 1. Insert Orders
+            // 1. Insert into Orders table
             String sql1 = "INSERT INTO Orders (StaffID, TableNumber, Status, TotalMoney, PaymentStatus, CustomerName, CustomerPhone, Notes) VALUES (?, ?, 0, 0, 'Unpaid', ?, ?, ?)";
             ps1 = con.prepareStatement(sql1, Statement.RETURN_GENERATED_KEYS);
             ps1.setInt(1, staffId);
@@ -45,7 +45,7 @@ public class OrderDAO extends DBContext {
                 orderId = rs.getInt(1);
             }
 
-            // 2. Insert OrderDetails và tính tổng tiền
+            // 2. Insert into OrderDetails table
             double totalMoney = 0;
             String sql2 = "INSERT INTO OrderDetails (OrderID, ProductID, Quantity, UnitPrice, TotalPrice, SpecialInstructions) VALUES (?, ?, ?, ?, ?, ?)";
             ps2 = con.prepareStatement(sql2);
@@ -62,7 +62,7 @@ public class OrderDAO extends DBContext {
             }
             ps2.executeBatch();
 
-            // 3. Cập nhật tổng tiền cho đơn hàng
+            // 3. Update total money in Orders table
             String sql3 = "UPDATE Orders SET TotalMoney = ? WHERE OrderID = ?";
             try (PreparedStatement ps3 = con.prepareStatement(sql3)) {
                 ps3.setDouble(1, totalMoney);
@@ -93,7 +93,7 @@ public class OrderDAO extends DBContext {
 
 
 
-    // Lấy tất cả đơn hàng
+    // Get all orders
     public List<Order> getAllOrders() {
         List<Order> list = new ArrayList<>();
         String sql = "SELECT * FROM Orders ORDER BY OrderDate DESC";
@@ -119,7 +119,7 @@ public class OrderDAO extends DBContext {
         return list;
     }
 
-    // Lấy đơn hàng theo ID
+    // Get order by ID
     public Order getOrderById(int orderId) {
         String sql = "SELECT * FROM Orders WHERE OrderID = ?";
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -146,7 +146,7 @@ public class OrderDAO extends DBContext {
         return null;
     }
 
-    // Lấy chi tiết đơn hàng
+    // Get order details by OrderID
     public List<Orderdetail> getOrderDetailsByOrderId(int orderId) {
         List<Orderdetail> list = new ArrayList<>();
         String sql = "SELECT od.*, p.ProductName FROM OrderDetails od " +
@@ -174,7 +174,7 @@ public class OrderDAO extends DBContext {
         return list;
     }
 
-    // Cập nhật trạng thái đơn hàng
+    // Update order status
     public boolean updateOrderStatus(int orderId, int status) {
         String sql = "UPDATE Orders SET Status = ? WHERE OrderID = ?";
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -187,7 +187,7 @@ public class OrderDAO extends DBContext {
         return false;
     }
 
-    // Cập nhật trạng thái thanh toán
+    // Update payment status
     public boolean updatePaymentStatus(int orderId, String paymentStatus) {
         String sql = "UPDATE Orders SET PaymentStatus = ? WHERE OrderID = ?";
         try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -200,20 +200,20 @@ public class OrderDAO extends DBContext {
         return false;
     }
 
-    // Xóa đơn hàng
+    // Delete order by ID
     public boolean deleteOrder(int orderId) {
         String deleteDetailsSql = "DELETE FROM OrderDetails WHERE OrderID = ?";
         String deleteOrderSql = "DELETE FROM Orders WHERE OrderID = ?";
         try (Connection con = getConnection()) {
             con.setAutoCommit(false);
             
-            // 1. Xóa chi tiết đơn hàng trước
+            // 1. Delete order details first
             try (PreparedStatement ps1 = con.prepareStatement(deleteDetailsSql)) {
                 ps1.setInt(1, orderId);
                 ps1.executeUpdate();
             }
 
-            // 2. Sau đó xóa đơn hàng
+            // 2. Then delete the order
             try (PreparedStatement ps2 = con.prepareStatement(deleteOrderSql)) {
                 ps2.setInt(1, orderId);
                 int result = ps2.executeUpdate();
@@ -227,7 +227,7 @@ public class OrderDAO extends DBContext {
         return false;
     }
 
-    // Lấy đơn hàng theo trạng thái
+    // Get orders by status
     public List<Order> getOrdersByStatus(int status) {
         List<Order> list = new ArrayList<>();
         String sql = "SELECT * FROM Orders WHERE Status = ? ORDER BY OrderDate DESC";
@@ -256,7 +256,7 @@ public class OrderDAO extends DBContext {
         return list;
     }
 
-    // Đếm số đơn hàng
+    // Count all orders
     public int countAllOrders() {
         int count = 0;
         String sql = "SELECT COUNT(*) FROM Orders";

@@ -66,6 +66,7 @@ public class Product {
         return isAvailable;
     }
 
+
     // Setters
     public void setProductId(int productId) {
         this.productId = productId;
@@ -94,6 +95,7 @@ public class Product {
     public void setAvailable(boolean available) {
         isAvailable = available;
     }
+
 
     @Override
     public String toString() {
