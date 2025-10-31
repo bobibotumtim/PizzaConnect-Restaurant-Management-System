@@ -6,20 +6,97 @@
 <!DOCTYPE html>
 <style>
     /* (Toàn bộ CSS của bạn giữ nguyên, tôi ẩn đi cho gọn) */
-    .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); transition: opacity 0.3s ease; }
-    .modal-content { background-color: #fff; margin: 5% auto; padding: 25px 30px; border-radius: 12px; width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-    .close { float: right; font-size: 28px; font-weight: bold; color: #aaa; cursor: pointer; }
-    .close:hover, .close:focus { color: #333; text-decoration: none; }
-    button { padding: 6px 12px; border: none; background-color: #0078d4; color: white; border-radius: 4px; cursor: pointer; }
-    button:hover { background-color: #005fa3; }
-    .modal-content h2 { margin-top: 0; margin-bottom: 20px; font-size: 24px; font-weight: 600; color: #333; border-bottom: 1px solid #eee; padding-bottom: 15px; }
-    .form-group { margin-bottom: 15px; }
-    .modal-content label { display: block; margin-bottom: 6px; font-weight: 600; color: #555; font-size: 14px; }
-    .modal-content input[type="text"], .modal-content input[type="number"], .modal-content textarea, .modal-content select { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; transition: border-color 0.2s, box-shadow 0.2s; }
-    .modal-content input:focus, .modal-content textarea:focus, .modal-content select:focus { border-color: #0078d4; outline: none; box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.15); }
-    .modal-content textarea { resize: vertical; min-height: 80px; }
-    .modal-content button[type="submit"] { width: 100%; padding: 12px; font-size: 16px; font-weight: 600; margin-top: 10px; background-color: #10B981; }
-    .modal-content button[type="submit"]:hover { background-color: #059669; }
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        transition: opacity 0.3s ease;
+    }
+    .modal-content {
+        background-color: #fff;
+        margin: 5% auto;
+        padding: 25px 30px;
+        border-radius: 12px;
+        width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .close {
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        color: #aaa;
+        cursor: pointer;
+    }
+    .close:hover, .close:focus {
+        color: #333;
+        text-decoration: none;
+    }
+    button {
+        padding: 6px 12px;
+        border: none;
+        background-color: #0078d4;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: #005fa3;
+    }
+    .modal-content h2 {
+        margin-top: 0;
+        margin-bottom: 20px;
+        font-size: 24px;
+        font-weight: 600;
+        color: #333;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 15px;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .modal-content label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+        color: #555;
+        font-size: 14px;
+    }
+    .modal-content input[type="text"], .modal-content input[type="number"], .modal-content textarea, .modal-content select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        box-sizing: border-box;
+        font-size: 15px;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .modal-content input:focus, .modal-content textarea:focus, .modal-content select:focus {
+        border-color: #0078d4;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.15);
+    }
+    .modal-content textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+    .modal-content button[type="submit"] {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        margin-top: 10px;
+        background-color: #10B981;
+    }
+    .modal-content button[type="submit"]:hover {
+        background-color: #059669;
+    }
 </style>
 
 <html lang="en">
@@ -29,8 +106,18 @@
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
         <style>
-            .nav-btn { width: 3rem; height: 3rem; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-            .nav-btn:hover { transform: translateY(-2px); }
+            .nav-btn {
+                width: 3rem;
+                height: 3rem;
+                border-radius: 0.75rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s;
+            }
+            .nav-btn:hover {
+                transform: translateY(-2px);
+            }
         </style>
     </head>
     <body class="flex h-screen bg-gray-50">
@@ -89,7 +176,7 @@
                 </a>
             </div>
         </div>
-        
+
         <%-- Alert Message Box (Nếu có) --%>
         <%
             String message = (String) session.getAttribute("message");
@@ -136,13 +223,13 @@
                         <a href="${pageContext.request.contextPath}/view/AddProduct.jsp" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">Add Product</a>
                         <a href="${pageContext.request.contextPath}/dashboard" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg">Dashboard</a>
                     </div>
-                    
+
                     <form action="${pageContext.request.contextPath}/manageproduct" method="GET" class="flex-1 flex flex-wrap gap-4 items-center justify-end">
-                        
+
                         <input type="text" name="searchName" value="${searchName}" placeholder="Search by name..."
                                class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
                                style="min-width: 200px;">
-                        
+
                         <select name="statusFilter" 
                                 class="px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-400">
                             <%-- 
@@ -153,7 +240,7 @@
                             <option value="available" ${statusFilter == 'available' ? 'selected' : ''}>Available</option>
                             <option value="unavailable" ${statusFilter == 'unavailable' ? 'selected' : ''}>Unavailable</option>
                         </select>
-                        
+
                         <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-1">
                             <i data-lucide="search" class="w-4 h-4"></i> Filter
                         </button>
@@ -221,9 +308,6 @@
                                                 data-available="<%= p.isAvailable() %>">
                                             Edit
                                         </button>
-                                        
-                                        <%-- ✅ XOÁ NÚT INGREDIENTS THỪA --%>
-                                        <%-- <a href="#" class="bg-yellow-500 ...">Ingredients</a> --%>
 
                                         <a href="${pageContext.request.contextPath}/DeleteProduct?productId=<%= p.getProductId() %>"
                                            onclick="return confirm('Are you sure you want to delete this product?');"
@@ -234,11 +318,12 @@
                             <% } %>
                         </tbody>
                     </table>
-                    
+
+
                     <%-- Pagination --%>
                     <%-- ✅ PHÂN TRANG ĐÃ CẬP NHẬT (Dùng c:url) --%>
                     <div class="flex justify-center items-center mt-6 space-x-2">
-                        
+
                         <%-- Nút Previous --%>
                         <c:if test="${currentPage > 1}">
                             <%-- Tạo URL với đầy đủ tham số --%>
@@ -323,17 +408,17 @@
                         editModal.style.display = "block";
 
                         fetch("<%= request.getContextPath() %>/EditProductFullServlet?productId=" + productId)
-                            .then(res => res.ok ? res.text() : Promise.reject(res.status))
-                            .then(html => {
-                                editContent.innerHTML = html;
-                            })
-                            .catch(err => {
-                                editContent.innerHTML = "Error loading form: " + err;
-                                console.error(err);
-                            });
+                                .then(res => res.ok ? res.text() : Promise.reject(res.status))
+                                .then(html => {
+                                    editContent.innerHTML = html;
+                                })
+                                .catch(err => {
+                                    editContent.innerHTML = "Error loading form: " + err;
+                                    console.error(err);
+                                });
                     });
                 });
-                
+
                 // window.openIngredients = ... (ĐÃ XOÁ)
 
                 // --- 3. LOGIC ĐÓNG MODAL (Dùng chung) ---
@@ -364,17 +449,17 @@
                 addModal.addEventListener('click', (e) => {
                     if (e.target.id === 'addIngredientBtn') {
                         e.preventDefault();
-                        
+
                         const template = addModal.querySelector("#ingredientTemplate")?.cloneNode(true);
                         const list = addModal.querySelector("#ingredientList");
 
                         if (template && list) {
-                            template.classList.remove("hidden"); 
-                            template.removeAttribute("id");      
-                            
+                            template.classList.remove("hidden");
+                            template.removeAttribute("id");
+
                             template.querySelector("select")?.setAttribute("required", "required");
                             template.querySelector("input[name='ingredientQty[]']")?.setAttribute("required", "required");
-                            
+
                             list.appendChild(template);
                         } else {
                             console.error("Lỗi Add Modal: Không tìm thấy #ingredientTemplate hoặc #ingredientList");
@@ -386,9 +471,9 @@
                 addModal.addEventListener('change', (e) => {
                     if (e.target.classList.contains('ingredientSelect')) {
                         const select = e.target;
-                        const row = select.closest('.ingredient-row'); 
+                        const row = select.closest('.ingredient-row');
                         const unitInput = row?.querySelector('.unitField');
-                        
+
                         if (unitInput) {
                             const option = select.selectedOptions[0];
                             unitInput.value = option.getAttribute('data-unit') || '';
@@ -433,11 +518,11 @@
                         const unit = unitInput.value.trim();
                         const qty = qtyInput.value.trim();
 
-                        console.log("Values:", { ingId, ingName, unit, qty });
+                        console.log("Values:", {ingId, ingName, unit, qty});
 
                         if (!ingId || ingId === "" || ingName.includes("--") || !unit || !qty || parseFloat(qty) <= 0) {
-                            if(!ingId || ingId === "" || ingName.includes("--") ) {
-                                alert("Vui lòng chọn nguyên liệu hợp lệ.");                                
+                            if (!ingId || ingId === "" || ingName.includes("--")) {
+                                alert("Vui lòng chọn nguyên liệu hợp lệ.");
                             } else if (!unit || !qty || parseFloat(qty) <= 0) {
                                 alert("Vui lòng nhập số lượng lớn hơn 0.");
                             }
@@ -446,7 +531,7 @@
                         }
 
                         const exists = Array.from(tableBody.querySelectorAll('input[name="inventoryId[]"]'))
-                            .some(input => input.value === ingId);
+                                .some(input => input.value === ingId);
                         if (exists) {
                             alert("Nguyên liệu đã được thêm.");
                             return;
@@ -485,7 +570,7 @@
                         tdUnit.appendChild(inputUnit);
                         tr.appendChild(tdUnit);
 
-                                
+
                         const tdAction = document.createElement("td");
                         const removeBtn = document.createElement("button");
                         removeBtn.type = "button";
@@ -495,7 +580,7 @@
                         tr.appendChild(tdAction);
 
                         tableBody.appendChild(tr);
-                        
+
                         // Reset
                         select.selectedIndex = 0;
                         qtyInput.value = "";
