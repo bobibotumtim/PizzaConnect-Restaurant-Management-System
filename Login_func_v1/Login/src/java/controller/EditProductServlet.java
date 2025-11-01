@@ -7,8 +7,8 @@ import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import java.io.IOException;
 
-@WebServlet(name = "AddProductServlet", urlPatterns = {"/AddProductServlet"})
-public class AddProductServlet extends HttpServlet {
+@WebServlet(name = "EditProductServlet", urlPatterns = {"/EditProductServlet"})
+public class EditProductServlet extends HttpServlet {
 
     private ProductService productService = new ProductService();
 
@@ -17,6 +17,7 @@ public class AddProductServlet extends HttpServlet {
             throws ServletException, IOException {
         
         // 1. Lấy dữ liệu từ form
+        int productId = Integer.parseInt(request.getParameter("productId"));
         String productName = request.getParameter("productName");
         String description = request.getParameter("description");
         String categoryName = request.getParameter("categoryName");
@@ -25,23 +26,23 @@ public class AddProductServlet extends HttpServlet {
 
         // 2. Tạo đối tượng Product
         Product product = new Product();
+        product.setProductId(productId); // ID rất quan trọng
         product.setProductName(productName);
         product.setDescription(description);
-        product.setCategoryName(categoryName); // Service sẽ tự tìm ID
+        product.setCategoryName(categoryName);
         product.setImageUrl(imageUrl);
         product.setAvailable(isAvailable);
-        // product.setSizes(null) - Hoàn toàn OK
 
-        // 3. Gọi Service
-        boolean result = productService.addProductWithSizes(product); // Dùng hàm này là OK
+        // 3. Gọi Service (Dùng hàm mới: updateBaseProduct)
+        boolean result = productService.updateBaseProduct(product);
         
         // 4. Đặt thông báo và Redirect
         HttpSession session = request.getSession();
         if (result) {
-            session.setAttribute("message", "Product added successfully!");
+            session.setAttribute("message", "Product updated successfully!");
             session.setAttribute("messageType", "success");
         } else {
-            session.setAttribute("message", "Error adding product.");
+            session.setAttribute("message", "Error updating product.");
             session.setAttribute("messageType", "error");
         }
         

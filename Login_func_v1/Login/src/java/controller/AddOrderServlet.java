@@ -33,7 +33,8 @@ public class AddOrderServlet extends HttpServlet {
         
         // Lấy danh sách sản phẩm để hiển thị trong form
         ProductDAO productDAO = new ProductDAO();
-        List<Product> products = productDAO.getAllProducts();
+        //List<Product> products = productDAO.getAllProducts();------------------------------------------------------------------------------------------------
+        List<Product> products = null;
         
         request.setAttribute("products", products);
         request.setAttribute("currentUser", user);
@@ -69,7 +70,8 @@ public class AddOrderServlet extends HttpServlet {
             ProductDAO productDAO = new ProductDAO();
             
             // Lấy tất cả sản phẩm để lấy giá
-            List<Product> allProducts = productDAO.getAllProducts();
+            //List<Product> allProducts = productDAO.getAllProducts();------------------------------------------------------------------------------------------------
+            List<Product> allProducts = null;
             
             for (Product product : allProducts) {
                 String quantityParam = request.getParameter("quantity_" + product.getProductId());
@@ -79,7 +81,8 @@ public class AddOrderServlet extends HttpServlet {
                     try {
                         int quantity = Integer.parseInt(quantityParam);
                         if (quantity > 0) {
-                            double unitPrice = product.getPrice();
+                            //double unitPrice = product.getPrice();------------------------------------------------------------------------------------------------
+                            double unitPrice = 0;
                             double totalPrice = quantity * unitPrice;
                             
                             Orderdetail detail = new Orderdetail(

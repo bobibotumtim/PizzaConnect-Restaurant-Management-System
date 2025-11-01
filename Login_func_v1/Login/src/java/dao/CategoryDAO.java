@@ -47,6 +47,23 @@ public class CategoryDAO extends DBContext {
         }
         return null;
     }
+    
+    // Get category by Name
+    public int getCategoryIdByName(String categoryName, Connection con) throws SQLException {
+        String sql = "SELECT CategoryID FROM Category WHERE CategoryName = ? AND IsDeleted = 0";
+        
+        // Không dùng try-with-resources cho Connection
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, categoryName);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("CategoryID");
+                }
+            }
+        }
+        // Nếu không tìm thấy, ném lỗi để Service rollback
+        throw new SQLException("Category không tồn tại: " + categoryName);
+    }
 
     // Add new category
     public boolean addCategory(Category category) {

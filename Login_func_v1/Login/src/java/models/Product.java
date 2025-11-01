@@ -1,101 +1,60 @@
 package models;
 
-/**
- * Product model for Pizza menu items
- * @author Admin
- */
+import java.util.List;
+
 public class Product {
     private int productId;
     private String productName;
     private String description;
-    private double price;
-    private String category;
+    private String categoryName;     // ✅ chỉ lấy tên category
     private String imageUrl;
     private boolean isAvailable;
+    private List<ProductSize> sizes; // ✅ chứa danh sách các size (ProductSize)
 
-    public Product() {
-    }
+    public Product() {}
 
-    public Product(int productId, String productName, String description, double price, String category, String imageUrl, boolean isAvailable) {
+    public Product(int productId, String productName, String description,
+                   String categoryName, String imageUrl, boolean isAvailable,
+                   List<ProductSize> sizes) {
         this.productId = productId;
         this.productName = productName;
         this.description = description;
-        this.price = price;
-        this.category = category;
+        this.categoryName = categoryName;
+        this.imageUrl = imageUrl;
+        this.isAvailable = isAvailable;
+        this.sizes = sizes;
+    }
+
+    public Product(String productName, String description, String categoryName,
+                   String imageUrl, boolean isAvailable) {
+        this.productName = productName;
+        this.description = description;
+        this.categoryName = categoryName;
         this.imageUrl = imageUrl;
         this.isAvailable = isAvailable;
     }
 
-    public Product(String productName, String description, double price, String category, String imageUrl, boolean isAvailable) {
-        this.productName = productName;
-        this.description = description;
-        this.price = price;
-        this.category = category;
-        this.imageUrl = imageUrl;
-        this.isAvailable = isAvailable;
-    }
+    // Getters & Setters
+    public int getProductId() { return productId; }
+    public void setProductId(int productId) { this.productId = productId; }
 
-    
+    public String getProductName() { return productName; }
+    public void setProductName(String productName) { this.productName = productName; }
 
-    // Getters
-    public int getProductId() {
-        return productId;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public String getProductName() {
-        return productName;
-    }
+    public String getCategoryName() { return categoryName; }
+    public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
 
-    public String getDescription() {
-        return description;
-    }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
-    public double getPrice() {
-        return price;
-    }
+    public boolean isAvailable() { return isAvailable; }
+    public void setAvailable(boolean available) { isAvailable = available; }
 
-    public String getCategory() {
-        return category;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public boolean isAvailable() {
-        return isAvailable;
-    }
-
-
-    // Setters
-    public void setProductId(int productId) {
-        this.productId = productId;
-    }
-
-    public void setProductName(String productName) {
-        this.productName = productName;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
-    public void setAvailable(boolean available) {
-        isAvailable = available;
-    }
-
+    public List<ProductSize> getSizes() { return sizes; }
+    public void setSizes(List<ProductSize> sizes) { this.sizes = sizes; }
 
     @Override
     public String toString() {
@@ -103,10 +62,10 @@ public class Product {
                 "productId=" + productId +
                 ", productName='" + productName + '\'' +
                 ", description='" + description + '\'' +
-                ", price=" + price +
-                ", category='" + category + '\'' +
+                ", categoryName='" + categoryName + '\'' +
                 ", imageUrl='" + imageUrl + '\'' +
                 ", isAvailable=" + isAvailable +
+                ", sizes=" + (sizes != null ? sizes.size() : 0) +
                 '}';
     }
 }
