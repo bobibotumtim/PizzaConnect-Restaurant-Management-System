@@ -6,7 +6,7 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
 import models.Order;
-import models.Orderdetail;
+import models.OrderDetail;
 import models.User;
 
 public class ManageOrderServlet extends HttpServlet {
