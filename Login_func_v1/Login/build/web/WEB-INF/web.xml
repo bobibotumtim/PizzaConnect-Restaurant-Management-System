@@ -102,13 +102,13 @@
         <url-pattern>/edituser</url-pattern>
     </servlet-mapping>
     
-    <!-- Dashboard Servlet -->
+    <!-- Dashboard Controller -->
     <servlet>
-        <servlet-name>DashboardServlet</servlet-name>
-        <servlet-class>controller.DashboardServlet</servlet-class>
+        <servlet-name>DashboardController</servlet-name>
+        <servlet-class>controller.DashboardController</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>DashboardServlet</servlet-name>
+        <servlet-name>DashboardController</servlet-name>
         <url-pattern>/dashboard</url-pattern>
     </servlet-mapping>
 
