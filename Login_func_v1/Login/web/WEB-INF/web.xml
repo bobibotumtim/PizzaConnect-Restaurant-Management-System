@@ -112,6 +112,26 @@
         <url-pattern>/dashboard</url-pattern>
     </servlet-mapping>
 
+    <!-- POS Servlet -->
+    <servlet>
+        <servlet-name>POSServlet</servlet-name>
+        <servlet-class>controller.POSServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>POSServlet</servlet-name>
+        <url-pattern>/pos</url-pattern>
+    </servlet-mapping>
+
+    <!-- Manage Orders Servlet -->
+    <servlet>
+        <servlet-name>ManageOrderServlet</servlet-name>
+        <servlet-class>controller.ManageOrderServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ManageOrderServlet</servlet-name>
+        <url-pattern>/manage-orders</url-pattern>
+    </servlet-mapping>
+
     <!-- Discount Servlet -->
     <servlet>
         <servlet-name>DiscountServlet</servlet-name>

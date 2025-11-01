@@ -82,11 +82,32 @@
                     <i data-lucide="shopping-cart" class="w-6 h-6"></i>
                 </a>
 
-                <!-- Notifications -->
-                <a href="${pageContext.request.contextPath}/notifications"
-                   class="nav-btn <%= currentPath.contains("/notifications") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                   title="Notifications">
-                    <i data-lucide="bell" class="w-6 h-6"></i>
+                <!-- Manage Products -->
+                <a href="${pageContext.request.contextPath}/manageproduct"
+                   class="nav-btn <%= currentPath.contains("/manageproduct") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Manage Products">
+                    <i data-lucide="package" class="w-6 h-6"></i>
+                </a>
+
+                <!-- Manage Users (Admin) -->
+                <a href="${pageContext.request.contextPath}/admin"
+                   class="nav-btn <%= currentPath.contains("/admin") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Manage Users">
+                    <i data-lucide="users" class="w-6 h-6"></i>
+                </a>
+
+                <!-- Discount -->
+                <a href="${pageContext.request.contextPath}/discount"
+                   class="nav-btn <%= currentPath.contains("/discount") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Discount">
+                    <i data-lucide="percent" class="w-6 h-6"></i>
+                </a>
+
+                <!-- Inventory -->
+                <a href="${pageContext.request.contextPath}/inventory"
+                   class="nav-btn <%= currentPath.contains("/inventory") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Inventory">
+                    <i data-lucide="box" class="w-6 h-6"></i>
                 </a>
 
                 <!-- Profile -->
