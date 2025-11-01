@@ -532,65 +532,92 @@
 
                     // === 9. Thêm hàng (Modal Edit Size) ===
                     if (editAddIngBtn) {
-                        e.preventDefault();
-                        const tableBody = document.getElementById('ingredientTable_EditSize')?.querySelector('tbody');
-                        const select = document.getElementById('editNewIngredientSelect_EditSize');
-                        
-                        // Lấy CÁC ELEMENT
-                        const qtyInputEl = document.getElementById('editNewQuantity_EditSize');
-                        const unitInputEl = document.getElementById('editNewUnit_EditSize');
+    e.preventDefault();
 
-                        if (!tableBody || !select || !qtyInputEl || !unitInputEl)
-                            return;
+    const tableBody = document.getElementById('ingredientTable_EditSize')?.querySelector('tbody');
+    const select = document.getElementById('editNewIngredientSelect_EditSize');
+    const qtyInputEl = document.getElementById('editNewQuantity_EditSize');
+    const unitInputEl = document.getElementById('editNewUnit_EditSize');
 
-                        // Lấy CÁC GIÁ TRỊ TỪ ELEMENT
-                        const selectedOption = select.options[select.selectedIndex];
-                        const ingId = selectedOption.value;
-                        const ingName = selectedOption.text;
-                        const qtyValue = qtyInputEl.value; // ✅ SỬA LỖI Ở ĐÂY
-                        const unit = selectedOption.getAttribute('data-unit') || '';
+    if (!tableBody || !select || !qtyInputEl || !unitInputEl)
+        return;
 
-                        if (!ingId) {
-                            alert("Please select an ingredient.");
-                            return;
-                        }
-                        
-                        // (Tùy chọn) Thêm kiểm tra số lượng
-                        if (!qtyValue || parseFloat(qtyValue) <= 0) {
-                            alert("Please enter a valid quantity.");
-                            return;
-                        }
+    const selectedOption = select.options[select.selectedIndex];
+    const ingId = selectedOption.value;
+    const ingName = selectedOption.text;
+    const qtyValue = qtyInputEl.value.trim();
+    const unit = selectedOption.getAttribute('data-unit') || '';
 
-                        // Tạo <tr> mới
-                        const tr = document.createElement('tr');
-                        tr.classList.add('border-b'); // Thêm class cho giống các hàng cũ
+    if (!ingId) {
+        alert("Please select an ingredient.");
+        return;
+    }
 
-                        tr.innerHTML = `
-                            <td class="px-2 py-1">${ingName}</td>
-                            <td class="px-2 py-1">
-                                <input type="number" step="0.01" name="quantity[]" value="${qtyValue}" 
-                                       class="border p-1 w-24">
-                                <input type="hidden" name="inventoryId[]" value="${ingId}">
-                            </td>
-                            <td class="px-2 py-1">
-                                <input type="text" name="unit[]" value="${unit}" 
-                                       class="border p-1 w-20" readonly>
-                            </td>
-                            <td class="px-2 py-1 text-center">
-                                <button type="button" 
-                                        class="removeBtn bg-red-500 text-white px-2 py-1 rounded inline-flex justify-center items-center">
-                                    ✕
-                                </button>
-                            </td>
-                        `;
+    if (!qtyValue || parseFloat(qtyValue) <= 0) {
+        alert("Please enter a valid quantity.");
+        return;
+    }
 
-                        tableBody.appendChild(tr);
+    console.log("Adding ingredient:", { ingName, qtyValue, ingId, unit });
 
-                        // Reset form
-                        select.selectedIndex = 0;
-                        qtyInputEl.value = ''; // Sử dụng tên biến mới
-                        unitInputEl.value = ''; // Sử dụng tên biến mới
-                   }
+    // ✅ Tạo DOM element thủ công (không dùng innerHTML)
+    const tr = document.createElement('tr');
+    tr.classList.add('border-b');
+
+    // Tên nguyên liệu
+    const tdName = document.createElement('td');
+    tdName.className = 'px-2 py-1';
+    tdName.textContent = ingName;
+
+    // Số lượng + hidden inventoryId
+    const tdQty = document.createElement('td');
+    tdQty.className = 'px-2 py-1';
+
+    const qtyInput = document.createElement('input');
+    qtyInput.type = 'number';
+    qtyInput.step = '0.01';
+    qtyInput.name = 'quantity[]';
+    qtyInput.value = qtyValue;
+    qtyInput.className = 'border p-1 w-24';
+
+    const hiddenInv = document.createElement('input');
+    hiddenInv.type = 'hidden';
+    hiddenInv.name = 'inventoryId[]';
+    hiddenInv.value = ingId;
+
+    tdQty.append(qtyInput, hiddenInv);
+
+    // Đơn vị
+    const tdUnit = document.createElement('td');
+    tdUnit.className = 'px-2 py-1';
+    const unitInput = document.createElement('input');
+    unitInput.type = 'text';
+    unitInput.name = 'unit[]';
+    unitInput.value = unit;
+    unitInput.className = 'border p-1 w-20';
+    unitInput.readOnly = true;
+    tdUnit.appendChild(unitInput);
+
+    // Nút xoá
+    const tdAction = document.createElement('td');
+    tdAction.className = 'px-2 py-1 text-center';
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.textContent = '✕';
+    removeBtn.className = 'removeBtn bg-red-500 text-white px-2 py-1 rounded inline-flex justify-center items-center';
+    removeBtn.addEventListener('click', () => tr.remove());
+    tdAction.appendChild(removeBtn);
+
+    // Gắn tất cả lại
+    tr.append(tdName, tdQty, tdUnit, tdAction);
+    tableBody.appendChild(tr);
+
+    // ✅ Reset form
+    select.selectedIndex = 0;
+    qtyInputEl.value = '';
+    unitInputEl.value = '';
+}
+
 
 
                 }); // Hết listener CLICK

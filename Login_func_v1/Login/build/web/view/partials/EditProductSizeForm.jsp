@@ -11,7 +11,7 @@
 
 <%-- ✅ Form action trỏ đến Servlet mới --%>
 <form action="${pageContext.request.contextPath}/EditProductSizeServlet" method="post" id="editSizeForm">
-    
+
     <%-- ✅ Input ẩn cho ProductSizeID --%>
     <input type="hidden" name="productSizeId" value="${size.productSizeId}">
 
@@ -31,35 +31,36 @@
     <%-- ✅ LOGIC CÔNG THỨC: Giữ nguyên 100% từ file EditProductFullContent.jsp cũ --%>
     <table class="w-full border border-gray-300 mb-4" id="ingredientTable_EditSize">
         <thead class="bg-gray-200">
-            <tr>
-                <th class="p-2 text-left">Ingredient</th>
-                <th class="p-2 text-left">Quantity</th>
-                <th class="p-2 text-left">Unit</th>
-                <th class="p-2 text-left">Action</th>
-            </tr>
-        </thead>
+            <tr>
+                <th class="p-2 text-left">Ingredient</th>
+                <th class="p-2 text-left">Quantity</th>
+                <th class="p-2 text-left">Unit</th>
+                <th class="p-2 text-left">Action</th>
+            </tr>
+        </thead>
+
         <tbody>
-    <c:forEach var="ing" items="${currentIngredients}">
-        <tr class="border-b">
-            <td class="px-2 py-1">${ing.itemName}</td>
-            <td class="px-2 py-1">
-                <input type="number" step="0.01" name="quantity[]" value="${ing.quantityNeeded}" 
-                       class="border p-1 w-24">
-                <input type="hidden" name="inventoryId[]" value="${ing.inventoryId}">
-            </td>
-            <td class="px-2 py-1">
-                <input type="text" name="unit[]" value="${ing.unit}" 
-                       class="border p-1 w-20" readonly>
-            </td>
-            <td class="px-2 py-1 text-center">
-                <button type="button" 
-                        class="removeBtn bg-red-500 text-white px-2 py-1 rounded inline-flex justify-center items-center">
-                    ✕
-                </button>
-            </td>
-        </tr>
-    </c:forEach>
-</tbody>
+            <c:forEach var="ing" items="${currentIngredients}">
+                <tr class="border-b">
+                    <td class="px-2 py-1">${ing.itemName}</td>
+                    <td class="px-2 py-1">
+                        <input type="number" step="0.01" name="quantity[]" value="${ing.quantityNeeded}" 
+                               class="border p-1 w-24">
+                        <input type="hidden" name="inventoryId[]" value="${ing.inventoryId}">
+                    </td>
+                    <td class="px-2 py-1">
+                        <input type="text" name="unit[]" value="${ing.unit}"
+                               class="border p-1 w-20" readonly>
+                    </td>
+                    <td class="px-2 py-1 text-center">
+                        <button type="button"
+                                class="removeBtn bg-red-500 text-white px-2 py-1 rounded inline-flex justify-center items-center">
+                            ✕
+                        </button>
+                    </td>
+                </tr>
+            </c:forEach>
+        </tbody>
 
     </table>
 
