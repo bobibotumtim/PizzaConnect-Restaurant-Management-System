@@ -16,17 +16,27 @@ public class ProductDAO extends DBContext {
                 rs.getString("ProductName"),
                 rs.getString("Description"),
                 rs.getDouble("Price"),
-                rs.getString("Category"),
+                rs.getString("CategoryName"), // chỉ lấy tên Category
                 rs.getString("ImageURL"),
                 rs.getBoolean("IsAvailable")
         );
     }
 
-    // Get all available products
+    // Lấy toàn bộ sản phẩm (JOIN Category)
     public List<Product> getAllProducts() {
         List<Product> list = new ArrayList<>();
-        String sql = "SELECT * FROM Product WHERE IsAvailable = 1 ORDER BY Category, ProductName";
-        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        String sql = """
+            SELECT p.ProductID, p.ProductName, p.Description, p.Price, 
+                   c.CategoryName, p.ImageURL, p.IsAvailable
+            FROM Product p
+            JOIN Category c ON p.CategoryID = c.CategoryID
+            WHERE p.IsAvailable = 1
+            ORDER BY c.CategoryName, p.ProductName
+        """;
+
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(mapResultSetToProduct(rs));
             }
@@ -38,19 +48,26 @@ public class ProductDAO extends DBContext {
 
     // Get product by ID
     public Product getProductById(int productId) {
-        String sql = "SELECT * FROM Product WHERE ProductID = ?";
-        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+        String sql = """
+            SELECT p.ProductID, p.ProductName, p.Description, p.Price,
+                   c.CategoryName, p.ImageURL, p.IsAvailable
+            FROM Product p
+            JOIN Category c ON p.CategoryID = c.CategoryID
+            WHERE p.ProductID = ?
+        """;
+
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, productId);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return mapResultSetToProduct(rs);
-                }
+                if (rs.next()) return mapResultSetToProduct(rs);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
+
 
     // Add new product
     public int addProduct(Product product) {
