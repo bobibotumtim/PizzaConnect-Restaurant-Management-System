@@ -22,7 +22,7 @@ public class EditProductServlet extends HttpServlet {
         String description = request.getParameter("description");
         String categoryName = request.getParameter("categoryName");
         String imageUrl = request.getParameter("imageUrl");
-        boolean isAvailable = Boolean.parseBoolean(request.getParameter("isAvailable"));
+        boolean isAvailable = true;
 
         // 2. Tạo đối tượng Product
         Product product = new Product();

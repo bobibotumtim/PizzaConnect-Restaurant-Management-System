@@ -15,7 +15,7 @@
 
     <%-- ✅ Các trường mới cho Size --%>
     <div class="form-group">
-        <label for="addSizeCode">Size Code (e.g., S, M, L):</label>
+        <label for="addSizeCode">Size Code (F, S, M, L):</label>
         <input type="text" name="sizeCode" id="addSizeCode" required>
     </div>
     

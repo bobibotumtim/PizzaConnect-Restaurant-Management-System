@@ -1,6 +1,7 @@
 package controller;
 
 // ✅ THAY ĐỔI IMPORT
+import dao.CategoryDAO;
 import services.ProductService; 
 import models.Product;
 import jakarta.servlet.*;
@@ -8,16 +9,19 @@ import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import java.io.IOException;
 import java.util.List;
+import models.Category;
 
 @WebServlet(name = "ManageProductServlet", urlPatterns = {"/manageproduct"})
 public class ManageProductServlet extends HttpServlet {
 
     // ✅ Khởi tạo Service
     private ProductService productService;
+    private CategoryDAO categoryDAO;
 
     @Override
     public void init() throws ServletException {
         productService = new ProductService();
+        categoryDAO = new CategoryDAO();
     }
 
     @Override
@@ -59,10 +63,8 @@ public class ManageProductServlet extends HttpServlet {
         request.setAttribute("searchName", searchName);
         request.setAttribute("statusFilter", statusFilter);
         
-        // Lấy danh sách category (cho modal Add/Edit)
-        // (Tạm thời bỏ qua, nếu bạn có CategoryService, hãy gọi nó ở đây)
-        // List<Category> categories = categoryDAO.getAllCategories();
-        // request.setAttribute("categories", categories);
+        List<Category> categoryList = categoryDAO.getAllCategories();
+        request.setAttribute("categoryList", categoryList);
 
         // Chuyển tiếp đến JSP
         RequestDispatcher dispatcher = request.getRequestDispatcher("/view/ManageProduct.jsp");
