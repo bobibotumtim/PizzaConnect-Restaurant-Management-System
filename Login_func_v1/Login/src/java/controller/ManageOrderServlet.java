@@ -38,7 +38,7 @@ public class ManageOrderServlet extends HttpServlet {
                 try {
                     int orderId = Integer.parseInt(orderIdStr);
                     Order order = orderDAO.getOrderById(orderId);
-                    List<Orderdetail> orderDetails = orderDAO.getOrderDetailsByOrderId(orderId);
+                    List<OrderDetail> orderDetails = orderDAO.getOrderDetailsByOrderId(orderId);
                     
                     request.setAttribute("order", order);
                     request.setAttribute("orderDetails", orderDetails);
@@ -61,12 +61,12 @@ public class ManageOrderServlet extends HttpServlet {
                     request.setAttribute("error", "Invalid status filter!");
                 }
             } else {
-                List<Order> orders = orderDAO.getAllOrders();
+                List<Order> orders = orderDAO.getAll();
                 request.setAttribute("orders", orders);
             }
         } else {
             // Mặc định: hiển thị tất cả đơn hàng
-            List<Order> orders = orderDAO.getAllOrders();
+            List<Order> orders = orderDAO.getAll();
             request.setAttribute("orders", orders);
         }
         

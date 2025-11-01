@@ -22,12 +22,7 @@ public class OrderDAO extends DBContext {
     // ✅ Get connection function — prioritize external if available
     private Connection useConnection() throws SQLException {
         if (externalConn != null) return externalConn;
-        return getConnection();
-    }
-    
-    // ✅ Public method to check connection
-    public Connection getConnection() {
-        return connection;
+        return super.getConnection();
     }
 
     // 🟢 Create new order with details
