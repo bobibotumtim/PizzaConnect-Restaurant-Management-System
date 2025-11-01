@@ -27,18 +27,11 @@
             <!-- Navigation -->
             <div class="flex-1 flex flex-col space-y-6 mt-8">
 
-                <!-- Dashboard -->
+                <!-- Dashboard (Admin) -->
                 <a href="${pageContext.request.contextPath}/dashboard"
                    class="nav-btn <%= currentPath.contains("/dashboard") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
                    title="Dashboard">
                     <i data-lucide="grid" class="w-6 h-6"></i>
-                </a>
-
-                <!-- Admin (Manage Users) -->
-                <a href="${pageContext.request.contextPath}/admin"
-                   class="nav-btn <%= currentPath.contains("/admin") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                   title="Manage Users">
-                    <i data-lucide="users" class="w-6 h-6"></i>
                 </a>
                 
                 <!-- Orders -->
@@ -55,6 +48,20 @@
                     <i data-lucide="utensils" class="w-6 h-6"></i>
                 </a>
 
+                <!-- Table -->
+                <a href="${pageContext.request.contextPath}/table" 
+                class="nav-btn <%= currentPath.contains("/table") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                title="Table Booking">
+                    <i data-lucide="rectangle-horizontal" class="w-6 h-6"></i>
+                </a>
+
+                <!-- Discount Programs (Admin) -->
+                <a href="${pageContext.request.contextPath}/discount"
+                   class="nav-btn <%= currentPath.contains("/discount") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Discount Programs">
+                    <i data-lucide="percent" class="w-6 h-6"></i>
+                </a>
+
                 <!-- Notifications -->
                 <a href="${pageContext.request.contextPath}/notifications"
                    class="nav-btn <%= currentPath.contains("/notifications") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
@@ -62,28 +69,27 @@
                     <i data-lucide="bell" class="w-6 h-6"></i>
                 </a>
 
-                <!-- Profile -->
-                <a href="${pageContext.request.contextPath}/profile"
-                   class="nav-btn <%= currentPath.contains("/profile") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                   title="Profile">
-                    <i data-lucide="user" class="w-6 h-6"></i>
-                </a>
-
-                <!-- Discount Programs -->
-                <a href="${pageContext.request.contextPath}/discount"
-                   class="nav-btn <%= currentPath.contains("/discount") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                   title="Discount Programs">
-                    <i data-lucide="percent" class="w-6 h-6"></i>
-                </a>
-
-                <!-- Settings -->
-                <a href="${pageContext.request.contextPath}/settings"
-                   class="nav-btn <%= currentPath.contains("/settings") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                   title="Settings">
-                    <i data-lucide="settings" class="w-6 h-6"></i>
+                <!-- Manage Users (Admin) -->
+                <a href="${pageContext.request.contextPath}/admin"
+                   class="nav-btn <%= currentPath.contains("/admin") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Manage Users">
+                    <i data-lucide="users" class="w-6 h-6"></i>
                 </a>
             </div>
 
+            <!-- Profile -->
+            <a href="${pageContext.request.contextPath}/profile"
+                class="nav-btn <%= currentPath.contains("/profile") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                title="Profile">
+                <i data-lucide="user" class="w-6 h-6"></i>
+            </a>
+
+            <!-- Settings -->
+            <a href="${pageContext.request.contextPath}/settings"
+                class="nav-btn <%= currentPath.contains("/settings") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                title="Settings">
+                <i data-lucide="settings" class="w-6 h-6"></i>
+            </a>
             <!-- Logout -->
             <a href="${pageContext.request.contextPath}/logout"
                class="nav-btn <%= currentPath.contains("/logout") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"

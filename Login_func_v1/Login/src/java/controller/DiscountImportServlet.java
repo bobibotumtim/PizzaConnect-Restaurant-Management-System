@@ -28,23 +28,54 @@ public class DiscountImportServlet extends HttpServlet {
 
     private static final List<String> VALID_DISCOUNT_TYPES = Arrays.asList("Percentage", "Fixed", "Loyalty");
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_DATE;
+    private static final String NOT_FOUND_PATH = "/view/NotFound.jsp";
+    private static final Set<String> VALID_ACTIONS = Set.of("template", "error-report");
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
+
+        // Validate authentication first
+        if (!isAuthenticated(request)) {
+            forwardToNotFound(request, response, "Unauthorized access");
+            return;
+        }
+
+        // Validate URL parameters
+        if (!validateGetParameters(request)) {
+            forwardToNotFound(request, response, "Invalid URL parameters");
+            return;
+        }
+
         String action = request.getParameter("action");
-        if ("template".equals(action)) {
-            downloadTemplate(response);
-        } else if ("error-report".equals(action)) {
-            downloadErrorReport(request, response);
+
+        try {
+            if ("template".equals(action)) {
+                downloadTemplate(response);
+            } else if ("error-report".equals(action)) {
+                downloadErrorReport(request, response);
+            } else {
+                forwardToNotFound(request, response, "Invalid action parameter");
+            }
+        } catch (Exception e) {
+            LOGGER.severe("Error processing GET request: " + e.getMessage());
+            forwardToNotFound(request, response, "Error processing request");
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
+
+        // Validate authentication first
         if (!isAuthenticated(request)) {
-            response.sendRedirect(request.getContextPath() + "/discount?error=Unauthorized");
+            forwardToNotFound(request, response, "Unauthorized access");
+            return;
+        }
+
+        // Validate URL path and parameters
+        if (!validatePostRequest(request)) {
+            forwardToNotFound(request, response, "Invalid POST request");
             return;
         }
 
@@ -55,33 +86,206 @@ public class DiscountImportServlet extends HttpServlet {
             if ("/import".equals(pathInfo) || "/".equals(pathInfo) || pathInfo == null) {
                 handleImport(request, response);
             } else {
-                response.sendRedirect(request.getContextPath() + "/discount?error=Invalid+path");
+                forwardToNotFound(request, response, "Invalid path: " + pathInfo);
             }
         } catch (Exception e) {
-            LOGGER.severe("Error processing request: " + e.getMessage());
-            response.sendRedirect(request.getContextPath() + "/discount?error=Server+error");
+            LOGGER.severe("Error processing POST request: " + e.getMessage());
+            forwardToNotFound(request, response, "Server error");
+        }
+    }
+
+    /**
+     * Validate GET request parameters
+     */
+    private boolean validateGetParameters(HttpServletRequest request) {
+        try {
+            String action = request.getParameter("action");
+
+            // Validate action parameter
+            if (action == null || action.trim().isEmpty()) {
+                LOGGER.warning("Action parameter is required");
+                return false;
+            }
+
+            if (!VALID_ACTIONS.contains(action)) {
+                LOGGER.warning("Invalid action parameter: " + action);
+                return false;
+            }
+
+            // Validate no unexpected parameters
+            return validateNoUnexpectedParameters(request, Arrays.asList("action"));
+
+        } catch (Exception e) {
+            LOGGER.severe("Error validating GET parameters: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Validate POST request
+     */
+    private boolean validatePostRequest(HttpServletRequest request) {
+        try {
+            String pathInfo = request.getPathInfo();
+
+            // Validate path info
+            if (pathInfo != null && !pathInfo.equals("/import") && !pathInfo.equals("/")) {
+                LOGGER.warning("Invalid path info: " + pathInfo);
+                return false;
+            }
+
+            // Check for multipart request
+            if (!isMultipartRequest(request)) {
+                LOGGER.warning("Request is not multipart");
+                return false;
+            }
+
+            return true;
+        } catch (Exception e) {
+            LOGGER.severe("Error validating POST request: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Check if request is multipart
+     */
+    private boolean isMultipartRequest(HttpServletRequest request) {
+        String contentType = request.getContentType();
+        return contentType != null && contentType.toLowerCase().startsWith("multipart/");
+    }
+
+    /**
+     * Check for unexpected parameters in request
+     */
+    private boolean validateNoUnexpectedParameters(HttpServletRequest request, List<String> expectedParams) {
+        try {
+            Enumeration<String> paramNames = request.getParameterNames();
+            while (paramNames.hasMoreElements()) {
+                String paramName = paramNames.nextElement();
+                if (!expectedParams.contains(paramName)) {
+                    // Check if it's a potential attack parameter
+                    if (isPotentialAttackParameter(paramName, request.getParameter(paramName))) {
+                        LOGGER.warning("Potential attack parameter detected: " + paramName);
+                        return false;
+                    }
+                }
+            }
+            return true;
+        } catch (Exception e) {
+            LOGGER.severe("Error checking unexpected parameters: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Check for potential attack parameters
+     */
+    private boolean isPotentialAttackParameter(String paramName, String paramValue) {
+        if (paramName == null || paramValue == null) {
+            return false;
+        }
+
+        // Check for SQL injection patterns
+        if (paramValue.matches(".*([';]+|(--)+).*")) {
+            LOGGER.warning("SQL injection pattern detected in parameter: " + paramName);
+            return true;
+        }
+
+        // Check for XSS patterns
+        if (paramValue.matches(".*[<>].*")) {
+            LOGGER.warning("XSS pattern detected in parameter: " + paramName);
+            return true;
+        }
+
+        // Check for path traversal patterns
+        if (paramValue.matches(".*(\\.\\./|\\.\\\\.*).*")) {
+            LOGGER.warning("Path traversal pattern detected in parameter: " + paramName);
+            return true;
+        }
+
+        // Check parameter name for suspicious patterns
+        if (paramName.matches(".*(script|iframe|object|embed|form).*")) {
+            LOGGER.warning("Suspicious parameter name detected: " + paramName);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Forward to not found page with logging
+     */
+    private void forwardToNotFound(HttpServletRequest request, HttpServletResponse response, String reason) {
+        try {
+            LOGGER.warning("Forwarding to not found page. Reason: " + reason);
+            request.getRequestDispatcher(NOT_FOUND_PATH).forward(request, response);
+        } catch (Exception e) {
+            LOGGER.severe("Error forwarding to not found page: " + e.getMessage());
+            try {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            } catch (Exception ex) {
+                LOGGER.severe("Error sending 404: " + ex.getMessage());
+            }
         }
     }
 
     private boolean isAuthenticated(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session == null)
-            return false;
+        try {
+            HttpSession session = request.getSession(false);
+            if (session == null) {
+                LOGGER.warning("No session found");
+                return false;
+            }
 
-        User user = (User) session.getAttribute("user");
-        return user != null && user.getRole() == 1;
+            User user = (User) session.getAttribute("user");
+            if (user == null) {
+                LOGGER.warning("No user in session");
+                return false;
+            }
+
+            if (user.getRole() != 1) {
+                LOGGER.warning("User is not admin. Role: " + user.getRole());
+                return false;
+            }
+
+            return true;
+        } catch (Exception e) {
+            LOGGER.severe("Authentication error: " + e.getMessage());
+            return false;
+        }
     }
 
     private void handleImport(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
+
+        // Validate file part
         Part filePart = request.getPart("file");
         if (filePart == null || filePart.getSize() == 0) {
-            response.sendRedirect(request.getContextPath() + "/discount?error=Please+select+a+file");
+            forwardToNotFound(request, response, "No file uploaded");
+            return;
+        }
+
+        // Validate file size
+        if (filePart.getSize() > 10 * 1024 * 1024) { // 10MB limit
+            forwardToNotFound(request, response, "File size exceeds limit");
             return;
         }
 
         String fileName = filePart.getSubmittedFileName();
         LOGGER.info("Processing import for file: " + fileName);
+
+        // Validate file name
+        if (fileName == null || fileName.trim().isEmpty()) {
+            forwardToNotFound(request, response, "Invalid file name");
+            return;
+        }
+
+        // Validate file extension
+        if (!isValidExcelFile(fileName)) {
+            forwardToNotFound(request, response, "Invalid file type");
+            return;
+        }
 
         List<ImportResult> errorResults = new ArrayList<>();
         int successCount = 0;
@@ -91,8 +295,7 @@ public class DiscountImportServlet extends HttpServlet {
             List<ImportResult> results = processExcelFile(inputStream, fileName);
 
             if (results.isEmpty()) {
-                response.sendRedirect(
-                        request.getContextPath() + "/discount?error=File+is+empty+or+contains+no+valid+data");
+                forwardToNotFound(request, response, "File is empty or contains no valid data");
                 return;
             }
 
@@ -142,12 +345,25 @@ public class DiscountImportServlet extends HttpServlet {
 
         } catch (Exception e) {
             LOGGER.severe("Error processing import: " + e.getMessage());
-            response.sendRedirect(request.getContextPath() + "/discount?error=Error+processing+file");
+            forwardToNotFound(request, response, "Error processing file");
         }
+    }
+
+    /**
+     * Validate file extension
+     */
+    private boolean isValidExcelFile(String fileName) {
+        if (fileName == null)
+            return false;
+
+        String lowerFileName = fileName.toLowerCase();
+        return lowerFileName.endsWith(".xlsx") || lowerFileName.endsWith(".xls");
     }
 
     private void downloadErrorReport(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession();
+
+        // Validate session attributes
         @SuppressWarnings("unchecked")
         List<ImportResult> errorResults = (List<ImportResult>) session.getAttribute("importErrorResults");
         String originalFileName = (String) session.getAttribute("importFileName");
@@ -156,7 +372,12 @@ public class DiscountImportServlet extends HttpServlet {
         Integer totalCount = (Integer) session.getAttribute("importTotalCount");
 
         if (errorResults == null || errorResults.isEmpty()) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, "No error data available");
+            forwardToNotFound(request, response, "No error data available");
+            return;
+        }
+
+        if (originalFileName == null || timestamp == null || successCount == null || totalCount == null) {
+            forwardToNotFound(request, response, "Invalid error report data");
             return;
         }
 
@@ -717,9 +938,9 @@ public class DiscountImportServlet extends HttpServlet {
             throw new IllegalArgumentException("Invalid Start Date format. Use YYYY-MM-DD");
         }
 
-        LocalDate today = LocalDate.now();
-        if (startDate.isBefore(today)) {
-            throw new IllegalArgumentException("Start Date cannot be in the past");
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+        if (startDate.isBefore(tomorrow)) {
+            throw new IllegalArgumentException("Start Date must be tomorrow or later");
         }
 
         // Validate end date (if provided)
@@ -729,6 +950,11 @@ public class DiscountImportServlet extends HttpServlet {
                 endDate = LocalDate.parse(discount.getEndDate().trim());
             } catch (DateTimeParseException e) {
                 throw new IllegalArgumentException("Invalid End Date format. Use YYYY-MM-DD");
+            }
+
+            LocalDate dayAfterTomorrow = LocalDate.now().plusDays(2);
+            if (endDate.isBefore(dayAfterTomorrow)) {
+                throw new IllegalArgumentException("End Date must be at least 2 days from today");
             }
 
             if (endDate.isBefore(startDate)) {
@@ -764,7 +990,8 @@ public class DiscountImportServlet extends HttpServlet {
 
             // Create header row
             Row headerRow = sheet.createRow(0);
-            String[] headers = { "Description", "DiscountType", "Value", "MaxDiscount", "MinOrderTotal", "StartDate",
+            String[] headers = { "Description *", "DiscountType *", "Value *", "MaxDiscount", "MinOrderTotal *",
+                    "StartDate *",
                     "EndDate" };
 
             CellStyle headerStyle = createHeaderStyle(workbook);
@@ -774,15 +1001,20 @@ public class DiscountImportServlet extends HttpServlet {
                 cell.setCellStyle(headerStyle);
             }
 
-            // Create example row
+            // Create example row with tomorrow as default start date
             Row exampleRow = sheet.createRow(1);
             exampleRow.createCell(0).setCellValue("Summer Sale");
             exampleRow.createCell(1).setCellValue("Percentage");
             exampleRow.createCell(2).setCellValue(10);
             exampleRow.createCell(3).setCellValue(50000);
             exampleRow.createCell(4).setCellValue(100000);
-            exampleRow.createCell(5).setCellValue(LocalDate.now().plusDays(1).toString());
-            exampleRow.createCell(6).setCellValue(LocalDate.now().plusMonths(1).toString());
+
+            // Set start date to tomorrow
+            LocalDate tomorrow = LocalDate.now().plusDays(1);
+            exampleRow.createCell(5).setCellValue(tomorrow.toString());
+
+            // Set end date to 1 month from tomorrow
+            exampleRow.createCell(6).setCellValue(tomorrow.plusMonths(1).toString());
 
             // Auto-size columns
             for (int i = 0; i < headers.length; i++) {
