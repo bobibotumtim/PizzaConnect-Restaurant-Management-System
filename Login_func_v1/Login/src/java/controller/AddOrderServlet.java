@@ -89,10 +89,15 @@ public class AddOrderServlet extends HttpServlet {
                                 0, // OrderDetailID
                                 0, // OrderID sẽ được set sau
                                 product.getProductId(),
+                                product.getProductName(),
                                 quantity,
                                 unitPrice,
                                 totalPrice,
-                                specialInstructions != null ? specialInstructions : ""
+                                specialInstructions != null ? specialInstructions : "",
+                                0,
+                                "Pending",
+                                null,
+                                null
                             );
                             orderDetails.add(detail);
                         }
