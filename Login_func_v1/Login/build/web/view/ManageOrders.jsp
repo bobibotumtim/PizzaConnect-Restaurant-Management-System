@@ -127,6 +127,22 @@
 
                             <div class="max-w-7xl mx-auto px-6 py-8">
                                 <!-- Alert Messages -->
+                                <% 
+                                    // Get messages from session
+                                    String sessionMessage = (String) session.getAttribute("message");
+                                    String sessionError = (String) session.getAttribute("error");
+                                    
+                                    // Clear messages from session after reading
+                                    if (sessionMessage != null) {
+                                        session.removeAttribute("message");
+                                        message = sessionMessage;
+                                    }
+                                    if (sessionError != null) {
+                                        session.removeAttribute("error");
+                                        error = sessionError;
+                                    }
+                                %>
+                                
                                 <% if (message !=null && !message.isEmpty()) { %>
                                     <div
                                         class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-lg">
@@ -553,6 +569,113 @@
                                                             </div>
                                                             <% } %>
                                                 </div>
+
+                                                <!-- Pagination -->
+                                                <% 
+                                                    Integer currentPage = (Integer) request.getAttribute("currentPage");
+                                                    Integer totalPages = (Integer) request.getAttribute("totalPages");
+                                                    Integer totalOrders = (Integer) request.getAttribute("totalOrders");
+                                                    
+                                                    if (currentPage == null) currentPage = 1;
+                                                    if (totalPages == null) totalPages = 1;
+                                                    if (totalOrders == null) totalOrders = 0;
+                                                    
+                                                    if (totalPages > 1) {
+                                                %>
+                                                <div class="bg-white rounded-xl shadow-md p-6 mt-6">
+                                                    <div class="flex items-center justify-between">
+                                                        <div class="text-sm text-gray-600">
+                                                            Hiển thị trang <%= currentPage %> / <%= totalPages %> (Tổng <%= totalOrders %> đơn hàng)
+                                                        </div>
+                                                        <div class="flex gap-2">
+                                                            <% 
+                                                                String baseUrl = request.getContextPath() + "/manage-orders";
+                                                                String statusParam = "";
+                                                                if (selectedStatus != null) {
+                                                                    statusParam = "&status=" + selectedStatus;
+                                                                    baseUrl += "?action=filter";
+                                                                } else {
+                                                                    baseUrl += "?action=list";
+                                                                }
+                                                                
+                                                                // Previous button
+                                                                if (currentPage > 1) {
+                                                            %>
+                                                                <a href="<%= baseUrl %><%= statusParam %>&page=<%= currentPage - 1 %>" 
+                                                                   class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all">
+                                                                    ← Trước
+                                                                </a>
+                                                            <% } else { %>
+                                                                <span class="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed">
+                                                                    ← Trước
+                                                                </span>
+                                                            <% } %>
+                                                            
+                                                            <% 
+                                                                // Page numbers
+                                                                int startPage = Math.max(1, currentPage - 2);
+                                                                int endPage = Math.min(totalPages, currentPage + 2);
+                                                                
+                                                                // Show first page
+                                                                if (startPage > 1) {
+                                                            %>
+                                                                <a href="<%= baseUrl %><%= statusParam %>&page=1" 
+                                                                   class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all">
+                                                                    1
+                                                                </a>
+                                                                <% if (startPage > 2) { %>
+                                                                    <span class="px-4 py-2 text-gray-500">...</span>
+                                                                <% } %>
+                                                            <% } %>
+                                                            
+                                                            <% 
+                                                                // Show page numbers
+                                                                for (int i = startPage; i <= endPage; i++) {
+                                                                    if (i == currentPage) {
+                                                            %>
+                                                                <span class="px-4 py-2 bg-blue-500 text-white rounded-lg font-semibold">
+                                                                    <%= i %>
+                                                                </span>
+                                                            <% } else { %>
+                                                                <a href="<%= baseUrl %><%= statusParam %>&page=<%= i %>" 
+                                                                   class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all">
+                                                                    <%= i %>
+                                                                </a>
+                                                            <% 
+                                                                    }
+                                                                }
+                                                            %>
+                                                            
+                                                            <% 
+                                                                // Show last page
+                                                                if (endPage < totalPages) {
+                                                                    if (endPage < totalPages - 1) {
+                                                            %>
+                                                                    <span class="px-4 py-2 text-gray-500">...</span>
+                                                            <%  } %>
+                                                                <a href="<%= baseUrl %><%= statusParam %>&page=<%= totalPages %>" 
+                                                                   class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all">
+                                                                    <%= totalPages %>
+                                                                </a>
+                                                            <% } %>
+                                                            
+                                                            <% 
+                                                                // Next button
+                                                                if (currentPage < totalPages) {
+                                                            %>
+                                                                <a href="<%= baseUrl %><%= statusParam %>&page=<%= currentPage + 1 %>" 
+                                                                   class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all">
+                                                                    Sau →
+                                                                </a>
+                                                            <% } else { %>
+                                                                <span class="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed">
+                                                                    Sau →
+                                                                </span>
+                                                            <% } %>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <% } %>
                             </div>
 
                             <!-- Add Order Modal -->
@@ -687,9 +810,9 @@
 
                                 function filterByStatus(status) {
                                     if (status === '') {
-                                        window.location.href = ctx + '/manage-orders';
+                                        window.location.href = ctx + '/manage-orders?page=1';
                                     } else {
-                                        window.location.href = ctx + '/manage-orders?action=filter&status=' + status;
+                                        window.location.href = ctx + '/manage-orders?action=filter&status=' + status + '&page=1';
                                     }
                                 }
 

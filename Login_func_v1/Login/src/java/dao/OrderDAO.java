@@ -803,4 +803,102 @@ public class OrderDAO extends DBContext {
             System.out.println("⚠️ Error creating sample orders: " + e.getMessage());
         }
     }
+    
+    // 🟢 Get orders with pagination
+    public List<Order> getOrdersWithPagination(int page, int pageSize) {
+        List<Order> list = new ArrayList<>();
+        int offset = (page - 1) * pageSize;
+        String sql = "SELECT * FROM [Order] ORDER BY OrderDate DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+        try (Connection con = useConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, offset);
+            ps.setInt(2, pageSize);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Order o = new Order();
+                    o.setOrderID(rs.getInt("OrderID"));
+                    o.setCustomerID(rs.getInt("CustomerID"));
+                    o.setEmployeeID(rs.getInt("EmployeeID"));
+                    o.setTableID(rs.getInt("TableID"));
+                    o.setOrderDate(rs.getTimestamp("OrderDate"));
+                    o.setStatus(rs.getInt("Status"));
+                    o.setPaymentStatus(rs.getString("PaymentStatus"));
+                    o.setTotalPrice(rs.getDouble("TotalPrice"));
+                    o.setNote(rs.getString("Note"));
+                    
+                    // Load OrderDetails
+                    List<OrderDetail> details = getOrderDetailsByOrderId(o.getOrderID(), con);
+                    o.setDetails(details);
+                    
+                    list.add(o);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("✅ Orders loaded with pagination (page " + page + "): " + list.size());
+        return list;
+    }
+    
+    // 🟢 Get orders by status with pagination
+    public List<Order> getOrdersByStatusWithPagination(int status, int page, int pageSize) {
+        List<Order> list = new ArrayList<>();
+        int offset = (page - 1) * pageSize;
+        String sql = "SELECT * FROM [Order] WHERE Status = ? ORDER BY OrderDate DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+        try (Connection con = useConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, status);
+            ps.setInt(2, offset);
+            ps.setInt(3, pageSize);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Order o = new Order();
+                    o.setOrderID(rs.getInt("OrderID"));
+                    o.setCustomerID(rs.getInt("CustomerID"));
+                    o.setEmployeeID(rs.getInt("EmployeeID"));
+                    o.setTableID(rs.getInt("TableID"));
+                    o.setOrderDate(rs.getTimestamp("OrderDate"));
+                    o.setStatus(rs.getInt("Status"));
+                    o.setPaymentStatus(rs.getString("PaymentStatus"));
+                    o.setTotalPrice(rs.getDouble("TotalPrice"));
+                    o.setNote(rs.getString("Note"));
+                    
+                    // Load OrderDetails
+                    List<OrderDetail> details = getOrderDetailsByOrderId(o.getOrderID(), con);
+                    o.setDetails(details);
+                    
+                    list.add(o);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("✅ Orders loaded by status " + status + " with pagination (page " + page + "): " + list.size());
+        return list;
+    }
+    
+    // 🟢 Count orders by status
+    public int countOrdersByStatus(int status) {
+        String sql = "SELECT COUNT(*) FROM [Order] WHERE Status = ?";
+        try (Connection con = useConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, status);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 }
