@@ -103,6 +103,13 @@
                     <i data-lucide="percent" class="w-6 h-6"></i>
                 </a>
 
+                <!-- Tables -->
+                <a href="${pageContext.request.contextPath}/table"
+                   class="nav-btn <%= currentPath.contains("/table") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Tables">
+                    <i data-lucide="layout-grid" class="w-6 h-6"></i>
+                </a>
+
                 <!-- Inventory -->
                 <a href="${pageContext.request.contextPath}/inventory"
                    class="nav-btn <%= currentPath.contains("/inventory") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
