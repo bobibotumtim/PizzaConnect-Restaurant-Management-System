@@ -146,23 +146,7 @@ public class AdminServlet extends HttpServlet {
         UserDAO userDAO = new UserDAO();
 
         try {
-            if ("delete".equals(action)) {
-                String userIdStr = request.getParameter("userId");
-                if (userIdStr != null) {
-                    int userId = Integer.parseInt(userIdStr);
-                    if (userId == user.getUserID()) {
-                        session.setAttribute("error", "Cannot delete your own account!");
-                    } else {
-                        System.out.println("[AdminServlet] Attempting to delete userID: " + userId);
-                        boolean success = userDAO.deleteUser(userId);
-                        if (success) {
-                            session.setAttribute("message", "✅ User deleted successfully!");
-                        } else {
-                            session.setAttribute("error", "❌ Failed to delete user! Check database constraints.");
-                        }
-                    }
-                }
-            } else if ("suspend".equals(action)) {
+            if ("suspend".equals(action)) {
                 String userIdStr = request.getParameter("userId");
                 if (userIdStr != null) {
                     int userId = Integer.parseInt(userIdStr);

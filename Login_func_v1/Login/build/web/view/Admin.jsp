@@ -1,7 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.List" %>
 <%@ page import="models.User" %>
-<%@ page import="java.net.URLEncoder" %>
 <!DOCTYPE html>
 <html>
     <head>
@@ -532,8 +531,7 @@
             String message = (String) request.getAttribute("message");
             String error = (String) request.getAttribute("error");
             Integer totalOrders = (Integer) request.getAttribute("totalOrders");
-            String selectedRole = (String) request.getAttribute("selectedRole");
-            if (selectedRole == null || selectedRole.trim().isEmpty()) selectedRole = "all";
+        
             // Calculate stats
             int totalUsers = users != null ? users.size() : 0;
             int adminCount = 0;
@@ -638,10 +636,10 @@
                         <div class="filter-container">
                             <span class="filter-label">Filter by Role:</span>
                             <select id="roleFilter" onchange="filterUsersByRole()">
-                                <option value="all" <%= "all".equalsIgnoreCase(selectedRole) ? "selected" : "" %>>All Roles</option>
-                                <option value="1" <%= "1".equals(selectedRole) || "admin".equalsIgnoreCase(selectedRole) ? "selected" : "" %>>Admin</option>
-                                <option value="2" <%= "2".equals(selectedRole) || "employee".equalsIgnoreCase(selectedRole) || "staff".equalsIgnoreCase(selectedRole) ? "selected" : "" %>>Employee</option>
-                                <option value="3" <%= "3".equals(selectedRole) || "customer".equalsIgnoreCase(selectedRole) || "user".equalsIgnoreCase(selectedRole) ? "selected" : "" %>>Customer</option>
+                                <option value="all">All Roles</option>
+                                <option value="1">Admin</option>
+                                <option value="2">Employee</option>
+                                <option value="3">Customer</option>
                             </select>
                             <a href="adduser" class="btn btn-success" style="margin: 0;" title="Add New User">+ Add New User</a>
                         </div>
@@ -654,6 +652,7 @@
                         <p>There are no users in the system yet.</p>
                     </div>
                     <% } else { %>
+<<<<<<< Updated upstream
                     <table>
                         <thead>
                             <tr>
@@ -703,6 +702,101 @@
                                     <% } %>
                                 </td>
                             </tr>
+=======
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <% for (User user : users) { %>
+                                <tr class="hover:bg-gray-50" data-role="<%= user.getRole() %>">
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#<%= user.getUserID() %></td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><%= user.getName() %></td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500"><%= user.getEmail() %></td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500"><%= user.getPhone() %></td>
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        <% if (user.getRole() == 1) { %>
+                                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Admin</span>
+                                        <% } else if (user.getRole() == 2) { %>
+                                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">Employee</span>
+                                        <% } else { %>
+                                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Customer</span>
+                                        <% } %>
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap">
+                                        <% if (user.isActive()) { %>
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            <i data-lucide="check-circle" class="w-3 h-3 mr-1"></i>
+                                            Active
+                                        </span>
+                                        <% } else { %>
+                                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                            <i data-lucide="x-circle" class="w-3 h-3 mr-1"></i>
+                                            Inactive
+                                        </span>
+                                        <% } %>
+                                    </td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                                        <% if (currentUser != null && user.getUserID() != currentUser.getUserID()) { %>
+                                        <div class="flex space-x-2">
+                                            <a href="edituser?id=<%= user.getUserID() %>" 
+                                               class="text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded text-xs">
+                                                <i data-lucide="edit" class="w-3 h-3 inline mr-1"></i>Edit
+                                            </a>
+                                            <% if (user.isActive()) { %>
+                                            <button type="button" class="text-yellow-600 hover:text-yellow-800 bg-yellow-50 hover:bg-yellow-100 px-3 py-1 rounded text-xs suspend-btn" data-user-id="<%= user.getUserID() %>">
+                                                <i data-lucide="pause" class="w-3 h-3 inline mr-1"></i>Suspend
+                                            </button>
+                                            <% } else { %>
+                                            <button type="button" class="text-green-600 hover:text-green-800 bg-green-50 hover:bg-green-100 px-3 py-1 rounded text-xs activate-btn" data-user-id="<%= user.getUserID() %>">
+                                                <i data-lucide="play" class="w-3 h-3 inline mr-1"></i>Activate
+                                            </button>
+                                            <% } %>
+                                        </div>
+                                        <% } else { %>
+                                        <span class="text-gray-400 text-xs italic">Current User</span>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Pagination -->
+                    <%
+                        int currentPage = (int) request.getAttribute("currentPage");
+                        int totalPages = (int) request.getAttribute("totalPages");
+                        if (totalPages > 1) {
+                    %>
+                    <div class="flex justify-between items-center mt-6 px-6 py-4 bg-gray-50">
+                        <div class="text-sm text-gray-500">
+                            Showing page <%= currentPage %> of <%= totalPages %>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <a href="admin?page=1<%= roleParam %>" 
+                               class="px-3 py-2 border border-gray-300 rounded <%= currentPage == 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "hover:bg-gray-100 text-gray-700" %>">
+                                <i data-lucide="chevrons-left" class="w-4 h-4"></i>
+                            </a>
+                            <a href="admin?page=<%= (currentPage - 1) %><%= roleParam %>" 
+                               class="px-3 py-2 border border-gray-300 rounded <%= currentPage == 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "hover:bg-gray-100 text-gray-700" %>">
+                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            </a>
+                            
+                            <% for (int i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) { %>
+                            <a href="admin?page=<%= i %><%= roleParam %>" 
+                               class="px-3 py-2 border border-gray-300 rounded <%= i == currentPage ? "bg-orange-500 text-white" : "hover:bg-gray-100 text-gray-700" %>">
+                                <%= i %>
+                            </a>
+>>>>>>> Stashed changes
                             <% } %>
                         </tbody>
                     </table>
@@ -712,24 +806,21 @@
                             <%
                                 int currentPage = (int) request.getAttribute("currentPage");
                                 int totalPages = (int) request.getAttribute("totalPages");
-                                String roleParam = "";
-                                if (selectedRole != null && !"all".equalsIgnoreCase(selectedRole)) {
-                                    roleParam = "&role=" + URLEncoder.encode(selectedRole, "UTF-8");
-                                }
+
                                 if (totalPages > 1) {
                             %>
                             <li class="page-item <%= (currentPage == 1 ? "disabled" : "") %>">
-                                <a class="page-link" href="admin?page=<%= (currentPage - 1) %><%= roleParam %>">Previous</a>
+                                <a class="page-link" href="admin?page=<%= (currentPage - 1) %>">Previous</a>
                             </li>
 
                             <% for (int i = 1; i <= totalPages; i++) { %>
                             <li class="page-item <%= (i == currentPage ? "active" : "") %>">
-                                <a class="page-link" href="admin?page=<%= i %><%= roleParam %>"><%= i %></a>
+                                <a class="page-link" href="admin?page=<%= i %>"><%= i %></a>
                             </li>
                             <% } %>
 
                             <li class="page-item <%= (currentPage == totalPages ? "disabled" : "") %>">
-                                <a class="page-link" href="admin?page=<%= (currentPage + 1) %><%= roleParam %>">Next</a>
+                                <a class="page-link" href="admin?page=<%= (currentPage + 1) %>">Next</a>
                             </li>
                             <% } %>
                         </ul>
@@ -740,6 +831,7 @@
             </div>
         </div>
 
+<<<<<<< Updated upstream
         <!-- Delete Confirmation Modal -->
         <div id="deleteModal" class="modal">
             <div class="modal-content">
@@ -757,6 +849,8 @@
             </div>
         </div>
 
+=======
+>>>>>>> Stashed changes
         <!-- Suspend Confirmation Modal -->
         <div id="suspendModal" class="modal">
             <div class="modal-content">
@@ -800,14 +894,15 @@
                 }
             }
 
-            // Function to filter users by role (server-side redirect)
+            // ✅ NEW: Function to filter users by role (server-side redirect)
             function filterUsersByRole() {
                 const selectedRole = document.getElementById('roleFilter').value;
+                // Nếu chọn "all" thì xem toàn bộ user
                 if (selectedRole === 'all') {
-                    window.location.href = 'admin?page=1&role=all';
+                    window.location.href = 'admin?page=1';
                 } else {
-                    // Redirect lên servlet admin kèm role param (tên param "role" để khớp servlet)
-                    window.location.href = 'admin?role=' + encodeURIComponent(selectedRole) + '&page=1';
+                    // Redirect lên servlet admin kèm roleFilter param
+                    window.location.href = 'admin?roleFilter=' + encodeURIComponent(selectedRole) + '&page=1';
                 }
             }
 
@@ -839,11 +934,14 @@
             // Modal functions
             let currentUserId = null;
 
+<<<<<<< Updated upstream
             function showDeleteModal(userId) {
                 currentUserId = userId;
                 document.getElementById('deleteModal').style.display = 'block';
             }
 
+=======
+>>>>>>> Stashed changes
             function showSuspendModal(userId) {
                 currentUserId = userId;
                 document.getElementById('suspendModal').style.display = 'block';
@@ -857,29 +955,6 @@
             function closeModal(modalId) {
                 document.getElementById(modalId).style.display = 'none';
                 currentUserId = null;
-            }
-
-            function confirmDelete() {
-                if (currentUserId) {
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = 'admin';
-
-                    const actionInput = document.createElement('input');
-                    actionInput.type = 'hidden';
-                    actionInput.name = 'action';
-                    actionInput.value = 'delete';
-                    form.appendChild(actionInput);
-
-                    const userIdInput = document.createElement('input');
-                    userIdInput.type = 'hidden';
-                    userIdInput.name = 'userId';
-                    userIdInput.value = currentUserId;
-                    form.appendChild(userIdInput);
-
-                    document.body.appendChild(form);
-                    form.submit();
-                }
             }
 
             function confirmSuspend() {
@@ -928,6 +1003,7 @@
                 }
             }
 
+<<<<<<< Updated upstream
             // Close modal when clicking outside
             window.onclick = function (event) {
                 const modals = document.querySelectorAll('.modal');
@@ -938,6 +1014,37 @@
                     }
                 });
             }
+=======
+            // Initialize event listeners
+            document.addEventListener('DOMContentLoaded', function () {
+                // Add event listeners for action buttons
+                document.querySelectorAll('.suspend-btn').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const userId = this.getAttribute('data-user-id');
+                        showSuspendModal(userId);
+                    });
+                });
+
+                document.querySelectorAll('.activate-btn').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        const userId = this.getAttribute('data-user-id');
+                        showActivateModal(userId);
+                    });
+                });
+
+                // Close modal when clicking outside
+                window.onclick = function (event) {
+                    const modals = ['suspendModal', 'activateModal'];
+                    modals.forEach(modalId => {
+                        const modal = document.getElementById(modalId);
+                        if (event.target === modal) {
+                            modal.classList.add('hidden');
+                            currentUserId = null;
+                        }
+                    });
+                }
+            });
+>>>>>>> Stashed changes
         </script>
 
     </body>

@@ -269,4 +269,259 @@ public class OrderDAO extends DBContext {
         }
         return count;
     }
+    
+    // ===== CHATBOT-SPECIFIC METHODS =====
+    
+    /**
+     * Get customer's recent orders by phone number
+     * Used by chatbot to show order history
+     * 
+     * @param customerPhone Customer phone number
+     * @param limit Maximum number of orders to retrieve
+     * @return List of recent orders
+     */
+    public List<Order> getCustomerRecentOrders(String customerPhone, int limit) {
+        List<Order> list = new ArrayList<>();
+        String sql = "SELECT TOP (?) * FROM Orders " +
+                     "WHERE CustomerPhone = ? " +
+                     "ORDER BY OrderDate DESC";
+        
+        try (Connection con = getConnection(); 
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            ps.setString(2, customerPhone);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Order order = new Order(
+                            rs.getInt("OrderID"),
+                            rs.getInt("StaffID"),
+                            rs.getString("TableNumber"),
+                            rs.getTimestamp("OrderDate"),
+                            rs.getInt("Status"),
+                            rs.getDouble("TotalMoney"),
+                            rs.getString("PaymentStatus"),
+                            rs.getString("CustomerName"),
+                            rs.getString("CustomerPhone"),
+                            rs.getString("Notes")
+                    );
+                    list.add(order);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+    
+    /**
+     * Get order details with product information
+     * Used by chatbot to show detailed order information
+     * 
+     * @param orderId Order ID
+     * @return OrderWithDetails object containing order and its items
+     */
+    public OrderWithDetails getOrderDetails(int orderId) {
+        OrderWithDetails orderDetails = new OrderWithDetails();
+        
+        // Get order information
+        Order order = getOrderById(orderId);
+        if (order == null) {
+            return null;
+        }
+        orderDetails.setOrder(order);
+        
+        // Get order items with product details
+        String sql = "SELECT od.*, p.ProductName, p.Description, p.ImageURL " +
+                     "FROM OrderDetails od " +
+                     "JOIN Product p ON od.ProductID = p.ProductID " +
+                     "WHERE od.OrderID = ?";
+        
+        List<OrderDetailWithProduct> items = new ArrayList<>();
+        
+        try (Connection con = getConnection(); 
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, orderId);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    OrderDetailWithProduct item = new OrderDetailWithProduct();
+                    item.setOrderDetailId(rs.getInt("OrderDetailID"));
+                    item.setOrderId(rs.getInt("OrderID"));
+                    item.setProductId(rs.getInt("ProductID"));
+                    item.setProductName(rs.getString("ProductName"));
+                    item.setQuantity(rs.getInt("Quantity"));
+                    item.setUnitPrice(rs.getDouble("UnitPrice"));
+                    item.setTotalPrice(rs.getDouble("TotalPrice"));
+                    item.setSpecialInstructions(rs.getString("SpecialInstructions"));
+                    items.add(item);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        orderDetails.setItems(items);
+        return orderDetails;
+    }
+    
+    /**
+     * Get customer's order count
+     * Used by chatbot for analytics
+     * 
+     * @param customerPhone Customer phone number
+     * @return Total number of orders
+     */
+    public int getCustomerOrderCount(String customerPhone) {
+        int count = 0;
+        String sql = "SELECT COUNT(*) FROM Orders WHERE CustomerPhone = ?";
+        
+        try (Connection conn = getConnection(); 
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, customerPhone);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    count = rs.getInt(1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+    
+    /**
+     * Get customer's total spending
+     * Used by chatbot to show customer statistics
+     * 
+     * @param customerPhone Customer phone number
+     * @return Total amount spent
+     */
+    public double getCustomerTotalSpending(String customerPhone) {
+        double total = 0;
+        String sql = "SELECT SUM(TotalMoney) FROM Orders " +
+                     "WHERE CustomerPhone = ? AND Status != 3";  // Exclude cancelled orders
+        
+        try (Connection conn = getConnection(); 
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, customerPhone);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    total = rs.getDouble(1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return total;
+    }
+    
+    /**
+     * Helper class to hold order with detailed items
+     */
+    public static class OrderWithDetails {
+        private Order order;
+        private List<OrderDetailWithProduct> items;
+        
+        public OrderWithDetails() {
+            this.items = new ArrayList<>();
+        }
+        
+        public Order getOrder() {
+            return order;
+        }
+        
+        public void setOrder(Order order) {
+            this.order = order;
+        }
+        
+        public List<OrderDetailWithProduct> getItems() {
+            return items;
+        }
+        
+        public void setItems(List<OrderDetailWithProduct> items) {
+            this.items = items;
+        }
+    }
+    
+    /**
+     * Helper class for order detail with product info
+     */
+    public static class OrderDetailWithProduct {
+        private int orderDetailId;
+        private int orderId;
+        private int productId;
+        private String productName;
+        private int quantity;
+        private double unitPrice;
+        private double totalPrice;
+        private String specialInstructions;
+        
+        // Getters and Setters
+        public int getOrderDetailId() {
+            return orderDetailId;
+        }
+        
+        public void setOrderDetailId(int orderDetailId) {
+            this.orderDetailId = orderDetailId;
+        }
+        
+        public int getOrderId() {
+            return orderId;
+        }
+        
+        public void setOrderId(int orderId) {
+            this.orderId = orderId;
+        }
+        
+        public int getProductId() {
+            return productId;
+        }
+        
+        public void setProductId(int productId) {
+            this.productId = productId;
+        }
+        
+        public String getProductName() {
+            return productName;
+        }
+        
+        public void setProductName(String productName) {
+            this.productName = productName;
+        }
+        
+        public int getQuantity() {
+            return quantity;
+        }
+        
+        public void setQuantity(int quantity) {
+            this.quantity = quantity;
+        }
+        
+        public double getUnitPrice() {
+            return unitPrice;
+        }
+        
+        public void setUnitPrice(double unitPrice) {
+            this.unitPrice = unitPrice;
+        }
+        
+        public double getTotalPrice() {
+            return totalPrice;
+        }
+        
+        public void setTotalPrice(double totalPrice) {
+            this.totalPrice = totalPrice;
+        }
+        
+        public String getSpecialInstructions() {
+            return specialInstructions;
+        }
+        
+        public void setSpecialInstructions(String specialInstructions) {
+            this.specialInstructions = specialInstructions;
+        }
+    }
 }
