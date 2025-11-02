@@ -18,15 +18,16 @@ public class ProductDAO extends DBContext {
                 rs.getDouble("Price"),
                 rs.getString("Category"),
                 rs.getString("ImageURL"),
-                rs.getBoolean("IsAvailable")
-        );
+                rs.getBoolean("IsAvailable"));
     }
 
     // Get all available products
     public List<Product> getAllProducts() {
         List<Product> list = new ArrayList<>();
         String sql = "SELECT * FROM Product WHERE IsAvailable = 1 ORDER BY Category, ProductName";
-        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        try (Connection con = getConnection();
+                PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(mapResultSetToProduct(rs));
             }
@@ -55,7 +56,8 @@ public class ProductDAO extends DBContext {
     // Add new product
     public int addProduct(Product product) {
         String sql = "INSERT INTO Product (ProductName, Description, Price, Category, ImageURL, IsAvailable) VALUES (?, ?, ?, ?, ?, ?)";
-        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection con = getConnection();
+                PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, product.getProductName());
             ps.setString(2, product.getDescription());
@@ -110,23 +112,22 @@ public class ProductDAO extends DBContext {
 
     // Get product availability map
     public Map<Integer, Double> getProductAvailability() {
-    Map<Integer, Double> map = new HashMap<>();
-    String sql = "SELECT ProductID, AvailableQuantity FROM v_ProductAvailable";
+        Map<Integer, Double> map = new HashMap<>();
+        String sql = "SELECT ProductID, AvailableQuantity FROM v_ProductAvailable";
 
-    try (Connection con = getConnection();
-         PreparedStatement ps = con.prepareStatement(sql);
-         ResultSet rs = ps.executeQuery()) {
-        
-        while (rs.next()) {
-            map.put(rs.getInt("ProductID"), rs.getDouble("AvailableQuantity"));
-        }
+        try (Connection con = getConnection();
+                PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                map.put(rs.getInt("ProductID"), rs.getDouble("AvailableQuantity"));
+            }
 
     } catch (Exception e) {
         e.printStackTrace();
     }
 
-    return map;
-}
-
+        return map;
+    }
 
 }

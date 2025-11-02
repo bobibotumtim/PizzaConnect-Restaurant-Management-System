@@ -132,7 +132,7 @@
         <url-pattern>/verifyCode</url-pattern>
     </servlet-mapping>
     
-        <!-- Discount Import Servlet -->
+    <!-- Discount Import Servlet -->
     <servlet>
         <servlet-name>DiscountImportServlet</servlet-name>
         <servlet-class>controller.DiscountImportServlet</servlet-class>
@@ -141,5 +141,16 @@
         <servlet-name>DiscountImportServlet</servlet-name>
         <url-pattern>/discount/import</url-pattern>
     </servlet-mapping>
+
+    <!-- Table Booking Servlet -->
+    <servlet>
+        <servlet-name>TableServlet</servlet-name>
+        <servlet-class>controller.TableServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TableServlet</servlet-name>
+        <url-pattern>/table</url-pattern>
+    </servlet-mapping>
+    
 </web-app>
 
