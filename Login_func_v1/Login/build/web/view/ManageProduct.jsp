@@ -252,12 +252,19 @@
                                     <td class="px-4 py-2 font-medium">${p.productName}</td>
                                     <td class="px-4 py-2">${p.categoryName}</td>
                                     <td class="px-4 py-2">
+                                        <%-- Lấy status từ Map mới (ProductID -> Boolean) --%>
+                                        <c:set var="isAvailable" value="${productAvailabilityStatus[p.productId]}" />
+
                                         <c:choose>
-                                            <c:when test="${p.available}">
-                                                <span class="px-3 py-1 text-white rounded-full text-xs font-semibold bg-green-500">Available</span>
+                                            <c:when test="${isAvailable}">
+                                                <span class="px-3 py-1 text-white rounded-full text-xs font-semibold bg-green-500">
+                                                    Available
+                                                </span>
                                             </c:when>
                                             <c:otherwise>
-                                                <span class="px-3 py-1 text-white rounded-full text-xs font-semibold bg-red-500">Unavailable</span>
+                                                <span class="px-3 py-1 text-white rounded-full text-xs font-semibold bg-red-500">
+                                                    Unavailable
+                                                </span>
                                             </c:otherwise>
                                         </c:choose>
                                     </td>
