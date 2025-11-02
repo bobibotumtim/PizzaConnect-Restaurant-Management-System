@@ -338,7 +338,8 @@ public class OrderDAO extends DBContext {
         String sql = """
         SELECT od.*, p.ProductName 
         FROM OrderDetail od
-        JOIN Product p ON od.ProductID = p.ProductID
+        JOIN ProductSize ps ON od.ProductSizeID = ps.ProductSizeID
+        JOIN Product p ON ps.ProductID = p.ProductID
         WHERE od.Status = ?
         ORDER BY od.StartTime DESC
     """;
