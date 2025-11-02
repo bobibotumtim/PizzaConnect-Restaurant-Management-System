@@ -215,7 +215,7 @@
                                                             </div>
                                                         </div>
                                                         <div class="flex gap-2">
-                                                            <button onclick="openAddOrderModal()"
+                                                            <a href="${pageContext.request.contextPath}/pos"
                                                                 class="bg-green-500 text-white px-6 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-green-600 transition-all shadow-md">
                                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor"
                                                                     viewBox="0 0 24 24">
@@ -223,7 +223,7 @@
                                                                         stroke-width="2" d="M12 4v16m8-8H4" />
                                                                 </svg>
                                                                 New Order
-                                                            </button>
+                                                            </a>
                                                             <a href="${pageContext.request.contextPath}/manage-orders"
                                                                 class="bg-blue-500 text-white px-6 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-blue-600 transition-all">
                                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor"
@@ -233,16 +233,6 @@
                                                                         d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                                                 </svg>
                                                                 Refresh
-                                                            </a>
-                                                            <a href="${pageContext.request.contextPath}/dashboard"
-                                                                class="bg-indigo-500 text-white px-6 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-indigo-600 transition-all">
-                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                                    viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                        stroke-width="2"
-                                                                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                                                </svg>
-                                                                Dashboard
                                                             </a>
                                                         </div>
                                                     </div>
@@ -380,16 +370,18 @@
                                                                                         int status = order.getStatus();
                                                                                         boolean isPaid = "Paid".equals(paymentStatus);
                                                                                         
-                                                                                        // 1. EDIT BUTTON - Show for all except Cancelled
-                                                                                        if (status != 3) {
+                                                                                        // 1. VIEW BUTTON - Show for all orders
                                                                                         %>
                                                                                             <button
-                                                                                                onclick="openEditOrderModal(<%= order.getOrderID() %>)"
-                                                                                                class="px-2 py-1 text-white bg-blue-500 hover:bg-blue-600 rounded text-xs font-medium whitespace-nowrap"
-                                                                                                title="Edit">
-                                                                                                Edit
+                                                                                                onclick="openViewOrderModal(<%= order.getOrderID() %>)"
+                                                                                                class="px-2 py-1 text-white bg-gray-600 hover:bg-gray-700 rounded text-xs font-medium whitespace-nowrap"
+                                                                                                title="View Details">
+                                                                                                <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                                                                </svg>
+                                                                                                View
                                                                                             </button>
-                                                                                        <% } %>
 
                                                                                                 <%
                                                                                                 // 2. PROCESS BUTTON - Only for Pending
@@ -626,75 +618,67 @@
                                 </div>
                             </div>
 
-                            <!-- Edit Order Modal -->
+                            <!-- View Order Modal -->
                             <div id="editOrderModal" class="modal">
-                                <div class="bg-white rounded-xl shadow-2xl max-w-md w-full m-4 fade-in">
+                                <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full m-4 fade-in">
                                     <div
-                                        class="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-4 flex items-center justify-between rounded-t-xl">
-                                        <h3 class="text-xl font-bold" id="editModalTitle">Edit Order</h3>
+                                        class="bg-gradient-to-r from-gray-600 to-gray-700 text-white px-6 py-4 flex items-center justify-between rounded-t-xl">
+                                        <h3 class="text-xl font-bold" id="editModalTitle">Order Details</h3>
                                         <button onclick="closeEditOrderModal()"
-                                            class="hover:bg-blue-700 rounded-full p-1">
+                                            class="hover:bg-gray-800 rounded-full p-1">
                                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M6 18L18 6M6 6l12 12" />
                                             </svg>
                                         </button>
                                     </div>
-                                    <form id="editOrderForm" onsubmit="submitEditOrderForm(event)" class="p-6">
-                                        <input type="hidden" id="editOrderID" name="orderID" aria-label="Order ID">
-
+                                    <div class="p-6">
                                         <div class="space-y-4">
-                                            <div>
-                                                <label for="editStatus"
-                                                    class="block text-sm font-semibold text-gray-700 mb-2">
-                                                    Status
-                                                </label>
-                                                <select id="editStatus" name="status" required
-                                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                                    <option value="0">Pending</option>
-                                                    <option value="1">Processing</option>
-                                                    <option value="2">Completed</option>
-                                                    <option value="3">Cancelled</option>
-                                                </select>
+                                            <div class="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Order ID</label>
+                                                    <div id="viewOrderID" class="px-4 py-2 bg-gray-100 rounded-lg text-gray-800 font-mono"></div>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Table</label>
+                                                    <div id="viewTable" class="px-4 py-2 bg-gray-100 rounded-lg text-gray-800"></div>
+                                                </div>
                                             </div>
 
-
-                                            <div>
-                                                <label for="editPaymentStatus"
-                                                    class="block text-sm font-semibold text-gray-700 mb-2">Payment
-                                                    Status</label>
-                                                <select id="editPaymentStatus" name="paymentStatus" required
-                                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                                    <option value="Unpaid">Unpaid</option>
-                                                    <option value="Paid">Paid</option>
-                                                </select>
+                                            <div class="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Status</label>
+                                                    <div id="viewStatus" class="px-4 py-2 bg-gray-100 rounded-lg"></div>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Payment</label>
+                                                    <div id="viewPayment" class="px-4 py-2 bg-gray-100 rounded-lg"></div>
+                                                </div>
                                             </div>
 
                                             <div>
-                                                <label for="editNote"
-                                                    class="block text-sm font-semibold text-gray-700 mb-2">
-                                                    Note
-                                                </label>
-                                                <textarea id="editNote" name="note" rows="3"
-                                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                    placeholder="Add special instructions or notes..."></textarea>
+                                                <label class="block text-sm font-semibold text-gray-700 mb-1">Total Price</label>
+                                                <div id="viewTotal" class="px-4 py-2 bg-gray-100 rounded-lg text-green-600 font-bold text-lg"></div>
+                                            </div>
+
+                                            <div>
+                                                <label class="block text-sm font-semibold text-gray-700 mb-1">Order Items</label>
+                                                <div id="viewItems" class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 max-h-48 overflow-y-auto"></div>
+                                            </div>
+
+                                            <div>
+                                                <label class="block text-sm font-semibold text-gray-700 mb-1">Note</label>
+                                                <div id="viewNote" class="px-4 py-2 bg-gray-100 rounded-lg text-gray-600 italic min-h-[60px]"></div>
                                             </div>
                                         </div>
-
-                                        <div id="editOrderError"
-                                            class="hidden mt-4 p-3 bg-red-100 text-red-700 rounded-lg"></div>
 
                                         <div class="flex justify-end gap-3 mt-6">
                                             <button type="button" onclick="closeEditOrderModal()"
-                                                class="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
-                                                Cancel
-                                            </button>
-                                            <button type="submit"
-                                                class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-                                                Save Changes
+                                                class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                                                Close
                                             </button>
                                         </div>
-                                    </form>
+                                    </div>
                                 </div>
                             </div>
 
@@ -842,42 +826,49 @@
                                     }
                                 }
 
-                                // Edit Order Modal Functions
-                                function openEditOrderModal(orderId) {
-                                    console.log("Opening edit modal for order:", orderId);
+                                // View Order Modal Functions
+                                function openViewOrderModal(orderId) {
                                     const modal = document.getElementById("editOrderModal");
-                                    const errorBox = document.getElementById("editOrderError");
-                                    errorBox.classList.add("hidden");
-
-                                    console.log("Fetching order data...");
+                                    
                                     fetch(ctx + '/manage-orders?action=getOrder&id=' + orderId)
-                                        .then(res => {
-                                            console.log("Response status:", res.status);
-                                            return res.json();
-                                        })
+                                        .then(res => res.json())
                                         .then(data => {
-                                            console.log("Order data received:", data);
                                             if (!data.success) {
-                                                errorBox.classList.remove("hidden");
-                                                errorBox.textContent = data.message || "Could not load order data.";
+                                                alert("Could not load order data.");
                                                 return;
                                             }
 
                                             const o = data.order;
-                                            document.getElementById("editOrderID").value = o.orderID;
-                                            document.getElementById("editStatus").value = o.status;
-                                            document.getElementById("editPaymentStatus").value = o.paymentStatus || "Unpaid";
-                                            document.getElementById("editNote").value = o.note || "";
-                                            document.getElementById("editModalTitle").textContent = 'Edit Order #' + o.orderID;
+                                            const statusText = ['Pending', 'Processing', 'Completed', 'Cancelled'][o.status];
+                                            const statusColor = ['orange', 'blue', 'green', 'red'][o.status];
+                                            
+                                            document.getElementById("viewOrderID").textContent = '#' + o.orderID;
+                                            document.getElementById("viewTable").textContent = 'Table ' + (o.tableID || 'N/A');
+                                            document.getElementById("viewStatus").innerHTML = '<span class="px-3 py-1 rounded-full text-white bg-' + statusColor + '-500">' + statusText + '</span>';
+                                            document.getElementById("viewPayment").innerHTML = '<span class="px-3 py-1 rounded-full text-white bg-' + (o.paymentStatus === 'Paid' ? 'green' : 'orange') + '-500">' + (o.paymentStatus || 'Unpaid') + '</span>';
+                                            document.getElementById("viewTotal").textContent = (o.totalPrice || 0).toLocaleString('vi-VN') + ' VND';
+                                            document.getElementById("viewNote").textContent = o.note || 'No notes';
+                                            
+                                            // Load order items
+                                            if (data.details && data.details.length > 0) {
+                                                let itemsHTML = '<div class="space-y-2">';
+                                                data.details.forEach(item => {
+                                                    itemsHTML += '<div class="flex justify-between py-2 border-b">';
+                                                    itemsHTML += '<div><span class="font-semibold">' + item.productName + '</span> x' + item.quantity + '</div>';
+                                                    itemsHTML += '<div class="text-gray-600">' + (item.totalPrice || 0).toLocaleString('vi-VN') + ' VND</div>';
+                                                    itemsHTML += '</div>';
+                                                });
+                                                itemsHTML += '</div>';
+                                                document.getElementById("viewItems").innerHTML = itemsHTML;
+                                            } else {
+                                                document.getElementById("viewItems").innerHTML = '<p class="text-gray-500">No items</p>';
+                                            }
 
-                                            console.log("Opening modal...");
                                             modal.classList.add("show");
-                                            console.log("Modal classes:", modal.className);
                                         })
                                         .catch(err => {
-                                            console.error("Error fetching order:", err);
-                                            errorBox.classList.remove("hidden");
-                                            errorBox.textContent = "Error: " + err.message;
+                                            console.error("Error:", err);
+                                            alert("Error loading order details");
                                         });
                                 }
 

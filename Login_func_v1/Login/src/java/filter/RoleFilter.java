@@ -40,24 +40,22 @@ public class RoleFilter implements Filter {
     }
     
     private boolean isAdminOnlyPage(String path) {
-        // Admin-only: Manage users, Add/Edit/Delete products, Discount
+        // Admin-only: Manage users, products, discount, dashboard, inventory
         return path.contains("/admin") ||
                path.contains("/adduser") ||
                path.contains("/edituser") ||
+               path.contains("/manageproduct") ||
                path.contains("/AddProductServlet") ||
                path.contains("/EditProductFullServlet") ||
                path.contains("/DeleteProduct") ||
-               path.contains("/discount");
+               path.contains("/discount") ||
+               path.contains("/dashboard") ||
+               path.contains("/inventory");
     }
     
     private boolean isEmployeePage(String path) {
-        // Employee can access: POS, Orders, Dashboard, View Products/Menu
+        // Waiter (Role 2) can access: POS and Order Management only
         return path.contains("/pos") ||
-               path.contains("/manage-orders") ||
-               path.contains("/dashboard") ||
-               path.contains("/manageproduct") ||  // View products only
-               path.contains("/menu") ||
-               path.contains("/detail") ||  // View product details
-               path.contains("/inventory");
+               path.contains("/manage-orders");
     }
 }
