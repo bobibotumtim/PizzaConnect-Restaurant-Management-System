@@ -40,10 +40,15 @@ public class LoginServlet extends HttpServlet {
         HttpSession session = request.getSession();
         session.setAttribute("user", user); 
 
-        // Chuyển trang tuỳ role
+        // Redirect based on role
         if (user.getRole() == 1) {
+            // Admin -> Dashboard
             response.sendRedirect("dashboard"); 
+        } else if (user.getRole() == 2) {
+            // Waiter/Employee -> POS
+            response.sendRedirect("pos");
         } else {
+            // Customer -> Home
             CustomerDAO cdao = new CustomerDAO();
             {
                 Customer acc = cdao.getCustomerByUserID(user.getUserID());

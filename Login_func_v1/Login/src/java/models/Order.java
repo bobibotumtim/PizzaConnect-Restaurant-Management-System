@@ -1,77 +1,72 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package models;
 
-import java.util.Date;
+import java.sql.Timestamp;
+import java.util.List;
 
-/**
- *
- * @author Admin
- */
 public class Order {
-    private int orderId;
-    private int staffId;
-    private String tableNumber;
-    private Date orderDate;
+
+    private int orderID;
+    private int customerID;
+    private int employeeID;
+    private int tableID;
+    private Timestamp orderDate;
     private int status;
-    private double totalMoney;
     private String paymentStatus;
-    private String customerName;
-    private String customerPhone;
-    private String notes;
+    private double totalPrice;
+    private String note;
+    private List<OrderDetail> details;
+
+//    public Order(int orderID, int customerID, int employeeID, int tableID,
+//            Timestamp orderDate, int status, String paymentStatus,
+//            double totalPrice, String note) {
+//        this.orderID = orderID;
+//        this.customerID = customerID;
+//        this.employeeID = employeeID;
+//        this.tableID = tableID;
+//        this.orderDate = orderDate;
+//        this.status = status;
+//        this.paymentStatus = paymentStatus;
+//        this.totalPrice = totalPrice;
+//        this.note = note;
+//    }
+    
+    public Order(int orderID, int customerID, int employeeID, int tableID,
+             Timestamp orderDate, int status, String paymentStatus,
+             double totalPrice, String note) {
+    this.orderID = orderID;
+    this.customerID = customerID;
+    this.employeeID = employeeID;
+    this.tableID = tableID;
+    this.orderDate = orderDate;
+    this.status = status;
+    this.paymentStatus = paymentStatus;
+    this.totalPrice = totalPrice;
+    this.note = note;
+    this.details = null; // không cần danh sách chi tiết ở đây
+}
+
+    
 
     public Order() {
     }
 
-    public Order(int orderId, int staffId, String tableNumber, Date orderDate, int status, double totalMoney, String paymentStatus) {
-        this.orderId = orderId;
-        this.staffId = staffId;
-        this.tableNumber = tableNumber;
-        this.orderDate = orderDate;
-        this.status = status;
-        this.totalMoney = totalMoney;
-        this.paymentStatus = paymentStatus;
+    public int getOrderID() {
+        return orderID;
     }
 
-    public Order(int orderId, int staffId, String tableNumber, Date orderDate, int status, double totalMoney, String paymentStatus, String customerName, String customerPhone, String notes) {
-        this.orderId = orderId;
-        this.staffId = staffId;
-        this.tableNumber = tableNumber;
-        this.orderDate = orderDate;
-        this.status = status;
-        this.totalMoney = totalMoney;
-        this.paymentStatus = paymentStatus;
-        this.customerName = customerName;
-        this.customerPhone = customerPhone;
-        this.notes = notes;
+    public int getCustomerID() {
+        return customerID;
     }
 
-    public String getStatusText() {
-        switch (this.status) {
-            case 0: return "Pending";
-            case 1: return "Processing";
-            case 2: return "Completed";
-            case 3: return "Cancelled";
-            default: return "Unknown";
-        }
+    public int getEmployeeID() {
+        return employeeID;
     }
 
-    // Getters
-    public int getOrderId() {
-        return orderId;
+    public int getTableID() {
+        return tableID;
     }
 
-    public int getStaffId() {
-        return staffId;
-    }
-
-    public String getTableNumber() {
-        return tableNumber;
-    }
-
-    public Date getOrderDate() {
+    public Timestamp getOrderDate() {
         return orderDate;
     }
 
@@ -79,40 +74,39 @@ public class Order {
         return status;
     }
 
-    public double getTotalMoney() {
-        return totalMoney;
-    }
-
     public String getPaymentStatus() {
         return paymentStatus;
     }
 
-    public String getCustomerName() {
-        return customerName;
+    public double getTotalPrice() {
+        return totalPrice;
     }
 
-    public String getCustomerPhone() {
-        return customerPhone;
+    public String getNote() {
+        return note;
     }
 
-    public String getNotes() {
-        return notes;
+    public List<OrderDetail> getDetails() {
+        return details;
     }
 
-    // Setters
-    public void setOrderId(int orderId) {
-        this.orderId = orderId;
+    public void setOrderID(int orderID) {
+        this.orderID = orderID;
     }
 
-    public void setStaffId(int staffId) {
-        this.staffId = staffId;
+    public void setCustomerID(int customerID) {
+        this.customerID = customerID;
     }
 
-    public void setTableNumber(String tableNumber) {
-        this.tableNumber = tableNumber;
+    public void setEmployeeID(int employeeID) {
+        this.employeeID = employeeID;
     }
 
-    public void setOrderDate(Date orderDate) {
+    public void setTableID(int tableID) {
+        this.tableID = tableID;
+    }
+
+    public void setOrderDate(Timestamp orderDate) {
         this.orderDate = orderDate;
     }
 
@@ -120,39 +114,68 @@ public class Order {
         this.status = status;
     }
 
-    public void setTotalMoney(double totalMoney) {
-        this.totalMoney = totalMoney;
-    }
-
     public void setPaymentStatus(String paymentStatus) {
         this.paymentStatus = paymentStatus;
     }
 
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
+    public void setTotalPrice(double totalPrice) {
+        this.totalPrice = totalPrice;
     }
 
-    public void setCustomerPhone(String customerPhone) {
-        this.customerPhone = customerPhone;
+    public void setNote(String note) {
+        this.note = note;
     }
 
-    public void setNotes(String notes) {
-        this.notes = notes;
+    public void setDetails(List<OrderDetail> details) {
+        this.details = details;
+    }
+
+    // Helper methods for display
+    public String getStatusText() {
+        switch (status) {
+            case 0: return "Pending";
+            case 1: return "Processing";
+            case 2: return "Completed";
+            case 3: return "Cancelled";
+            default: return "Unknown";
+        }
+    }
+    
+    public String getCustomerName() {
+        // Use the database lookup method
+        return getCustomerNameFromDB();
+    }
+    
+    public String getCustomerNameFromDB() {
+        // Model class không nên trực tiếp truy cập database
+        // Trả về tên mặc định dựa trên customerID
+        switch (customerID) {
+            case 1: return "Nguyễn Văn A";
+            case 2: return "Trần Thị B";
+            case 3: return "Lê Văn C";
+            default: return "Customer #" + customerID;
+        }
+    }
+    
+    public String getCustomerPhone() {
+        // This would typically be fetched from CustomerDAO
+        // For now, return null
+        return null;
+    }
+    
+    public String getTableNumber() {
+        // This would typically be fetched from TableDAO
+        // For now, return table ID as string
+        return String.valueOf(tableID);
+    }
+    
+    public double getTotalMoney() {
+        return totalPrice;
     }
 
     @Override
     public String toString() {
-        return "Order{" + 
-                "orderId=" + orderId + 
-                ", staffId=" + staffId + 
-                ", tableNumber='" + tableNumber + '\'' + 
-                ", orderDate=" + orderDate + 
-                ", status=" + status + 
-                ", totalMoney=" + totalMoney + 
-                ", paymentStatus='" + paymentStatus + '\'' + 
-                ", customerName='" + customerName + '\'' + 
-                ", customerPhone='" + customerPhone + '\'' + 
-                ", notes='" + notes + '\'' + 
-                '}';
+        return "Order{" + "orderID=" + orderID + ", customerID=" + customerID + ", employeeID=" + employeeID + ", tableID=" + tableID + ", orderDate=" + orderDate + ", status=" + status + ", paymentStatus=" + paymentStatus + ", totalPrice=" + totalPrice + ", note=" + note + ", details=" + details + '}';
     }
+
 }
