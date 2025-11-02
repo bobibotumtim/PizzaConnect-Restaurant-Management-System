@@ -56,10 +56,10 @@
                 </a>
 
                 <!-- Notifications -->
-                <a href="${pageContext.request.contextPath}/notifications"
-                   class="nav-btn <%= currentPath.contains("/notifications") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                   title="Notifications">
-                    <i data-lucide="bell" class="w-6 h-6"></i>
+                <a href="${pageContext.request.contextPath}/managecategory"
+                   class="nav-btn <%= currentPath.contains("/managecategory") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Category">
+                    <i data-lucide="tags" class="w-6 h-6"></i>
                 </a>
 
                 <!-- Profile -->

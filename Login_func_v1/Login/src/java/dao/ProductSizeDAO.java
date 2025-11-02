@@ -14,9 +14,9 @@ public class ProductSizeDAO extends DBContext {
     // Hàm này (chỉ đọc) có thể tự quản lý Connection
     public List<ProductSize> getSizesByProductId(int productId) {
         List<ProductSize> list = new ArrayList<>();
-        String sql = "SELECT * FROM ProductSize WHERE ProductID = ?";
+        String sql = "SELECT * FROM ProductSize WHERE ProductID = ? AND IsDeleted = 0";
         try (Connection con = getConnection(); // Tự quản lý
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                 PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, productId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -42,9 +42,9 @@ public class ProductSizeDAO extends DBContext {
             ps.setInt(1, size.getProductId());
             ps.setString(2, size.getSizeCode());
             ps.setDouble(3, size.getPrice());
-            
+
             ps.executeUpdate();
-            
+
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
                     return rs.getInt(1); // Trả về ProductSizeID
@@ -56,22 +56,23 @@ public class ProductSizeDAO extends DBContext {
     }
 
     // Hàm này (thay đổi CSDL) phải nhận Connection và ném lỗi
-    public boolean deleteSizesByProductId(int productId, Connection con) throws SQLException {
-        String sql = "DELETE FROM ProductSize WHERE ProductID = ?";
-        // Giả định ProductIngredient đã được CSDL thiết lập ON DELETE CASCADE
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, productId);
+    public boolean deleteProductSizeByProductId(int productSizeId) {
+        String sql = "UPDATE ProductSize SET IsDeleted = 1 WHERE ProductSizeID = ?";
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, productSizeId);
             return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+        return false;
     }
-    
+
     public ProductSize getSizeById(int productSizeId) {
         String sql = "SELECT * FROM ProductSize WHERE ProductSizeID = ?";
-        try (Connection con = getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+
             ps.setInt(1, productSizeId);
-            
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     ProductSize psz = new ProductSize();
@@ -89,8 +90,8 @@ public class ProductSizeDAO extends DBContext {
     }
 
     /**
-     * MỚI: Cập nhật thông tin cơ bản của Size
-     * (Hàm này (thay đổi CSDL) phải nhận Connection và ném lỗi)
+     * MỚI: Cập nhật thông tin cơ bản của Size (Hàm này (thay đổi CSDL) phải
+     * nhận Connection và ném lỗi)
      */
     public boolean updateProductSize(ProductSize size, Connection con) throws SQLException {
         String sql = "UPDATE ProductSize SET SizeCode = ?, Price = ? WHERE ProductSizeID = ?";

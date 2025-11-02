@@ -23,7 +23,7 @@
         </tr>
     </thead>
     <tbody class="divide-y">
-        <c:forEach var="size" items="${product.sizes}">
+        <c:forEach var="size" items="${sizelist}">
             <tr class="hover:bg-gray-50">
                 <td class="px-4 py-2 font-medium">${size.sizeCode}</td>
                 <td class="px-4 py-2">
@@ -40,7 +40,7 @@
                             data-size-id="${size.productSizeId}">
                         Edit
                     </button>
-                    <a href="${pageContext.request.contextPath}/DeleteProductSizeServlet?sizeId=${size.productSizeId}"
+                    <a href="${pageContext.request.contextPath}/DeleteProductSize?sizeId=${size.productSizeId}&productId=${product.productId}"
                        onclick="return confirm('Delete this size?');"
                        class="bg-red-500 text-white px-3 py-1 rounded text-xs">
                         Delete
@@ -48,7 +48,7 @@
                 </td>
             </tr>
         </c:forEach>
-        <c:if test="${empty product.sizes}">
+        <c:if test="${empty sizelist}">
             <tr>
                 <td colspan="4" class="p-4 text-center text-gray-500">
                     This product currently has no sizes defined.

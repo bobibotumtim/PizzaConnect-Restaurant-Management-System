@@ -9,20 +9,17 @@ public class Product {
     private String categoryName;     // ✅ chỉ lấy tên category
     private String imageUrl;
     private boolean isAvailable;
-    private List<ProductSize> sizes; // ✅ chứa danh sách các size (ProductSize)
 
     public Product() {}
 
     public Product(int productId, String productName, String description,
-                   String categoryName, String imageUrl, boolean isAvailable,
-                   List<ProductSize> sizes) {
+                   String categoryName, String imageUrl, boolean isAvailable) {
         this.productId = productId;
         this.productName = productName;
         this.description = description;
         this.categoryName = categoryName;
         this.imageUrl = imageUrl;
         this.isAvailable = isAvailable;
-        this.sizes = sizes;
     }
 
     public Product(String productName, String description, String categoryName,
@@ -53,9 +50,6 @@ public class Product {
     public boolean isAvailable() { return isAvailable; }
     public void setAvailable(boolean available) { isAvailable = available; }
 
-    public List<ProductSize> getSizes() { return sizes; }
-    public void setSizes(List<ProductSize> sizes) { this.sizes = sizes; }
-
     @Override
     public String toString() {
         return "Product{" +
@@ -65,7 +59,6 @@ public class Product {
                 ", categoryName='" + categoryName + '\'' +
                 ", imageUrl='" + imageUrl + '\'' +
                 ", isAvailable=" + isAvailable +
-                ", sizes=" + (sizes != null ? sizes.size() : 0) +
                 '}';
     }
 }

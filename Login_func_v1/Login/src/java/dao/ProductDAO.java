@@ -196,7 +196,7 @@ public class ProductDAO extends DBContext {
         StringBuilder sql = new StringBuilder("""
             SELECT p.ProductID, p.ProductName, p.Description, c.CategoryName, p.ImageURL, p.IsAvailable
             FROM Product p JOIN Category c ON p.CategoryID = c.CategoryID
-            WHERE c.IsDeleted = 0 
+            WHERE c.IsDeleted = 0 AND p.IsAvailable = 1
         """);
 
         // Thêm điều kiện lọc
