@@ -1,0 +1,53 @@
+DEFECTS LIST - MANAGE ORDERS
+
+Project:,PizzaConnect Restaurant Management System
+Module:,Manage Orders
+Reported By:,Hieu
+Report Date:,03/11/2025
+
+Defect ID,Summary,Related Testcase,Severity,Priority,Status,Steps to Reproduce,Expected Result,Actual Result,Screenshot,Assigned To,Fix Date
+BUG-MO-001,System allows marking Paid for Pending order,TC-MO-004,Critical,High,Open,"1. Navigate to Manage Orders
+2. Find order with Status = Pending
+3. Click Paid button
+4. Observe result","System should show error: Cannot mark pending order as paid OR Paid button should be disabled","System accepts and marks order as Paid successfully (violates business rule)",screenshot_bug001.png,Dev Team,(Chưa fix)
+BUG-MO-002,Price validation missing for minimum value,TC-MO-006,Major,High,Open,"1. Click New Order
+2. Enter Price = $4 (below min $5)
+3. Enter Quantity = 1
+4. Click Create Order","System should show error: Price must be between $5 and $9000","Order created successfully with Price = $4 (no validation error shown)",screenshot_bug002.png,Dev Team,(Chưa fix)
+
+DEFECT DETAILS
+
+BUG-MO-001: System allows marking Paid for Pending order
+Severity: Critical
+Priority: High
+Status: Open
+
+Description:
+Hệ thống cho phép người dùng đánh dấu Payment Status = Paid cho đơn hàng có Status = Pending. 
+Điều này vi phạm business rule: chỉ được phép mark Paid khi order ở trạng thái Processing hoặc Completed.
+
+Impact:
+- Vi phạm business logic nghiêm trọng
+- Có thể gây nhầm lẫn trong quản lý tài chính
+- Đơn hàng chưa xử lý nhưng đã được đánh dấu thanh toán
+
+Recommendation:
+Thêm validation trong ManageOrderServlet để kiểm tra Status trước khi cho phép update Payment Status.
+
+---
+
+BUG-MO-002: Price validation missing for minimum value
+Severity: Major
+Priority: High
+Status: Open
+
+Description:
+Hệ thống không validate giá trị minimum cho Price field. Cho phép tạo order với giá < $5.
+
+Impact:
+- Có thể tạo orders với giá không hợp lệ
+- Ảnh hưởng đến báo cáo doanh thu
+- Vi phạm business rules về giá tối thiểu
+
+Recommendation:
+Thêm validation trong frontend (JavaScript) và backend (servlet) để kiểm tra Price >= $5.

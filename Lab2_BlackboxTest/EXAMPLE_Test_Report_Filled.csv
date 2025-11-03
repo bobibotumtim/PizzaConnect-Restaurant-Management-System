@@ -1,0 +1,47 @@
+TEST EXECUTION REPORT - MANAGE ORDERS
+
+Project Name:,PizzaConnect Restaurant Management System
+Module:,Manage Orders
+Tester:,Hieu
+Test Date:,03/11/2025
+Environment:,"Browser: Chrome 119, OS: Windows 11, Server: Tomcat 10.1, Database: pizza_demo_DB2"
+
+SUMMARY
+Total Test Cases:,8
+Executed:,8
+Passed:,6
+Failed:,2
+Pass Rate:,75%
+
+TEST RESULTS
+Testcase ID,Title,Status,Execution Date,Executed By,Actual Result,Notes
+TC-MO-001,Validate Price within valid range,Pass,03/11/2025,Hieu,"Order created successfully with Price = $25.00, Total = $50.00",Screenshot_TC001.png
+TC-MO-002,Validate Order Date auto-generated,Pass,03/11/2025,Hieu,"Date displayed correctly: 2025-11-03 21:45:30",Screenshot_TC002.png
+TC-MO-003,Verify Status dropdown,Pass,03/11/2025,Hieu,"Dropdown shows 4 options: Pending (default), Processing, Completed, Cancelled",Screenshot_TC003.png
+TC-MO-004,BR: Cannot mark Paid for Pending,Fail,03/11/2025,Hieu,"System allows marking Paid for Pending order - BUG FOUND",Screenshot_TC004.png - See BUG-MO-001
+TC-MO-005,BR: Pagination 10 items/page,Pass,03/11/2025,Hieu,"Page 1 shows 10 orders, Total 56 orders = 6 pages, Pagination works correctly",Screenshot_TC005.png
+TC-MO-006,Validate Price below minimum,Fail,03/11/2025,Hieu,"System accepts Price = $4 (below min $5) - BUG FOUND",Screenshot_TC006.png - See BUG-MO-002
+TC-MO-007,Validate Price above maximum,Pass,03/11/2025,Hieu,"System rejects Price = $9001 with error message",Screenshot_TC007.png
+TC-MO-008,Verify Filter by Status,Pass,03/11/2025,Hieu,"Filter works correctly, shows only selected status orders",Screenshot_TC008.png
+
+DEFECTS SUMMARY
+Total Defects Found:,2
+Critical:,1
+Major:,1
+Minor:,0
+
+DEFECTS LIST
+Defect ID,Related TC,Severity,Status,Description
+BUG-MO-001,TC-MO-004,Critical,Open,"System allows marking Paid for Pending order (violates business rule)"
+BUG-MO-002,TC-MO-006,Major,Open,"Price validation not working - accepts value below minimum ($4 < $5)"
+
+CONCLUSION
+Test execution completed with 75% pass rate (6/8 passed). Found 2 defects:
+- 1 Critical: Business rule violation (Payment status)
+- 1 Major: Price validation missing for minimum value
+Recommend fixing these defects before production release.
+
+SIGN-OFF
+Tester:,Hieu
+Date:,03/11/2025
+Signature:,_______________
