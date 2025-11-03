@@ -162,7 +162,8 @@ public class DashboardController extends HttpServlet {
     
     private String getProductNameById(int productId) {
         ProductDAO productDAO = new ProductDAO();
-        Product product = productDAO.getProductById(productId);
+        //Product product = productDAO.getProductById(productId);
+        Product product = null;
         if (product != null) {
             return product.getProductName();
         }

@@ -59,7 +59,8 @@ public class TestDashboardDataServlet extends HttpServlet {
                 out.println("<h3>Order #" + order.getOrderID() + " Details:</h3>");
                 out.println("<ul>");
                 for (OrderDetail detail : details) {
-                    Product product = productDAO.getProductById(detail.getProductID());
+                    //Product product = productDAO.getProductById(detail.getProductID());
+                    Product product = null;
                     String productName = (product != null) ? product.getProductName() : "Unknown";
                     
                     out.println("<li>ProductID: " + detail.getProductID() + 
@@ -90,12 +91,14 @@ public class TestDashboardDataServlet extends HttpServlet {
         
         // Test 4: Check products
         out.println("<h2>4. Available Products</h2>");
-        List<Product> products = productDAO.getAllProducts();
+        //List<Product> products = productDAO.getAllProducts();
+        List<Product> products = null;
         out.println("<p>Total products: " + products.size() + "</p>");
         if (!products.isEmpty()) {
             out.println("<ul>");
             for (Product p : products) {
-                out.println("<li>ID: " + p.getProductId() + " | " + p.getProductName() + " | " + p.getPrice() + "</li>");
+                //out.println("<li>ID: " + p.getProductId() + " | " + p.getProductName() + " | " + p.getPrice() + "</li>");
+                out.println("check");
             }
             out.println("</ul>");
         }

@@ -18,8 +18,10 @@ public class ChefMonitorServlet extends HttpServlet {
             throws ServletException, IOException {
 
         // Lấy danh sách món theo trạng thái
-        List<Orderdetail> pendingList = orderDAO.getOrderDetailsByStatus("Pending");
-        List<Orderdetail> cookingList = orderDAO.getOrderDetailsByStatus("Cooking");
+        //List<Orderdetail> pendingList = orderDAO.getOrderDetailsByStatus("Pending");
+        //List<Orderdetail> cookingList = orderDAO.getOrderDetailsByStatus("Cooking");
+        List<OrderDetail> pendingList = null;
+        List<OrderDetail> cookingList = null;
 
         req.setAttribute("pendingList", pendingList);
         req.setAttribute("cookingList", cookingList);
@@ -45,12 +47,12 @@ public class ChefMonitorServlet extends HttpServlet {
         boolean updated = false;
 
         if ("start".equals(action)) {
-            updated = orderDAO.updateOrderDetailStatus(orderDetailId, "Cooking", chef.getEmployeeID());
+            //updated = orderDAO.updateOrderDetailStatus(orderDetailId, "Cooking", chef.getEmployeeID());
         } else if ("done".equals(action)) {
-            updated = orderDAO.updateOrderDetailStatus(orderDetailId, "Done", chef.getEmployeeID());
+            //updated = orderDAO.updateOrderDetailStatus(orderDetailId, "Done", chef.getEmployeeID());
             // TODO: Trừ nguyên liệu tại đây
         } else if ("cancel".equals(action)) {
-            updated = orderDAO.updateOrderDetailStatus(orderDetailId, "Cancelled", chef.getEmployeeID());
+           //updated = orderDAO.updateOrderDetailStatus(orderDetailId, "Cancelled", chef.getEmployeeID());
         }
 
         if (updated) {
