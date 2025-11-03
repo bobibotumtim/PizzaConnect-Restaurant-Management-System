@@ -102,14 +102,34 @@
         <url-pattern>/edituser</url-pattern>
     </servlet-mapping>
     
-    <!-- Dashboard Servlet -->
+    <!-- Dashboard Controller -->
     <servlet>
-        <servlet-name>DashboardServlet</servlet-name>
-        <servlet-class>controller.DashboardServlet</servlet-class>
+        <servlet-name>DashboardController</servlet-name>
+        <servlet-class>controller.DashboardController</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>DashboardServlet</servlet-name>
+        <servlet-name>DashboardController</servlet-name>
         <url-pattern>/dashboard</url-pattern>
+    </servlet-mapping>
+
+    <!-- POS Servlet -->
+    <servlet>
+        <servlet-name>POSServlet</servlet-name>
+        <servlet-class>controller.POSServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>POSServlet</servlet-name>
+        <url-pattern>/pos</url-pattern>
+    </servlet-mapping>
+
+    <!-- Manage Orders Servlet -->
+    <servlet>
+        <servlet-name>ManageOrderServlet</servlet-name>
+        <servlet-class>controller.ManageOrderServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ManageOrderServlet</servlet-name>
+        <url-pattern>/manage-orders</url-pattern>
     </servlet-mapping>
 
     <!-- Discount Servlet -->
@@ -132,7 +152,7 @@
         <url-pattern>/verifyCode</url-pattern>
     </servlet-mapping>
     
-    <!-- Discount Import Servlet -->
+        <!-- Discount Import Servlet -->
     <servlet>
         <servlet-name>DiscountImportServlet</servlet-name>
         <servlet-class>controller.DiscountImportServlet</servlet-class>
@@ -141,16 +161,5 @@
         <servlet-name>DiscountImportServlet</servlet-name>
         <url-pattern>/discount/import</url-pattern>
     </servlet-mapping>
-
-    <!-- Table Booking Servlet -->
-    <servlet>
-        <servlet-name>TableServlet</servlet-name>
-        <servlet-class>controller.TableServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>TableServlet</servlet-name>
-        <url-pattern>/table</url-pattern>
-    </servlet-mapping>
-    
 </web-app>
 
