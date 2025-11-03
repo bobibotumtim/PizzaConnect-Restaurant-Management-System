@@ -172,12 +172,23 @@
                         </div>
                         <div>
                             <label for="role" class="block text-sm font-medium text-gray-700 mb-2">User Role *</label>
-                            <select id="role" name="role" required 
+                            <select id="role" name="role" required onchange="toggleEmployeeRole()"
                                     class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
                                 <option value="">Select Role</option>
                                 <option value="1">Admin</option>
                                 <option value="2">Employee</option>
                                 <option value="3">Customer</option>
+                            </select>
+                        </div>
+                        <div id="employeeRoleDiv" style="display: none;">
+                            <label for="employeeRole" class="block text-sm font-medium text-gray-700 mb-2">Employee Role *</label>
+                            <select id="employeeRole" name="employeeRole"
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                <option value="">Select Employee Role</option>
+                                <option value="Manager">Manager</option>
+                                <option value="Cashier">Cashier</option>
+                                <option value="Waiter">Waiter</option>
+                                <option value="Chef">Chef</option>
                             </select>
                         </div>
                         <div>
@@ -228,6 +239,22 @@
         // Initialize Lucide icons
         lucide.createIcons();
         
+        // Toggle employee role dropdown
+        function toggleEmployeeRole() {
+            const roleSelect = document.getElementById('role');
+            const employeeRoleDiv = document.getElementById('employeeRoleDiv');
+            const employeeRoleSelect = document.getElementById('employeeRole');
+            
+            if (roleSelect.value === '2') { // Employee role
+                employeeRoleDiv.style.display = 'block';
+                employeeRoleSelect.required = true;
+            } else {
+                employeeRoleDiv.style.display = 'none';
+                employeeRoleSelect.required = false;
+                employeeRoleSelect.value = '';
+            }
+        }
+        
         // Password confirmation validation
         document.getElementById('confirmPassword').addEventListener('input', function() {
             const password = document.getElementById('password').value;
@@ -244,6 +271,8 @@
         document.querySelector('form').addEventListener('submit', function(e) {
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
+            const role = document.getElementById('role').value;
+            const employeeRole = document.getElementById('employeeRole').value;
             
             if (password !== confirmPassword) {
                 e.preventDefault();
@@ -254,6 +283,12 @@
             if (password.length < 6) {
                 e.preventDefault();
                 alert('Password must be at least 6 characters long!');
+                return false;
+            }
+            
+            if (role === '2' && !employeeRole) {
+                e.preventDefault();
+                alert('Please select an Employee Role!');
                 return false;
             }
         });

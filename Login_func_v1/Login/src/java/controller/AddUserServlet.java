@@ -1,6 +1,8 @@
 package controller;
 
 import dao.UserDAO;
+import dao.EmployeeDAO;
+import dao.CustomerDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -9,6 +11,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import models.User;
+import models.Employee;
+import models.Customer;
 
 @WebServlet(name = "AddUserServlet", urlPatterns = {"/adduser"})
 public class AddUserServlet extends HttpServlet {
@@ -58,6 +62,7 @@ public class AddUserServlet extends HttpServlet {
         String password = request.getParameter("password");
         String confirmPassword = request.getParameter("confirmPassword");
         String roleStr = request.getParameter("role");
+        String employeeRole = request.getParameter("employeeRole");
         String dateOfBirthStr = request.getParameter("dateOfBirth");
         String gender = request.getParameter("gender");
         
@@ -153,11 +158,47 @@ public class AddUserServlet extends HttpServlet {
             if (userId > 0) {
                 // Nếu là Employee hoặc Customer, thêm vào bảng tương ứng
                 if (role == 2) { // Employee
-                    // TODO: Thêm logic để tạo Employee record
-                    // Có thể cần tạo EmployeeDAO và thêm vào bảng Employee
+                    if (employeeRole == null || employeeRole.trim().isEmpty()) {
+                        request.setAttribute("error", "Employee role is required for Employee users!");
+                        request.setAttribute("currentUser", currentUser);
+                        request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
+                        return;
+                    }
+                    
+                    // Validate employee role
+                    if (!employeeRole.equals("Manager") && !employeeRole.equals("Cashier") && 
+                        !employeeRole.equals("Waiter") && !employeeRole.equals("Chef")) {
+                        request.setAttribute("error", "Invalid employee role selected!");
+                        request.setAttribute("currentUser", currentUser);
+                        request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
+                        return;
+                    }
+                    
+                    EmployeeDAO employeeDAO = new EmployeeDAO();
+                    Employee employee = new Employee();
+                    employee.setUserID(userId);
+                    employee.setRole(employeeRole);
+                    
+                    int employeeId = employeeDAO.insertEmployee(employee);
+                    if (employeeId <= 0) {
+                        request.setAttribute("error", "User created but failed to create employee record.");
+                        request.setAttribute("currentUser", currentUser);
+                        request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
+                        return;
+                    }
                 } else if (role == 3) { // Customer
-                    // TODO: Thêm logic để tạo Customer record
-                    // Có thể cần tạo CustomerDAO và thêm vào bảng Customer
+                    CustomerDAO customerDAO = new CustomerDAO();
+                    Customer customer = new Customer();
+                    customer.setUserID(userId);
+                    customer.setLoyaltyPoint(0);
+                    
+                    int customerId = customerDAO.insertCustomerReturnId(customer);
+                    if (customerId <= 0) {
+                        request.setAttribute("error", "User created but failed to create customer record.");
+                        request.setAttribute("currentUser", currentUser);
+                        request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
+                        return;
+                    }
                 }
                 
                 request.setAttribute("message", "User created successfully! User ID: " + userId);

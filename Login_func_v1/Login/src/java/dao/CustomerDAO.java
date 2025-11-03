@@ -47,6 +47,31 @@ public class CustomerDAO extends DBContext {
         }
         return false;
     }
+    
+    // Add new customer and return ID
+    public int insertCustomerReturnId(Customer customer) {
+        String sql = """
+            INSERT INTO Customer (UserID, LoyaltyPoint)
+            VALUES (?, ?)
+        """;
+        try (Connection connection = getConnection();
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setInt(1, customer.getUserID());
+            ps.setInt(2, customer.getLoyaltyPoint());
+            
+            int affectedRows = ps.executeUpdate();
+            if (affectedRows > 0) {
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        return rs.getInt(1);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Lỗi khi thêm khách hàng: " + e.getMessage());
+        }
+        return -1;
+    }
 
     // Update customer loyalty points
     public boolean updateCustomerPoints(int customerID, int newPoints) {
@@ -71,6 +96,19 @@ public class CustomerDAO extends DBContext {
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("❌ Lỗi khi xóa khách hàng: " + e.getMessage());
+        }
+        return false;
+    }
+    
+    // Delete customer by UserID
+    public boolean deleteCustomerByUserId(int userID) {
+        String sql = "DELETE FROM Customer WHERE UserID = ?";
+        try (Connection connection = getConnection();
+            PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, userID);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("❌ Lỗi khi xóa khách hàng theo UserID: " + e.getMessage());
         }
         return false;
     }

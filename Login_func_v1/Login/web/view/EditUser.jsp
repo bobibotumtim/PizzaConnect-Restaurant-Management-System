@@ -41,48 +41,70 @@
     %>
     
     <!-- Sidebar Navigation -->
-    <div class="w-20 bg-gray-800 flex flex-col items-center py-6 space-y-8 flex-shrink-0">
-        <a href="${pageContext.request.contextPath}/dashboard"
-           class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-            <i data-lucide="pizza" class="w-7 h-7 text-white"></i>
+    <div class="w-20 bg-gray-800 flex flex-col items-center py-6 space-y-8">
+        <a href="${pageContext.request.contextPath}/home"
+           class="nav-btn <%= currentPath.contains("/home") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+           title="Home">
+            <i data-lucide="home" class="w-6 h-6"></i>
         </a>
-        
         <div class="flex-1 flex flex-col space-y-6 mt-8">
             <a href="${pageContext.request.contextPath}/dashboard"
-               class="nav-btn text-gray-400 hover:bg-gray-700" title="Dashboard">
+                class="nav-btn <%= currentPath.contains("/dashboard") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                title="Dashboard">
                 <i data-lucide="grid" class="w-6 h-6"></i>
             </a>
             
-            <a href="${pageContext.request.contextPath}/admin"
-               class="nav-btn bg-orange-500 text-white" title="Manage Users">
-                <i data-lucide="users" class="w-6 h-6"></i>
-            </a>
-            
-            <a href="${pageContext.request.contextPath}/manage-orders"
-               class="nav-btn text-gray-400 hover:bg-gray-700" title="Orders">
+            <a href="${pageContext.request.contextPath}/orders"
+                class="nav-btn <%= currentPath.contains("/orders") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                title="Orders">
                 <i data-lucide="file-text" class="w-6 h-6"></i>
             </a>
-            
+
             <a href="${pageContext.request.contextPath}/manageproduct"
-               class="nav-btn text-gray-400 hover:bg-gray-700" title="Products">
-                <i data-lucide="box" class="w-6 h-6"></i>
+                class="nav-btn <%= currentPath.contains("/menu") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                title="Menu">
+                <i data-lucide="utensils" class="w-6 h-6"></i>
             </a>
-            
+
+            <a href="${pageContext.request.contextPath}/table" 
+            class="nav-btn <%= currentPath.contains("/table") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+            title="Table Booking">
+                <i data-lucide="rectangle-horizontal" class="w-6 h-6"></i>
+            </a>
+
             <a href="${pageContext.request.contextPath}/discount"
-               class="nav-btn text-gray-400 hover:bg-gray-700" title="Discounts">
+                class="nav-btn <%= currentPath.contains("/discount") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                title="Discount Programs">
                 <i data-lucide="percent" class="w-6 h-6"></i>
             </a>
-        </div>
-        
-        <div class="flex flex-col items-center space-y-4">
-            <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
-                <i data-lucide="user" class="w-5 h-5 text-gray-200"></i>
-            </div>
-            <a href="${pageContext.request.contextPath}/logout"
-               class="nav-btn text-gray-400 hover:bg-red-500 hover:text-white" title="Logout">
-                <i data-lucide="log-out" class="w-6 h-6"></i>
+
+            <a href="${pageContext.request.contextPath}/notifications"
+                class="nav-btn <%= currentPath.contains("/notifications") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                title="Notifications">
+                <i data-lucide="bell" class="w-6 h-6"></i>
+            </a>
+
+            <a href="${pageContext.request.contextPath}/admin"
+                class="nav-btn <%= currentPath.contains("/admin") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                title="Manage Users">
+                <i data-lucide="users" class="w-6 h-6"></i>
             </a>
         </div>
+        <a href="${pageContext.request.contextPath}/profile"
+            class="nav-btn <%= currentPath.contains("/profile") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+            title="Profile">
+            <i data-lucide="user" class="w-6 h-6"></i>
+        </a>
+        <a href="${pageContext.request.contextPath}/settings"
+            class="nav-btn <%= currentPath.contains("/settings") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+            title="Settings">
+            <i data-lucide="settings" class="w-6 h-6"></i>
+        </a>
+        <a href="${pageContext.request.contextPath}/logout"
+           class="nav-btn <%= currentPath.contains("/logout") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+           title="Logout">
+            <i data-lucide="log-out" class="w-6 h-6"></i>
+        </a>
     </div>
 
     <!-- Main Content -->
@@ -194,11 +216,33 @@
                         </div>
                         <div>
                             <label for="role" class="block text-sm font-medium text-gray-700 mb-2">User Role *</label>
-                            <select id="role" name="role" required 
+                            <select id="role" name="role" required onchange="toggleEmployeeRole()"
                                     class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
                                 <option value="1" <%= editUser.getRole() == 1 ? "selected" : "" %>>Admin</option>
                                 <option value="2" <%= editUser.getRole() == 2 ? "selected" : "" %>>Employee</option>
                                 <option value="3" <%= editUser.getRole() == 3 ? "selected" : "" %>>Customer</option>
+                            </select>
+                        </div>
+                        <%
+                            String currentEmployeeRole = "";
+                            if (editUser.getRole() == 2) {
+                                // Get employee role from database
+                                dao.EmployeeDAO empDAO = new dao.EmployeeDAO();
+                                models.Employee emp = empDAO.getEmployeeByUserId(editUser.getUserID());
+                                if (emp != null) {
+                                    currentEmployeeRole = emp.getRole();
+                                }
+                            }
+                        %>
+                        <div id="employeeRoleDiv" style="display: <%= editUser.getRole() == 2 ? "block" : "none" %>;">
+                            <label for="employeeRole" class="block text-sm font-medium text-gray-700 mb-2">Employee Role *</label>
+                            <select id="employeeRole" name="employeeRole"
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                <option value="">Select Employee Role</option>
+                                <option value="Manager" <%= "Manager".equals(currentEmployeeRole) ? "selected" : "" %>>Manager</option>
+                                <option value="Cashier" <%= "Cashier".equals(currentEmployeeRole) ? "selected" : "" %>>Cashier</option>
+                                <option value="Waiter" <%= "Waiter".equals(currentEmployeeRole) ? "selected" : "" %>>Waiter</option>
+                                <option value="Chef" <%= "Chef".equals(currentEmployeeRole) ? "selected" : "" %>>Chef</option>
                             </select>
                         </div>
                         <div>
@@ -265,6 +309,22 @@
         // Initialize Lucide icons
         lucide.createIcons();
         
+        // Toggle employee role dropdown
+        function toggleEmployeeRole() {
+            const roleSelect = document.getElementById('role');
+            const employeeRoleDiv = document.getElementById('employeeRoleDiv');
+            const employeeRoleSelect = document.getElementById('employeeRole');
+            
+            if (roleSelect.value === '2') { // Employee role
+                employeeRoleDiv.style.display = 'block';
+                employeeRoleSelect.required = true;
+            } else {
+                employeeRoleDiv.style.display = 'none';
+                employeeRoleSelect.required = false;
+                employeeRoleSelect.value = '';
+            }
+        }
+        
         // Password confirmation validation
         document.getElementById('confirmPassword').addEventListener('input', function() {
             const password = document.getElementById('password').value;
@@ -281,6 +341,8 @@
         document.querySelector('form').addEventListener('submit', function(e) {
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
+            const role = document.getElementById('role').value;
+            const employeeRole = document.getElementById('employeeRole').value;
             
             if (password && confirmPassword && password !== confirmPassword) {
                 e.preventDefault();
@@ -291,6 +353,12 @@
             if (password && password.length < 6) {
                 e.preventDefault();
                 alert('Password must be at least 6 characters long!');
+                return false;
+            }
+            
+            if (role === '2' && !employeeRole) {
+                e.preventDefault();
+                alert('Please select an Employee Role!');
                 return false;
             }
         });
