@@ -1,0 +1,40 @@
+Testcase ID,Title,Module/Screen,Preconditions,Steps,Test Data,Expected Result,Actual Result,Status,Severity,Notes / Evidence,Executed by,Date
+TC-MO-001,Validate Price within valid range ($5-$9000),Manage Orders,User logged in and can access Manage Orders,"1. Navigate to Manage Orders screen
+2. Click New Order button
+3. Select Pizza Type = Pepperoni ($25.00)
+4. Enter Quantity = 2
+5. Verify Price field shows $25.00
+6. Click Create Order button",Price = $25.00 (within range $5-$9000),"Hệ thống chấp nhận giá trị hợp lệ. Price phải nằm trong khoảng $5 đến $9000. Order được tạo thành công.",(Điền sau khi test),Pass/Fail,Major,Screenshot khi test,Hieu,(Ngày test)
+TC-MO-002,Validate Order Date is auto-generated,Manage Orders,User logged in,"1. Navigate to Manage Orders screen
+2. Click New Order button
+3. Create a new order (no date input required)
+4. After order created, check Date column in order list
+5. Verify date = current date/time",Order Date = Current timestamp (auto-generated),"Hệ thống tự động set OrderDate = GETDATE() (ngày giờ hiện tại). Order được tạo với timestamp chính xác. Date hiển thị format: YYYY-MM-DD HH:MM:SS",(Điền sau khi test),Pass/Fail,Major,Screenshot,Hieu,(Ngày test)
+TC-MO-003,Verify Status dropdown has 4 options,Manage Orders,User logged in,"1. Navigate to Manage Orders screen
+2. Click New Order button
+3. Click on Status dropdown in Add New Order modal
+4. Observe all available options
+5. Verify default value",N/A,"Dropdown hiển thị đầy đủ 4 lựa chọn: Pending / Processing / Completed / Cancelled. Default value = Pending.",(Điền sau khi test),Pass/Fail,Minor,Screenshot,Hieu,(Ngày test)
+TC-MO-004,Business Rule: Cannot mark Paid for Pending order,Manage Orders,Có đơn hàng với Status = Pending và Payment = Unpaid,"1. Navigate to Manage Orders
+2. Find an order with Status = Pending (blue badge)
+3. Try to click Paid button
+4. Observe system behavior",Status = Pending + Try to mark Paid,"Hệ thống không cho phép đánh dấu Paid cho đơn hàng Pending. Nút Paid bị disable hoặc hiển thị lỗi: ""Cannot mark pending order as paid""",(Điền sau khi test),Pass/Fail,Critical,Screenshot,Hieu,(Ngày test)
+TC-MO-005,Business Rule: Pagination displays 10 orders per page,Manage Orders,Database có > 10 đơn hàng (hiện có 56 orders),"1. Navigate to Manage Orders
+2. Count number of orders displayed on page 1
+3. Scroll to bottom and check pagination controls
+4. Click Next button (if available)
+5. Verify page 2 content",Total orders = 56,"Hệ thống hiển thị tối đa 10 orders mỗi trang. Page 1 shows 10 orders. Pagination shows: Page 1/6. Nút Previous disabled on page 1, Next enabled.",(Điền sau khi test),Pass/Fail,Major,Screenshot,Hieu,(Ngày test)
+TC-MO-006,Validate Price below minimum ($4),Manage Orders,User logged in,"1. Navigate to Manage Orders
+2. Click New Order button
+3. Try to enter Price = $4 (below min $5)
+4. Click Create Order button",Price = $4 (below minimum),"Hệ thống hiển thị lỗi: ""Price must be between $5 and $9000"" hoặc không cho phép nhập giá trị < $5",(Điền sau khi test),Pass/Fail,Major,Screenshot lỗi,Hieu,(Ngày test)
+TC-MO-007,Validate Price above maximum ($9001),Manage Orders,User logged in,"1. Navigate to Manage Orders
+2. Click New Order button
+3. Try to enter Price = $9001 (above max $9000)
+4. Click Create Order button",Price = $9001 (above maximum),"Hệ thống hiển thị lỗi: ""Price must be between $5 and $9000"" hoặc không cho phép nhập giá trị > $9000",(Điền sau khi test),Pass/Fail,Major,Screenshot lỗi,Hieu,(Ngày test)
+TC-MO-008,Verify Filter by Status works correctly,Manage Orders,Database có orders với nhiều status khác nhau,"1. Navigate to Manage Orders
+2. Click Filter by Status dropdown
+3. Select ""Processing""
+4. Verify only Processing orders are shown
+5. Change filter to ""Completed""
+6. Verify only Completed orders are shown",Filter = Processing then Completed,"Khi chọn filter, chỉ hiển thị orders có status tương ứng. Total Orders count cập nhật đúng. Pagination reset về page 1.",(Điền sau khi test),Pass/Fail,Medium,Screenshot,Hieu,(Ngày test)

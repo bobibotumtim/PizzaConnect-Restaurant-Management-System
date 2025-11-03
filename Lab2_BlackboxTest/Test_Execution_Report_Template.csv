@@ -1,0 +1,43 @@
+TEST EXECUTION REPORT - MANAGE ORDERS
+
+Project Name:,PizzaConnect Restaurant Management System
+Module:,Manage Orders
+Tester:,Hieu
+Test Date:,03/11/2025
+Environment:,"Browser: Chrome 119, OS: Windows 11, Server: Tomcat 10.1, Database: pizza_demo_DB2"
+
+SUMMARY
+Total Test Cases:,8
+Executed:,(Điền sau khi test)
+Passed:,(Điền sau khi test)
+Failed:,(Điền sau khi test)
+Pass Rate:,(Điền sau khi test)
+
+TEST RESULTS
+Testcase ID,Title,Status,Execution Date,Executed By,Actual Result,Notes
+TC-MO-001,Validate Price within valid range,,(Điền),Hieu,,(Điền kết quả)
+TC-MO-002,Validate Order Date auto-generated,,(Điền),Hieu,,(Điền kết quả)
+TC-MO-003,Verify Status dropdown,,(Điền),Hieu,,(Điền kết quả)
+TC-MO-004,BR: Cannot mark Paid for Pending,,(Điền),Hieu,,(Điền kết quả)
+TC-MO-005,BR: Pagination 10 items/page,,(Điền),Hieu,,(Điền kết quả)
+TC-MO-006,Validate Price below minimum,,(Điền),Hieu,,(Điền kết quả)
+TC-MO-007,Validate Price above maximum,,(Điền),Hieu,,(Điền kết quả)
+TC-MO-008,Verify Filter by Status,,(Điền),Hieu,,(Điền kết quả)
+
+DEFECTS SUMMARY
+Total Defects Found:,(Điền sau khi test)
+Critical:,(Điền)
+Major:,(Điền)
+Minor:,(Điền)
+
+DEFECTS LIST
+Defect ID,Related TC,Severity,Status,Description
+(Điền nếu có lỗi),(Điền),(Điền),(Điền),(Điền)
+
+CONCLUSION
+(Điền kết luận sau khi test xong)
+
+SIGN-OFF
+Tester:,Hieu
+Date:,03/11/2025
+Signature:,_______________

@@ -1,0 +1,14 @@
+DEFECTS LIST - MANAGE ORDERS
+
+Project:,PizzaConnect Restaurant Management System
+Module:,Manage Orders
+Reported By:,Hieu
+Report Date:,03/11/2025
+
+Defect ID,Summary,Related Testcase,Severity,Priority,Status,Steps to Reproduce,Expected Result,Actual Result,Screenshot,Assigned To,Fix Date
+BUG-MO-001,(Điền nếu tìm thấy lỗi),(TC-MO-xxx),(Critical/Major/Minor),(High/Medium/Low),Open,(Điền các bước),(Điền kết quả mong đợi),(Điền kết quả thực tế),(Tên file screenshot),(Chưa assign),(Chưa fix)
+
+EXAMPLE - Nếu tìm thấy lỗi:
+BUG-MO-001,Price validation not working,TC-MO-006,Major,High,Open,"1. Click New Order
+2. Enter Price = $4
+3. Click Create Order","System should show error: Price must be >= $5","Order created successfully with $4",screenshot_bug001.png,(Chưa assign),(Chưa fix)
