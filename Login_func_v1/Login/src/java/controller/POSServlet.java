@@ -21,8 +21,116 @@ public class POSServlet extends HttpServlet {
             return;
         }
         
+        // Check if this is an API request for products
+        String action = req.getParameter("action");
+        if ("getProducts".equals(action)) {
+            // Return JSON data for products
+            handleProductsAPI(req, resp);
+            return;
+        }
+        
         // Forward to POS page
         req.getRequestDispatcher("/view/pos.jsp").forward(req, resp);
+    }
+    
+    /**
+     * Handle API request for products data (moved from ProductAPIServlet)
+     */
+    private void handleProductsAPI(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        
+        resp.setContentType("application/json; charset=UTF-8");
+        
+        try {
+            ProductDAO productDAO = new ProductDAO();
+            ProductSizeDAO productSizeDAO = new ProductSizeDAO();
+            CategoryDAO categoryDAO = new CategoryDAO();
+            
+            // Lấy tất cả products
+            List<Product> products = productDAO.getAllBaseProducts();
+            
+            // Tạo JSON response
+            StringBuilder json = new StringBuilder();
+            json.append("{\"success\": true, \"categories\": {");
+            
+            // Group products by category
+            String currentCategory = "";
+            boolean firstCategory = true;
+            
+            for (Product product : products) {
+                if (!product.getCategoryName().equals(currentCategory)) {
+                    if (!firstCategory) {
+                        json.append("],");
+                    }
+                    currentCategory = product.getCategoryName();
+                    json.append("\"").append(currentCategory).append("\": [");
+                    firstCategory = false;
+                } else {
+                    json.append(",");
+                }
+                
+                // Get sizes for this product
+                List<ProductSize> sizes = productSizeDAO.getSizesByProductId(product.getProductId());
+                
+                json.append("{");
+                json.append("\"id\": ").append(product.getProductId()).append(",");
+                json.append("\"name\": \"").append(escapeJson(product.getProductName())).append("\",");
+                json.append("\"description\": \"").append(escapeJson(product.getDescription())).append("\",");
+                json.append("\"category\": \"").append(escapeJson(product.getCategoryName())).append("\",");
+                json.append("\"imageUrl\": \"").append(escapeJson(product.getImageUrl())).append("\",");
+                json.append("\"sizes\": [");
+                
+                for (int i = 0; i < sizes.size(); i++) {
+                    ProductSize size = sizes.get(i);
+                    if (i > 0) json.append(",");
+                    json.append("{");
+                    json.append("\"sizeId\": ").append(size.getProductSizeId()).append(",");
+                    json.append("\"sizeCode\": \"").append(size.getSizeCode()).append("\",");
+                    json.append("\"sizeName\": \"").append(getSizeName(size.getSizeCode())).append("\",");
+                    json.append("\"price\": ").append(size.getPrice());
+                    json.append("}");
+                }
+                
+                json.append("]}");
+            }
+            
+            if (!firstCategory) {
+                json.append("]");
+            }
+            json.append("}}");
+            
+            resp.getWriter().write(json.toString());
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().write("{\"success\": false, \"message\": \"" + escapeJson(e.getMessage()) + "\"}");
+        }
+    }
+    
+    /**
+     * Helper method to get size name from size code
+     */
+    private String getSizeName(String sizeCode) {
+        switch (sizeCode) {
+            case "S": return "Small";
+            case "M": return "Medium";
+            case "L": return "Large";
+            case "F": return "Fixed";
+            default: return sizeCode;
+        }
+    }
+    
+    /**
+     * Helper method to escape JSON strings
+     */
+    private String escapeJson(String str) {
+        if (str == null) return "";
+        return str.replace("\"", "\\\"")
+                 .replace("\\", "\\\\")
+                 .replace("\n", "\\n")
+                 .replace("\r", "\\r")
+                 .replace("\t", "\\t");
     }
 
     @Override
@@ -337,7 +445,7 @@ public class POSServlet extends HttpServlet {
                 System.out.println("⚠️ No 'items' array found in JSON, creating default item");
                 // Create default item if no items found
                 OrderDetail defaultItem = new OrderDetail();
-                defaultItem.setProductID(1);
+                defaultItem.setProductSizeID(1); // Use ProductSizeID
                 defaultItem.setQuantity(1);
                 defaultItem.setTotalPrice(extractJsonDouble(json, "total"));
                 defaultItem.setSpecialInstructions("POS Order - No items array found");
@@ -367,19 +475,23 @@ public class POSServlet extends HttpServlet {
                 System.out.println("📝 Parsing item " + (i+1) + ": " + item);
                 
                 try {
-                    // Extract item details
-                    int productId = extractItemId(item);
+                    // Extract item details - now including sizeId
+                    int productSizeId = extractItemSizeId(item);
                     String productName = extractItemName(item);
+                    String sizeName = extractItemSizeName(item);
                     int quantity = extractItemQuantity(item);
                     double price = extractItemPrice(item);
                     String toppings = extractItemToppings(item);
                     
                     OrderDetail detail = new OrderDetail();
-                    detail.setProductID(productId > 0 ? productId : 1); // Default to product 1 if not found
+                    detail.setProductSizeID(productSizeId > 0 ? productSizeId : 1); // Use ProductSizeID
                     detail.setQuantity(quantity > 0 ? quantity : 1);
                     detail.setTotalPrice(price * quantity);
                     
                     String instructions = productName;
+                    if (sizeName != null && !sizeName.isEmpty()) {
+                        instructions += " (" + sizeName + ")";
+                    }
                     if (toppings != null && !toppings.isEmpty()) {
                         instructions += " + " + toppings;
                     }
@@ -387,7 +499,7 @@ public class POSServlet extends HttpServlet {
                     
                     orderDetails.add(detail);
                     
-                    System.out.println("✅ Item " + (i+1) + " parsed: ProductID=" + detail.getProductID() + 
+                    System.out.println("✅ Item " + (i+1) + " parsed: ProductSizeID=" + detail.getProductSizeID() + 
                                      ", Quantity=" + detail.getQuantity() + 
                                      ", Price=" + detail.getTotalPrice() + 
                                      ", Instructions=" + detail.getSpecialInstructions());
@@ -396,7 +508,7 @@ public class POSServlet extends HttpServlet {
                     System.err.println("❌ Error parsing item " + (i+1) + ": " + itemEx.getMessage());
                     // Create fallback item
                     OrderDetail fallbackDetail = new OrderDetail();
-                    fallbackDetail.setProductID(1);
+                    fallbackDetail.setProductSizeID(1); // Use ProductSizeID
                     fallbackDetail.setQuantity(1);
                     fallbackDetail.setTotalPrice(50000); // Default price
                     fallbackDetail.setSpecialInstructions("Parse error item " + (i+1));
@@ -412,7 +524,7 @@ public class POSServlet extends HttpServlet {
             
             // Fallback: create single item based on total
             OrderDetail fallbackItem = new OrderDetail();
-            fallbackItem.setProductID(1);
+            fallbackItem.setProductSizeID(1); // Use ProductSizeID
             fallbackItem.setQuantity(1);
             fallbackItem.setTotalPrice(extractJsonDouble(json, "total"));
             fallbackItem.setSpecialInstructions("POS Order - Parse error fallback");
@@ -440,6 +552,42 @@ public class POSServlet extends HttpServlet {
             System.err.println("Error extracting item ID: " + e.getMessage());
         }
         return 1; // Default
+    }
+    
+    // New method to extract ProductSizeID
+    private int extractItemSizeId(String item) {
+        try {
+            String sizeIdPattern = "\"sizeId\":";
+            int sizeIdIndex = item.indexOf(sizeIdPattern);
+            if (sizeIdIndex != -1) {
+                sizeIdIndex += sizeIdPattern.length();
+                int endIndex = item.indexOf(",", sizeIdIndex);
+                if (endIndex == -1) endIndex = item.length();
+                String sizeIdStr = item.substring(sizeIdIndex, endIndex).trim().replace("\"", "");
+                return Integer.parseInt(sizeIdStr);
+            }
+        } catch (Exception e) {
+            System.err.println("Error extracting item sizeId: " + e.getMessage());
+        }
+        return 1; // Default
+    }
+    
+    // New method to extract size name
+    private String extractItemSizeName(String item) {
+        try {
+            String sizeNamePattern = "\"sizeName\":\"";
+            int sizeNameIndex = item.indexOf(sizeNamePattern);
+            if (sizeNameIndex != -1) {
+                sizeNameIndex += sizeNamePattern.length();
+                int endIndex = item.indexOf("\"", sizeNameIndex);
+                if (endIndex != -1) {
+                    return item.substring(sizeNameIndex, endIndex);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error extracting item size name: " + e.getMessage());
+        }
+        return "";
     }
     
     private String extractItemName(String item) {

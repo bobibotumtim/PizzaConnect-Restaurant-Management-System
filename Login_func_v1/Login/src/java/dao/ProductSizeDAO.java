@@ -68,11 +68,38 @@ public class ProductSizeDAO extends DBContext {
     }
 
     public ProductSize getSizeById(int productSizeId) {
-        String sql = "SELECT * FROM ProductSize WHERE ProductSizeID = ?";
+        String sql = "SELECT ps.*, p.ProductName FROM ProductSize ps LEFT JOIN Product p ON ps.ProductID = p.ProductID WHERE ps.ProductSizeID = ?";
         try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, productSizeId);
 
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    ProductSize psz = new ProductSize();
+                    psz.setProductSizeId(rs.getInt("ProductSizeID"));
+                    psz.setProductId(rs.getInt("ProductID"));
+                    psz.setSizeCode(rs.getString("SizeCode"));
+                    psz.setPrice(rs.getDouble("Price"));
+                    return psz;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    // Lấy ProductSize với thông tin Product để hiển thị
+    public ProductSize getSizeWithProductInfo(int productSizeId) {
+        String sql = """
+            SELECT ps.*, p.ProductName, p.Description, c.CategoryName
+            FROM ProductSize ps 
+            LEFT JOIN Product p ON ps.ProductID = p.ProductID
+            LEFT JOIN Category c ON p.CategoryID = c.CategoryID
+            WHERE ps.ProductSizeID = ? AND ps.IsDeleted = 0
+        """;
+        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, productSizeId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     ProductSize psz = new ProductSize();

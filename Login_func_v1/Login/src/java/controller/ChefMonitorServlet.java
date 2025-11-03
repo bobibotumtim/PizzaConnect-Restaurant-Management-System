@@ -11,20 +11,20 @@ import dao.*;
 @WebServlet("/ChefMonitor")
 public class ChefMonitorServlet extends HttpServlet {
 
-    private OrderDAO orderDAO = new OrderDAO();
+    private OrderDetailDAO orderDetailDAO = new OrderDetailDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        // Lấy danh sách món theo trạng thái
-        //List<Orderdetail> pendingList = orderDAO.getOrderDetailsByStatus("Pending");
-        //List<Orderdetail> cookingList = orderDAO.getOrderDetailsByStatus("Cooking");
-        List<OrderDetail> pendingList = null;
-        List<OrderDetail> cookingList = null;
+        // Lấy danh sách món theo trạng thái từ database mới
+        List<OrderDetail> waitingList = orderDetailDAO.getOrderDetailsByStatus("Waiting");
+        List<OrderDetail> inProgressList = orderDetailDAO.getOrderDetailsByStatus("In Progress");
+        List<OrderDetail> doneList = orderDetailDAO.getOrderDetailsByStatus("Done");
 
-        req.setAttribute("pendingList", pendingList);
-        req.setAttribute("cookingList", cookingList);
+        req.setAttribute("waitingList", waitingList);
+        req.setAttribute("inProgressList", inProgressList);
+        req.setAttribute("doneList", doneList);
 
         req.getRequestDispatcher("view/ChefMonitor.jsp").forward(req, resp);
     }
@@ -34,7 +34,15 @@ public class ChefMonitorServlet extends HttpServlet {
             throws ServletException, IOException {
 
         String action = req.getParameter("action");
-        int orderDetailId = Integer.parseInt(req.getParameter("orderDetailId"));
+        String orderDetailIdStr = req.getParameter("orderDetailId");
+        
+        if (orderDetailIdStr == null || orderDetailIdStr.isEmpty()) {
+            req.setAttribute("error", "Không tìm thấy ID món ăn!");
+            doGet(req, resp);
+            return;
+        }
+        
+        int orderDetailId = Integer.parseInt(orderDetailIdStr);
 
         HttpSession session = req.getSession();
         Employee chef = (Employee) session.getAttribute("employee");
@@ -47,16 +55,16 @@ public class ChefMonitorServlet extends HttpServlet {
         boolean updated = false;
 
         if ("start".equals(action)) {
-            //updated = orderDAO.updateOrderDetailStatus(orderDetailId, "Cooking", chef.getEmployeeID());
+            updated = orderDetailDAO.updateOrderDetailStatus(orderDetailId, "In Progress", chef.getEmployeeID());
         } else if ("done".equals(action)) {
-            //updated = orderDAO.updateOrderDetailStatus(orderDetailId, "Done", chef.getEmployeeID());
-            // TODO: Trừ nguyên liệu tại đây
+            updated = orderDetailDAO.updateOrderDetailStatus(orderDetailId, "Done", chef.getEmployeeID());
+            // TODO: Trừ nguyên liệu tại đây nếu cần
         } else if ("cancel".equals(action)) {
-           //updated = orderDAO.updateOrderDetailStatus(orderDetailId, "Cancelled", chef.getEmployeeID());
+            updated = orderDetailDAO.updateOrderDetailStatus(orderDetailId, "Cancelled", chef.getEmployeeID());
         }
 
         if (updated) {
-            resp.sendRedirect("ChefServlet");
+            resp.sendRedirect("ChefMonitor");
         } else {
             req.setAttribute("error", "Không thể cập nhật trạng thái món ăn!");
             doGet(req, resp);

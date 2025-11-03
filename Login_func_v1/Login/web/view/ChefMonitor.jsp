@@ -107,19 +107,26 @@
 
     <div class="top-bar">
         <h2 class="fw-bold">Chef Dashboard</h2>
-        <form action="ChefServlet" method="get">
-            <button type="submit" name="action" value="doneList" class="btn-done">Done dishes</button>
-        </form>
+        <div>
+            <button onclick="location.reload()" class="btn btn-primary">🔄 Refresh</button>
+            <c:if test="${not empty error}">
+                <span class="text-danger ms-3">${error}</span>
+            </c:if>
+        </div>
     </div>
 
     <!-- ==================== Waiting Section ==================== -->
     <div>
         <div class="section-title">Waiting dishes</div>
         <div id="waiting" class="dish-container">
-            <c:forEach var="dish" items="${pendingList}">
-                <div class="dish-card waiting" onclick="selectDish(this)" data-id="${dish.orderDetailId}">
-                    <div class="order-id">#${dish.orderId}</div>
-                    <div class="name">${dish.productName}</div>
+            <c:forEach var="dish" items="${waitingList}">
+                <div class="dish-card waiting" onclick="selectDish(this)" data-id="${dish.orderDetailID}">
+                    <div class="order-id">#${dish.orderID}</div>
+                    <div class="name">${dish.productName} 
+                        <c:if test="${not empty dish.sizeName}">
+                            <span style="font-size: 12px;">(${dish.sizeName})</span>
+                        </c:if>
+                    </div>
                     <div class="quantity">${dish.quantity}</div>
                     <div class="topping">${dish.specialInstructions}</div>
                 </div>
@@ -127,20 +134,24 @@
         </div>
 
         <div class="button-row">
-            <form id="startForm" action="ChefServlet" method="post">
-                <input type="hidden" name="action" value="startCooking">
+            <form id="startForm" action="ChefMonitor" method="post">
+                <input type="hidden" name="action" value="start">
                 <input type="hidden" id="selectedIdStart" name="orderDetailId">
                 <button type="submit" class="btn-action btn-start">▼ Start cooking ▼</button>
             </form>
         </div>
 
-        <!-- ==================== Ongoing Section ==================== -->
-        <div class="section-title">Ongoing dishes</div>
+        <!-- ==================== In Progress Section ==================== -->
+        <div class="section-title">In Progress dishes</div>
         <div id="ongoing" class="dish-container">
-            <c:forEach var="dish" items="${cookingList}">
-                <div class="dish-card ongoing" onclick="selectDish(this)" data-id="${dish.orderDetailId}">
-                    <div class="order-id">#${dish.orderId}</div>
-                    <div class="name">${dish.productName}</div>
+            <c:forEach var="dish" items="${inProgressList}">
+                <div class="dish-card ongoing" onclick="selectDish(this)" data-id="${dish.orderDetailID}">
+                    <div class="order-id">#${dish.orderID}</div>
+                    <div class="name">${dish.productName}
+                        <c:if test="${not empty dish.sizeName}">
+                            <span style="font-size: 12px;">(${dish.sizeName})</span>
+                        </c:if>
+                    </div>
                     <div class="quantity">${dish.quantity}</div>
                     <div class="topping">${dish.specialInstructions}</div>
                 </div>
@@ -148,17 +159,34 @@
         </div>
 
         <div class="button-row">
-            <form id="doneForm" action="ChefServlet" method="post" style="display:inline;">
-                <input type="hidden" name="action" value="doneDish">
+            <form id="doneForm" action="ChefMonitor" method="post" style="display:inline;">
+                <input type="hidden" name="action" value="done">
                 <input type="hidden" id="selectedIdDone" name="orderDetailId">
                 <button type="submit" class="btn-action btn-ready">Ready to serve</button>
             </form>
 
-            <form id="cancelForm" action="ChefServlet" method="post" style="display:inline;">
-                <input type="hidden" name="action" value="cancelDish">
+            <form id="cancelForm" action="ChefMonitor" method="post" style="display:inline;">
+                <input type="hidden" name="action" value="cancel">
                 <input type="hidden" id="selectedIdCancel" name="orderDetailId">
                 <button type="submit" class="btn-action btn-cancel">Cancel dishes</button>
             </form>
+        </div>
+
+        <!-- ==================== Done Section ==================== -->
+        <div class="section-title">Done dishes</div>
+        <div id="done" class="dish-container">
+            <c:forEach var="dish" items="${doneList}">
+                <div class="dish-card" style="background-color: #90EE90;" data-id="${dish.orderDetailID}">
+                    <div class="order-id">#${dish.orderID}</div>
+                    <div class="name">${dish.productName}
+                        <c:if test="${not empty dish.sizeName}">
+                            <span style="font-size: 12px;">(${dish.sizeName})</span>
+                        </c:if>
+                    </div>
+                    <div class="quantity">${dish.quantity}</div>
+                    <div class="topping">✅ Ready</div>
+                </div>
+            </c:forEach>
         </div>
     </div>
 
