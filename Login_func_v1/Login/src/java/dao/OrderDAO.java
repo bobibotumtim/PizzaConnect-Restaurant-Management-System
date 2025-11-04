@@ -8,10 +8,9 @@ public class OrderDAO extends DBContext {
 
     private Connection externalConn; // ⚙️ Use if servlet passes in (special case)
 
-    // ✅ Default constructor (commonly used)
+    // Default constructor (commonly used)
     public OrderDAO() {
-        super(); // ⚙️ Very important — opens connection from DBContext
-        System.out.println("✅ OrderDAO initialized");
+        super(); // Very important — opens connection from DBContext
     }
 
     // ✅ Constructor with parameter (rarely used, only when external connection needed)
@@ -57,13 +56,13 @@ public class OrderDAO extends DBContext {
                 double totalPrice = 0;
                 String sqlDetail = """
                     INSERT INTO [OrderDetail] 
-                    (OrderID, ProductID, Quantity, TotalPrice, SpecialInstructions)
-                    VALUES (?, ?, ?, ?, ?)
+                    (OrderID, ProductSizeID, Quantity, TotalPrice, SpecialInstructions, Status)
+                    VALUES (?, ?, ?, ?, ?, 'Waiting')
                 """;
                 try (PreparedStatement psDetail = con.prepareStatement(sqlDetail)) {
                     for (OrderDetail d : orderDetails) {
                         psDetail.setInt(1, orderId);
-                        psDetail.setInt(2, d.getProductID());
+                        psDetail.setInt(2, d.getProductSizeID());
                         psDetail.setInt(3, d.getQuantity());
                         psDetail.setDouble(4, d.getTotalPrice());
                         psDetail.setString(5, d.getSpecialInstructions());
@@ -160,7 +159,6 @@ public class OrderDAO extends DBContext {
             e.printStackTrace();
         }
 
-        System.out.println("✅ Orders loaded: " + list.size());
         return list;
     }
 
@@ -197,10 +195,12 @@ public class OrderDAO extends DBContext {
     private List<OrderDetail> getOrderDetailsByOrderId(int orderId, Connection con) {
         List<OrderDetail> list = new ArrayList<>();
         String sql = """
-            SELECT od.*, p.ProductName 
+            SELECT od.*, p.ProductName, ps.SizeName, ps.SizeCode
             FROM OrderDetail od
-            LEFT JOIN Product p ON od.ProductID = p.ProductID
+            LEFT JOIN ProductSize ps ON od.ProductSizeID = ps.ProductSizeID
+            LEFT JOIN Product p ON ps.ProductID = p.ProductID
             WHERE od.OrderID = ?
+            ORDER BY od.OrderDetailID
         """;
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, orderId);
@@ -209,16 +209,20 @@ public class OrderDAO extends DBContext {
                     OrderDetail detail = new OrderDetail();
                     detail.setOrderDetailID(rs.getInt("OrderDetailID"));
                     detail.setOrderID(rs.getInt("OrderID"));
-                    detail.setProductID(rs.getInt("ProductID"));
+                    detail.setProductSizeID(rs.getInt("ProductSizeID"));
                     detail.setQuantity(rs.getInt("Quantity"));
                     detail.setTotalPrice(rs.getDouble("TotalPrice"));
-                    String productName = rs.getString("ProductName");
-                    String specialInstructions = rs.getString("SpecialInstructions");
-                    if (productName != null) {
-                        detail.setSpecialInstructions("Loại: " + productName + (specialInstructions != null ? " - " + specialInstructions : ""));
-                    } else {
-                        detail.setSpecialInstructions(specialInstructions);
-                    }
+                    detail.setSpecialInstructions(rs.getString("SpecialInstructions"));
+                    detail.setEmployeeID(rs.getInt("EmployeeID"));
+                    detail.setStatus(rs.getString("Status"));
+                    detail.setStartTime(rs.getTimestamp("StartTime"));
+                    detail.setEndTime(rs.getTimestamp("EndTime"));
+                    
+                    // Thông tin bổ sung để hiển thị
+                    detail.setProductName(rs.getString("ProductName"));
+                    detail.setSizeName(rs.getString("SizeName"));
+                    detail.setSizeCode(rs.getString("SizeCode"));
+                    
                     list.add(detail);
                 }
             }
@@ -675,13 +679,13 @@ public class OrderDAO extends DBContext {
                 double totalPrice = 0;
                 String sqlDetail = """
                     INSERT INTO [OrderDetail] 
-                    (OrderID, ProductID, Quantity, TotalPrice, SpecialInstructions)
-                    VALUES (?, ?, ?, ?, ?)
+                    (OrderID, ProductSizeID, Quantity, TotalPrice, SpecialInstructions, Status)
+                    VALUES (?, ?, ?, ?, ?, 'Waiting')
                 """;
                 try (PreparedStatement psDetail = con.prepareStatement(sqlDetail)) {
                     for (OrderDetail d : orderDetails) {
                         psDetail.setInt(1, orderId);
-                        psDetail.setInt(2, d.getProductID());
+                        psDetail.setInt(2, d.getProductSizeID());
                         psDetail.setInt(3, d.getQuantity());
                         psDetail.setDouble(4, d.getTotalPrice());
                         psDetail.setString(5, d.getSpecialInstructions());

@@ -23,8 +23,13 @@
             </div>
 
             <div class="form-group">
-                <label for="addCategory">Category:</label>
-                <input type="text" name="category" id="addCategory" required>
+                <label for="addCategoryName">Category:</label>
+                <select name="categoryName" id="addCategoryName" required>
+                    <option value="">-- Select a Category --</option>
+                    <c:forEach var="cat" items="${categoryList}">
+                        <option value="${cat.categoryName}">${cat.categoryName}</option>
+                    </c:forEach>
+                </select>
             </div>
 
             <div class="form-group">
