@@ -117,6 +117,13 @@
                     <i data-lucide="box" class="w-6 h-6"></i>
                 </a>
 
+                <!-- Sales Reports -->
+                <a href="${pageContext.request.contextPath}/sales-reports"
+                   class="nav-btn <%= currentPath.contains("/sales-reports") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Sales Reports">
+                    <i data-lucide="bar-chart-2" class="w-6 h-6"></i>
+                </a>
+
                 <!-- Profile -->
                 <a href="${pageContext.request.contextPath}/profile"
                    class="nav-btn <%= currentPath.contains("/profile") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
