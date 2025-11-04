@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 
 public class DBContext {
     private static final String USER = "thongqt";
-    private static final String PASSWORD = "12345";
+    private static final String PASSWORD = "123456";
     private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=pizza_demo_DB_Merged;encrypt=true;trustServerCertificate=true";
 
     // Load the SQL Server JDBC driver

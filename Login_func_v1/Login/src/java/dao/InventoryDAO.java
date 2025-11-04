@@ -22,7 +22,7 @@ public class InventoryDAO {
         return 0;
     }
 
-    // Lấy tổng số bản ghi với search (không có status filter vì database không có cột Status)
+    // Lấy tổng số bản ghi với search và status filter
     public int getTotalInventoryCount(String searchName, String statusFilter) {
         StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Inventory WHERE 1=1");
         
@@ -30,7 +30,13 @@ public class InventoryDAO {
             sql.append(" AND ItemName LIKE ?");
         }
         
-        // Note: Status filter is ignored as the database schema doesn't have a Status column
+        if (statusFilter != null && !statusFilter.equals("all")) {
+            if (statusFilter.equals("active")) {
+                sql.append(" AND Status = 'Active'");
+            } else if (statusFilter.equals("inactive")) {
+                sql.append(" AND Status = 'Inactive'");
+            }
+        }
         
         try (Connection conn = getConn();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
@@ -50,7 +56,7 @@ public class InventoryDAO {
     // Lấy theo trang (page bắt đầu từ 1)
     public List<Inventory> getInventoriesByPage(int page, int pageSize) {
         List<Inventory> list = new ArrayList<>();
-        String sql = "SELECT InventoryID, ItemName, Quantity, Unit, LastUpdated " +
+        String sql = "SELECT InventoryID, ItemName, Quantity, Unit, LastUpdated, Status " +
                      "FROM Inventory " +
                      "ORDER BY InventoryID " +
                      "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
@@ -67,8 +73,7 @@ public class InventoryDAO {
                     inv.setQuantity(rs.getDouble("Quantity"));
                     inv.setUnit(rs.getString("Unit"));
                     inv.setLastUpdated(rs.getTimestamp("LastUpdated"));
-                    // Set default status since database doesn't have this column
-                    inv.setStatus("Active");
+                    inv.setStatus(rs.getString("Status"));
                     list.add(inv);
                 }
             }
@@ -76,11 +81,11 @@ public class InventoryDAO {
         return list;
     }
 
-    // Lấy theo trang với search (không có status filter vì database không có cột Status)
+    // Lấy theo trang với search và status filter
     public List<Inventory> getInventoriesByPage(int page, int pageSize, String searchName, String statusFilter) {
         List<Inventory> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT InventoryID, ItemName, Quantity, Unit, LastUpdated " +
+            "SELECT InventoryID, ItemName, Quantity, Unit, LastUpdated, Status " +
             "FROM Inventory WHERE 1=1"
         );
         
@@ -88,7 +93,13 @@ public class InventoryDAO {
             sql.append(" AND ItemName LIKE ?");
         }
         
-        // Note: Status filter is ignored as the database schema doesn't have a Status column
+        if (statusFilter != null && !statusFilter.equals("all")) {
+            if (statusFilter.equals("active")) {
+                sql.append(" AND Status = 'Active'");
+            } else if (statusFilter.equals("inactive")) {
+                sql.append(" AND Status = 'Inactive'");
+            }
+        }
         
         sql.append(" ORDER BY InventoryID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
         
@@ -112,8 +123,7 @@ public class InventoryDAO {
                     inv.setQuantity(rs.getDouble("Quantity"));
                     inv.setUnit(rs.getString("Unit"));
                     inv.setLastUpdated(rs.getTimestamp("LastUpdated"));
-                    // Set default status since database doesn't have this column
-                    inv.setStatus("Active");
+                    inv.setStatus(rs.getString("Status"));
                     list.add(inv);
                 }
             }
@@ -123,7 +133,7 @@ public class InventoryDAO {
 
     // Lấy 1 item theo ID
     public Inventory getById(int id) {
-        String sql = "SELECT InventoryID, ItemName, Quantity, Unit, LastUpdated FROM Inventory WHERE InventoryID = ?";
+        String sql = "SELECT InventoryID, ItemName, Quantity, Unit, LastUpdated, Status FROM Inventory WHERE InventoryID = ?";
         try (Connection conn = getConn();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -135,8 +145,7 @@ public class InventoryDAO {
                     inv.setQuantity(rs.getDouble("Quantity"));
                     inv.setUnit(rs.getString("Unit"));
                     inv.setLastUpdated(rs.getTimestamp("LastUpdated"));
-                    // Set default status since database doesn't have this column
-                    inv.setStatus("Active");
+                    inv.setStatus(rs.getString("Status"));
                     return inv;
                 }
             }
@@ -144,9 +153,9 @@ public class InventoryDAO {
         return null;
     }
 
-    // Insert (LastUpdated = GETDATE())
+    // Insert (Status default Active, LastUpdated = GETDATE())
     public void insert(Inventory inv) {
-        String sql = "INSERT INTO Inventory (ItemName, Quantity, Unit, LastUpdated) VALUES (?, ?, ?, GETDATE())";
+        String sql = "INSERT INTO Inventory (ItemName, Quantity, Unit, Status, LastUpdated) VALUES (?, ?, ?, 'Active', GETDATE())";
         try (Connection conn = getConn();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, inv.getItemName());
@@ -156,7 +165,7 @@ public class InventoryDAO {
         } catch (Exception e) { e.printStackTrace(); }
     }
 
-    // Update (cập nhật LastUpdated = GETDATE())
+    // Update (cập nhật LastUpdated = GETDATE(), giữ nguyên Status)
     public void update(Inventory inv) {
         String sql = "UPDATE Inventory SET ItemName = ?, Quantity = ?, Unit = ?, LastUpdated = GETDATE() WHERE InventoryID = ?";
         try (Connection conn = getConn();
@@ -169,9 +178,9 @@ public class InventoryDAO {
         } catch (Exception e) { e.printStackTrace(); }
     }
 
-    // Toggle status - Since database doesn't have Status column, this method updates LastUpdated only
+    // Toggle status Active <-> Inactive
     public void toggleStatus(int id) {
-        String sql = "UPDATE Inventory SET LastUpdated = GETDATE() WHERE InventoryID = ?";
+        String sql = "UPDATE Inventory SET Status = CASE WHEN Status = 'Active' THEN 'Inactive' ELSE 'Active' END, LastUpdated = GETDATE() WHERE InventoryID = ?";
         try (Connection conn = getConn();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);

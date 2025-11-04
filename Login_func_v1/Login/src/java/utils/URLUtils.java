@@ -18,6 +18,19 @@ public class URLUtils {
      * @return Complete URL with parameters
      */
     public static String buildInventoryUrl(String baseUrl, String searchName, String statusFilter, String page) {
+        return buildInventoryUrl(baseUrl, searchName, statusFilter, page, null);
+    }
+    
+    /**
+     * Builds a URL with preserved search, filter and pagination parameters for inventory management
+     * @param baseUrl The base URL (e.g., "manageinventory")
+     * @param searchName The search parameter value
+     * @param statusFilter The status filter parameter value
+     * @param page The page parameter value
+     * @param pageSize The page size parameter value
+     * @return Complete URL with parameters
+     */
+    public static String buildInventoryUrl(String baseUrl, String searchName, String statusFilter, String page, String pageSize) {
         StringBuilder url = new StringBuilder(baseUrl);
         boolean hasParams = false;
         
@@ -34,6 +47,11 @@ public class URLUtils {
             
             if (page != null && !page.equals("1")) {
                 url.append(hasParams ? "&" : "?").append("page=").append(page);
+                hasParams = true;
+            }
+            
+            if (pageSize != null && !pageSize.equals("10")) {
+                url.append(hasParams ? "&" : "?").append("pageSize=").append(pageSize);
             }
         } catch (UnsupportedEncodingException e) {
             // UTF-8 should always be supported, but fallback to original values
@@ -49,6 +67,11 @@ public class URLUtils {
             
             if (page != null && !page.equals("1")) {
                 url.append(hasParams ? "&" : "?").append("page=").append(page);
+                hasParams = true;
+            }
+            
+            if (pageSize != null && !pageSize.equals("10")) {
+                url.append(hasParams ? "&" : "?").append("pageSize=").append(pageSize);
             }
         }
         

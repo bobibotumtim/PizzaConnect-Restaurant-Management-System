@@ -67,8 +67,9 @@ public class InventoryServlet extends HttpServlet {
                         dao.toggleStatus(id);
                         
                         HttpSession session = request.getSession();
+                        String newStatus = currentItem.getStatus().equals("Active") ? "Inactive" : "Active";
                         session.setAttribute("successMessage", 
-                            "Item '" + currentItem.getItemName() + "' updated successfully.");
+                            "Item '" + currentItem.getItemName() + "' status changed to " + newStatus + " successfully.");
                     } else {
                         HttpSession session = request.getSession();
                         session.setAttribute("errorMessage", "Item not found.");
@@ -97,13 +98,26 @@ public class InventoryServlet extends HttpServlet {
                 try {
                     // Get pagination parameters
                     int page = 1;
-                    int pageSize = 10; // Increased to match requirements (10 items per page)
+                    int pageSize = 10; // Default page size
+                    
+                    // Parse page parameter
                     if (request.getParameter("page") != null) {
                         try {
                             page = Integer.parseInt(request.getParameter("page"));
                             if (page < 1) page = 1;
                         } catch (NumberFormatException e) {
                             page = 1;
+                        }
+                    }
+                    
+                    // Parse pageSize parameter
+                    if (request.getParameter("pageSize") != null) {
+                        try {
+                            pageSize = Integer.parseInt(request.getParameter("pageSize"));
+                            if (pageSize < 5) pageSize = 5;
+                            if (pageSize > 100) pageSize = 100;
+                        } catch (NumberFormatException e) {
+                            pageSize = 10;
                         }
                     }
                     
@@ -122,13 +136,20 @@ public class InventoryServlet extends HttpServlet {
                     // Get filtered and paginated results
                     List<Inventory> list = dao.getInventoriesByPage(page, pageSize, searchName, statusFilter);
                     
+                    // Calculate pagination info
+                    int startItem = (page - 1) * pageSize + 1;
+                    int endItem = Math.min(page * pageSize, totalItems);
+                    
                     // Set attributes for JSP
                     request.setAttribute("inventoryList", list);
                     request.setAttribute("currentPage", page);
                     request.setAttribute("totalPages", totalPages);
+                    request.setAttribute("pageSize", pageSize);
                     request.setAttribute("searchName", searchName != null ? searchName : "");
                     request.setAttribute("statusFilter", statusFilter);
                     request.setAttribute("totalItems", totalItems);
+                    request.setAttribute("startItem", startItem);
+                    request.setAttribute("endItem", endItem);
                     
                     // Check for success/error messages from session
                     HttpSession session = request.getSession();

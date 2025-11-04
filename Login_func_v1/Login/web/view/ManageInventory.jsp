@@ -86,13 +86,24 @@
             </div>
         </div>
 
-        <!-- Results Summary -->
-        <div class="mb-3">
-            <small class="text-muted">
-                Showing ${totalItems} item(s)
-                <c:if test="${not empty searchName}"> matching "${searchName}"</c:if>
-                <c:if test="${statusFilter != 'all'}"> with status "${statusFilter}"</c:if>
-            </small>
+        <!-- Results Summary and Page Size Selector -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <small class="text-muted">
+                    Showing ${startItem}-${endItem} of ${totalItems} item(s)
+                    <c:if test="${not empty searchName}"> matching "${searchName}"</c:if>
+                    <c:if test="${statusFilter != 'all'}"> with status "${statusFilter}"</c:if>
+                </small>
+            </div>
+            <div class="d-flex align-items-center">
+                <label class="form-label me-2 mb-0">Items per page:</label>
+                <select class="form-select form-select-sm" style="width: auto;" onchange="changePageSize(this.value)">
+                    <option value="5" ${pageSize == 5 ? 'selected' : ''}>5</option>
+                    <option value="10" ${pageSize == 10 ? 'selected' : ''}>10</option>
+                    <option value="25" ${pageSize == 25 ? 'selected' : ''}>25</option>
+                    <option value="50" ${pageSize == 50 ? 'selected' : ''}>50</option>
+                </select>
+            </div>
         </div>
 
         <div class="card">
@@ -132,6 +143,9 @@
                                             <c:param name="statusFilter" value="${statusFilter}"/>
                                         </c:if>
                                         <c:param name="page" value="${currentPage}"/>
+                                        <c:if test="${pageSize != 10}">
+                                            <c:param name="pageSize" value="${pageSize}"/>
+                                        </c:if>
                                     </c:url>
                                     <c:url var="toggleUrl" value="manageinventory">
                                         <c:param name="action" value="toggle"/>
@@ -143,6 +157,9 @@
                                             <c:param name="statusFilter" value="${statusFilter}"/>
                                         </c:if>
                                         <c:param name="page" value="${currentPage}"/>
+                                        <c:if test="${pageSize != 10}">
+                                            <c:param name="pageSize" value="${pageSize}"/>
+                                        </c:if>
                                     </c:url>
                                     
                                     <a class="btn btn-sm btn-warning" href="${editUrl}">
@@ -173,71 +190,213 @@
             </div>
         </div>
 
-        <!-- Pagination -->
+        <!-- Enhanced Pagination -->
         <c:if test="${totalPages > 1}">
-            <div class="d-flex justify-content-center mt-3">
-                <ul class="pagination">
-                    <c:if test="${currentPage > 1}">
-                        <li class="page-item">
-                            <c:url var="prevUrl" value="manageinventory">
-                                <c:param name="page" value="${currentPage - 1}"/>
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <!-- Pagination Info -->
+                <div>
+                    <small class="text-muted">
+                        Page ${currentPage} of ${totalPages} (${totalItems} total items)
+                    </small>
+                </div>
+                
+                <!-- Pagination Controls -->
+                <nav aria-label="Inventory pagination">
+                    <ul class="pagination mb-0">
+                        <!-- First Page -->
+                        <c:if test="${currentPage > 1}">
+                            <li class="page-item">
+                                <c:url var="firstUrl" value="manageinventory">
+                                    <c:param name="page" value="1"/>
+                                    <c:if test="${not empty searchName}">
+                                        <c:param name="searchName" value="${searchName}"/>
+                                    </c:if>
+                                    <c:if test="${statusFilter != 'all'}">
+                                        <c:param name="statusFilter" value="${statusFilter}"/>
+                                    </c:if>
+                                    <c:if test="${pageSize != 10}">
+                                        <c:param name="pageSize" value="${pageSize}"/>
+                                    </c:if>
+                                </c:url>
+                                <a class="page-link" href="${firstUrl}" title="First page">&laquo;&laquo;</a>
+                            </li>
+                        </c:if>
+                        
+                        <!-- Previous Page -->
+                        <c:if test="${currentPage > 1}">
+                            <li class="page-item">
+                                <c:url var="prevUrl" value="manageinventory">
+                                    <c:param name="page" value="${currentPage - 1}"/>
+                                    <c:if test="${not empty searchName}">
+                                        <c:param name="searchName" value="${searchName}"/>
+                                    </c:if>
+                                    <c:if test="${statusFilter != 'all'}">
+                                        <c:param name="statusFilter" value="${statusFilter}"/>
+                                    </c:if>
+                                    <c:if test="${pageSize != 10}">
+                                        <c:param name="pageSize" value="${pageSize}"/>
+                                    </c:if>
+                                </c:url>
+                                <a class="page-link" href="${prevUrl}" title="Previous page">&laquo;</a>
+                            </li>
+                        </c:if>
+                        
+                        <!-- Smart Page Numbers -->
+                        <c:set var="startPage" value="${currentPage - 2 > 1 ? currentPage - 2 : 1}"/>
+                        <c:set var="endPage" value="${currentPage + 2 < totalPages ? currentPage + 2 : totalPages}"/>
+                        
+                        <!-- Show first page if not in range -->
+                        <c:if test="${startPage > 1}">
+                            <li class="page-item">
+                                <c:url var="pageUrl" value="manageinventory">
+                                    <c:param name="page" value="1"/>
+                                    <c:if test="${not empty searchName}">
+                                        <c:param name="searchName" value="${searchName}"/>
+                                    </c:if>
+                                    <c:if test="${statusFilter != 'all'}">
+                                        <c:param name="statusFilter" value="${statusFilter}"/>
+                                    </c:if>
+                                    <c:if test="${pageSize != 10}">
+                                        <c:param name="pageSize" value="${pageSize}"/>
+                                    </c:if>
+                                </c:url>
+                                <a class="page-link" href="${pageUrl}">1</a>
+                            </li>
+                            <c:if test="${startPage > 2}">
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            </c:if>
+                        </c:if>
+                        
+                        <!-- Page range -->
+                        <c:forEach begin="${startPage}" end="${endPage}" var="p">
+                            <c:url var="pageUrl" value="manageinventory">
+                                <c:param name="page" value="${p}"/>
                                 <c:if test="${not empty searchName}">
                                     <c:param name="searchName" value="${searchName}"/>
                                 </c:if>
                                 <c:if test="${statusFilter != 'all'}">
                                     <c:param name="statusFilter" value="${statusFilter}"/>
                                 </c:if>
-                            </c:url>
-                            <a class="page-link" href="${prevUrl}">&laquo;</a>
-                        </li>
-                    </c:if>
-                    <c:if test="${currentPage == 1}">
-                        <li class="page-item disabled">
-                            <span class="page-link">&laquo;</span>
-                        </li>
-                    </c:if>
-                    
-                    <c:forEach begin="1" end="${totalPages}" var="p">
-                        <c:url var="pageUrl" value="manageinventory">
-                            <c:param name="page" value="${p}"/>
-                            <c:if test="${not empty searchName}">
-                                <c:param name="searchName" value="${searchName}"/>
-                            </c:if>
-                            <c:if test="${statusFilter != 'all'}">
-                                <c:param name="statusFilter" value="${statusFilter}"/>
-                            </c:if>
-                        </c:url>
-                        <li class="page-item ${p == currentPage ? 'active' : ''}">
-                            <a class="page-link" href="${pageUrl}">${p}</a>
-                        </li>
-                    </c:forEach>
-                    
-                    <c:if test="${currentPage < totalPages}">
-                        <li class="page-item">
-                            <c:url var="nextUrl" value="manageinventory">
-                                <c:param name="page" value="${currentPage + 1}"/>
-                                <c:if test="${not empty searchName}">
-                                    <c:param name="searchName" value="${searchName}"/>
-                                </c:if>
-                                <c:if test="${statusFilter != 'all'}">
-                                    <c:param name="statusFilter" value="${statusFilter}"/>
+                                <c:if test="${pageSize != 10}">
+                                    <c:param name="pageSize" value="${pageSize}"/>
                                 </c:if>
                             </c:url>
-                            <a class="page-link" href="${nextUrl}">&raquo;</a>
-                        </li>
-                    </c:if>
-                    <c:if test="${currentPage == totalPages}">
-                        <li class="page-item disabled">
-                            <span class="page-link">&raquo;</span>
-                        </li>
-                    </c:if>
-                </ul>
+                            <li class="page-item ${p == currentPage ? 'active' : ''}">
+                                <a class="page-link" href="${pageUrl}">${p}</a>
+                            </li>
+                        </c:forEach>
+                        
+                        <!-- Show last page if not in range -->
+                        <c:if test="${endPage < totalPages}">
+                            <c:if test="${endPage < totalPages - 1}">
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            </c:if>
+                            <li class="page-item">
+                                <c:url var="pageUrl" value="manageinventory">
+                                    <c:param name="page" value="${totalPages}"/>
+                                    <c:if test="${not empty searchName}">
+                                        <c:param name="searchName" value="${searchName}"/>
+                                    </c:if>
+                                    <c:if test="${statusFilter != 'all'}">
+                                        <c:param name="statusFilter" value="${statusFilter}"/>
+                                    </c:if>
+                                    <c:if test="${pageSize != 10}">
+                                        <c:param name="pageSize" value="${pageSize}"/>
+                                    </c:if>
+                                </c:url>
+                                <a class="page-link" href="${pageUrl}">${totalPages}</a>
+                            </li>
+                        </c:if>
+                        
+                        <!-- Next Page -->
+                        <c:if test="${currentPage < totalPages}">
+                            <li class="page-item">
+                                <c:url var="nextUrl" value="manageinventory">
+                                    <c:param name="page" value="${currentPage + 1}"/>
+                                    <c:if test="${not empty searchName}">
+                                        <c:param name="searchName" value="${searchName}"/>
+                                    </c:if>
+                                    <c:if test="${statusFilter != 'all'}">
+                                        <c:param name="statusFilter" value="${statusFilter}"/>
+                                    </c:if>
+                                    <c:if test="${pageSize != 10}">
+                                        <c:param name="pageSize" value="${pageSize}"/>
+                                    </c:if>
+                                </c:url>
+                                <a class="page-link" href="${nextUrl}" title="Next page">&raquo;</a>
+                            </li>
+                        </c:if>
+                        
+                        <!-- Last Page -->
+                        <c:if test="${currentPage < totalPages}">
+                            <li class="page-item">
+                                <c:url var="lastUrl" value="manageinventory">
+                                    <c:param name="page" value="${totalPages}"/>
+                                    <c:if test="${not empty searchName}">
+                                        <c:param name="searchName" value="${searchName}"/>
+                                    </c:if>
+                                    <c:if test="${statusFilter != 'all'}">
+                                        <c:param name="statusFilter" value="${statusFilter}"/>
+                                    </c:if>
+                                    <c:if test="${pageSize != 10}">
+                                        <c:param name="pageSize" value="${pageSize}"/>
+                                    </c:if>
+                                </c:url>
+                                <a class="page-link" href="${lastUrl}" title="Last page">&raquo;&raquo;</a>
+                            </li>
+                        </c:if>
+                    </ul>
+                </nav>
+                
+                <!-- Jump to Page -->
+                <div class="d-flex align-items-center">
+                    <label class="form-label me-2 mb-0">Go to page:</label>
+                    <input type="number" class="form-control form-control-sm" style="width: 80px;" 
+                           min="1" max="${totalPages}" value="${currentPage}" 
+                           onkeypress="if(event.key==='Enter') jumpToPage(this.value)">
+                    <button class="btn btn-sm btn-outline-primary ms-1" onclick="jumpToPage(document.querySelector('input[type=number]').value)">
+                        Go
+                    </button>
+                </div>
             </div>
         </c:if>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Function to change page size
+    function changePageSize(newPageSize) {
+        const url = new URL(window.location);
+        url.searchParams.set('pageSize', newPageSize);
+        url.searchParams.set('page', '1'); // Reset to first page when changing page size
+        window.location.href = url.toString();
+    }
+    
+    // Function to jump to specific page
+    function jumpToPage(pageNumber) {
+        const totalPages = ${totalPages};
+        const page = parseInt(pageNumber);
+        
+        if (isNaN(page) || page < 1 || page > totalPages) {
+            alert('Please enter a valid page number between 1 and ' + totalPages);
+            return;
+        }
+        
+        const url = new URL(window.location);
+        url.searchParams.set('page', page);
+        window.location.href = url.toString();
+    }
+    
+    // Auto-submit search form when status filter changes
+    document.getElementById('statusFilter').addEventListener('change', function() {
+        this.form.submit();
+    });
+</script>
 
 </body>
 </html>
