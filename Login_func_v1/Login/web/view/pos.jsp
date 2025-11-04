@@ -178,12 +178,12 @@
                         </svg>
                         Clear
                     </button>
-                    <button onclick="completeOrder()" id="payBtn" disabled
+                    <button onclick="completeOrder()" id="orderBtn" disabled
                             class="py-3 px-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg">
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                         </svg>
-                        Pay
+                        Order
                     </button>
                 </div>
 
@@ -255,10 +255,24 @@
         let selectedToppings = [];
         let selectedTable = null;
         let orderCounter = 1;
+        let editOrderId = null; // For editing existing order
+        let existingOrder = null; // Store existing order data
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async function() {
-            await loadTables();
+            // Check if we're in edit mode
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderIdParam = urlParams.get('orderId');
+            
+            if (orderIdParam) {
+                editOrderId = parseInt(orderIdParam);
+                console.log('📝 EDIT MODE: Loading Order #' + editOrderId);
+                await loadExistingOrder(editOrderId);
+            } else {
+                console.log('🆕 CREATE MODE: New order');
+                await loadTables();
+            }
+            
             await loadSampleProducts();
             loadSampleToppings();
             setupEventListeners();
@@ -367,6 +381,66 @@
                             '<div class="text-sm">Lỗi tải bàn</div>' +
                             '<button onclick="loadTables()" class="mt-2 px-3 py-1 bg-red-500 text-white rounded text-xs">Thử lại</button>' +
                             '</div>';
+        }
+
+        // Load existing order for editing
+        async function loadExistingOrder(orderId) {
+            try {
+                console.log('🔄 Loading existing order #' + orderId);
+                const response = await fetch('pos?action=getOrder&orderId=' + orderId);
+                const data = await response.json();
+                
+                if (data.success) {
+                    existingOrder = data.order;
+                    console.log('✅ Order loaded:', existingOrder);
+                    console.log('✅ Order TableID:', existingOrder.tableID);
+                    
+                    // Hide table selection panel
+                    const tablePanel = document.querySelector('.w-64.bg-white.border-r');
+                    if (tablePanel) {
+                        tablePanel.style.display = 'none';
+                        console.log('✅ Table panel hidden');
+                    }
+                    
+                    // Set selected table (order already has table, no need to select)
+                    selectedTable = existingOrder.tableID;
+                    console.log('✅ selectedTable set to:', selectedTable);
+                    
+                    // Update header to show order info
+                    document.getElementById('selectedTableDisplay').textContent = 
+                        'Đơn #' + existingOrder.orderID + ' - Bàn ' + existingOrder.tableID;
+                    document.getElementById('selectedTableDisplay').classList.remove('bg-purple-100', 'text-purple-800');
+                    document.getElementById('selectedTableDisplay').classList.add('bg-blue-600', 'text-white');
+                    
+                    // Load existing items into cart
+                    if (existingOrder.items && existingOrder.items.length > 0) {
+                        cart = existingOrder.items.map(item => ({
+                            id: item.productSizeID,
+                            sizeId: item.productSizeID,
+                            name: item.productName,
+                            sizeName: item.sizeName,
+                            price: item.totalPrice / item.quantity,
+                            orderId: '#' + existingOrder.orderID,
+                            toppings: item.specialInstructions ? [item.specialInstructions] : [],
+                            quantity: item.quantity,
+                            uniqueId: 'existing-' + item.orderDetailID,
+                            isExisting: true // Mark as existing item
+                        }));
+                        
+                        updateCartDisplay();
+                        updateTotals();
+                    }
+                    
+                } else {
+                    console.error('❌ Failed to load order:', data.message);
+                    alert('❌ Không thể tải đơn hàng: ' + data.message);
+                    window.location.href = 'manage-orders';
+                }
+            } catch (error) {
+                console.error('❌ Error loading order:', error);
+                alert('❌ Lỗi tải đơn hàng!');
+                window.location.href = 'manage-orders';
+            }
         }
 
         // Load products from database
@@ -706,7 +780,7 @@
         // Update button states
         function updateButtonStates(enabled) {
             document.getElementById('clearBtn').disabled = !enabled;
-            document.getElementById('payBtn').disabled = !enabled;
+            document.getElementById('orderBtn').disabled = !enabled;
             document.getElementById('printBtn').disabled = !enabled;
         }
 
@@ -761,15 +835,17 @@
         async function completeOrder() {
             console.log('🔔 completeOrder() called!');
             console.log('🛒 Cart length:', cart.length);
-            
-            // Check if table is selected
-            if (!selectedTable) {
-                alert('⚠️ Vui lòng chọn bàn trước khi tạo đơn!');
-                return;
-            }
+            console.log('📝 Edit mode:', editOrderId ? 'YES (Order #' + editOrderId + ')' : 'NO');
             
             if (cart.length === 0) {
                 console.log('⚠️ Cart is empty, returning');
+                alert('⚠️ Giỏ hàng trống!');
+                return;
+            }
+            
+            // Check if table is selected (ONLY for new orders, NOT for edit mode)
+            if (!editOrderId && !selectedTable) {
+                alert('⚠️ Vui lòng chọn bàn trước khi tạo đơn!');
                 return;
             }
             
@@ -783,7 +859,6 @@
             
             // Prepare order data
             const orderData = {
-                tableID: selectedTable,
                 customerName: customerName,
                 items: cart,
                 subtotal: subtotal,
@@ -793,21 +868,40 @@
                 timestamp: Date.now()
             };
             
-            // Disable pay button during processing
-            const payBtn = document.getElementById('payBtn');
-            payBtn.disabled = true;
-            payBtn.textContent = 'Processing...';
+            // Add orderId if in edit mode, otherwise add tableID
+            if (editOrderId) {
+                orderData.orderId = editOrderId;
+                console.log('📝 EDIT MODE: Adding items to existing order #' + editOrderId);
+                console.log('📝 NOT sending tableID (order already has table)');
+                console.log('📝 orderData.orderId =', orderData.orderId);
+            } else {
+                orderData.tableID = selectedTable;
+                console.log('🆕 CREATE MODE: Creating new order for table #' + selectedTable);
+                console.log('🆕 Sending tableID:', selectedTable);
+                console.log('🆕 orderData.tableID =', orderData.tableID);
+            }
+            
+            console.log('📤 Final orderData:', orderData);
+            console.log('📤 JSON.stringify(orderData):', JSON.stringify(orderData));
+            
+            // Disable order button during processing
+            const orderBtn = document.getElementById('orderBtn');
+            orderBtn.disabled = true;
+            orderBtn.innerHTML = '<svg class="animate-spin h-5 w-5 mx-auto" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
             
             try {
                 // Send order to server
+                const jsonString = JSON.stringify(orderData);
                 console.log('🚀 Sending order data:', orderData);
-                console.log('🌐 Calling: simple-pos');
-                const response = await fetch('simple-pos', {
+                console.log('📤 JSON string to send:', jsonString);
+                console.log('🌐 Calling: pos');
+                
+                const response = await fetch('pos', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json; charset=UTF-8'
                     },
-                    body: JSON.stringify(orderData)
+                    body: jsonString
                 });
                 
                 console.log('📡 Response status:', response.status);
@@ -827,25 +921,26 @@
                 console.log('✅ Parsed result:', result);
                 
                 if (result.success) {
-                    // Get table info
-                    const table = tables.find(t => t.tableID === selectedTable);
-                    const tableName = table ? table.tableNumber : selectedTable;
+                    if (editOrderId) {
+                        // Edit mode success
+                        alert('✅ Đã thêm món vào đơn #' + result.orderId + ' thành công!\n\n' +
+                              'Tổng tiền mới: ' + formatCurrency(total) + 'đ');
+                    } else {
+                        // Create mode success
+                        const table = tables.find(t => t.tableID === selectedTable);
+                        const tableName = table ? table.tableNumber : selectedTable;
+                        
+                        alert('✅ Đơn hàng đã được tạo thành công!\n\n' +
+                              'Order ID: #' + result.orderId + '\n' +
+                              'Bàn: ' + tableName + '\n' +
+                              'Khách hàng: ' + customerName + '\n' +
+                              'Tổng tiền: ' + formatCurrency(total) + 'đ');
+                    }
                     
-                    // Show success message with Order ID
-                    alert('✅ Đơn hàng đã được tạo thành công!\n\n' +
-                          'Order ID: #' + result.orderId + '\n' +
-                          'Bàn: ' + tableName + '\n' +
-                          'Khách hàng: ' + customerName + '\n' +
-                          'Tổng tiền: ' + formatCurrency(total) + 'đ\n\n' +
-                          'Đơn hàng đã được lưu vào database!');
-                    
-                    // Clear cart and selection after successful order
-                    clearOrder();
-                    
-                    // Reload tables to update status
-                    await loadTables();
+                    // Redirect to manage-orders
+                    window.location.href = 'manage-orders';
                 } else {
-                    alert('❌ Tạo đơn thất bại: ' + result.message);
+                    alert('❌ Thất bại: ' + result.message);
                 }
                 
             } catch (error) {
@@ -855,11 +950,11 @@
                 console.error('❌ Error stack:', error.stack);
                 alert('❌ Network error: ' + error.message);
             } finally {
-                // Re-enable pay button
-                payBtn.disabled = false;
-                payBtn.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
-                                   '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>' +
-                                   '</svg> Pay';
+                // Re-enable order button
+                orderBtn.disabled = false;
+                orderBtn.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                                   '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>' +
+                                   '</svg> Order';
             }
         }
 

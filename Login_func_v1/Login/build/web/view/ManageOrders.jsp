@@ -398,6 +398,17 @@
                                                                                                 </svg>
                                                                                                 View
                                                                                             </button>
+                                                                                            
+                                                                                            <% if (status == 0 || status == 1) { %>
+                                                                                            <a href="${pageContext.request.contextPath}/pos?orderId=<%= order.getOrderID() %>"
+                                                                                                class="px-2 py-1 text-white bg-green-600 hover:bg-green-700 rounded text-xs font-medium whitespace-nowrap inline-flex items-center gap-1"
+                                                                                                title="Add More Items">
+                                                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                                                                                </svg>
+                                                                                                Add
+                                                                                            </a>
+                                                                                            <% } %>
 
                                                                                                 <%
                                                                                                 // 2. PROCESS BUTTON - Only for Pending

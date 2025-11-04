@@ -905,4 +905,70 @@ public class OrderDAO extends DBContext {
         }
         return 0;
     }
+
+    /**
+     * Add items to existing order
+     * Used when waiter adds more items to an order from POS
+     */
+    public boolean addItemsToOrder(int orderId, List<OrderDetail> newItems) throws Exception {
+        Connection con = null;
+        
+        try {
+            con = useConnection();
+            con.setAutoCommit(false);
+            
+            // Insert new order details
+            String sqlDetail = """
+                INSERT INTO [OrderDetail] 
+                (OrderID, ProductSizeID, Quantity, TotalPrice, SpecialInstructions, Status)
+                VALUES (?, ?, ?, ?, ?, 'Waiting')
+            """;
+            
+            double additionalTotal = 0;
+            try (PreparedStatement psDetail = con.prepareStatement(sqlDetail)) {
+                for (OrderDetail d : newItems) {
+                    psDetail.setInt(1, orderId);
+                    psDetail.setInt(2, d.getProductSizeID());
+                    psDetail.setInt(3, d.getQuantity());
+                    psDetail.setDouble(4, d.getTotalPrice());
+                    psDetail.setString(5, d.getSpecialInstructions());
+                    psDetail.addBatch();
+                    additionalTotal += d.getTotalPrice();
+                }
+                psDetail.executeBatch();
+            }
+            
+            // Update total price of order
+            String sqlUpdate = "UPDATE [Order] SET TotalPrice = TotalPrice + ? WHERE OrderID = ?";
+            try (PreparedStatement psUpdate = con.prepareStatement(sqlUpdate)) {
+                psUpdate.setDouble(1, additionalTotal);
+                psUpdate.setInt(2, orderId);
+                psUpdate.executeUpdate();
+            }
+            
+            con.commit();
+            System.out.println("✅ Added " + newItems.size() + " items to Order #" + orderId);
+            return true;
+            
+        } catch (Exception e) {
+            if (con != null) con.rollback();
+            System.err.println("❌ Error adding items to order: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        } finally {
+            if (externalConn == null && con != null) con.close();
+        }
+    }
+
+    /**
+     * Get order with all details (for editing in POS)
+     */
+    public Order getOrderWithDetails(int orderId) {
+        Order order = getOrderById(orderId);
+        if (order != null) {
+            List<OrderDetail> details = getOrderDetailsByOrderId(orderId);
+            order.setDetails(details);
+        }
+        return order;
+    }
 }

@@ -31,6 +31,22 @@ public class POSServlet extends HttpServlet {
             // Return JSON data for tables
             handleTablesAPI(req, resp);
             return;
+        } else if ("getOrder".equals(action)) {
+            // Return JSON data for existing order
+            handleGetOrderAPI(req, resp);
+            return;
+        }
+        
+        // Check if editing existing order
+        String orderIdParam = req.getParameter("orderId");
+        if (orderIdParam != null && !orderIdParam.trim().isEmpty()) {
+            try {
+                int orderId = Integer.parseInt(orderIdParam);
+                req.setAttribute("editOrderId", orderId);
+                System.out.println("🔄 POS opened in EDIT mode for Order #" + orderId);
+            } catch (NumberFormatException e) {
+                System.err.println("❌ Invalid orderId parameter: " + orderIdParam);
+            }
         }
         
         // Forward to POS page
@@ -178,6 +194,75 @@ public class POSServlet extends HttpServlet {
         }
     }
 
+    /**
+     * Handle API request to get existing order details
+     */
+    private void handleGetOrderAPI(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        
+        resp.setContentType("application/json; charset=UTF-8");
+        
+        try {
+            String orderIdParam = req.getParameter("orderId");
+            if (orderIdParam == null || orderIdParam.trim().isEmpty()) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                resp.getWriter().write("{\"success\": false, \"message\": \"Order ID is required\"}");
+                return;
+            }
+            
+            int orderId = Integer.parseInt(orderIdParam);
+            OrderDAO orderDAO = new OrderDAO();
+            Order order = orderDAO.getOrderWithDetails(orderId);
+            
+            if (order == null) {
+                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                resp.getWriter().write("{\"success\": false, \"message\": \"Order not found\"}");
+                return;
+            }
+            
+            // Build JSON response
+            StringBuilder json = new StringBuilder();
+            json.append("{\"success\": true, \"order\": {");
+            json.append("\"orderID\": ").append(order.getOrderID()).append(",");
+            json.append("\"tableID\": ").append(order.getTableID()).append(",");
+            json.append("\"customerID\": ").append(order.getCustomerID()).append(",");
+            json.append("\"totalPrice\": ").append(order.getTotalPrice()).append(",");
+            json.append("\"note\": \"").append(escapeJson(order.getNote())).append("\",");
+            json.append("\"items\": [");
+            
+            List<OrderDetail> details = order.getDetails();
+            if (details != null) {
+                for (int i = 0; i < details.size(); i++) {
+                    OrderDetail detail = details.get(i);
+                    if (i > 0) json.append(",");
+                    json.append("{");
+                    json.append("\"orderDetailID\": ").append(detail.getOrderDetailID()).append(",");
+                    json.append("\"productSizeID\": ").append(detail.getProductSizeID()).append(",");
+                    json.append("\"productName\": \"").append(escapeJson(detail.getProductName())).append("\",");
+                    json.append("\"sizeName\": \"").append(escapeJson(detail.getSizeName())).append("\",");
+                    json.append("\"quantity\": ").append(detail.getQuantity()).append(",");
+                    json.append("\"totalPrice\": ").append(detail.getTotalPrice()).append(",");
+                    json.append("\"specialInstructions\": \"").append(escapeJson(detail.getSpecialInstructions())).append("\"");
+                    json.append("}");
+                }
+            }
+            
+            json.append("]}}");
+            resp.getWriter().write(json.toString());
+            
+            System.out.println("✅ Order API called - returned Order #" + orderId + " with " + 
+                             (details != null ? details.size() : 0) + " items");
+            
+        } catch (NumberFormatException e) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{\"success\": false, \"message\": \"Invalid order ID format\"}");
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().write("{\"success\": false, \"message\": \"" + escapeJson(e.getMessage()) + "\"}");
+        }
+    }
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -230,45 +315,77 @@ public class POSServlet extends HttpServlet {
                 return;
             }
             
-            // Extract and validate tableID
-            int tableId = extractJsonInt(jsonData, "tableID");
-            if (tableId <= 0) {
-                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                resp.getWriter().write("{\"success\": false, \"message\": \"Table ID is required\"}");
-                System.err.println("❌ Table ID is missing or invalid");
-                return;
-            }
+            // Check if this is adding items to existing order or creating new order
+            int existingOrderId = extractJsonInt(jsonData, "orderId");
+            System.out.println("🔍 Extracted orderId from JSON: " + existingOrderId);
+            System.out.println("🔍 JSON data: " + jsonData);
             
-            System.out.println("🪑 Selected Table ID: " + tableId);
-            
-            // Process order
-            try {
-                int orderId = processOrderSimple(jsonData, user, tableId);
+            if (existingOrderId > 0) {
+                // EDIT MODE: Adding items to existing order
+                System.out.println("📝 EDIT MODE: Adding items to Order #" + existingOrderId);
                 
-                if (orderId > 0) {
-                    // Update table status to unavailable
-                    TableDAO tableDAO = new TableDAO();
-                    boolean statusUpdated = tableDAO.updateTableStatus(tableId, "unavailable");
+                try {
+                    boolean success = addItemsToExistingOrder(jsonData, user, existingOrderId);
                     
-                    if (statusUpdated) {
-                        System.out.println("✅ Table status updated to 'unavailable' for Table ID: " + tableId);
+                    if (success) {
+                        String response = "{\"success\": true, \"message\": \"Items added successfully!\", \"orderId\": " + existingOrderId + "}";
+                        resp.getWriter().write(response);
+                        System.out.println("✅ Items added to Order #" + existingOrderId);
                     } else {
-                        System.err.println("⚠️ Failed to update table status for Table ID: " + tableId);
+                        resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                        resp.getWriter().write("{\"success\": false, \"message\": \"Failed to add items\"}");
                     }
-                    
-                    String response = "{\"success\": true, \"message\": \"Order created successfully!\", \"orderId\": " + orderId + "}";
-                    resp.getWriter().write(response);
-                    System.out.println("✅ POS order processed successfully! Order ID: " + orderId);
-                } else {
+                } catch (Exception processEx) {
+                    System.err.println("❌ Exception adding items: " + processEx.getMessage());
+                    processEx.printStackTrace();
                     resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                    resp.getWriter().write("{\"success\": false, \"message\": \"Failed to create order - returned 0\"}");
-                    System.err.println("❌ processOrderSimple returned 0");
+                    resp.getWriter().write("{\"success\": false, \"message\": \"Exception: " + processEx.getMessage() + "\"}");
                 }
-            } catch (Exception processEx) {
-                System.err.println("❌ Exception in processOrderSimple: " + processEx.getMessage());
-                processEx.printStackTrace();
-                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                resp.getWriter().write("{\"success\": false, \"message\": \"Exception: " + processEx.getMessage() + "\"}");
+                
+            } else {
+                // CREATE MODE: Creating new order
+                System.out.println("🆕 CREATE MODE: Creating new order");
+                
+                // Extract and validate tableID
+                int tableId = extractJsonInt(jsonData, "tableID");
+                if (tableId <= 0) {
+                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    resp.getWriter().write("{\"success\": false, \"message\": \"Table ID is required\"}");
+                    System.err.println("❌ Table ID is missing or invalid");
+                    return;
+                }
+                
+                System.out.println("🪑 Selected Table ID: " + tableId);
+                
+                // Process order
+                try {
+                    int orderId = processOrderSimple(jsonData, user, tableId);
+                    
+                    if (orderId > 0) {
+                        // Update table status to unavailable
+                        TableDAO tableDAO = new TableDAO();
+                        boolean statusUpdated = tableDAO.updateTableStatus(tableId, "unavailable");
+                        
+                        if (statusUpdated) {
+                            System.out.println("✅ Table status updated to 'unavailable' for Table ID: " + tableId);
+                        } else {
+                            System.err.println("⚠️ Failed to update table status for Table ID: " + tableId);
+                        }
+                        
+                        String response = "{\"success\": true, \"message\": \"Order created successfully!\", \"orderId\": " + orderId + "}";
+                        resp.getWriter().write(response);
+                        System.out.println("✅ POS order processed successfully! Order ID: " + orderId);
+                    } else {
+                        resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                        resp.getWriter().write("{\"success\": false, \"message\": \"Failed to create order - returned 0\"}");
+                        System.err.println("❌ processOrderSimple returned 0");
+                    }
+                } catch (Exception processEx) {
+                    System.err.println("❌ Exception in processOrderSimple: " + processEx.getMessage());
+                    processEx.printStackTrace();
+                    resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    resp.getWriter().write("{\"success\": false, \"message\": \"Exception: " + processEx.getMessage() + "\"}");
+                }
             }
             
         } catch (Exception e) {
@@ -499,18 +616,37 @@ public class POSServlet extends HttpServlet {
     // Simple JSON int extractor
     private int extractJsonInt(String json, String key) {
         try {
-            String searchKey = "\"" + key + "\":";
-            int startIndex = json.indexOf(searchKey);
-            if (startIndex == -1) return 0;
+            // Try with space after colon: "key": value
+            String searchKey1 = "\"" + key + "\":";
+            String searchKey2 = "\"" + key + "\" :"; // with space before colon
             
-            startIndex += searchKey.length();
+            int startIndex = json.indexOf(searchKey1);
+            if (startIndex == -1) {
+                startIndex = json.indexOf(searchKey2);
+                if (startIndex == -1) {
+                    System.err.println("❌ Key '" + key + "' not found in JSON");
+                    return 0;
+                }
+                startIndex += searchKey2.length();
+            } else {
+                startIndex += searchKey1.length();
+            }
+            
+            // Skip whitespace
+            while (startIndex < json.length() && Character.isWhitespace(json.charAt(startIndex))) {
+                startIndex++;
+            }
+            
             int endIndex = json.indexOf(",", startIndex);
             if (endIndex == -1) endIndex = json.indexOf("}", startIndex);
             if (endIndex == -1) return 0;
             
             String valueStr = json.substring(startIndex, endIndex).trim();
-            return Integer.parseInt(valueStr);
+            int result = Integer.parseInt(valueStr);
+            System.out.println("✅ Extracted " + key + " = " + result);
+            return result;
         } catch (Exception e) {
+            System.err.println("❌ Error extracting " + key + ": " + e.getMessage());
             return 0;
         }
     }
@@ -804,6 +940,55 @@ public class POSServlet extends HttpServlet {
         } catch (Exception e) {
             System.out.println("❌ Error getting EmployeeID: " + e.getMessage());
             return 0;
+        }
+    }
+
+    /**
+     * Add items to existing order
+     */
+    private boolean addItemsToExistingOrder(String jsonData, User user, int orderId) {
+        System.out.println("========================================");
+        System.out.println("📝 ADDING ITEMS TO EXISTING ORDER #" + orderId);
+        System.out.println("========================================");
+        
+        try {
+            // Parse cart items from JSON
+            List<OrderDetail> newItems = parseCartItems(jsonData);
+            System.out.println("   New items count: " + newItems.size());
+            
+            if (newItems.isEmpty()) {
+                System.err.println("❌ No items to add");
+                return false;
+            }
+            
+            // Debug new items
+            for (int i = 0; i < newItems.size(); i++) {
+                OrderDetail detail = newItems.get(i);
+                System.out.println("   New Item " + (i+1) + ": ProductSizeID=" + detail.getProductSizeID() + 
+                                 ", Quantity=" + detail.getQuantity() + 
+                                 ", Price=" + detail.getTotalPrice());
+            }
+            
+            // Add items to order
+            OrderDAO orderDAO = new OrderDAO();
+            boolean success = orderDAO.addItemsToOrder(orderId, newItems);
+            
+            if (success) {
+                System.out.println("✅✅✅ SUCCESS! Added items to Order #" + orderId + " ✅✅✅");
+                return true;
+            } else {
+                System.err.println("❌ Failed to add items to order");
+                return false;
+            }
+            
+        } catch (Exception e) {
+            System.err.println("========================================");
+            System.err.println("❌ EXCEPTION in addItemsToExistingOrder");
+            System.err.println("========================================");
+            System.err.println("Exception type: " + e.getClass().getName());
+            System.err.println("Exception message: " + e.getMessage());
+            e.printStackTrace();
+            return false;
         }
     }
 }
