@@ -69,9 +69,9 @@
                 </a>
 
                 <!-- Menu -->
-                <a href="${pageContext.request.contextPath}/menu"
-                   class="nav-btn <%= currentPath.contains("/menu") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                   title="Menu">
+                <a href="${pageContext.request.contextPath}/manageproduct"
+                   class="nav-btn <%= currentPath.contains("/manageproduct") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Manage Products">
                     <i data-lucide="utensils" class="w-6 h-6"></i>
                 </a>
 
@@ -83,9 +83,9 @@
                 </a>
 
                 <!-- Manage Products -->
-                <a href="${pageContext.request.contextPath}/manageproduct"
-                   class="nav-btn <%= currentPath.contains("/manageproduct") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                   title="Manage Products">
+                <a href="${pageContext.request.contextPath}/managecategory"
+                   class="nav-btn <%= currentPath.contains("/managecategory") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Manage Categories">
                     <i data-lucide="package" class="w-6 h-6"></i>
                 </a>
 

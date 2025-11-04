@@ -77,13 +77,10 @@
                     PIZZA
                 </button>
                 <button onclick="selectCategory('BEVERAGES')" class="category-tab flex-1 py-4 px-4 text-sm font-semibold transition-all text-gray-600 hover:bg-gray-100" data-category="BEVERAGES">
-                    BEVERAGES
+                    DRINKS
                 </button>
                 <button onclick="selectCategory('SIDES')" class="category-tab flex-1 py-4 px-4 text-sm font-semibold transition-all text-gray-600 hover:bg-gray-100" data-category="SIDES">
-                    SIDES
-                </button>
-                <button onclick="selectCategory('DESSERTS')" class="category-tab flex-1 py-4 px-4 text-sm font-semibold transition-all text-gray-600 hover:bg-gray-100" data-category="DESSERTS">
-                    DESSERTS
+                    TOPPINGS
                 </button>
             </div>
 
@@ -179,34 +176,45 @@
         </div>
     </div>
 
-    <!-- Topping Modal -->
-    <div id="toppingModal" class="modal">
+    <!-- Size Selection Modal -->
+    <div id="sizeModal" class="modal">
         <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 m-4 fade-in">
             <div class="flex justify-between items-center mb-4">
-                <h2 id="modalTitle" class="text-2xl font-bold text-gray-800">Select Toppings</h2>
-                <button onclick="closeToppingModal()" class="text-gray-500 hover:text-gray-700">
+                <h2 id="modalTitle" class="text-2xl font-bold text-gray-800">Select Size</h2>
+                <button onclick="closeSizeModal()" class="text-gray-500 hover:text-gray-700">
                     <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
 
-            <div id="toppingGrid" class="grid grid-cols-3 gap-3 mb-6 max-h-96 overflow-y-auto">
-                <!-- Toppings will be loaded here -->
+            <!-- Size Selection -->
+            <div class="mb-6">
+                <div class="text-lg font-semibold mb-3">Choose Size:</div>
+                <div id="sizeGrid" class="grid grid-cols-2 gap-3">
+                    <!-- Sizes will be loaded here -->
+                </div>
             </div>
 
-            <div class="mb-4 p-3 bg-blue-50 rounded-lg">
-                <div class="text-sm text-gray-600 mb-1">Selected toppings:</div>
-                <div id="selectedToppings" class="font-semibold text-gray-800">No toppings selected</div>
+            <!-- Toppings (for Pizza only) -->
+            <div id="toppingsSection" class="mb-6 hidden">
+                <div class="text-lg font-semibold mb-3">Add Toppings (Optional):</div>
+                <div id="toppingGrid" class="grid grid-cols-3 gap-3 max-h-48 overflow-y-auto">
+                    <!-- Toppings will be loaded here -->
+                </div>
+                <div class="mt-3 p-3 bg-blue-50 rounded-lg">
+                    <div class="text-sm text-gray-600 mb-1">Selected toppings:</div>
+                    <div id="selectedToppings" class="font-semibold text-gray-800">No toppings selected</div>
+                </div>
             </div>
 
             <div class="flex gap-3">
-                <button onclick="closeToppingModal()" 
+                <button onclick="closeSizeModal()" 
                         class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-4 rounded-lg transition-all">
                     Cancel
                 </button>
-                <button onclick="confirmToppings()" 
-                        class="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-3 px-4 rounded-lg transition-all">
+                <button onclick="confirmSelection()" id="confirmBtn" disabled
+                        class="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-3 px-4 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                     Add to Cart
                 </button>
             </div>
@@ -218,17 +226,18 @@
         let cart = [];
         let products = {};
         let toppings = [];
-        let selectedCategory = 'PIZZA';
+        let selectedCategory = 'Pizza'; // Updated to match database categories
         let selectedProduct = null;
+        let selectedSize = null;
         let selectedToppings = [];
         let orderCounter = 1;
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            loadSampleProducts();
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadSampleProducts();
             loadSampleToppings();
             setupEventListeners();
-            displayProducts();
+            selectCategory('PIZZA'); // This will set selectedCategory and display products
         });
 
         function setupEventListeners() {
@@ -236,40 +245,50 @@
             document.getElementById('discountInput').addEventListener('input', updateTotals);
         }
 
-        // Load sample products
-        function loadSampleProducts() {
+        // Load products from database
+        async function loadSampleProducts() {
+            try {
+                console.log('🔄 Loading products from database...');
+                const response = await fetch('pos?action=getProducts');
+                const data = await response.json();
+                
+                if (data.success) {
+                    products = data.categories;
+                    console.log('✅ Products loaded:', products);
+                } else {
+                    console.error('❌ Failed to load products:', data.message);
+                    // Fallback to sample data
+                    loadFallbackProducts();
+                }
+            } catch (error) {
+                console.error('❌ Error loading products:', error);
+                // Fallback to sample data
+                loadFallbackProducts();
+            }
+        }
+        
+        // Fallback sample products
+        function loadFallbackProducts() {
             products = {
-                PIZZA: [
-                    { id: 'p1', name: 'Margherita Pizza', price: 120000, category: 'PIZZA' },
-                    { id: 'p2', name: 'Pepperoni Pizza', price: 150000, category: 'PIZZA' },
-                    { id: 'p3', name: 'Hawaiian Pizza', price: 180000, category: 'PIZZA' },
-                    { id: 'p4', name: 'BBQ Chicken Pizza', price: 160000, category: 'PIZZA' },
-                    { id: 'p5', name: 'Veggie Supreme', price: 145000, category: 'PIZZA' },
-                    { id: 'p6', name: 'Meat Lovers', price: 190000, category: 'PIZZA' },
-                    { id: 'p7', name: 'Four Cheese', price: 165000, category: 'PIZZA' },
-                    { id: 'p8', name: 'Seafood Special', price: 200000, category: 'PIZZA' }
+                Pizza: [
+                    { id: 1, name: 'Hawaiian Pizza', sizes: [
+                        { sizeId: 1, sizeCode: 'S', sizeName: 'Small', price: 120000 },
+                        { sizeId: 2, sizeCode: 'M', sizeName: 'Medium', price: 160000 },
+                        { sizeId: 3, sizeCode: 'L', sizeName: 'Large', price: 200000 }
+                    ]},
+                    { id: 2, name: 'Pepperoni Pizza', sizes: [
+                        { sizeId: 4, sizeCode: 'S', sizeName: 'Small', price: 150000 },
+                        { sizeId: 5, sizeCode: 'M', sizeName: 'Medium', price: 190000 },
+                        { sizeId: 6, sizeCode: 'L', sizeName: 'Large', price: 230000 }
+                    ]}
                 ],
-                BEVERAGES: [
-                    { id: 'd1', name: 'Coca Cola', price: 15000, category: 'BEVERAGES' },
-                    { id: 'd2', name: 'Pepsi', price: 15000, category: 'BEVERAGES' },
-                    { id: 'd3', name: 'Sprite', price: 15000, category: 'BEVERAGES' },
-                    { id: 'd4', name: 'Orange Juice', price: 25000, category: 'BEVERAGES' },
-                    { id: 'd5', name: 'Iced Tea', price: 20000, category: 'BEVERAGES' },
-                    { id: 'd6', name: 'Coffee', price: 30000, category: 'BEVERAGES' }
-                ],
-                SIDES: [
-                    { id: 's1', name: 'French Fries', price: 35000, category: 'SIDES' },
-                    { id: 's2', name: 'Chicken Wings', price: 80000, category: 'SIDES' },
-                    { id: 's3', name: 'Garlic Bread', price: 40000, category: 'SIDES' },
-                    { id: 's4', name: 'Onion Rings', price: 30000, category: 'SIDES' },
-                    { id: 's5', name: 'Caesar Salad', price: 45000, category: 'SIDES' },
-                    { id: 's6', name: 'Mozzarella Sticks', price: 55000, category: 'SIDES' }
-                ],
-                DESSERTS: [
-                    { id: 'ds1', name: 'Tiramisu', price: 50000, category: 'DESSERTS' },
-                    { id: 'ds2', name: 'Chocolate Cake', price: 45000, category: 'DESSERTS' },
-                    { id: 'ds3', name: 'Vanilla Ice Cream', price: 35000, category: 'DESSERTS' },
-                    { id: 'ds4', name: 'Chocolate Brownie', price: 40000, category: 'DESSERTS' }
+                Drink: [
+                    { id: 3, name: 'Iced Milk Coffee', sizes: [
+                        { sizeId: 4, sizeCode: 'F', sizeName: 'Fixed', price: 25000 }
+                    ]},
+                    { id: 4, name: 'Peach Orange Tea', sizes: [
+                        { sizeId: 5, sizeCode: 'F', sizeName: 'Fixed', price: 30000 }
+                    ]}
                 ]
             };
         }
@@ -285,7 +304,15 @@
 
         // Select category
         function selectCategory(category) {
-            selectedCategory = category;
+            // Map UI categories to database categories
+            const categoryMap = {
+                'PIZZA': 'Pizza',
+                'BEVERAGES': 'Drink', 
+                'SIDES': 'Topping',
+                'DESSERTS': 'Dessert'
+            };
+            
+            selectedCategory = categoryMap[category] || category;
             
             // Update tab styles
             document.querySelectorAll('.category-tab').forEach(tab => {
@@ -309,17 +336,28 @@
                 product.name.toLowerCase().includes(searchTerm)
             );
             
-            grid.innerHTML = filteredProducts.map(product => 
-                '<button onclick="handleProductClick(\'' + product.id + '\')" ' +
+            grid.innerHTML = filteredProducts.map(product => {
+                // Get price range for display
+                const prices = product.sizes.map(size => size.price);
+                const minPrice = Math.min(...prices);
+                const maxPrice = Math.max(...prices);
+                const priceDisplay = minPrice === maxPrice ? 
+                    formatCurrency(minPrice) + 'đ' : 
+                    formatCurrency(minPrice) + 'đ - ' + formatCurrency(maxPrice) + 'đ';
+                
+                return '<button onclick="handleProductClick(' + product.id + ')" ' +
                         'class="bg-gradient-to-br from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 p-4 rounded-lg border border-orange-200 transition-all text-left group hover:shadow-md">' +
                     '<div class="font-semibold text-gray-800 text-sm mb-2 group-hover:text-orange-700">' +
                         product.name +
                     '</div>' +
                     '<div class="text-orange-600 font-bold text-lg">' +
-                        formatCurrency(product.price) + 'đ' +
+                        priceDisplay +
                     '</div>' +
-                '</button>'
-            ).join('');
+                    '<div class="text-xs text-gray-500 mt-1">' +
+                        product.sizes.length + ' size' + (product.sizes.length > 1 ? 's' : '') + ' available' +
+                    '</div>' +
+                '</button>';
+            }).join('');
         }
 
         // Filter products
@@ -327,18 +365,16 @@
             displayProducts();
         }
 
-        // Handle product click
+        // Handle product click - now shows size selection
         function handleProductClick(productId) {
             const product = findProductById(productId);
             if (!product) return;
             
-            if (product.category === 'PIZZA') {
-                selectedProduct = product;
-                selectedToppings = [];
-                showToppingModal();
-            } else {
-                addToCart(product, []);
-            }
+            selectedProduct = product;
+            selectedToppings = [];
+            
+            // Always show size selection modal (which includes toppings for pizza)
+            showSizeSelectionModal();
         }
 
         // Find product by ID
@@ -350,29 +386,68 @@
             return null;
         }
 
-        // Show topping modal
-        function showToppingModal() {
+        // Show size selection modal
+        function showSizeSelectionModal() {
             if (!selectedProduct) return;
             
-            document.getElementById('modalTitle').textContent = 'Select Toppings for ' + selectedProduct.name;
+            document.getElementById('modalTitle').textContent = 'Select Size for ' + selectedProduct.name;
             
-            const grid = document.getElementById('toppingGrid');
-            grid.innerHTML = toppings.map(topping => 
-                '<button onclick="toggleTopping(\'' + topping + '\')" ' +
-                        'class="topping-btn p-3 rounded-lg border-2 transition-all font-semibold bg-white text-gray-700 border-gray-300 hover:border-orange-400" ' +
-                        'data-topping="' + topping + '">' +
-                    topping +
+            // Show sizes
+            const sizeGrid = document.getElementById('sizeGrid');
+            sizeGrid.innerHTML = selectedProduct.sizes.map(size => 
+                '<button onclick="selectSize(' + size.sizeId + ')" ' +
+                        'class="size-btn p-4 rounded-lg border-2 transition-all font-semibold bg-white text-gray-700 border-gray-300 hover:border-orange-400 text-left" ' +
+                        'data-size-id="' + size.sizeId + '">' +
+                    '<div class="font-bold text-lg">' + size.sizeName + '</div>' +
+                    '<div class="text-orange-600 font-bold">' + formatCurrency(size.price) + 'đ</div>' +
                 '</button>'
             ).join('');
             
-            updateSelectedToppingsDisplay();
-            document.getElementById('toppingModal').classList.add('show');
+            // Show toppings section only for Pizza
+            const toppingsSection = document.getElementById('toppingsSection');
+            if (selectedCategory === 'Pizza') {
+                toppingsSection.classList.remove('hidden');
+                const toppingGrid = document.getElementById('toppingGrid');
+                toppingGrid.innerHTML = toppings.map(topping => 
+                    '<button onclick="toggleTopping(\'' + topping + '\')" ' +
+                            'class="topping-btn p-2 rounded-lg border-2 transition-all font-semibold bg-white text-gray-700 border-gray-300 hover:border-orange-400 text-sm" ' +
+                            'data-topping="' + topping + '">' +
+                        topping +
+                    '</button>'
+                ).join('');
+                updateSelectedToppingsDisplay();
+            } else {
+                toppingsSection.classList.add('hidden');
+            }
+            
+            selectedSize = null;
+            selectedToppings = [];
+            document.getElementById('confirmBtn').disabled = true;
+            document.getElementById('sizeModal').classList.add('show');
         }
 
-        // Close topping modal
-        function closeToppingModal() {
-            document.getElementById('toppingModal').classList.remove('show');
+        // Select size
+        function selectSize(sizeId) {
+            selectedSize = selectedProduct.sizes.find(size => size.sizeId === sizeId);
+            
+            // Update size button styles
+            document.querySelectorAll('.size-btn').forEach(btn => {
+                if (btn.dataset.sizeId == sizeId) {
+                    btn.className = 'size-btn p-4 rounded-lg border-2 transition-all font-semibold bg-orange-500 text-white border-orange-600 text-left';
+                } else {
+                    btn.className = 'size-btn p-4 rounded-lg border-2 transition-all font-semibold bg-white text-gray-700 border-gray-300 hover:border-orange-400 text-left';
+                }
+            });
+            
+            // Enable confirm button
+            document.getElementById('confirmBtn').disabled = false;
+        }
+
+        // Close size modal
+        function closeSizeModal() {
+            document.getElementById('sizeModal').classList.remove('show');
             selectedProduct = null;
+            selectedSize = null;
             selectedToppings = [];
         }
 
@@ -402,22 +477,26 @@
             display.textContent = selectedToppings.length > 0 ? selectedToppings.join(', ') : 'No toppings selected';
         }
 
-        // Confirm toppings
-        function confirmToppings() {
-            if (selectedProduct) {
-                addToCart(selectedProduct, [...selectedToppings]);
-                closeToppingModal();
+        // Confirm selection
+        function confirmSelection() {
+            if (selectedProduct && selectedSize) {
+                addToCart(selectedProduct, selectedSize, [...selectedToppings]);
+                closeSizeModal();
             }
         }
 
         // Add to cart
-        function addToCart(product, toppings) {
+        function addToCart(product, size, toppings) {
             const newItem = {
-                ...product,
+                id: product.id,
+                sizeId: size.sizeId,
+                name: product.name,
+                sizeName: size.sizeName,
+                price: size.price,
                 orderId: '#' + orderCounter,
                 toppings: toppings,
                 quantity: 1,
-                uniqueId: product.id + '-' + Date.now()
+                uniqueId: product.id + '-' + size.sizeId + '-' + Date.now()
             };
             cart.push(newItem);
             orderCounter++;
@@ -451,14 +530,17 @@
                         '<div class="text-xs font-semibold mb-1">' + item.orderId + '</div>' +
                         
                         '<div class="flex justify-between items-start mb-2">' +
-                            '<div class="font-bold text-lg pr-6">' + item.name + '</div>' +
+                            '<div class="font-bold text-lg pr-6">' + 
+                                item.name + 
+                                '<div class="text-sm font-normal">(' + item.sizeName + ')</div>' +
+                            '</div>' +
                             '<div class="text-2xl font-bold">' + item.quantity + '</div>' +
                         '</div>' +
                         
                         '<div class="text-sm mb-3">' +
                             (item.toppings && item.toppings.length > 0 
                                 ? '+ ' + item.toppings.join(', ')
-                                : '<span class="text-blue-200 italic">(Empty if no topping)</span>'
+                                : '<span class="text-blue-200 italic">(No toppings)</span>'
                             ) +
                         '</div>' +
                         

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test POS</title>
+</head>
+<body>
+    <h1>Test POS System</h1>
+    
+    <button onclick="testAPI()">Test Product API</button>
+    <button onclick="testPOS()">Test POS Order</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        async function testAPI() {
+            try {
+                console.log('Testing Product API...');
+                const response = await fetch('api/products');
+                const data = await response.text();
+                document.getElementById('result').innerHTML = '<h3>API Response:</h3><pre>' + data + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = '<h3>API Error:</h3><pre>' + error.message + '</pre>';
+            }
+        }
+        
+        async function testPOS() {
+            try {
+                console.log('Testing POS Order...');
+                const orderData = {
+                    customerName: "Test Customer",
+                    items: [
+                        {
+                            id: 1,
+                            sizeId: 1,
+                            name: "Test Pizza",
+                            sizeName: "Small",
+                            price: 100000,
+                            quantity: 1,
+                            toppings: []
+                        }
+                    ],
+                    total: 100000
+                };
+                
+                const response = await fetch('simple-pos-debug', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData)
+                });
+                
+                const data = await response.text();
+                document.getElementById('result').innerHTML = '<h3>POS Response:</h3><pre>' + data + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = '<h3>POS Error:</h3><pre>' + error.message + '</pre>';
+            }
+        }
+    </script>
+</body>
+</html>

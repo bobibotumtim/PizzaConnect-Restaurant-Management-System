@@ -171,7 +171,8 @@ public class ManageOrderServlet extends HttpServlet {
             
             for (int i = 0; i < details.size(); i++) {
                 OrderDetail detail = details.get(i);
-                String productName = productDAO.getProductById(detail.getProductID()).getProductName();
+                String productName = "";
+                //String productName = productDAO.getProductById(detail.getProductID()).getProductName();
                 
                 if (i > 0) json.append(",");
                 json.append("{");
