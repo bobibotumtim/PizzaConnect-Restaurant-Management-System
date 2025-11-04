@@ -1,28 +1,28 @@
 {
-    "java.project.sourcePaths": [
-        "Login_func_v1",
-        "Login_func_v1\\Login\\src\\java"
-    ],
-    "java.project.referencedLibraries": [
-        "Lib\\json-20231013.jar",
-        "d:\\workshop\\SWP\\New folder\\PizzaConnect-Restaurant-Management-System\\lib\\sqljdbc42.jar",
-        "d:\\workshop\\SWP\\Duong_Branch\\PizzaConnect-Restaurant-Management-System\\Lib\\jakarta.activation-2.0.1.jar",
-        "d:\\workshop\\SWP\\Duong_Branch\\PizzaConnect-Restaurant-Management-System\\Lib\\jakarta.mail-2.0.1.jar",
-        "d:\\workshop\\SWP\\New folder\\PizzaConnect-Restaurant-Management-System\\lib\\jakarta.servlet.jsp.jstl-2.0.0.jar",
-        "d:\\workshop\\SWP\\Duong_Branch\\PizzaConnect-Restaurant-Management-System\\Lib\\poi-ooxml-4.1.2.jar",
-        "d:\\workshop\\SWP\\Duong_Branch\\PizzaConnect-Restaurant-Management-System\\Lib\\commons-math3-3.6.1.jar",
-        "d:\\workshop\\SWP\\Duong_Branch\\PizzaConnect-Restaurant-Management-System\\Lib\\jakarta.activation-api-2.1.2.jar",
-        "d:\\workshop\\SWP\\Duong_Branch\\PizzaConnect-Restaurant-Management-System\\Lib\\xmlbeans-3.1.0.jar",
-        "c:\\Users\\tjhbx\\Downloads\\jbcrypt-0.4.jar",
-        "c:\\Users\\tjhbx\\Downloads\\log4j-slf4j-impl-2.20.0.jar",
-        "c:\\Users\\tjhbx\\Downloads\\log4j-api-2.20.0.jar",
-        "d:\\workshop\\SWP\\Duong_Branch\\PizzaConnect-Restaurant-Management-System\\Lib\\commons-compress-1.18.jar",
-        "d:\\workshop\\SWP\\New folder\\PizzaConnect-Restaurant-Management-System\\lib\\jakarta.servlet.jsp.jstl-api-2.0.0.jar",
-        "c:\\Users\\tjhbx\\Downloads\\log4j-core-2.20.0.jar",
-        "d:\\workshop\\SWP\\Duong_Branch\\PizzaConnect-Restaurant-Management-System\\Lib\\commons-collections4-4.3.jar",
-        "d:\\workshop\\SWP\\Duong_Branch\\PizzaConnect-Restaurant-Management-System\\Lib\\poi-ooxml-schemas-4.1.2.jar",
-        "d:\\workshop\\SWP\\Duong_Branch\\PizzaConnect-Restaurant-Management-System\\Lib\\poi-4.1.2.jar",
-        "d:\\workshop\\SWP\\New folder\\PizzaConnect-Restaurant-Management-System\\lib\\jaxb-api-2.1.jar",
-        "d:\\workshop\\SWP\\New folder\\PizzaConnect-Restaurant-Management-System\\Lib\\jakarta.servlet-api-5.0.0.jar"
-    ]
+  "java.project.sourcePaths": [
+    "Login_func_v1",
+    "Login_func_v1\\Login\\src\\java"
+  ],
+  "java.project.referencedLibraries": [
+    "Lib\\json-20231013.jar",
+    "d:\\workshop\\SWP\\New folder\\PizzaConnect-Restaurant-Management-System\\lib\\sqljdbc42.jar",
+    "d:\\workshop\\SWP\\Duong_Branch\\PizzaConnect-Restaurant-Management-System\\Lib\\jakarta.activation-2.0.1.jar",
+    "d:\\workshop\\SWP\\Duong_Branch\\PizzaConnect-Restaurant-Management-System\\Lib\\jakarta.mail-2.0.1.jar",
+    "d:\\workshop\\SWP\\New folder\\PizzaConnect-Restaurant-Management-System\\lib\\jakarta.servlet.jsp.jstl-2.0.0.jar",
+    "d:\\workshop\\SWP\\Duong_Branch\\PizzaConnect-Restaurant-Management-System\\Lib\\poi-ooxml-4.1.2.jar",
+    "d:\\workshop\\SWP\\Duong_Branch\\PizzaConnect-Restaurant-Management-System\\Lib\\commons-math3-3.6.1.jar",
+    "d:\\workshop\\SWP\\Duong_Branch\\PizzaConnect-Restaurant-Management-System\\Lib\\jakarta.activation-api-2.1.2.jar",
+    "d:\\workshop\\SWP\\Duong_Branch\\PizzaConnect-Restaurant-Management-System\\Lib\\xmlbeans-3.1.0.jar",
+    "c:\\Users\\tjhbx\\Downloads\\jbcrypt-0.4.jar",
+    "c:\\Users\\tjhbx\\Downloads\\log4j-slf4j-impl-2.20.0.jar",
+    "c:\\Users\\tjhbx\\Downloads\\log4j-api-2.20.0.jar",
+    "d:\\workshop\\SWP\\Duong_Branch\\PizzaConnect-Restaurant-Management-System\\Lib\\commons-compress-1.18.jar",
+    "d:\\workshop\\SWP\\New folder\\PizzaConnect-Restaurant-Management-System\\lib\\jakarta.servlet.jsp.jstl-api-2.0.0.jar",
+    "c:\\Users\\tjhbx\\Downloads\\log4j-core-2.20.0.jar",
+    "d:\\workshop\\SWP\\Duong_Branch\\PizzaConnect-Restaurant-Management-System\\Lib\\commons-collections4-4.3.jar",
+    "d:\\workshop\\SWP\\Duong_Branch\\PizzaConnect-Restaurant-Management-System\\Lib\\poi-ooxml-schemas-4.1.2.jar",
+    "d:\\workshop\\SWP\\Duong_Branch\\PizzaConnect-Restaurant-Management-System\\Lib\\poi-4.1.2.jar",
+    "d:\\workshop\\SWP\\New folder\\PizzaConnect-Restaurant-Management-System\\lib\\jaxb-api-2.1.jar",
+    "d:\\workshop\\SWP\\New folder\\PizzaConnect-Restaurant-Management-System\\Lib\\jakarta.servlet-api-5.0.0.jar"
+  ]
 }

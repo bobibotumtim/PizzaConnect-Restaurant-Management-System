@@ -111,10 +111,17 @@
                 </a>
 
                 <!-- Inventory -->
-                <a href="${pageContext.request.contextPath}/inventory"
-                   class="nav-btn <%= currentPath.contains("/inventory") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                <a href="${pageContext.request.contextPath}/manageinventory"
+                   class="nav-btn <%= currentPath.contains("/manageinventory") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
                    title="Inventory">
                     <i data-lucide="box" class="w-6 h-6"></i>
+                </a>
+
+                <!-- Sales Reports -->
+                <a href="${pageContext.request.contextPath}/sales-reports"
+                   class="nav-btn <%= currentPath.contains("/sales-reports") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Sales Reports">
+                    <i data-lucide="bar-chart-2" class="w-6 h-6"></i>
                 </a>
 
                 <!-- Profile -->

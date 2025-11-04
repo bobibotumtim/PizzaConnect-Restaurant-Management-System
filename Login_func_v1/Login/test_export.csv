@@ -1,0 +1,21 @@
+SALES REPORT - PIZZA CONNECT
+Period:,2025-11-03 to 2025-11-03
+Branch:,All Branches
+
+SUMMARY STATISTICS
+Metric,Value
+Total Revenue,175000.0
+Total Orders,2
+Total Customers,1
+Average Order Value,87500.0
+Growth Rate (%),0.0
+
+TOP PRODUCTS
+Rank,Product Name,Quantity,Revenue
+1,"Hawaiian Pizza",1,120000.0
+2,"Peach Orange Tea",1,30000.0
+3,"Iced Milk Coffee",1,25000.0
+
+DAILY REVENUE
+Date,Revenue,Orders
+"03/11/2025",175000.0,2

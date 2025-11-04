@@ -1,103 +1,243 @@
 package dao;
 
-
-import models.Inventory;
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import models.Inventory;
 
-public class InventoryDAO extends DBContext {
-    Connection conn = null;
-    PreparedStatement ps = null;
-    ResultSet rs = null;
+public class InventoryDAO {
+    // thay bằng class kết nối của bạn nếu khác
+    private Connection getConn() throws Exception {
+        return new DBContext().getConnection(); // hoặc DBUtils.getConnection()
+    }
 
-    // Get all inventory items
-    public List<Inventory> getAll() {
-        List<Inventory> list = new ArrayList<>();
-        String query = "SELECT * FROM Inventory ORDER BY InventoryID DESC";
-        try {
-            conn = getConnection();
-            ps = conn.prepareStatement(query);
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                list.add(new Inventory(
-                    rs.getInt("InventoryID"),
-                    rs.getString("ItemName"),
-                    rs.getDouble("Quantity"),
-                    rs.getString("Unit"),
-                    rs.getTimestamp("LastUpdated")
-                ));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+    // Lấy tổng số bản ghi
+    public int getTotalInventoryCount() {
+        String sql = "SELECT COUNT(*) FROM Inventory";
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return rs.getInt(1);
+        } catch (Exception e) { e.printStackTrace(); }
+        return 0;
+    }
+
+    // Lấy tổng số bản ghi với search và status filter
+    public int getTotalInventoryCount(String searchName, String statusFilter) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Inventory WHERE 1=1");
+        
+        if (searchName != null && !searchName.trim().isEmpty()) {
+            sql.append(" AND ItemName LIKE ?");
         }
+        
+        if (statusFilter != null && !statusFilter.equals("all")) {
+            if (statusFilter.equals("active")) {
+                sql.append(" AND Status = 'Active'");
+            } else if (statusFilter.equals("inactive")) {
+                sql.append(" AND Status = 'Inactive'");
+            }
+        }
+        
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            
+            int paramIndex = 1;
+            if (searchName != null && !searchName.trim().isEmpty()) {
+                ps.setString(paramIndex++, "%" + searchName.trim() + "%");
+            }
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return 0;
+    }
+
+    // Lấy theo trang (page bắt đầu từ 1)
+    public List<Inventory> getInventoriesByPage(int page, int pageSize) {
+        List<Inventory> list = new ArrayList<>();
+        String sql = "SELECT InventoryID, ItemName, Quantity, Unit, LastUpdated, Status " +
+                     "FROM Inventory " +
+                     "ORDER BY InventoryID " +
+                     "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            int offset = (page - 1) * pageSize;
+            ps.setInt(1, offset);
+            ps.setInt(2, pageSize);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Inventory inv = new Inventory();
+                    inv.setInventoryID(rs.getInt("InventoryID"));
+                    inv.setItemName(rs.getString("ItemName"));
+                    inv.setQuantity(rs.getDouble("Quantity"));
+                    inv.setUnit(rs.getString("Unit"));
+                    inv.setLastUpdated(rs.getTimestamp("LastUpdated"));
+                    inv.setStatus(rs.getString("Status"));
+                    list.add(inv);
+                }
+            }
+        } catch (Exception e) { e.printStackTrace(); }
         return list;
     }
 
-    // Create new inventory item
-    public void insert(String name, double quantity, String unit) {
-        String query = "INSERT INTO Inventory (ItemName, Quantity, Unit, LastUpdated) VALUES (?, ?, ?, GETDATE())";
-        try {
-            conn = getConnection();
-            ps = conn.prepareStatement(query);
-            ps.setString(1, name);
-            ps.setDouble(2, quantity);
-            ps.setString(3, unit);
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
+    // Lấy theo trang với search và status filter
+    public List<Inventory> getInventoriesByPage(int page, int pageSize, String searchName, String statusFilter) {
+        List<Inventory> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT InventoryID, ItemName, Quantity, Unit, LastUpdated, Status " +
+            "FROM Inventory WHERE 1=1"
+        );
+        
+        if (searchName != null && !searchName.trim().isEmpty()) {
+            sql.append(" AND ItemName LIKE ?");
         }
+        
+        if (statusFilter != null && !statusFilter.equals("all")) {
+            if (statusFilter.equals("active")) {
+                sql.append(" AND Status = 'Active'");
+            } else if (statusFilter.equals("inactive")) {
+                sql.append(" AND Status = 'Inactive'");
+            }
+        }
+        
+        sql.append(" ORDER BY InventoryID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
+        
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            
+            int paramIndex = 1;
+            if (searchName != null && !searchName.trim().isEmpty()) {
+                ps.setString(paramIndex++, "%" + searchName.trim() + "%");
+            }
+            
+            int offset = (page - 1) * pageSize;
+            ps.setInt(paramIndex++, offset);
+            ps.setInt(paramIndex, pageSize);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Inventory inv = new Inventory();
+                    inv.setInventoryID(rs.getInt("InventoryID"));
+                    inv.setItemName(rs.getString("ItemName"));
+                    inv.setQuantity(rs.getDouble("Quantity"));
+                    inv.setUnit(rs.getString("Unit"));
+                    inv.setLastUpdated(rs.getTimestamp("LastUpdated"));
+                    inv.setStatus(rs.getString("Status"));
+                    list.add(inv);
+                }
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return list;
     }
 
-    // Get inventory item by ID
+    // Lấy 1 item theo ID
     public Inventory getById(int id) {
-        String query = "SELECT * FROM Inventory WHERE InventoryID=?";
-        try {
-            conn = getConnection();
-            ps = conn.prepareStatement(query);
+        String sql = "SELECT InventoryID, ItemName, Quantity, Unit, LastUpdated, Status FROM Inventory WHERE InventoryID = ?";
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
-            rs = ps.executeQuery();
-            if (rs.next()) {
-                return new Inventory(
-                    rs.getInt("InventoryID"),
-                    rs.getString("ItemName"),
-                    rs.getDouble("Quantity"),
-                    rs.getString("Unit"),
-                    rs.getTimestamp("LastUpdated")
-                );
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Inventory inv = new Inventory();
+                    inv.setInventoryID(rs.getInt("InventoryID"));
+                    inv.setItemName(rs.getString("ItemName"));
+                    inv.setQuantity(rs.getDouble("Quantity"));
+                    inv.setUnit(rs.getString("Unit"));
+                    inv.setLastUpdated(rs.getTimestamp("LastUpdated"));
+                    inv.setStatus(rs.getString("Status"));
+                    return inv;
+                }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
         return null;
     }
 
-    // Update inventory item
-    public void update(int id, String name, double quantity, String unit) {
-        String query = "UPDATE Inventory SET ItemName=?, Quantity=?, Unit=?, LastUpdated=GETDATE() WHERE InventoryID=?";
-        try {
-            conn = getConnection();
-            ps = conn.prepareStatement(query);
-            ps.setString(1, name);
-            ps.setDouble(2, quantity);
-            ps.setString(3, unit);
-            ps.setInt(4, id);
+    // Insert (Status default Active, LastUpdated = GETDATE())
+    public void insert(Inventory inv) {
+        String sql = "INSERT INTO Inventory (ItemName, Quantity, Unit, Status, LastUpdated) VALUES (?, ?, ?, 'Active', GETDATE())";
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, inv.getItemName());
+            ps.setDouble(2, inv.getQuantity());
+            ps.setString(3, inv.getUnit());
             ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
-    // Delete inventory item
-    public void delete(int id) {
-        String query = "DELETE FROM Inventory WHERE InventoryID=?";
-        try {
-            conn = getConnection();
-            ps = conn.prepareStatement(query);
+    // Update (cập nhật LastUpdated = GETDATE(), giữ nguyên Status)
+    public void update(Inventory inv) {
+        String sql = "UPDATE Inventory SET ItemName = ?, Quantity = ?, Unit = ?, LastUpdated = GETDATE() WHERE InventoryID = ?";
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, inv.getItemName());
+            ps.setDouble(2, inv.getQuantity());
+            ps.setString(3, inv.getUnit());
+            ps.setInt(4, inv.getInventoryID());
+            ps.executeUpdate();
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    // Toggle status Active <-> Inactive
+    public void toggleStatus(int id) {
+        String sql = "UPDATE Inventory SET Status = CASE WHEN Status = 'Active' THEN 'Inactive' ELSE 'Active' END, LastUpdated = GETDATE() WHERE InventoryID = ?";
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
-}
 
+    // Kiểm tra item có đang được dùng ở ProductIngredients (hoặc bảng liên quan)
+    // Thay "ProductIngredients" và tên cột nếu khác
+    public boolean isItemInUse(int id) {
+        String sql = "SELECT COUNT(*) FROM ProductIngredients WHERE InventoryID = ?";
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return false;
+    }
+
+    // Check if item name exists (case insensitive)
+    public boolean isNameExists(String itemName, Integer excludeId) {
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Inventory WHERE LOWER(ItemName) = LOWER(?)");
+        if (excludeId != null) {
+            sql.append(" AND InventoryID != ?");
+        }
+        
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            
+            ps.setString(1, itemName.trim());
+            if (excludeId != null) {
+                ps.setInt(2, excludeId);
+            }
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1) > 0;
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return false;
+    }
+
+    // Lấy thông tin item theo ID để hiển thị trong thông báo
+    public String getItemNameById(int id) {
+        String sql = "SELECT ItemName FROM Inventory WHERE InventoryID = ?";
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("ItemName");
+                }
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return null;
+    }
+
+    // (Không cung cấp delete để tránh xóa vật lý; nếu cần vẫn có thể thêm)
+}
