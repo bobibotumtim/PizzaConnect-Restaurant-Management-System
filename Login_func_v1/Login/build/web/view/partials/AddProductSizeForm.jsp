@@ -13,15 +13,21 @@
     <%-- ✅ Input ẩn cho ProductID --%>
     <input type="hidden" name="productId" value="${productId}">
 
-    <%-- ✅ Các trường mới cho Size --%>
+    <%-- ✅ Dropdown chọn Size Code --%>
     <div class="form-group">
-        <label for="addSizeCode">Size Code (F, S, M, L):</label>
-        <input type="text" name="sizeCode" id="addSizeCode" required>
+        <label for="addSizeCode">Size Code:</label>
+        <select name="sizeCode" id="addSizeCode" class="border p-2 rounded" required>
+            <option value="">-- Select Size --</option>
+            <option value="F">F</option>
+            <option value="L">L</option>
+            <option value="M">M</option>
+            <option value="S">S</option>
+        </select>
     </div>
     
-    <div class="form-group">
+    <div class="form-group mt-2">
         <label for="addPrice">Price ($):</label>
-        <input type="number" name="price" id="addPrice" step="0.01" required>
+        <input type="number" name="price" id="addPrice" step="0.01" class="border p-2 rounded" required>
     </div>
 
     <hr class="my-3">
@@ -51,5 +57,5 @@
         + Add Ingredient
     </button>
 
-    <button type="submit" class="mt-4">Save New Size</button>
+    <button type="submit" class="mt-4 bg-green-600 text-white px-4 py-2 rounded">Save New Size</button>
 </form>

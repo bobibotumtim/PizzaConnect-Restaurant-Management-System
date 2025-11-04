@@ -18,7 +18,13 @@
     <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
             <label>Size Code</label>
-            <input type="text" name="sizeCode" value="${size.sizeCode}" class="border p-2 rounded w-full" required>
+            <%-- ✅ Dropdown list cho Size Code --%>
+            <select name="sizeCode" class="border p-2 rounded w-full" required>
+                <option value="F" <c:if test="${size.sizeCode == 'F'}">selected</c:if>>F</option>
+                <option value="L" <c:if test="${size.sizeCode == 'L'}">selected</c:if>>L</option>
+                <option value="M" <c:if test="${size.sizeCode == 'M'}">selected</c:if>>M</option>
+                <option value="S" <c:if test="${size.sizeCode == 'S'}">selected</c:if>>S</option>
+            </select>
         </div>
         <div>
             <label>Price</label>
@@ -28,7 +34,7 @@
 
     <hr class="my-2">
 
-    <%-- ✅ LOGIC CÔNG THỨC: Giữ nguyên 100% từ file EditProductFullContent.jsp cũ --%>
+    <%-- ✅ LOGIC CÔNG THỨC: Giữ nguyên phần cũ --%>
     <table class="w-full border border-gray-300 mb-4" id="ingredientTable_EditSize">
         <thead class="bg-gray-200">
             <tr>
@@ -61,7 +67,6 @@
                 </tr>
             </c:forEach>
         </tbody>
-
     </table>
 
     <%-- (Y HỆT PHẦN ADD MỚI CŨ) --%>
@@ -76,7 +81,6 @@
         <input type="text" id="editNewUnit_EditSize" placeholder="Unit" class="border w-20 rounded" readonly>
         <button type="button" id="editAddIngredientBtn_EditSize" class="bg-green-500 text-white px-2 py-2 rounded">Add</button>
     </div>
-
 
     <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Save All Changes</button>
 </form>
