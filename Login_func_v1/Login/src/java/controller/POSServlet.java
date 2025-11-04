@@ -21,11 +21,15 @@ public class POSServlet extends HttpServlet {
             return;
         }
         
-        // Check if this is an API request for products
+        // Check if this is an API request
         String action = req.getParameter("action");
         if ("getProducts".equals(action)) {
             // Return JSON data for products
             handleProductsAPI(req, resp);
+            return;
+        } else if ("getTables".equals(action)) {
+            // Return JSON data for tables
+            handleTablesAPI(req, resp);
             return;
         }
         
@@ -133,6 +137,47 @@ public class POSServlet extends HttpServlet {
                  .replace("\t", "\\t");
     }
 
+    /**
+     * Handle API request for tables data
+     */
+    private void handleTablesAPI(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        
+        resp.setContentType("application/json; charset=UTF-8");
+        
+        try {
+            TableDAO tableDAO = new TableDAO();
+            
+            // Get all active tables with status
+            List<models.Table> tables = tableDAO.getActiveTablesWithStatus();
+            
+            // Build JSON response
+            StringBuilder json = new StringBuilder();
+            json.append("{\"success\": true, \"tables\": [");
+            
+            for (int i = 0; i < tables.size(); i++) {
+                models.Table table = tables.get(i);
+                if (i > 0) json.append(",");
+                json.append("{");
+                json.append("\"tableID\": ").append(table.getTableID()).append(",");
+                json.append("\"tableNumber\": \"").append(escapeJson(table.getTableNumber())).append("\",");
+                json.append("\"capacity\": ").append(table.getCapacity()).append(",");
+                json.append("\"status\": \"").append(escapeJson(table.getStatus())).append("\"");
+                json.append("}");
+            }
+            
+            json.append("]}");
+            resp.getWriter().write(json.toString());
+            
+            System.out.println("✅ Tables API called - returned " + tables.size() + " tables");
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().write("{\"success\": false, \"message\": \"" + escapeJson(e.getMessage()) + "\"}");
+        }
+    }
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -185,11 +230,32 @@ public class POSServlet extends HttpServlet {
                 return;
             }
             
+            // Extract and validate tableID
+            int tableId = extractJsonInt(jsonData, "tableID");
+            if (tableId <= 0) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                resp.getWriter().write("{\"success\": false, \"message\": \"Table ID is required\"}");
+                System.err.println("❌ Table ID is missing or invalid");
+                return;
+            }
+            
+            System.out.println("🪑 Selected Table ID: " + tableId);
+            
             // Process order
             try {
-                int orderId = processOrderSimple(jsonData, user);
+                int orderId = processOrderSimple(jsonData, user, tableId);
                 
                 if (orderId > 0) {
+                    // Update table status to unavailable
+                    TableDAO tableDAO = new TableDAO();
+                    boolean statusUpdated = tableDAO.updateTableStatus(tableId, "unavailable");
+                    
+                    if (statusUpdated) {
+                        System.out.println("✅ Table status updated to 'unavailable' for Table ID: " + tableId);
+                    } else {
+                        System.err.println("⚠️ Failed to update table status for Table ID: " + tableId);
+                    }
+                    
                     String response = "{\"success\": true, \"message\": \"Order created successfully!\", \"orderId\": " + orderId + "}";
                     resp.getWriter().write(response);
                     System.out.println("✅ POS order processed successfully! Order ID: " + orderId);
@@ -212,7 +278,7 @@ public class POSServlet extends HttpServlet {
         }
     }
     
-    private int processOrderSimple(String jsonData, User user) {
+    private int processOrderSimple(String jsonData, User user, int tableId) {
         System.out.println("========================================");
         System.out.println("🍕 STARTING ORDER PROCESSING");
         System.out.println("========================================");
@@ -312,7 +378,7 @@ public class POSServlet extends HttpServlet {
             
             // Try to create order using available method
             System.out.println("🔄 Attempting to create order in database...");
-            System.out.println("   Parameters: customerID=1, employeeID=" + employeeId + ", tableID=1");
+            System.out.println("   Parameters: customerID=1, employeeID=" + employeeId + ", tableID=" + tableId);
             System.out.println("   Note: " + note);
             System.out.println("   OrderDetails count: " + orderDetails.size());
             
@@ -332,11 +398,11 @@ public class POSServlet extends HttpServlet {
                 
                 // Use the existing createOrder method (customerID, employeeID, tableID, note, orderDetails)
                 System.out.println("🔄 Calling orderDAO.createOrder...");
-                System.out.println("🔄 Parameters: customerID=1, employeeID=" + employeeId + ", tableID=1");
+                System.out.println("🔄 Parameters: customerID=1, employeeID=" + employeeId + ", tableID=" + tableId);
                 System.out.println("🔄 Note: " + note);
                 System.out.println("🔄 OrderDetails size: " + orderDetails.size());
                 
-                orderId = orderDAO.createOrder(1, employeeId, 1, note, orderDetails);
+                orderId = orderDAO.createOrder(1, employeeId, tableId, note, orderDetails);
                 System.out.println("📊 OrderDAO.createOrder returned: " + orderId);
                 
                 if (orderId > 0) {
@@ -353,7 +419,7 @@ public class POSServlet extends HttpServlet {
                 // Try alternative method if available
                 System.out.println("🔄 Trying alternative order creation method...");
                 try {
-                    orderId = orderDAO.createOrderWithAutoCustomerId(employeeId, 1, note, orderDetails);
+                    orderId = orderDAO.createOrderWithAutoCustomerId(employeeId, tableId, note, orderDetails);
                     System.out.println("📊 Alternative method returned: " + orderId);
                     
                     if (orderId > 0) {
@@ -427,6 +493,25 @@ public class POSServlet extends HttpServlet {
             return Double.parseDouble(valueStr);
         } catch (Exception e) {
             return 0.0;
+        }
+    }
+
+    // Simple JSON int extractor
+    private int extractJsonInt(String json, String key) {
+        try {
+            String searchKey = "\"" + key + "\":";
+            int startIndex = json.indexOf(searchKey);
+            if (startIndex == -1) return 0;
+            
+            startIndex += searchKey.length();
+            int endIndex = json.indexOf(",", startIndex);
+            if (endIndex == -1) endIndex = json.indexOf("}", startIndex);
+            if (endIndex == -1) return 0;
+            
+            String valueStr = json.substring(startIndex, endIndex).trim();
+            return Integer.parseInt(valueStr);
+        } catch (Exception e) {
+            return 0;
         }
     }
     

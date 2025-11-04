@@ -46,11 +46,14 @@
     <div class="bg-white shadow-sm border-b px-6 py-3 flex items-center justify-between">
         <div class="flex items-center gap-4">
             <div class="text-2xl font-bold text-orange-600">🍕 PIZZA POS</div>
+            <div id="selectedTableDisplay" class="px-4 py-2 bg-purple-100 text-purple-800 rounded-lg font-semibold">
+                Chưa chọn bàn
+            </div>
             <div class="relative">
                 <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
-                <input type="text" id="searchInput" placeholder="Search menu..." 
+                <input type="text" id="searchInput" placeholder="Tìm món..." 
                        class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-80 focus:outline-none focus:ring-2 focus:ring-orange-500">
             </div>
         </div>
@@ -69,7 +72,26 @@
     </div>
 
     <div class="flex flex-1 overflow-hidden">
-        <!-- Left Panel - Products -->
+        <!-- LEFT PANEL - Table Selection -->
+        <div class="w-64 bg-white border-r flex flex-col">
+            <div class="p-4 border-b bg-purple-600 text-white">
+                <h3 class="font-bold text-lg">Quản lý bàn</h3>
+                <input type="text" id="tableSearch" placeholder="Tìm bàn..." 
+                       class="mt-2 w-full px-3 py-2 rounded-lg text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300">
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-3">
+                <div id="tableGrid" class="grid grid-cols-2 gap-2">
+                    <!-- Tables will be loaded here -->
+                    <div class="text-center text-gray-400 col-span-2 py-8">
+                        <div class="text-3xl mb-2">🪑</div>
+                        <div class="text-sm">Đang tải bàn...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MIDDLE PANEL - Products -->
         <div class="flex-1 flex flex-col bg-white">
             <!-- Category Tabs -->
             <div class="flex border-b bg-gray-50">
@@ -226,14 +248,17 @@
         let cart = [];
         let products = {};
         let toppings = [];
+        let tables = [];
         let selectedCategory = 'Pizza'; // Updated to match database categories
         let selectedProduct = null;
         let selectedSize = null;
         let selectedToppings = [];
+        let selectedTable = null;
         let orderCounter = 1;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async function() {
+            await loadTables();
             await loadSampleProducts();
             loadSampleToppings();
             setupEventListeners();
@@ -243,6 +268,105 @@
         function setupEventListeners() {
             document.getElementById('searchInput').addEventListener('input', filterProducts);
             document.getElementById('discountInput').addEventListener('input', updateTotals);
+            document.getElementById('tableSearch').addEventListener('input', filterTables);
+        }
+
+        // Load tables from database
+        async function loadTables() {
+            try {
+                console.log('🔄 Loading tables from database...');
+                const response = await fetch('pos?action=getTables');
+                const data = await response.json();
+                
+                if (data.success) {
+                    tables = data.tables;
+                    console.log('✅ Tables loaded:', tables);
+                    displayTables(tables);
+                } else {
+                    console.error('❌ Failed to load tables:', data.message);
+                    showTableError();
+                }
+            } catch (error) {
+                console.error('❌ Error loading tables:', error);
+                showTableError();
+            }
+        }
+
+        // Display tables
+        function displayTables(tablesToDisplay) {
+            const grid = document.getElementById('tableGrid');
+            
+            if (!tablesToDisplay || tablesToDisplay.length === 0) {
+                grid.innerHTML = '<div class="text-center text-gray-400 col-span-2 py-8">' +
+                                '<div class="text-3xl mb-2">🪑</div>' +
+                                '<div class="text-sm">Không có bàn</div>' +
+                                '</div>';
+                return;
+            }
+            
+            grid.innerHTML = tablesToDisplay.map(table => {
+                const isAvailable = table.status === 'available';
+                const bgColor = isAvailable ? 'bg-green-100 hover:bg-green-200 border-green-300' : 'bg-red-100 border-red-300';
+                const textColor = isAvailable ? 'text-green-800' : 'text-red-800';
+                const statusText = isAvailable ? 'Trống' : 'Đang dùng';
+                const cursorClass = isAvailable ? 'cursor-pointer' : 'cursor-not-allowed opacity-60';
+                
+                return '<button onclick="' + (isAvailable ? 'selectTable(' + table.tableID + ')' : 'void(0)') + '" ' +
+                        'class="table-btn p-3 rounded-lg border-2 transition-all ' + bgColor + ' ' + textColor + ' ' + cursorClass + '" ' +
+                        'data-table-id="' + table.tableID + '" ' +
+                        'data-table-number="' + table.tableNumber + '" ' +
+                        (isAvailable ? '' : 'disabled') + '>' +
+                    '<div class="font-bold text-lg">' + table.tableNumber + '</div>' +
+                    '<div class="text-xs">👥 ' + table.capacity + '</div>' +
+                    '<div class="text-xs font-semibold mt-1">' + statusText + '</div>' +
+                '</button>';
+            }).join('');
+        }
+
+        // Filter tables
+        function filterTables() {
+            const searchTerm = document.getElementById('tableSearch').value.toLowerCase();
+            const filteredTables = tables.filter(table =>
+                table.tableNumber.toLowerCase().includes(searchTerm)
+            );
+            displayTables(filteredTables);
+        }
+
+        // Select table
+        function selectTable(tableId) {
+            const table = tables.find(t => t.tableID === tableId);
+            if (!table || table.status !== 'available') {
+                alert('⚠️ Bàn này không khả dụng!');
+                return;
+            }
+            
+            selectedTable = tableId;
+            
+            // Update UI - highlight selected table
+            document.querySelectorAll('.table-btn').forEach(btn => {
+                if (btn.dataset.tableId == tableId) {
+                    btn.classList.add('ring-4', 'ring-purple-500');
+                } else {
+                    btn.classList.remove('ring-4', 'ring-purple-500');
+                }
+            });
+            
+            // Update header display
+            document.getElementById('selectedTableDisplay').textContent = 'Bàn ' + table.tableNumber;
+            document.getElementById('selectedTableDisplay').classList.remove('bg-purple-100', 'text-purple-800');
+            document.getElementById('selectedTableDisplay').classList.add('bg-purple-600', 'text-white');
+            
+            console.log('✅ Selected table:', table.tableNumber, '(ID:', tableId + ')');
+        }
+
+        // Show table error
+        function showTableError() {
+            const grid = document.getElementById('tableGrid');
+            grid.innerHTML = '<div class="text-center text-red-400 col-span-2 py-8">' +
+                            '<div class="text-3xl mb-2">⚠️</div>' +
+                            '<div class="text-sm">Lỗi tải bàn</div>' +
+                            '<button onclick="loadTables()" class="mt-2 px-3 py-1 bg-red-500 text-white rounded text-xs">Thử lại</button>' +
+                            '</div>';
         }
 
         // Load products from database
@@ -614,9 +738,21 @@
         // Clear order
         function clearOrder() {
             cart = [];
+            selectedTable = null;
             document.getElementById('customerName').value = '';
             document.getElementById('discountInput').value = '';
             orderCounter = 1;
+            
+            // Reset table selection UI
+            document.querySelectorAll('.table-btn').forEach(btn => {
+                btn.classList.remove('ring-4', 'ring-purple-500');
+            });
+            
+            // Reset header display
+            document.getElementById('selectedTableDisplay').textContent = 'Chưa chọn bàn';
+            document.getElementById('selectedTableDisplay').classList.remove('bg-purple-600', 'text-white');
+            document.getElementById('selectedTableDisplay').classList.add('bg-purple-100', 'text-purple-800');
+            
             updateCartDisplay();
             updateTotals();
         }
@@ -626,6 +762,12 @@
             console.log('🔔 completeOrder() called!');
             console.log('🛒 Cart length:', cart.length);
             
+            // Check if table is selected
+            if (!selectedTable) {
+                alert('⚠️ Vui lòng chọn bàn trước khi tạo đơn!');
+                return;
+            }
+            
             if (cart.length === 0) {
                 console.log('⚠️ Cart is empty, returning');
                 return;
@@ -633,6 +775,7 @@
             
             const customerName = document.getElementById('customerName').value.trim() || 'Walk-in Customer';
             console.log('👤 Customer name:', customerName);
+            console.log('🪑 Selected table ID:', selectedTable);
             const discount = parseFloat(document.getElementById('discountInput').value) || 0;
             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             const discountAmount = (subtotal * discount) / 100;
@@ -640,6 +783,7 @@
             
             // Prepare order data
             const orderData = {
+                tableID: selectedTable,
                 customerName: customerName,
                 items: cart,
                 subtotal: subtotal,
@@ -683,17 +827,25 @@
                 console.log('✅ Parsed result:', result);
                 
                 if (result.success) {
-                    // Show success message with Order ID
-                    alert('✅ Order created successfully!\n\n' +
-                          'Order ID: #' + result.orderId + '\n' +
-                          'Customer: ' + customerName + '\n' +
-                          'Total: ' + formatCurrency(total) + 'đ\n\n' +
-                          'Order has been saved to database!');
+                    // Get table info
+                    const table = tables.find(t => t.tableID === selectedTable);
+                    const tableName = table ? table.tableNumber : selectedTable;
                     
-                    // Clear cart after successful order
+                    // Show success message with Order ID
+                    alert('✅ Đơn hàng đã được tạo thành công!\n\n' +
+                          'Order ID: #' + result.orderId + '\n' +
+                          'Bàn: ' + tableName + '\n' +
+                          'Khách hàng: ' + customerName + '\n' +
+                          'Tổng tiền: ' + formatCurrency(total) + 'đ\n\n' +
+                          'Đơn hàng đã được lưu vào database!');
+                    
+                    // Clear cart and selection after successful order
                     clearOrder();
+                    
+                    // Reload tables to update status
+                    await loadTables();
                 } else {
-                    alert('❌ Failed to create order: ' + result.message);
+                    alert('❌ Tạo đơn thất bại: ' + result.message);
                 }
                 
             } catch (error) {

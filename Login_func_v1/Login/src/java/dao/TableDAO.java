@@ -264,4 +264,125 @@ public class TableDAO extends DBContext {
         }
         return tables;
     }
+
+    /**
+     * Get table status by ID
+     */
+    public String getTableStatus(int tableID) {
+        String sql = "SELECT [Status] FROM [Table] WHERE TableID = ?";
+        
+        try (Connection connection = getConnection();
+                PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, tableID);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getString("Status");
+            }
+        } catch (SQLException e) {
+            LOGGER.severe("Error fetching table status: " + e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Update table status
+     */
+    public boolean updateTableStatus(int tableID, String status) {
+        String sql = "UPDATE [Table] SET [Status] = ? WHERE TableID = ?";
+        
+        try (Connection connection = getConnection();
+                PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, status);
+            stmt.setInt(2, tableID);
+            
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                LOGGER.info("Table status updated: ID " + tableID + " -> " + status);
+                return true;
+            }
+            return false;
+        } catch (SQLException e) {
+            LOGGER.severe("Error updating table status: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Get all available (empty) tables
+     */
+    public List<Table> getAvailableTables() {
+        List<Table> tables = new ArrayList<>();
+        String sql = "SELECT * FROM [Table] WHERE [Status] = 'available' AND IsActive = 1 ORDER BY TableNumber";
+
+        try (Connection connection = getConnection();
+                PreparedStatement stmt = connection.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Table table = new Table();
+                table.setTableID(rs.getInt("TableID"));
+                table.setTableNumber(rs.getString("TableNumber"));
+                table.setCapacity(rs.getInt("Capacity"));
+                table.setStatus(rs.getString("Status"));
+                table.setActive(rs.getBoolean("IsActive"));
+                tables.add(table);
+            }
+        } catch (SQLException e) {
+            LOGGER.severe("Error fetching available tables: " + e.getMessage());
+        }
+        return tables;
+    }
+
+    /**
+     * Get all occupied (in-use) tables
+     */
+    public List<Table> getOccupiedTables() {
+        List<Table> tables = new ArrayList<>();
+        String sql = "SELECT * FROM [Table] WHERE [Status] = 'unavailable' AND IsActive = 1 ORDER BY TableNumber";
+
+        try (Connection connection = getConnection();
+                PreparedStatement stmt = connection.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Table table = new Table();
+                table.setTableID(rs.getInt("TableID"));
+                table.setTableNumber(rs.getString("TableNumber"));
+                table.setCapacity(rs.getInt("Capacity"));
+                table.setStatus(rs.getString("Status"));
+                table.setActive(rs.getBoolean("IsActive"));
+                tables.add(table);
+            }
+        } catch (SQLException e) {
+            LOGGER.severe("Error fetching occupied tables: " + e.getMessage());
+        }
+        return tables;
+    }
+
+    /**
+     * Get all active tables with status information
+     */
+    public List<Table> getActiveTablesWithStatus() {
+        List<Table> tables = new ArrayList<>();
+        String sql = "SELECT * FROM [Table] WHERE IsActive = 1 ORDER BY TableNumber";
+
+        try (Connection connection = getConnection();
+                PreparedStatement stmt = connection.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Table table = new Table();
+                table.setTableID(rs.getInt("TableID"));
+                table.setTableNumber(rs.getString("TableNumber"));
+                table.setCapacity(rs.getInt("Capacity"));
+                table.setStatus(rs.getString("Status"));
+                table.setActive(rs.getBoolean("IsActive"));
+                tables.add(table);
+            }
+        } catch (SQLException e) {
+            LOGGER.severe("Error fetching active tables with status: " + e.getMessage());
+        }
+        return tables;
+    }
 }
