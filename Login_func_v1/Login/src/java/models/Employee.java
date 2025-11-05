@@ -58,12 +58,12 @@ public class Employee extends User {
         this.jobRole = jobRole;
     }
     
-    // Alias methods for compatibility
-    public String getRole() {
+    // Alias methods for compatibility (cannot override getRole() from User)
+    public String getEmployeeRole() {
         return jobRole;
     }
     
-    public void setRole(String role) {
+    public void setEmployeeRole(String role) {
         this.jobRole = role;
     }
 

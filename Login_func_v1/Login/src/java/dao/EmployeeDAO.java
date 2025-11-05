@@ -59,7 +59,7 @@ public class EmployeeDAO extends DBContext {
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, employee.getUserID());
-            ps.setString(2, employee.getRole());
+            ps.setString(2, employee.getEmployeeRole());
             ps.setString(3, employee.getSpecialization());
             
             int affectedRows = ps.executeUpdate();

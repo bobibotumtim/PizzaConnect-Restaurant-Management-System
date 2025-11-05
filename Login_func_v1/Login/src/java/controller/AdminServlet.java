@@ -56,7 +56,7 @@ public class AdminServlet extends HttpServlet {
             for (User user : allUsers) {
                 if (user.getRole() == 2) { // Employee
                     Employee emp = employeeDAO.getEmployeeByUserId(user.getUserID());
-                    if (emp != null && roleFilter.equals(emp.getRole())) {
+                    if (emp != null && roleFilter.equals(emp.getEmployeeRole())) {
                         filteredUsers.add(user);
                     }
                 }

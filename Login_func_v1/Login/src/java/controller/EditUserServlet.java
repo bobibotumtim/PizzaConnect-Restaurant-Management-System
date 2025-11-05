@@ -310,7 +310,7 @@ public class EditUserServlet extends HttpServlet {
                         // Create new employee record
                         Employee employee = new Employee();
                         employee.setUserID(userId);
-                        employee.setRole(employeeRole);
+                        employee.setEmployeeRole(employeeRole);
                         employeeDAO.insertEmployee(employee);
                     }
                 } else if (role == 3) { // Customer
