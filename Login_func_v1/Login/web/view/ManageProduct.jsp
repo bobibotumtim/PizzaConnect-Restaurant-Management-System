@@ -188,7 +188,13 @@
                                 </td>
                                 <td class="px-4 py-2 font-medium"><%= p.getProductName() %></td>
                                 <td class="px-4 py-2"><%= p.getCategory() %></td>
-                                <td class="px-4 py-2 font-semibold text-gray-700">$<%= String.format("%.2f", p.getPrice()) %></td>
+                                <td class="px-4 py-2 font-semibold text-gray-700">
+                                    <% if (p.getPrice() > 0) { %>
+                                        $<%= String.format("%.2f", p.getPrice()) %>
+                                    <% } else { %>
+                                        <span class="text-gray-500 italic">Varies</span>
+                                    <% } %>
+                                </td>
                                 <td class="px-4 py-2">
                                     <%
                                         double availableQty = 0;
@@ -215,7 +221,7 @@
                                                 data-id="<%= p.getProductId() %>"
                                                 data-name="<%= p.getProductName() %>"
                                                 data-desc="<%= p.getDescription() %>"
-                                                data-price="<%= p.getPrice() %>"
+                                                data-price="<%= p.getPrice() > 0 ? p.getPrice() : 0 %>"
                                                 data-category="<%= p.getCategory() %>"
                                                 data-image="<%= p.getImageUrl() %>"
                                                 data-available="<%= p.isAvailable() %>">
