@@ -300,7 +300,7 @@
                                     if (user.getRole() == 2) {
                                         models.Employee emp = empDAO.getEmployeeByUserId(user.getUserID());
                                         if (emp != null) {
-                                            employeeRole = emp.getRole();
+                                            employeeRole = emp.getEmployeeRole();
                                         }
                                     }
                                 %>
