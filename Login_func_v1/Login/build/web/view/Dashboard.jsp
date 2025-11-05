@@ -1,5 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ page import="java.util.*" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%
     Integer totalOrders = (Integer) request.getAttribute("totalOrders");
     Integer pendingOrders = (Integer) request.getAttribute("pendingOrders");
@@ -122,6 +123,13 @@
                    class="nav-btn <%= currentPath.contains("/sales-reports") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
                    title="Sales Reports">
                     <i data-lucide="bar-chart-2" class="w-6 h-6"></i>
+                </a>
+
+                <!-- Customer Feedback -->
+                <a href="${pageContext.request.contextPath}/view/CustomerFeedbackWorking.jsp"
+                   class="nav-btn <%= currentPath.contains("/customer-feedback") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Customer Feedback">
+                    <i data-lucide="message-circle" class="w-6 h-6"></i>
                 </a>
 
                 <!-- Profile -->
@@ -290,6 +298,69 @@
                             <p>No data available</p>
                         </div>
                         <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Customer Feedback Section -->
+        <div class="mt-4 bg-white rounded-xl p-4 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-base font-bold text-gray-800 flex items-center">
+                    <i data-lucide="message-circle" class="w-5 h-5 mr-2 text-orange-500"></i>
+                    Customer Feedback Overview
+                </h2>
+                <a href="${pageContext.request.contextPath}/view/CustomerFeedbackWorking.jsp" 
+                   class="text-orange-500 hover:text-orange-600 text-sm font-medium flex items-center">
+                    View All <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i>
+                </a>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- Total Feedback -->
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-4 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-blue-100 text-xs">Total Feedback</p>
+                            <p class="text-xl font-bold">${feedbackStats.totalFeedback}</p>
+                        </div>
+                        <i data-lucide="message-square" class="w-6 h-6 text-blue-200"></i>
+                    </div>
+                </div>
+                
+                <!-- Average Rating -->
+                <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-4 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-green-100 text-xs">Avg Rating</p>
+                            <p class="text-xl font-bold">${feedbackStats.formattedAverageRating}/5.0</p>
+                        </div>
+                        <i data-lucide="star" class="w-6 h-6 text-green-200"></i>
+                    </div>
+                </div>
+                
+                <!-- Positive Rate -->
+                <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-4 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-purple-100 text-xs">Positive Rate</p>
+                            <p class="text-xl font-bold">${feedbackStats.formattedPositiveRate}</p>
+                        </div>
+                        <i data-lucide="thumbs-up" class="w-6 h-6 text-purple-200"></i>
+                    </div>
+                </div>
+                
+                <!-- Pending Response -->
+                <div class="bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg p-4 text-white">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-orange-100 text-xs">Pending</p>
+                            <p class="text-xl font-bold">${feedbackStats.pendingResponse}</p>
+                            <c:if test="${urgentFeedbackCount > 0}">
+                                <p class="text-orange-100 text-xs">⚠️ ${urgentFeedbackCount} urgent</p>
+                            </c:if>
+                        </div>
+                        <i data-lucide="clock" class="w-6 h-6 text-orange-200"></i>
                     </div>
                 </div>
             </div>

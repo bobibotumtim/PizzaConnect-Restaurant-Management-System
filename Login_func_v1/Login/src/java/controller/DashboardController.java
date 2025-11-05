@@ -1,7 +1,8 @@
 package controller;
 
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
 import dao.*;
@@ -10,8 +11,8 @@ import models.*;
 public class DashboardController extends HttpServlet {
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
+        try {
 
         OrderDAO orderDAO = new OrderDAO();
         
@@ -88,6 +89,20 @@ public class DashboardController extends HttpServlet {
             }
         }
         
+        // Get feedback statistics
+        try {
+            CustomerFeedbackDAO feedbackDAO = new CustomerFeedbackDAO();
+            FeedbackStats feedbackStats = feedbackDAO.getFeedbackStats();
+            int urgentFeedbackCount = feedbackDAO.getUrgentFeedbackCount();
+            
+            req.setAttribute("feedbackStats", feedbackStats);
+            req.setAttribute("urgentFeedbackCount", urgentFeedbackCount);
+        } catch (Exception e) {
+            // If feedback system is not available, set default values
+            req.setAttribute("feedbackStats", new FeedbackStats(0, 0.0, 0, 0));
+            req.setAttribute("urgentFeedbackCount", 0);
+        }
+        
         // Send data to JSP
         req.setAttribute("totalOrders", totalOrders);
         req.setAttribute("pendingOrders", pendingOrders);
@@ -101,7 +116,10 @@ public class DashboardController extends HttpServlet {
         req.setAttribute("hourlyRevenue", hourlyRevenue);
         req.setAttribute("currentFilter", filter);
         
-        req.getRequestDispatcher("/view/Dashboard.jsp").forward(req, resp);
+            req.getRequestDispatcher("/view/Dashboard.jsp").forward(req, resp);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     private List<Order> filterOrdersByTimePeriod(List<Order> orders, String filter) {

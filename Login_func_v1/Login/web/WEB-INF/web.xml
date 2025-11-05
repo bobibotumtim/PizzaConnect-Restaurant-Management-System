@@ -135,5 +135,17 @@
         <url-pattern>/sales-reports</url-pattern>
     </servlet-mapping>
 
+    <!-- Customer Feedback Servlet -->
+    <servlet>
+        <servlet-name>CustomerFeedbackServlet</servlet-name>
+        <servlet-class>controller.CustomerFeedbackServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CustomerFeedbackServlet</servlet-name>
+        <url-pattern>/customer-feedback</url-pattern>
+    </servlet-mapping>
+
+
+
 </web-app>
 

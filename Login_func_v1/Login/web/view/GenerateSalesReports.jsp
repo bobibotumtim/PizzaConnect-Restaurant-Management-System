@@ -124,6 +124,13 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
           >
             <i data-lucide="bar-chart-2" class="w-6 h-6"></i>
           </a>
+          <a
+            href="${pageContext.request.contextPath}/customer-feedback"
+            class="nav-btn text-gray-400 hover:bg-gray-700"
+            title="Customer Feedback"
+          >
+            <i data-lucide="message-circle" class="w-6 h-6"></i>
+          </a>
         </div>
       </div>
       <div class="flex flex-col items-center space-y-4">
