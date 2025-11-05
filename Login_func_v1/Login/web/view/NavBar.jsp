@@ -1,4 +1,3 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="models.User" %>
 <%@ page import="models.Employee" %>
 <%
@@ -106,7 +105,7 @@
 <div class="top-navbar">
     <!-- Page Title -->
     <div class="navbar-title">
-        🍕 <%= pageTitle %>
+        &#127829; <%= pageTitle %>
     </div>
     
     <!-- User Info & Logout -->
@@ -116,11 +115,11 @@
             <div class="navbar-user-name"><%= navbarUser.getName() %></div>
             <div class="navbar-user-role">
                 <% if (navbarIsAdmin) { %>
-                    👑 Admin
+                    &#128081; Admin
                 <% } else if (navbarIsChef && navbarEmployee != null) { %>
-                    👨‍🍳 Chef - <%= navbarEmployee.getSpecialization() %>
+                    &#128104;&#8205;&#127859; Chef - <%= navbarEmployee.getSpecialization() %>
                 <% } else if (navbarIsWaiter) { %>
-                    👔 Waiter
+                    &#128084; Waiter
                 <% } else { %>
                     Employee
                 <% } %>
@@ -129,7 +128,7 @@
         <% } %>
         
         <a href="<%= navbarContextPath %>/Login?action=logout" class="navbar-logout-btn">
-            <span>🚪</span>
+            <span>&#128682;</span>
             <span>Logout</span>
         </a>
     </div>

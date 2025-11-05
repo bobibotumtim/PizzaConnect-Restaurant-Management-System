@@ -1,4 +1,3 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="models.User" %>
 <%@ page import="models.Employee" %>
 <%
@@ -24,8 +23,8 @@
         left: 0;
         top: 0;
         height: 100vh;
-        width: 60px;
-        background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+        width: 80px;
+        background: #1f2937;
         transition: width 0.3s ease;
         z-index: 1000;
         overflow-x: hidden;
@@ -35,7 +34,11 @@
         flex-direction: column;
     }
     
-    /* Hide scrollbar but keep functionality */
+    .sidebar:hover {
+        width: 240px;
+    }
+    
+    /* Hide scrollbar */
     .sidebar::-webkit-scrollbar {
         width: 0px;
         background: transparent;
@@ -46,14 +49,10 @@
         scrollbar-width: none;
     }
     
-    .sidebar:hover {
-        width: 240px;
-    }
-    
     .sidebar-item {
         display: flex;
         align-items: center;
-        padding: 12px 16px;
+        padding: 16px 20px;
         color: #9ca3af;
         text-decoration: none;
         transition: all 0.2s ease;
@@ -62,7 +61,7 @@
     }
     
     .sidebar-item:hover {
-        background: rgba(249, 115, 22, 0.1);
+        background: #374151;
         color: #f97316;
     }
     
@@ -72,13 +71,15 @@
     }
     
     .sidebar-icon {
-        min-width: 28px;
-        font-size: 20px;
-        text-align: center;
+        min-width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
     .sidebar-text {
-        margin-left: 12px;
+        margin-left: 16px;
         font-size: 14px;
         font-weight: 500;
         opacity: 0;
@@ -92,25 +93,34 @@
     .sidebar-divider {
         height: 1px;
         background: rgba(255,255,255,0.1);
-        margin: 8px 16px;
+        margin: 8px 20px;
     }
     
     .sidebar-header {
-        padding: 20px 16px;
+        padding: 24px 20px;
         border-bottom: 1px solid rgba(255,255,255,0.1);
+        text-align: center;
     }
     
     .sidebar-logo {
-        font-size: 24px;
-        text-align: center;
+        font-size: 32px;
     }
 </style>
+
+<!-- Load Lucide Icons if not already loaded -->
+<script>
+    if (typeof lucide === 'undefined') {
+        document.write('<script src="https://unpkg.com/lucide@latest"><\/script>');
+    }
+</script>
 
 <!-- Sidebar Navigation -->
 <div class="sidebar">
     <!-- Header/Logo -->
     <div class="sidebar-header">
-        <div class="sidebar-logo">🍕</div>
+        <a href="<%= sidebarContextPath %>/dashboard" style="text-decoration: none; color: inherit;">
+            <div class="sidebar-logo">&#127829;</div>
+        </a>
     </div>
     
     <!-- Navigation Items -->
@@ -118,88 +128,78 @@
         <% if (sidebarIsAdmin) { %>
             <!-- ADMIN MENU -->
             <a href="<%= sidebarContextPath %>/home" class="sidebar-item <%= sidebarCurrentPath.contains("/home") ? "active" : "" %>">
-                <span class="sidebar-icon">🏠</span>
+                <div class="sidebar-icon"><i data-lucide="home"></i></div>
                 <span class="sidebar-text">Home</span>
             </a>
             
             <a href="<%= sidebarContextPath %>/dashboard" class="sidebar-item <%= sidebarCurrentPath.contains("/dashboard") ? "active" : "" %>">
-                <span class="sidebar-icon">📊</span>
+                <div class="sidebar-icon"><i data-lucide="layout-dashboard"></i></div>
                 <span class="sidebar-text">Dashboard</span>
             </a>
             
-            <a href="<%= sidebarContextPath %>/manage-orders" class="sidebar-item <%= sidebarCurrentPath.contains("/manage-orders") ? "active" : "" %>">
-                <span class="sidebar-icon">📋</span>
-                <span class="sidebar-text">Orders</span>
-            </a>
-            
             <a href="<%= sidebarContextPath %>/menu" class="sidebar-item <%= sidebarCurrentPath.contains("/menu") ? "active" : "" %>">
-                <span class="sidebar-icon">🍕</span>
+                <div class="sidebar-icon"><i data-lucide="utensils"></i></div>
                 <span class="sidebar-text">Menu</span>
             </a>
             
-            <a href="<%= sidebarContextPath %>/pos" class="sidebar-item <%= sidebarCurrentPath.contains("/pos") ? "active" : "" %>">
-                <span class="sidebar-icon">🛒</span>
-                <span class="sidebar-text">POS</span>
-            </a>
-            
             <a href="<%= sidebarContextPath %>/manageproduct" class="sidebar-item <%= sidebarCurrentPath.contains("/manageproduct") ? "active" : "" %>">
-                <span class="sidebar-icon">📦</span>
+                <div class="sidebar-icon"><i data-lucide="package"></i></div>
                 <span class="sidebar-text">Products</span>
             </a>
             
             <a href="<%= sidebarContextPath %>/admin" class="sidebar-item <%= sidebarCurrentPath.contains("/admin") ? "active" : "" %>">
-                <span class="sidebar-icon">👥</span>
+                <div class="sidebar-icon"><i data-lucide="users"></i></div>
                 <span class="sidebar-text">Users</span>
             </a>
             
             <a href="<%= sidebarContextPath %>/discount" class="sidebar-item <%= sidebarCurrentPath.contains("/discount") ? "active" : "" %>">
-                <span class="sidebar-icon">💰</span>
+                <div class="sidebar-icon"><i data-lucide="percent"></i></div>
                 <span class="sidebar-text">Discount</span>
             </a>
             
             <a href="<%= sidebarContextPath %>/table" class="sidebar-item <%= sidebarCurrentPath.contains("/table") ? "active" : "" %>">
-                <span class="sidebar-icon">🪑</span>
+                <div class="sidebar-icon"><i data-lucide="layout-grid"></i></div>
                 <span class="sidebar-text">Tables</span>
             </a>
             
             <a href="<%= sidebarContextPath %>/inventory" class="sidebar-item <%= sidebarCurrentPath.contains("/inventory") ? "active" : "" %>">
-                <span class="sidebar-icon">📦</span>
+                <div class="sidebar-icon"><i data-lucide="box"></i></div>
                 <span class="sidebar-text">Inventory</span>
             </a>
             
             <div class="sidebar-divider"></div>
             
             <a href="<%= sidebarContextPath %>/profile" class="sidebar-item <%= sidebarCurrentPath.contains("/profile") ? "active" : "" %>">
-                <span class="sidebar-icon">👤</span>
+                <div class="sidebar-icon"><i data-lucide="user"></i></div>
                 <span class="sidebar-text">Profile</span>
             </a>
             
             <a href="<%= sidebarContextPath %>/settings" class="sidebar-item <%= sidebarCurrentPath.contains("/settings") ? "active" : "" %>">
-                <span class="sidebar-icon">⚙️</span>
+                <div class="sidebar-icon"><i data-lucide="settings"></i></div>
                 <span class="sidebar-text">Settings</span>
             </a>
             
         <% } else if (sidebarIsChef) { %>
             <!-- CHEF MENU -->
             <a href="<%= sidebarContextPath %>/ChefMonitor" class="sidebar-item <%= sidebarCurrentPath.contains("/ChefMonitor") ? "active" : "" %>">
-                <span class="sidebar-icon">🍳</span>
+                <div class="sidebar-icon"><i data-lucide="cooking-pot"></i></div>
                 <span class="sidebar-text">Chef Monitor</span>
             </a>
             
         <% } else if (sidebarIsWaiter) { %>
             <!-- WAITER MENU -->
             <a href="<%= sidebarContextPath %>/pos" class="sidebar-item <%= sidebarCurrentPath.contains("/pos") ? "active" : "" %>">
-                <span class="sidebar-icon">📝</span>
+                <div class="sidebar-icon"><i data-lucide="shopping-cart"></i></div>
                 <span class="sidebar-text">POS</span>
             </a>
             
             <a href="<%= sidebarContextPath %>/WaiterMonitor" class="sidebar-item <%= sidebarCurrentPath.contains("/WaiterMonitor") ? "active" : "" %>">
-                <span class="sidebar-icon">🔔</span>
+                <div class="sidebar-icon"><i data-lucide="bell"></i></div>
                 <span class="sidebar-text">Waiter Monitor</span>
             </a>
             
             <a href="<%= sidebarContextPath %>/manage-orders" class="sidebar-item <%= sidebarCurrentPath.contains("/manage-orders") ? "active" : "" %>">
-                <span class="sidebar-icon">📋</span>
+                <div class="sidebar-icon"><i data-lucide="file-text"></i></div>
                 <span class="sidebar-text">Manage Orders</span>
             </a>
         <% } %>
@@ -209,8 +209,20 @@
     <div style="margin-top: auto;">
         <div class="sidebar-divider"></div>
         <a href="<%= sidebarContextPath %>/Login?action=logout" class="sidebar-item">
-            <span class="sidebar-icon">🚪</span>
+            <div class="sidebar-icon"><i data-lucide="log-out"></i></div>
             <span class="sidebar-text">Logout</span>
         </a>
     </div>
 </div>
+
+<!-- Initialize Lucide Icons -->
+<script>
+    // Wait for Lucide to load, then initialize icons
+    (function initLucide() {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        } else {
+            setTimeout(initLucide, 100);
+        }
+    })();
+</script>
