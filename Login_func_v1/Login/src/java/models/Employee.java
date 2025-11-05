@@ -57,6 +57,15 @@ public class Employee extends User {
     public void setJobRole(String jobRole) {
         this.jobRole = jobRole;
     }
+    
+    // Alias methods for compatibility
+    public String getRole() {
+        return jobRole;
+    }
+    
+    public void setRole(String role) {
+        this.jobRole = role;
+    }
 
     public String getSpecialization() {
         return specialization;

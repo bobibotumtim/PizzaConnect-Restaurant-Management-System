@@ -82,9 +82,25 @@
         <url-pattern>/admin</url-pattern>
     </servlet-mapping>
     
-
+    <!-- Add User Servlet -->
+    <servlet>
+        <servlet-name>AddUserServlet</servlet-name>
+        <servlet-class>controller.AddUserServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AddUserServlet</servlet-name>
+        <url-pattern>/adduser</url-pattern>
+    </servlet-mapping>
     
-
+    <!-- Edit User Servlet -->
+    <servlet>
+        <servlet-name>EditUserServlet</servlet-name>
+        <servlet-class>controller.EditUserServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>EditUserServlet</servlet-name>
+        <url-pattern>/edituser</url-pattern>
+    </servlet-mapping>
     
     <!-- Dashboard Controller -->
     <servlet>
@@ -106,14 +122,25 @@
         <url-pattern>/pos</url-pattern>
     </servlet-mapping>
 
+    <!-- Manage Orders Servlet -->
+    <servlet>
+        <servlet-name>ManageOrderServlet</servlet-name>
+        <servlet-class>controller.ManageOrderServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ManageOrderServlet</servlet-name>
+        <url-pattern>/manage-orders</url-pattern>
+    </servlet-mapping>
 
-
-
-
-
-
-
-
+    <!-- Discount Servlet -->
+    <servlet>
+        <servlet-name>DiscountServlet</servlet-name>
+        <servlet-class>controller.DiscountServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DiscountServlet</servlet-name>
+        <url-pattern>/discount</url-pattern>
+    </servlet-mapping>
 
     <!-- Verify Code Servlet -->
     <servlet>
@@ -133,7 +160,36 @@
         <servlet-name>ManageToppingServlet</servlet-name>
         <url-pattern>/manage-topping</url-pattern>
     </servlet-mapping>
-    
+
+    <!-- Kitchen Monitor Servlet -->
+    <servlet>
+        <servlet-name>ChefMonitorServlet</servlet-name>
+        <servlet-class>controller.ChefMonitorServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ChefMonitorServlet</servlet-name>
+        <url-pattern>/chef-monitor</url-pattern>
+    </servlet-mapping>
+
+    <!-- Waiter Monitor Servlet -->
+    <servlet>
+        <servlet-name>WaiterMonitorServlet</servlet-name>
+        <servlet-class>controller.WaiterMonitorServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>WaiterMonitorServlet</servlet-name>
+        <url-pattern>/waiter-monitor</url-pattern>
+    </servlet-mapping>
+
+    <!-- Home Servlet -->
+    <servlet>
+        <servlet-name>HomeServlet</servlet-name>
+        <servlet-class>controller.HomeServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>HomeServlet</servlet-name>
+        <url-pattern>/home</url-pattern>
+    </servlet-mapping>
 
 </web-app>
 
