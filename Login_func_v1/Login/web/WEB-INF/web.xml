@@ -191,5 +191,19 @@
         <url-pattern>/home</url-pattern>
     </servlet-mapping>
 
+    <!-- Inventory Servlet -->
+    <servlet>
+        <servlet-name>InventoryServlet</servlet-name>
+        <servlet-class>controller.InventoryServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>InventoryServlet</servlet-name>
+        <url-pattern>/inventory</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>InventoryServlet</servlet-name>
+        <url-pattern>/manageinventory</url-pattern>
+    </servlet-mapping>
+
 </web-app>
 
