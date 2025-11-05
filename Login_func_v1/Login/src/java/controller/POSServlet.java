@@ -43,6 +43,10 @@ public class POSServlet extends HttpServlet {
             // Return JSON data for existing order
             handleGetOrderAPI(req, resp);
             return;
+        } else if ("getToppings".equals(action)) {
+            // Return JSON data for toppings
+            handleToppingsAPI(req, resp);
+            return;
         }
         
         // Check if editing existing order
@@ -324,15 +328,26 @@ public class POSServlet extends HttpServlet {
             }
             
             // Check if this is adding items to existing order or creating new order
-            int existingOrderId = extractJsonInt(jsonData, "orderId");
-            System.out.println("🔍 Extracted orderId from JSON: " + existingOrderId);
-            System.out.println("🔍 Full JSON data: " + jsonData);
+            // Check root level "orderId" first (not in items array)
+            int existingOrderId = 0;
             
-            // Also check for "orderID" (capital ID) as fallback
+            // Find orderId at root level (after "timestamp")
+            String searchPattern = "\"timestamp\":";
+            int timestampIdx = jsonData.indexOf(searchPattern);
+            if (timestampIdx > 0) {
+                // Look for orderId after timestamp
+                String afterTimestamp = jsonData.substring(timestampIdx);
+                existingOrderId = extractJsonInt(afterTimestamp, "orderId");
+                System.out.println("🔍 Extracted orderId from root level: " + existingOrderId);
+            }
+            
+            // Fallback: check orderID (capital)
             if (existingOrderId <= 0) {
                 existingOrderId = extractJsonInt(jsonData, "orderID");
                 System.out.println("🔍 Tried orderID (capital): " + existingOrderId);
             }
+            
+            System.out.println("🔍 Full JSON data: " + jsonData);
             
             if (existingOrderId > 0) {
                 // EDIT MODE: Adding items to existing order
@@ -414,6 +429,8 @@ public class POSServlet extends HttpServlet {
         System.out.println("🍕 STARTING ORDER PROCESSING");
         System.out.println("========================================");
         
+        List<CartItemWithToppings> cartItems = null; // Declare outside try block
+        
         try {
             // Extract basic info from JSON
             String customerName = extractJsonValue(jsonData, "customerName");
@@ -433,8 +450,12 @@ public class POSServlet extends HttpServlet {
             System.out.println("   User ID: " + user.getUserID());
             System.out.println("   User Name: " + user.getName());
             
-            // Parse cart items from JSON
-            List<OrderDetail> orderDetails = parseCartItems(jsonData);
+            // Parse cart items from JSON (with toppings)
+            cartItems = parseCartItemsWithToppings(jsonData);
+            List<OrderDetail> orderDetails = new ArrayList<>();
+            for (CartItemWithToppings item : cartItems) {
+                orderDetails.add(item.getOrderDetail());
+            }
             System.out.println("   Items count: " + orderDetails.size());
             
             // Debug order details
@@ -571,6 +592,31 @@ public class POSServlet extends HttpServlet {
             
             if (orderId > 0) {
                 System.out.println("✅✅✅ SUCCESS! Order ID: " + orderId + " ✅✅✅");
+                
+                // Save toppings for each order detail
+                System.out.println("🍕 Saving toppings for order details...");
+                OrderDAO orderDAO2 = new OrderDAO();
+                Order createdOrder = orderDAO2.getOrderWithDetails(orderId);
+                
+                if (createdOrder != null && createdOrder.getDetails() != null) {
+                    List<OrderDetail> savedDetails = createdOrder.getDetails();
+                    
+                    // Match saved details with cart items to save toppings
+                    for (int i = 0; i < Math.min(savedDetails.size(), cartItems.size()); i++) {
+                        OrderDetail savedDetail = savedDetails.get(i);
+                        CartItemWithToppings cartItem = cartItems.get(i);
+                        
+                        if (cartItem.getToppings() != null && !cartItem.getToppings().isEmpty()) {
+                            System.out.println("  💾 Saving " + cartItem.getToppings().size() + 
+                                             " toppings for OrderDetailID=" + savedDetail.getOrderDetailID());
+                            saveToppingsForOrderDetail(savedDetail.getOrderDetailID(), cartItem.getToppings());
+                        }
+                    }
+                    System.out.println("✅ Toppings saved successfully!");
+                } else {
+                    System.err.println("⚠️ Could not load order details to save toppings");
+                }
+                
                 return orderId;
             } else {
                 System.err.println("❌❌❌ FAILED! OrderID is 0 ❌❌❌");
@@ -657,13 +703,14 @@ public class POSServlet extends HttpServlet {
             
             String valueStr = json.substring(startIndex, endIndex).trim();
             
-            // Remove quotes if present (handles both "123" and 123)
-            valueStr = valueStr.replace("\"", "");
+            // Check if value is a string (has quotes) or contains #
+            if (valueStr.startsWith("\"") || valueStr.contains("#")) {
+                // This is a string value like "#1", not a real integer OrderID
+                System.out.println("⚠️ " + key + " is a string value: " + valueStr + " - treating as 0");
+                return 0;
+            }
             
-            // Remove # symbol if present (handles "#8" → "8")
-            valueStr = valueStr.replace("#", "");
-            
-            // Now parse the clean integer
+            // Parse clean integer (no quotes, no #)
             int result = Integer.parseInt(valueStr);
             System.out.println("✅ Extracted " + key + " = " + result);
             return result;
@@ -974,9 +1021,15 @@ public class POSServlet extends HttpServlet {
         System.out.println("========================================");
         
         try {
-            // Parse cart items from JSON
-            List<OrderDetail> newItems = parseCartItems(jsonData);
-            System.out.println("   New items count: " + newItems.size());
+            // Parse cart items from JSON - Filter ONLY NEW ITEMS
+            List<CartItemWithToppings> allCartItems = parseCartItemsWithToppingsForEdit(jsonData);
+            List<OrderDetail> newItems = new ArrayList<>();
+            
+            for (CartItemWithToppings cartItem : allCartItems) {
+                newItems.add(cartItem.getOrderDetail());
+            }
+            
+            System.out.println("   New items to add: " + newItems.size());
             
             if (newItems.isEmpty()) {
                 System.err.println("❌ No items to add");
@@ -1012,5 +1065,352 @@ public class POSServlet extends HttpServlet {
             e.printStackTrace();
             return false;
         }
+    }
+    
+    /**
+     * Handle API request for toppings data
+     */
+    private void handleToppingsAPI(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        
+        resp.setContentType("application/json; charset=UTF-8");
+        
+        try {
+            ToppingDAO toppingDAO = new ToppingDAO();
+            List<Topping> toppings = toppingDAO.getAvailableToppings();
+            
+            // Build JSON response
+            StringBuilder json = new StringBuilder();
+            json.append("{\"success\": true, \"toppings\": [");
+            
+            for (int i = 0; i < toppings.size(); i++) {
+                Topping t = toppings.get(i);
+                if (i > 0) json.append(",");
+                
+                json.append("{")
+                    .append("\"toppingID\": ").append(t.getToppingID()).append(",")
+                    .append("\"toppingName\": \"").append(t.getToppingName()).append("\",")
+                    .append("\"price\": ").append(t.getPrice())
+                    .append("}");
+            }
+            
+            json.append("]}");
+            
+            resp.getWriter().write(json.toString());
+            System.out.println("✅ Toppings API: Returned " + toppings.size() + " toppings");
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error in handleToppingsAPI: " + e.getMessage());
+            e.printStackTrace();
+            resp.getWriter().write("{\"success\": false, \"message\": \"" + e.getMessage() + "\"}");
+        }
+    }
+    
+    /**
+     * Parse toppings from item JSON string
+     * Format: "toppings":[{"toppingID":1,"toppingName":"Extra Cheese","price":15000}]
+     */
+    private List<OrderDetailTopping> parseToppingsFromItem(String itemJson) {
+        List<OrderDetailTopping> toppings = new ArrayList<>();
+        
+        try {
+            // Find toppings array
+            String toppingsStart = "\"toppings\":[";
+            int startIdx = itemJson.indexOf(toppingsStart);
+            
+            if (startIdx == -1) {
+                // No toppings in this item
+                return toppings;
+            }
+            
+            startIdx += toppingsStart.length();
+            int endIdx = itemJson.indexOf("]", startIdx);
+            
+            if (endIdx == -1) {
+                return toppings;
+            }
+            
+            String toppingsJson = itemJson.substring(startIdx, endIdx);
+            
+            if (toppingsJson.trim().isEmpty()) {
+                return toppings;
+            }
+            
+            // Split by },{
+            String[] toppingItems = toppingsJson.split("\\},\\{");
+            
+            for (String toppingItem : toppingItems) {
+                toppingItem = toppingItem.replace("{", "").replace("}", "");
+                
+                // Extract toppingID and price
+                int toppingID = extractJsonIntFromString(toppingItem, "toppingID");
+                double price = extractJsonDoubleFromString(toppingItem, "price");
+                
+                if (toppingID > 0) {
+                    OrderDetailTopping topping = new OrderDetailTopping();
+                    topping.setToppingID(toppingID);
+                    topping.setToppingPrice(price);
+                    toppings.add(topping);
+                    
+                    System.out.println("  🍕 Parsed topping: ID=" + toppingID + ", Price=" + price);
+                }
+            }
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error parsing toppings: " + e.getMessage());
+        }
+        
+        return toppings;
+    }
+    
+    /**
+     * Helper to extract int from JSON string
+     */
+    private int extractJsonIntFromString(String json, String key) {
+        try {
+            String searchKey = "\"" + key + "\":";
+            int startIdx = json.indexOf(searchKey);
+            if (startIdx == -1) return 0;
+            
+            startIdx += searchKey.length();
+            int endIdx = json.indexOf(",", startIdx);
+            if (endIdx == -1) endIdx = json.indexOf("}", startIdx);
+            if (endIdx == -1) endIdx = json.length();
+            
+            String value = json.substring(startIdx, endIdx).trim();
+            return Integer.parseInt(value);
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+    
+    /**
+     * Helper to extract double from JSON string
+     */
+    private double extractJsonDoubleFromString(String json, String key) {
+        try {
+            String searchKey = "\"" + key + "\":";
+            int startIdx = json.indexOf(searchKey);
+            if (startIdx == -1) return 0.0;
+            
+            startIdx += searchKey.length();
+            int endIdx = json.indexOf(",", startIdx);
+            if (endIdx == -1) endIdx = json.indexOf("}", startIdx);
+            if (endIdx == -1) endIdx = json.length();
+            
+            String value = json.substring(startIdx, endIdx).trim();
+            return Double.parseDouble(value);
+        } catch (Exception e) {
+            return 0.0;
+        }
+    }
+    
+    /**
+     * Save toppings for an order detail
+     */
+    private void saveToppingsForOrderDetail(int orderDetailID, List<OrderDetailTopping> toppings) {
+        if (toppings == null || toppings.isEmpty()) {
+            return;
+        }
+        
+        OrderDetailToppingDAO toppingDAO = new OrderDetailToppingDAO();
+        
+        for (OrderDetailTopping topping : toppings) {
+            topping.setOrderDetailID(orderDetailID);
+            boolean success = toppingDAO.addToppingToOrderDetail(
+                orderDetailID, 
+                topping.getToppingID(), 
+                topping.getToppingPrice()
+            );
+            
+            if (success) {
+                System.out.println("  ✅ Saved topping: OrderDetailID=" + orderDetailID + 
+                                 ", ToppingID=" + topping.getToppingID() + 
+                                 ", Price=" + topping.getToppingPrice());
+            } else {
+                System.err.println("  ❌ Failed to save topping for OrderDetailID=" + orderDetailID);
+            }
+        }
+    }
+    
+    /**
+     * Parse cart items for EDIT mode - only NEW items (skip existing)
+     */
+    private List<CartItemWithToppings> parseCartItemsWithToppingsForEdit(String json) {
+        List<CartItemWithToppings> allItems = parseCartItemsWithToppings(json);
+        List<CartItemWithToppings> newItems = new ArrayList<>();
+        
+        // Filter: Only items that don't have "isExisting":true
+        for (int i = 0; i < allItems.size(); i++) {
+            // Check if this item has isExisting flag in original JSON
+            // Simple heuristic: check if uniqueId starts with "existing-"
+            String itemsStart = "\"items\":[";
+            int startIdx = json.indexOf(itemsStart);
+            if (startIdx > 0) {
+                String itemsSection = json.substring(startIdx);
+                // Count which item we're at
+                int itemCount = 0;
+                boolean foundExisting = false;
+                
+                // Look for the i-th item and check if it has "isExisting":true
+                int searchIdx = 0;
+                for (int j = 0; j <= i; j++) {
+                    int uniqueIdIdx = itemsSection.indexOf("\"uniqueId\":", searchIdx);
+                    if (uniqueIdIdx > 0) {
+                        int nextComma = itemsSection.indexOf(",", uniqueIdIdx);
+                        int nextBrace = itemsSection.indexOf("}", uniqueIdIdx);
+                        int endIdx = (nextComma > 0 && nextComma < nextBrace) ? nextComma : nextBrace;
+                        
+                        String uniqueIdSection = itemsSection.substring(uniqueIdIdx, endIdx);
+                        
+                        if (j == i) {
+                            // Check if next field is isExisting
+                            int isExistingIdx = itemsSection.indexOf("\"isExisting\"", uniqueIdIdx);
+                            if (isExistingIdx > 0 && isExistingIdx < uniqueIdIdx + 200) {
+                                foundExisting = true;
+                            }
+                            break;
+                        }
+                        searchIdx = uniqueIdIdx + 10;
+                    }
+                }
+                
+                if (!foundExisting) {
+                    newItems.add(allItems.get(i));
+                    System.out.println("  ✅ Item " + (i+1) + " is NEW - will be added");
+                } else {
+                    System.out.println("  ⏭️ Item " + (i+1) + " is EXISTING - skipped");
+                }
+            }
+        }
+        
+        return newItems;
+    }
+    
+    /**
+     * Parse cart items with toppings from JSON
+     * Fixed to properly handle nested toppings array
+     */
+    private List<CartItemWithToppings> parseCartItemsWithToppings(String json) {
+        List<CartItemWithToppings> cartItems = new ArrayList<>();
+        
+        try {
+            System.out.println("🔍 Parsing cart items with toppings from JSON...");
+            
+            // Find items array in JSON
+            String itemsStart = "\"items\":[";
+            int startIndex = json.indexOf(itemsStart);
+            
+            if (startIndex == -1) {
+                System.out.println("⚠️ No 'items' array found in JSON");
+                return cartItems;
+            }
+            
+            startIndex += itemsStart.length();
+            
+            // Find the closing bracket for items array by counting brackets
+            int bracketCount = 0;
+            int endIndex = startIndex;
+            boolean inString = false;
+            
+            for (int i = startIndex; i < json.length(); i++) {
+                char c = json.charAt(i);
+                
+                if (c == '"' && (i == 0 || json.charAt(i-1) != '\\')) {
+                    inString = !inString;
+                }
+                
+                if (!inString) {
+                    if (c == '[' || c == '{') bracketCount++;
+                    if (c == ']' || c == '}') bracketCount--;
+                    
+                    if (c == ']' && bracketCount == -1) {
+                        endIndex = i;
+                        break;
+                    }
+                }
+            }
+            
+            String itemsJson = json.substring(startIndex, endIndex);
+            System.out.println("📦 Items JSON extracted (length: " + itemsJson.length() + ")");
+            
+            // Parse each item by finding complete objects (not simple split)
+            List<String> itemStrings = new ArrayList<>();
+            int itemStart = 0;
+            int depth = 0;
+            inString = false;
+            
+            for (int i = 0; i < itemsJson.length(); i++) {
+                char c = itemsJson.charAt(i);
+                
+                if (c == '"' && (i == 0 || itemsJson.charAt(i-1) != '\\')) {
+                    inString = !inString;
+                }
+                
+                if (!inString) {
+                    if (c == '{') {
+                        if (depth == 0) itemStart = i;
+                        depth++;
+                    }
+                    if (c == '}') {
+                        depth--;
+                        if (depth == 0) {
+                            itemStrings.add(itemsJson.substring(itemStart, i + 1));
+                        }
+                    }
+                }
+            }
+            
+            System.out.println("🔢 Found " + itemStrings.size() + " items to parse");
+            
+            for (int i = 0; i < itemStrings.size(); i++) {
+                String itemJson = itemStrings.get(i);
+                
+                System.out.println("📝 Parsing item " + (i+1) + ": " + itemJson.substring(0, Math.min(100, itemJson.length())) + "...");
+                
+                try {
+                    // Extract item details
+                    int productSizeId = extractItemSizeId(itemJson);
+                    String productName = extractItemName(itemJson);
+                    String sizeName = extractItemSizeName(itemJson);
+                    int quantity = extractItemQuantity(itemJson);
+                    double price = extractItemPrice(itemJson);
+                    
+                    // Create OrderDetail
+                    OrderDetail detail = new OrderDetail();
+                    detail.setProductSizeID(productSizeId > 0 ? productSizeId : 1);
+                    detail.setQuantity(quantity > 0 ? quantity : 1);
+                    detail.setTotalPrice(price * quantity);
+                    
+                    String instructions = productName;
+                    if (sizeName != null && !sizeName.isEmpty()) {
+                        instructions += " (" + sizeName + ")";
+                    }
+                    detail.setSpecialInstructions(instructions);
+                    
+                    // Parse toppings for this item
+                    List<OrderDetailTopping> toppings = parseToppingsFromItem(itemJson);
+                    
+                    // Create CartItemWithToppings
+                    CartItemWithToppings cartItem = new CartItemWithToppings(detail);
+                    cartItem.setToppings(toppings);
+                    
+                    cartItems.add(cartItem);
+                    
+                    System.out.println("✅ Item " + (i+1) + " parsed: ProductSizeID=" + detail.getProductSizeID() + 
+                                     ", Quantity=" + detail.getQuantity() + 
+                                     ", Toppings=" + toppings.size());
+                    
+                } catch (Exception itemEx) {
+                    System.err.println("❌ Error parsing item " + (i+1) + ": " + itemEx.getMessage());
+                }
+            }
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error in parseCartItemsWithToppings: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return cartItems;
     }
 }

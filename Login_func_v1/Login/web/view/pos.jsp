@@ -495,12 +495,24 @@
         }
 
         // Load sample toppings
-        function loadSampleToppings() {
-            toppings = [
-                'Extra Cheese', 'Mushrooms', 'Pepperoni', 'Sausage',
-                'Onions', 'Bell Peppers', 'Olives', 'Bacon',
-                'Ham', 'Pineapple', 'Jalapeños', 'Tomatoes'
-            ];
+        // Load toppings from database
+        async function loadSampleToppings() {
+            try {
+                console.log('🔄 Loading toppings from database...');
+                const response = await fetch('pos?action=getToppings');
+                const data = await response.json();
+                
+                if (data.success) {
+                    toppings = data.toppings;
+                    console.log('✅ Toppings loaded:', toppings.length, 'items');
+                } else {
+                    console.error('❌ Failed to load toppings');
+                    toppings = [];
+                }
+            } catch (error) {
+                console.error('❌ Error loading toppings:', error);
+                toppings = [];
+            }
         }
 
         // Select category
@@ -610,10 +622,11 @@
                 toppingsSection.classList.remove('hidden');
                 const toppingGrid = document.getElementById('toppingGrid');
                 toppingGrid.innerHTML = toppings.map(topping => 
-                    '<button onclick="toggleTopping(\'' + topping + '\')" ' +
-                            'class="topping-btn p-2 rounded-lg border-2 transition-all font-semibold bg-white text-gray-700 border-gray-300 hover:border-orange-400 text-sm" ' +
-                            'data-topping="' + topping + '">' +
-                        topping +
+                    '<button onclick="toggleTopping(' + topping.toppingID + ')" ' +
+                            'class="topping-btn p-3 rounded-lg border-2 transition-all bg-white text-gray-700 border-gray-300 hover:border-orange-400 text-left" ' +
+                            'data-topping-id="' + topping.toppingID + '">' +
+                        '<div class="font-semibold text-sm">' + topping.toppingName + '</div>' +
+                        '<div class="text-xs text-orange-600 font-bold">+' + formatCurrency(topping.price) + '</div>' +
                     '</button>'
                 ).join('');
                 updateSelectedToppingsDisplay();
@@ -653,20 +666,31 @@
         }
 
         // Toggle topping
-        function toggleTopping(topping) {
-            const index = selectedToppings.indexOf(topping);
+        function toggleTopping(toppingID) {
+            const topping = toppings.find(t => t.toppingID === toppingID);
+            if (!topping) return;
+            
+            const index = selectedToppings.findIndex(t => t.toppingID === toppingID);
+            
             if (index > -1) {
+                // Remove topping
                 selectedToppings.splice(index, 1);
             } else {
+                // Check limit: Max 3 toppings
+                if (selectedToppings.length >= 3) {
+                    alert('⚠️ Maximum 3 toppings allowed per pizza!');
+                    return;
+                }
+                // Add topping
                 selectedToppings.push(topping);
             }
             
             // Update button style
-            const btn = document.querySelector('[data-topping="' + topping + '"]');
-            if (selectedToppings.includes(topping)) {
-                btn.className = 'topping-btn p-3 rounded-lg border-2 transition-all font-semibold bg-orange-500 text-white border-orange-600';
+            const btn = document.querySelector('[data-topping-id="' + toppingID + '"]');
+            if (selectedToppings.find(t => t.toppingID === toppingID)) {
+                btn.className = 'topping-btn p-3 rounded-lg border-2 transition-all bg-orange-500 text-white border-orange-600 text-left';
             } else {
-                btn.className = 'topping-btn p-3 rounded-lg border-2 transition-all font-semibold bg-white text-gray-700 border-gray-300 hover:border-orange-400';
+                btn.className = 'topping-btn p-3 rounded-lg border-2 transition-all bg-white text-gray-700 border-gray-300 hover:border-orange-400 text-left';
             }
             
             updateSelectedToppingsDisplay();
@@ -675,7 +699,15 @@
         // Update selected toppings display
         function updateSelectedToppingsDisplay() {
             const display = document.getElementById('selectedToppings');
-            display.textContent = selectedToppings.length > 0 ? selectedToppings.join(', ') : 'No toppings selected';
+            if (selectedToppings.length === 0) {
+                display.innerHTML = '<span class="text-gray-500">No toppings selected</span>';
+            } else {
+                const toppingNames = selectedToppings.map(t => t.toppingName + ' (+' + formatCurrency(t.price) + ')');
+                const totalToppingPrice = selectedToppings.reduce((sum, t) => sum + t.price, 0);
+                display.innerHTML = toppingNames.join(', ') + 
+                    '<br><span class="text-orange-600 font-bold">Total toppings: ' + formatCurrency(totalToppingPrice) + '</span>' +
+                    '<br><span class="text-gray-500 text-xs">(' + selectedToppings.length + '/3 selected)</span>';
+            }
         }
 
         // Confirm selection
@@ -740,7 +772,18 @@
                         
                         '<div class="text-sm mb-3">' +
                             (item.toppings && item.toppings.length > 0 
-                                ? '+ ' + item.toppings.join(', ')
+                                ? (() => {
+                                    // Handle both object array and string array
+                                    if (typeof item.toppings[0] === 'object') {
+                                        const toppingNames = item.toppings.map(t => t.toppingName).join(', ');
+                                        const toppingTotal = item.toppings.reduce((sum, t) => sum + (t.price || 0), 0);
+                                        return '🍕 ' + toppingNames + 
+                                               '<div class="text-xs text-blue-200 mt-1">Toppings: +' + formatCurrency(toppingTotal) + '</div>';
+                                    } else {
+                                        // String array (from existing items)
+                                        return '<span class="text-blue-200 italic">' + item.toppings.join(', ') + '</span>';
+                                    }
+                                })()
                                 : '<span class="text-blue-200 italic">(No toppings)</span>'
                             ) +
                         '</div>' +
@@ -755,7 +798,14 @@
                                 '+' +
                             '</button>' +
                             '<div class="ml-auto text-lg font-bold">' +
-                                formatCurrency(item.price * item.quantity) + 'đ' +
+                                (() => {
+                                    const itemPrice = parseFloat(item.price) || 0;
+                                    let toppingPrice = 0;
+                                    if (item.toppings && Array.isArray(item.toppings)) {
+                                        toppingPrice = item.toppings.reduce((sum, t) => sum + (typeof t === 'object' && t.price ? t.price : 0), 0);
+                                    }
+                                    return formatCurrency((itemPrice + toppingPrice) * item.quantity) + 'đ';
+                                })() +
                             '</div>' +
                         '</div>' +
                     '</div>'
@@ -789,7 +839,20 @@
 
         // Update totals
         function updateTotals() {
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            // Calculate subtotal including toppings
+            const subtotal = cart.reduce((sum, item) => {
+                // Handle toppings - can be array of objects or array of strings
+                let toppingPrice = 0;
+                if (item.toppings && Array.isArray(item.toppings)) {
+                    toppingPrice = item.toppings.reduce((tSum, t) => {
+                        // If t is object with price, use it; otherwise 0
+                        return tSum + (typeof t === 'object' && t.price ? t.price : 0);
+                    }, 0);
+                }
+                const itemPrice = parseFloat(item.price) || 0;
+                const itemQty = parseInt(item.quantity) || 1;
+                return sum + ((itemPrice + toppingPrice) * itemQty);
+            }, 0);
             const discount = parseFloat(document.getElementById('discountInput').value) || 0;
             const discountAmount = (subtotal * discount) / 100;
             const total = subtotal - discountAmount;

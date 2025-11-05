@@ -147,6 +147,11 @@
                 <span class="sidebar-text">Products</span>
             </a>
             
+            <a href="<%= sidebarContextPath %>/manage-topping" class="sidebar-item <%= sidebarCurrentPath.contains("/manage-topping") ? "active" : "" %>">
+                <div class="sidebar-icon"><i data-lucide="pizza"></i></div>
+                <span class="sidebar-text">Toppings</span>
+            </a>
+            
             <a href="<%= sidebarContextPath %>/admin" class="sidebar-item <%= sidebarCurrentPath.contains("/admin") ? "active" : "" %>">
                 <div class="sidebar-icon"><i data-lucide="users"></i></div>
                 <span class="sidebar-text">Users</span>

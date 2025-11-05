@@ -967,6 +967,14 @@ public class OrderDAO extends DBContext {
         Order order = getOrderById(orderId);
         if (order != null) {
             List<OrderDetail> details = getOrderDetailsByOrderId(orderId);
+            
+            // Load toppings for each order detail
+            OrderDetailToppingDAO toppingDAO = new OrderDetailToppingDAO();
+            for (OrderDetail detail : details) {
+                List<OrderDetailTopping> toppings = toppingDAO.getToppingsByOrderDetailID(detail.getOrderDetailID());
+                detail.setToppings(toppings);
+            }
+            
             order.setDetails(details);
         }
         return order;

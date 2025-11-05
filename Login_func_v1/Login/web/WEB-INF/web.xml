@@ -125,6 +125,15 @@
         <url-pattern>/verifyCode</url-pattern>
     </servlet-mapping>
     
+    <servlet>
+        <servlet-name>ManageToppingServlet</servlet-name>
+        <servlet-class>controller.ManageToppingServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ManageToppingServlet</servlet-name>
+        <url-pattern>/manage-topping</url-pattern>
+    </servlet-mapping>
+    
 
 </web-app>
 
