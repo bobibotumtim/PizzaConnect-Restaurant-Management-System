@@ -16,6 +16,7 @@ public class OrderDetail {
     private String productName;
     private String sizeName;
     private String sizeCode;
+    private java.util.List<OrderDetailTopping> toppings; // Danh sách toppings
 
     public OrderDetail(int orderDetailID, int orderID, int productSizeID, int quantity, double totalPrice, String specialInstructions) {
         this.orderDetailID = orderDetailID;
@@ -81,7 +82,10 @@ public class OrderDetail {
     @Deprecated
     public void setProductID(int productID) { this.productSizeID = productID; }
 
-    @Override
+    // Getter and Setter for toppings
+    public java.util.List<OrderDetailTopping> getToppings() { return toppings; }
+    public void setToppings(java.util.List<OrderDetailTopping> toppings) { this.toppings = toppings; }
+    
     public String toString() {
         return "OrderDetail{" + 
                "orderDetailID=" + orderDetailID + 
@@ -94,6 +98,7 @@ public class OrderDetail {
                ", status='" + status + '\'' +
                ", productName='" + productName + '\'' +
                ", sizeName='" + sizeName + '\'' +
+               ", toppings=" + (toppings != null ? toppings.size() : 0) +
                '}';
     }
 }

@@ -17,14 +17,38 @@ public class ChefMonitorServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        // Lấy danh sách món theo trạng thái từ database mới
-        List<OrderDetail> waitingList = orderDetailDAO.getOrderDetailsByStatus("Waiting");
-        List<OrderDetail> inProgressList = orderDetailDAO.getOrderDetailsByStatus("In Progress");
-        List<OrderDetail> doneList = orderDetailDAO.getOrderDetailsByStatus("Done");
+        HttpSession session = req.getSession();
+        Employee chef = (Employee) session.getAttribute("employee");
+        
+        if (chef == null) {
+            resp.sendRedirect("view/Login.jsp");
+            return;
+        }
+
+        // Lấy specialization của chef
+        String specialization = chef.getSpecialization();
+        String categoryName = orderDetailDAO.mapSpecializationToCategory(specialization);
+        
+        List<OrderDetail> waitingList;
+        List<OrderDetail> preparingList;
+        List<OrderDetail> readyList;
+        
+        // Nếu chef có specialization, chỉ lấy món thuộc category đó
+        if (categoryName != null) {
+            waitingList = orderDetailDAO.getOrderDetailsByStatusAndCategory("Waiting", categoryName);
+            preparingList = orderDetailDAO.getOrderDetailsByStatusAndCategory("Preparing", categoryName);
+            readyList = orderDetailDAO.getOrderDetailsByStatusAndCategory("Ready", categoryName);
+        } else {
+            // Nếu không có specialization, lấy tất cả (fallback)
+            waitingList = orderDetailDAO.getOrderDetailsByStatus("Waiting");
+            preparingList = orderDetailDAO.getOrderDetailsByStatus("Preparing");
+            readyList = orderDetailDAO.getOrderDetailsByStatus("Ready");
+        }
 
         req.setAttribute("waitingList", waitingList);
-        req.setAttribute("inProgressList", inProgressList);
-        req.setAttribute("doneList", doneList);
+        req.setAttribute("preparingList", preparingList);
+        req.setAttribute("readyList", readyList);
+        req.setAttribute("chefSpecialization", chef.getSpecializationDisplay());
 
         req.getRequestDispatcher("view/ChefMonitor.jsp").forward(req, resp);
     }
@@ -55,9 +79,9 @@ public class ChefMonitorServlet extends HttpServlet {
         boolean updated = false;
 
         if ("start".equals(action)) {
-            updated = orderDetailDAO.updateOrderDetailStatus(orderDetailId, "In Progress", chef.getEmployeeID());
-        } else if ("done".equals(action)) {
-            updated = orderDetailDAO.updateOrderDetailStatus(orderDetailId, "Done", chef.getEmployeeID());
+            updated = orderDetailDAO.updateOrderDetailStatus(orderDetailId, "Preparing", chef.getEmployeeID());
+        } else if ("ready".equals(action)) {
+            updated = orderDetailDAO.updateOrderDetailStatus(orderDetailId, "Ready", chef.getEmployeeID());
             // TODO: Trừ nguyên liệu tại đây nếu cần
         } else if ("cancel".equals(action)) {
             updated = orderDetailDAO.updateOrderDetailStatus(orderDetailId, "Cancelled", chef.getEmployeeID());

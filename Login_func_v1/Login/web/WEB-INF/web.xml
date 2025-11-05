@@ -82,25 +82,9 @@
         <url-pattern>/admin</url-pattern>
     </servlet-mapping>
     
-    <!-- Add User Servlet -->
-    <servlet>
-        <servlet-name>AddUserServlet</servlet-name>
-        <servlet-class>controller.AddUserServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>AddUserServlet</servlet-name>
-        <url-pattern>/adduser</url-pattern>
-    </servlet-mapping>
+
     
-    <!-- Edit User Servlet -->
-    <servlet>
-        <servlet-name>EditUserServlet</servlet-name>
-        <servlet-class>controller.EditUserServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>EditUserServlet</servlet-name>
-        <url-pattern>/edituser</url-pattern>
-    </servlet-mapping>
+
     
     <!-- Dashboard Controller -->
     <servlet>
@@ -122,25 +106,14 @@
         <url-pattern>/pos</url-pattern>
     </servlet-mapping>
 
-    <!-- Manage Orders Servlet -->
-    <servlet>
-        <servlet-name>ManageOrderServlet</servlet-name>
-        <servlet-class>controller.ManageOrderServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ManageOrderServlet</servlet-name>
-        <url-pattern>/manage-orders</url-pattern>
-    </servlet-mapping>
 
-    <!-- Discount Servlet -->
-    <servlet>
-        <servlet-name>DiscountServlet</servlet-name>
-        <servlet-class>controller.DiscountServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>DiscountServlet</servlet-name>
-        <url-pattern>/discount</url-pattern>
-    </servlet-mapping>
+
+
+
+
+
+
+
 
     <!-- Verify Code Servlet -->
     <servlet>
@@ -152,50 +125,15 @@
         <url-pattern>/verifyCode</url-pattern>
     </servlet-mapping>
     
-        <!-- Discount Import Servlet -->
     <servlet>
-        <servlet-name>DiscountImportServlet</servlet-name>
-        <servlet-class>controller.DiscountImportServlet</servlet-class>
+        <servlet-name>ManageToppingServlet</servlet-name>
+        <servlet-class>controller.ManageToppingServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>DiscountImportServlet</servlet-name>
-        <url-pattern>/discount/import</url-pattern>
+        <servlet-name>ManageToppingServlet</servlet-name>
+        <url-pattern>/manage-topping</url-pattern>
     </servlet-mapping>
     
-    <!-- Sales Report Servlet -->
-    <servlet>
-        <servlet-name>SalesReportServlet</servlet-name>
-        <servlet-class>controller.SalesReportServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>SalesReportServlet</servlet-name>
-        <url-pattern>/sales-reports</url-pattern>
-    </servlet-mapping>
-    
-    <!-- Test Export Direct Servlet -->
-    <servlet>
-        <servlet-name>TestExportDirectServlet</servlet-name>
-        <servlet-class>controller.TestExportDirectServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>TestExportDirectServlet</servlet-name>
-        <url-pattern>/test-export</url-pattern>
-    </servlet-mapping>
-    
-    <!-- Inventory Management Servlet - Temporarily commented out for debugging -->
-    <!--
-    <servlet>
-        <servlet-name>InventoryServlet</servlet-name>
-        <servlet-class>controller.InventoryServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>InventoryServlet</servlet-name>
-        <url-pattern>/manageinventory</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>InventoryServlet</servlet-name>
-        <url-pattern>/inventory</url-pattern>
-    </servlet-mapping>
-    -->
+
 </web-app>
 
