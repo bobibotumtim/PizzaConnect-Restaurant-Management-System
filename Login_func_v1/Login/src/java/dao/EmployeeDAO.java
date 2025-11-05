@@ -48,7 +48,6 @@ public class EmployeeDAO extends DBContext {
 
         return null;
     }
-}
 
     public Employee getEmployeeByUserId(int userID) {
         return getEmployeeByUserID(userID);
@@ -108,3 +107,4 @@ public class EmployeeDAO extends DBContext {
         
         return false;
     }
+}
