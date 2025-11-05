@@ -62,6 +62,9 @@
                 <div class="font-semibold"><%= user.getName() %></div>
                 <div class="text-sm text-gray-600"><%= user.getRole() == 1 ? "Admin" : "Employee" %></div>
             </div>
+            <a href="WaiterMonitor" class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-all flex items-center gap-2">
+                🔔 Waiter
+            </a>
             <a href="manage-orders" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all">
                 📋 Orders
             </a>
@@ -420,7 +423,7 @@
                             name: item.productName,
                             sizeName: item.sizeName,
                             price: item.totalPrice / item.quantity,
-                            orderId: '#' + existingOrder.orderID,
+                            orderId: '#' + existingOrder.orderID, // Display only - not sent to server
                             toppings: item.specialInstructions ? [item.specialInstructions] : [],
                             quantity: item.quantity,
                             uniqueId: 'existing-' + item.orderDetailID,
@@ -870,15 +873,15 @@
             
             // Add orderId if in edit mode, otherwise add tableID
             if (editOrderId) {
-                orderData.orderId = editOrderId;
+                orderData.orderId = parseInt(editOrderId); // ✅ Send as integer, not string
                 console.log('📝 EDIT MODE: Adding items to existing order #' + editOrderId);
                 console.log('📝 NOT sending tableID (order already has table)');
-                console.log('📝 orderData.orderId =', orderData.orderId);
+                console.log('📝 orderData.orderId =', orderData.orderId, '(type:', typeof orderData.orderId + ')');
             } else {
-                orderData.tableID = selectedTable;
+                orderData.tableID = parseInt(selectedTable); // ✅ Send as integer
                 console.log('🆕 CREATE MODE: Creating new order for table #' + selectedTable);
                 console.log('🆕 Sending tableID:', selectedTable);
-                console.log('🆕 orderData.tableID =', orderData.tableID);
+                console.log('🆕 orderData.tableID =', orderData.tableID, '(type:', typeof orderData.tableID + ')');
             }
             
             console.log('📤 Final orderData:', orderData);

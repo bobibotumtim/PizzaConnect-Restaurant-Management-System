@@ -8,7 +8,7 @@ public class EmployeeDAO extends DBContext {
 
     public Employee getEmployeeByUserID(int userID) {
         String sql = """
-                SELECT e.EmployeeID, e.Role AS JobRole, u.*
+                SELECT e.EmployeeID, e.Role AS JobRole, e.Specialization, u.*
                 FROM Employee e
                 JOIN [User] u ON e.UserID = u.UserID
                 WHERE e.UserID = ?
@@ -32,12 +32,15 @@ public class EmployeeDAO extends DBContext {
                         rs.getBoolean("isActive")
                 );
 
-                // Gán jobRole từ Employee table
-                return new Employee(
+                // Gán jobRole và specialization từ Employee table
+                Employee employee = new Employee(
                         rs.getInt("EmployeeID"),
                         rs.getString("JobRole"),
                         u
                 );
+                employee.setSpecialization(rs.getString("Specialization"));
+                
+                return employee;
             }
         } catch (Exception e) {
             e.printStackTrace();

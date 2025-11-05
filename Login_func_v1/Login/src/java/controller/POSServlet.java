@@ -21,6 +21,14 @@ public class POSServlet extends HttpServlet {
             return;
         }
         
+        // Block Chef access to POS
+        Employee employee = (Employee) req.getSession().getAttribute("employee");
+        if (employee != null && employee.isChef()) {
+            System.out.println("🚫 Chef blocked from accessing POS");
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Chefs cannot access POS. Please use Chef Monitor.");
+            return;
+        }
+        
         // Check if this is an API request
         String action = req.getParameter("action");
         if ("getProducts".equals(action)) {
@@ -318,7 +326,13 @@ public class POSServlet extends HttpServlet {
             // Check if this is adding items to existing order or creating new order
             int existingOrderId = extractJsonInt(jsonData, "orderId");
             System.out.println("🔍 Extracted orderId from JSON: " + existingOrderId);
-            System.out.println("🔍 JSON data: " + jsonData);
+            System.out.println("🔍 Full JSON data: " + jsonData);
+            
+            // Also check for "orderID" (capital ID) as fallback
+            if (existingOrderId <= 0) {
+                existingOrderId = extractJsonInt(jsonData, "orderID");
+                System.out.println("🔍 Tried orderID (capital): " + existingOrderId);
+            }
             
             if (existingOrderId > 0) {
                 // EDIT MODE: Adding items to existing order
@@ -613,7 +627,7 @@ public class POSServlet extends HttpServlet {
         }
     }
 
-    // Simple JSON int extractor
+    // Simple JSON int extractor - improved to handle both string and int values
     private int extractJsonInt(String json, String key) {
         try {
             // Try with space after colon: "key": value
@@ -642,6 +656,14 @@ public class POSServlet extends HttpServlet {
             if (endIndex == -1) return 0;
             
             String valueStr = json.substring(startIndex, endIndex).trim();
+            
+            // Remove quotes if present (handles both "123" and 123)
+            valueStr = valueStr.replace("\"", "");
+            
+            // Remove # symbol if present (handles "#8" → "8")
+            valueStr = valueStr.replace("#", "");
+            
+            // Now parse the clean integer
             int result = Integer.parseInt(valueStr);
             System.out.println("✅ Extracted " + key + " = " + result);
             return result;

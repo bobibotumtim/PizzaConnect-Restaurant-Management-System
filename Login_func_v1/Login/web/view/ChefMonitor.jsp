@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Chef Dashboard</title>
-
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
@@ -104,16 +104,26 @@
 </head>
 
 <body>
-
-    <div class="top-bar">
-        <h2 class="fw-bold">Chef Dashboard</h2>
-        <div>
-            <button onclick="location.reload()" class="btn btn-primary">🔄 Refresh</button>
-            <c:if test="${not empty error}">
-                <span class="text-danger ms-3">${error}</span>
-            </c:if>
+    <%@ include file="Sidebar.jsp" %>
+    <%@ include file="NavBar.jsp" %>
+    
+    <div class="content-wrapper">
+        <div class="top-bar">
+            <div>
+                <h2 class="fw-bold d-inline">Chef Dashboard</h2>
+                <c:if test="${not empty chefSpecialization}">
+                    <span class="badge bg-primary ms-3" style="font-size: 16px; padding: 8px 15px;">
+                        ${chefSpecialization}
+                    </span>
+                </c:if>
+            </div>
+            <div>
+                <button onclick="location.reload()" class="btn btn-primary">🔄 Refresh</button>
+                <c:if test="${not empty error}">
+                    <span class="text-danger ms-3">${error}</span>
+                </c:if>
+            </div>
         </div>
-    </div>
 
     <!-- ==================== Waiting Section ==================== -->
     <div>
@@ -141,10 +151,10 @@
             </form>
         </div>
 
-        <!-- ==================== In Progress Section ==================== -->
-        <div class="section-title">In Progress dishes</div>
+        <!-- ==================== Preparing Section ==================== -->
+        <div class="section-title">Preparing dishes</div>
         <div id="ongoing" class="dish-container">
-            <c:forEach var="dish" items="${inProgressList}">
+            <c:forEach var="dish" items="${preparingList}">
                 <div class="dish-card ongoing" onclick="selectDish(this)" data-id="${dish.orderDetailID}">
                     <div class="order-id">#${dish.orderID}</div>
                     <div class="name">${dish.productName}
@@ -159,9 +169,9 @@
         </div>
 
         <div class="button-row">
-            <form id="doneForm" action="ChefMonitor" method="post" style="display:inline;">
-                <input type="hidden" name="action" value="done">
-                <input type="hidden" id="selectedIdDone" name="orderDetailId">
+            <form id="readyForm" action="ChefMonitor" method="post" style="display:inline;">
+                <input type="hidden" name="action" value="ready">
+                <input type="hidden" id="selectedIdReady" name="orderDetailId">
                 <button type="submit" class="btn-action btn-ready">Ready to serve</button>
             </form>
 
@@ -172,10 +182,10 @@
             </form>
         </div>
 
-        <!-- ==================== Done Section ==================== -->
-        <div class="section-title">Done dishes</div>
-        <div id="done" class="dish-container">
-            <c:forEach var="dish" items="${doneList}">
+        <!-- ==================== Ready Section ==================== -->
+        <div class="section-title">Ready dishes (Waiter will serve)</div>
+        <div id="ready" class="dish-container">
+            <c:forEach var="dish" items="${readyList}">
                 <div class="dish-card" style="background-color: #90EE90;" data-id="${dish.orderDetailID}">
                     <div class="order-id">#${dish.orderID}</div>
                     <div class="name">${dish.productName}
@@ -189,6 +199,7 @@
             </c:forEach>
         </div>
     </div>
+    </div>
 
     <script>
         let selectedDish = null;
@@ -200,7 +211,7 @@
 
             const id = el.getAttribute('data-id');
             document.getElementById('selectedIdStart').value = id;
-            document.getElementById('selectedIdDone').value = id;
+            document.getElementById('selectedIdReady').value = id;
             document.getElementById('selectedIdCancel').value = id;
         }
     </script>

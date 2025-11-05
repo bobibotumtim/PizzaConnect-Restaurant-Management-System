@@ -971,4 +971,13 @@ public class OrderDAO extends DBContext {
         }
         return order;
     }
+    
+    // 🟢 Auto-update Order status khi tất cả món đã served
+    public boolean autoUpdateOrderStatusIfAllServed(int orderId) {
+        OrderDetailDAO detailDAO = new OrderDetailDAO();
+        if (detailDAO.areAllItemsServed(orderId)) {
+            return updateOrderStatus(orderId, 1); // Status = 1 (Đã phục vụ xong)
+        }
+        return false;
+    }
 }

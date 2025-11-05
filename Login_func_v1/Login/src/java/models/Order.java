@@ -133,11 +133,21 @@ public class Order {
     // Helper methods for display
     public String getStatusText() {
         switch (status) {
-            case 0: return "Pending";
-            case 1: return "Processing";
+            case 0: return "Dining";
+            case 1: return "Served";
             case 2: return "Completed";
             case 3: return "Cancelled";
             default: return "Unknown";
+        }
+    }
+    
+    public String getStatusBadgeClass() {
+        switch (status) {
+            case 0: return "badge-warning";   // Dining - yellow
+            case 1: return "badge-info";      // Served - blue
+            case 2: return "badge-success";   // Completed - green
+            case 3: return "badge-danger";    // Cancelled - red
+            default: return "badge-secondary";
         }
     }
     

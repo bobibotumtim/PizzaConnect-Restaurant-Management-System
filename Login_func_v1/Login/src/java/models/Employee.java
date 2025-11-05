@@ -5,6 +5,7 @@ import java.util.Date;
 public class Employee extends User {
     private int employeeID;
     private String jobRole; // tránh trùng tên với role trong User
+    private String specialization; // Pizza, Drinks, SideDishes (for Chef only)
 
     public Employee() {
     }
@@ -57,12 +58,39 @@ public class Employee extends User {
         this.jobRole = jobRole;
     }
 
+    public String getSpecialization() {
+        return specialization;
+    }
+
+    public void setSpecialization(String specialization) {
+        this.specialization = specialization;
+    }
+    
+    // Helper method to get display name for specialization
+    public String getSpecializationDisplay() {
+        if (specialization == null) return "N/A";
+        switch (specialization) {
+            case "Pizza": return "Chef Pizza";
+            case "Drinks": return "Chef Nước";
+            case "SideDishes": return "Chef Side Dishes";
+            default: return specialization;
+        }
+    }
+    
+    // Helper method to check if employee is a Chef
+    public boolean isChef() {
+        return specialization != null && 
+               !specialization.trim().isEmpty() && 
+               !specialization.equalsIgnoreCase("None");
+    }
+
     // ===== toString =====
     @Override
     public String toString() {
         return "Employee{" +
                 "employeeID=" + employeeID +
                 ", jobRole='" + jobRole + '\'' +
+                ", specialization='" + specialization + '\'' +
                 ", userID=" + getUserID() +
                 ", name='" + getName() + '\'' +
                 ", email='" + getEmail() + '\'' +
