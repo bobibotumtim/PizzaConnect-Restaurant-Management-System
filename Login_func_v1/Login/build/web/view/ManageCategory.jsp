@@ -20,6 +20,18 @@
         }
         .modal-content textarea {resize: vertical; min-height:100px;}
         .modal-content button[type="submit"] {width:100%; padding:12px; font-size:16px; font-weight:600; margin-top:10px; background-color:#10B981;}
+        .nav-btn {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .nav-btn:hover {
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body class="flex h-screen bg-gray-50">
@@ -46,9 +58,104 @@
     <c:remove var="messageType" scope="session" />
 </c:if>
 
-<!-- Sidebar giữ nguyên -->
+<!-- Sidebar -->
 <div class="w-20 bg-gray-800 flex flex-col items-center py-6 space-y-8">
-    <!-- ... menu ... -->
+
+    <!-- Logo/Home -->
+    <a href="${pageContext.request.contextPath}/home"
+       class="nav-btn <%= currentPath.contains("/home") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+       title="Home">
+        <i data-lucide="home" class="w-6 h-6"></i>
+    </a>
+
+    <!-- Navigation -->
+    <div class="flex-1 flex flex-col space-y-6 mt-8">
+
+        <!-- Dashboard -->
+        <a href="${pageContext.request.contextPath}/dashboard"
+           class="nav-btn <%= currentPath.contains("/dashboard") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+           title="Dashboard">
+            <i data-lucide="grid" class="w-6 h-6"></i>
+        </a>
+
+        <!-- Orders -->
+        <a href="${pageContext.request.contextPath}/manage-orders"
+           class="nav-btn <%= currentPath.contains("/orders") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+           title="Orders">
+            <i data-lucide="file-text" class="w-6 h-6"></i>
+        </a>
+
+        <!-- Menu -->
+        <a href="${pageContext.request.contextPath}/manageproduct"
+           class="nav-btn <%= currentPath.contains("/manageproduct") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+           title="Manage Products">
+            <i data-lucide="utensils" class="w-6 h-6"></i>
+        </a>
+
+        <!-- POS -->
+        <a href="${pageContext.request.contextPath}/pos"
+           class="nav-btn <%= currentPath.contains("/pos") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+           title="POS">
+            <i data-lucide="shopping-cart" class="w-6 h-6"></i>
+        </a>
+
+        <!-- Manage Categories (Current Page) -->
+        <a href="${pageContext.request.contextPath}/managecategory"
+           class="nav-btn <%= currentPath.contains("/managecategory") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+           title="Manage Categories">
+            <i data-lucide="package" class="w-6 h-6"></i>
+        </a>
+
+        <!-- Manage Users (Admin) -->
+        <a href="${pageContext.request.contextPath}/admin"
+           class="nav-btn <%= currentPath.contains("/admin") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+           title="Manage Users">
+            <i data-lucide="users" class="w-6 h-6"></i>
+        </a>
+
+        <!-- Discount -->
+        <a href="${pageContext.request.contextPath}/discount"
+           class="nav-btn <%= currentPath.contains("/discount") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+           title="Discount">
+            <i data-lucide="percent" class="w-6 h-6"></i>
+        </a>
+
+        <!-- Tables -->
+        <a href="${pageContext.request.contextPath}/table"
+           class="nav-btn <%= currentPath.contains("/table") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+           title="Tables">
+            <i data-lucide="layout-grid" class="w-6 h-6"></i>
+        </a>
+
+        <!-- Inventory -->
+        <a href="${pageContext.request.contextPath}/inventory"
+           class="nav-btn <%= currentPath.contains("/inventory") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+           title="Inventory">
+            <i data-lucide="box" class="w-6 h-6"></i>
+        </a>
+
+        <!-- Profile -->
+        <a href="${pageContext.request.contextPath}/profile"
+           class="nav-btn <%= currentPath.contains("/profile") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+           title="Profile">
+            <i data-lucide="user" class="w-6 h-6"></i>
+        </a>
+
+        <!-- Settings -->
+        <a href="${pageContext.request.contextPath}/settings"
+           class="nav-btn <%= currentPath.contains("/settings") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+           title="Settings">
+            <i data-lucide="settings" class="w-6 h-6"></i>
+        </a>
+    </div>
+
+    <!-- Logout -->
+    <a href="${pageContext.request.contextPath}/logout"
+       class="nav-btn <%= currentPath.contains("/logout") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+       title="Logout">
+        <i data-lucide="log-out" class="w-6 h-6"></i>
+    </a>
+
 </div>
 
 <div class="flex-1 flex flex-col overflow-hidden">
@@ -199,6 +306,11 @@
         setTimeout(() => document.getElementById('alertBox').style.display = 'none', 3000);
     </script>
 </c:if>
+
+<script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+</script>
 
 </body>
 </html>
