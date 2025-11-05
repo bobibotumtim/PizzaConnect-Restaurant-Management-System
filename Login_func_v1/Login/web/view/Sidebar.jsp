@@ -147,6 +147,11 @@
                 <span class="sidebar-text">Products</span>
             </a>
             
+            <a href="<%= sidebarContextPath %>/managecategory" class="sidebar-item <%= sidebarCurrentPath.contains("/managecategory") ? "active" : "" %>">
+                <div class="sidebar-icon"><i data-lucide="folder"></i></div>
+                <span class="sidebar-text">Categories</span>
+            </a>
+            
             <a href="<%= sidebarContextPath %>/manage-topping" class="sidebar-item <%= sidebarCurrentPath.contains("/manage-topping") ? "active" : "" %>">
                 <div class="sidebar-icon"><i data-lucide="pizza"></i></div>
                 <span class="sidebar-text">Toppings</span>
@@ -159,7 +164,7 @@
             
             <a href="<%= sidebarContextPath %>/discount" class="sidebar-item <%= sidebarCurrentPath.contains("/discount") ? "active" : "" %>">
                 <div class="sidebar-icon"><i data-lucide="percent"></i></div>
-                <span class="sidebar-text">Discount</span>
+                <span class="sidebar-text">Discounts</span>
             </a>
             
             <a href="<%= sidebarContextPath %>/table" class="sidebar-item <%= sidebarCurrentPath.contains("/table") ? "active" : "" %>">
@@ -170,6 +175,11 @@
             <a href="<%= sidebarContextPath %>/inventory" class="sidebar-item <%= sidebarCurrentPath.contains("/inventory") ? "active" : "" %>">
                 <div class="sidebar-icon"><i data-lucide="box"></i></div>
                 <span class="sidebar-text">Inventory</span>
+            </a>
+            
+            <a href="<%= sidebarContextPath %>/sales-reports" class="sidebar-item <%= sidebarCurrentPath.contains("/sales-reports") || sidebarCurrentPath.contains("/salesreports") ? "active" : "" %>">
+                <div class="sidebar-icon"><i data-lucide="bar-chart-3"></i></div>
+                <span class="sidebar-text">Sales Reports</span>
             </a>
             
             <div class="sidebar-divider"></div>

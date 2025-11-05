@@ -18,9 +18,13 @@
     else if (navbarCurrentPath.contains("/pos")) pageTitle = "POS";
     else if (navbarCurrentPath.contains("/menu")) pageTitle = "Menu";
     else if (navbarCurrentPath.contains("/manageproduct")) pageTitle = "Products";
+    else if (navbarCurrentPath.contains("/managecategory")) pageTitle = "Categories";
+    else if (navbarCurrentPath.contains("/manage-topping")) pageTitle = "Toppings";
     else if (navbarCurrentPath.contains("/admin")) pageTitle = "Users";
+    else if (navbarCurrentPath.contains("/discount")) pageTitle = "Discounts";
     else if (navbarCurrentPath.contains("/table")) pageTitle = "Tables";
     else if (navbarCurrentPath.contains("/inventory")) pageTitle = "Inventory";
+    else if (navbarCurrentPath.contains("/sales-report") || navbarCurrentPath.contains("/salesreport")) pageTitle = "Sales Reports";
     
     // Check user role
     boolean navbarIsChef = (navbarEmployee != null && navbarEmployee.isChef());
