@@ -233,4 +233,51 @@ public class ProductDAO extends DBContext {
         }
         return list;
     }
+    
+    // Get product by ID (for validation)
+    public Product getProductById(int productId) {
+        String sql = """
+            SELECT p.ProductID, p.ProductName, p.Description, c.CategoryName,
+                   p.ImageURL, p.IsAvailable
+            FROM Product p
+            JOIN Category c ON p.CategoryID = c.CategoryID
+            WHERE p.ProductID = ? AND p.IsAvailable = 1 AND c.IsDeleted = 0
+        """;
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, productId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToProduct(rs);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    // Check if product name exists (for validation)
+    public boolean isProductNameExists(String productName, Integer excludeId) {
+        String sql = "SELECT COUNT(*) FROM Product WHERE ProductName = ? AND IsAvailable = 1";
+        if (excludeId != null) {
+            sql += " AND ProductID != ?";
+        }
+        
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, productName);
+            if (excludeId != null) {
+                ps.setInt(2, excludeId);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

@@ -99,5 +99,34 @@ public class InventoryDAO extends DBContext {
             e.printStackTrace();
         }
     }
+    
+    // Get inventory by ID (for validation)
+    public Inventory getInventoryById(int id) {
+        return getById(id);
+    }
+    
+    // Check if inventory name exists (for validation)
+    public boolean isInventoryNameExists(String itemName, Integer excludeId) {
+        String sql = "SELECT COUNT(*) FROM Inventory WHERE ItemName = ?";
+        if (excludeId != null) {
+            sql += " AND InventoryID != ?";
+        }
+        
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, itemName);
+            if (excludeId != null) {
+                ps.setInt(2, excludeId);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }
 

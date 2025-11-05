@@ -28,6 +28,24 @@
     String currentPath = request.getRequestURI();
 %>
 
+<!-- Alert Messages -->
+<c:if test="${not empty sessionScope.message}">
+    <div id="alertBox" class="fixed top-5 right-5 ${sessionScope.messageType == 'error' ? 'bg-red-500' : 'bg-green-500'} text-white px-4 py-3 rounded-lg shadow-lg transition-opacity duration-500 z-[1001]">
+        ${sessionScope.message}
+    </div>
+    <script>
+        setTimeout(() => {
+            const box = document.getElementById("alertBox");
+            if (box) {
+                box.style.opacity = "0";
+                setTimeout(() => box.remove(), 500);
+            }
+        }, 3000);
+    </script>
+    <c:remove var="message" scope="session" />
+    <c:remove var="messageType" scope="session" />
+</c:if>
+
 <!-- Sidebar giữ nguyên -->
 <div class="w-20 bg-gray-800 flex flex-col items-center py-6 space-y-8">
     <!-- ... menu ... -->

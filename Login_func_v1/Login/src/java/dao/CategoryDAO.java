@@ -106,4 +106,45 @@ public class CategoryDAO extends DBContext {
         }
         return false;
     }
+    
+    // Get category by Name
+    public Category getCategoryByName(String categoryName) {
+        String sql = "SELECT * FROM Category WHERE CategoryName = ? AND (IsDeleted = 0 OR IsDeleted IS NULL)";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, categoryName);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToCategory(rs);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    // Check if category name exists (for validation)
+    public boolean isCategoryNameExists(String categoryName, Integer excludeId) {
+        String sql = "SELECT COUNT(*) FROM Category WHERE CategoryName = ? AND (IsDeleted = 0 OR IsDeleted IS NULL)";
+        if (excludeId != null) {
+            sql += " AND CategoryID != ?";
+        }
+        
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, categoryName);
+            if (excludeId != null) {
+                ps.setInt(2, excludeId);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }
