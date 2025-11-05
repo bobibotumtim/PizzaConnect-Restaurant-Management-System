@@ -191,5 +191,7 @@
         <url-pattern>/home</url-pattern>
     </servlet-mapping>
 
+    <!-- Note: InventoryServlet uses @WebServlet annotation in code -->
+
 </web-app>
 
