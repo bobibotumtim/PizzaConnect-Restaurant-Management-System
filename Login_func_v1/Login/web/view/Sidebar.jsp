@@ -38,15 +38,23 @@
         width: 240px;
     }
     
-    /* Hide scrollbar */
+    /* Hide scrollbar completely */
     .sidebar::-webkit-scrollbar {
-        width: 0px;
-        background: transparent;
+        display: none;
+        width: 0;
+        height: 0;
     }
     
     .sidebar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
+    
+    /* Also hide for the navigation items container */
+    .sidebar > div::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
     }
     
     .sidebar-item {
