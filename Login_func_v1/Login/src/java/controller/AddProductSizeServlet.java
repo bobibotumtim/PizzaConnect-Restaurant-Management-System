@@ -53,10 +53,22 @@ public class AddProductSizeServlet extends HttpServlet {
             // 4. Lấy danh sách Nguyên liệu (Tái sử dụng logic cũ)
             List<ProductIngredient> ingredients = parseIngredients(request);
             
-            // 4.1. Validate từng ingredient
+            // 4.1. Validate từng ingredient và kiểm tra duplicate trong form
+            java.util.Set<Integer> usedIngredients = new java.util.HashSet<>();
+            
             for (ProductIngredient ingredient : ingredients) {
-                ValidationResult ingredientValidation = validationService.validateAddProductIngredient(
-                    productId, ingredient.getInventoryId(), ingredient.getQuantityNeeded());
+                // Kiểm tra duplicate trong cùng form
+                if (usedIngredients.contains(ingredient.getInventoryId())) {
+                    session.setAttribute("message", "Duplicate ingredient in the same form. Each ingredient can only be added once.");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect(request.getContextPath() + "/manageproduct");
+                    return;
+                }
+                usedIngredients.add(ingredient.getInventoryId());
+                
+                // Validate ingredient cơ bản
+                ValidationResult ingredientValidation = validationService.validateIngredientForNewProductSize(
+                    ingredient.getInventoryId(), ingredient.getQuantityNeeded());
                 
                 if (!ingredientValidation.isValid()) {
                     session.setAttribute("message", ingredientValidation.getErrorMessage());
@@ -67,6 +79,11 @@ public class AddProductSizeServlet extends HttpServlet {
             }
 
             // 5. Gọi Service (để thực hiện Transaction)
+            System.out.println("DEBUG: About to add size with " + ingredients.size() + " ingredients");
+            for (ProductIngredient ing : ingredients) {
+                System.out.println("DEBUG: Ingredient ID=" + ing.getInventoryId() + ", Qty=" + ing.getQuantityNeeded());
+            }
+            
             boolean result = productService.addSizeWithIngredients(newSize, ingredients);
 
             if (result) {

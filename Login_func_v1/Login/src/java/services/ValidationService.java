@@ -165,6 +165,20 @@ public class ValidationService {
     
     // ===== PRODUCT INGREDIENT VALIDATION =====
     
+    public ValidationResult validateIngredientForNewProductSize(int inventoryId, double quantityNeeded) {
+        // Check if inventory exists
+        if (!isInventoryExists(inventoryId)) {
+            return ValidationResult.error("INGREDIENT_NOT_FOUND");
+        }
+        
+        // Check quantity > 0
+        if (quantityNeeded <= 0) {
+            return ValidationResult.error("INGREDIENT_QUANTITY_INVALID");
+        }
+        
+        return ValidationResult.success();
+    }
+    
     public ValidationResult validateAddProductIngredient(int productSizeId, int inventoryId, double quantityNeeded) {
         // Check if product size exists
         ProductSize productSize = sizeDAO.getProductSizeById(productSizeId);
