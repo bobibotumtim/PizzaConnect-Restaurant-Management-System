@@ -2,6 +2,8 @@ package controller;
 
 import models.Product;
 import services.ProductService;
+import services.ValidationService;
+import services.ValidationService.ValidationResult;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
@@ -11,6 +13,7 @@ import java.io.IOException;
 public class EditProductServlet extends HttpServlet {
 
     private ProductService productService = new ProductService();
+    private ValidationService validationService = new ValidationService();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -24,7 +27,19 @@ public class EditProductServlet extends HttpServlet {
         String imageUrl = request.getParameter("imageUrl");
         boolean isAvailable = true;
 
-        // 2. Tạo đối tượng Product
+        HttpSession session = request.getSession();
+        
+        // 2. Validate dữ liệu (giả sử giá mặc định là 0 cho validation)
+        ValidationResult validationResult = validationService.validateEditProduct(productId, productName, categoryName, 0.0);
+        
+        if (!validationResult.isValid()) {
+            session.setAttribute("message", validationResult.getErrorMessage());
+            session.setAttribute("messageType", "error");
+            response.sendRedirect(request.getContextPath() + "/manageproduct");
+            return;
+        }
+
+        // 3. Tạo đối tượng Product
         Product product = new Product();
         product.setProductId(productId); // ID rất quan trọng
         product.setProductName(productName);
@@ -33,11 +48,10 @@ public class EditProductServlet extends HttpServlet {
         product.setImageUrl(imageUrl);
         product.setAvailable(isAvailable);
 
-        // 3. Gọi Service (Dùng hàm mới: updateBaseProduct)
+        // 4. Gọi Service (Dùng hàm mới: updateBaseProduct)
         boolean result = productService.updateBaseProduct(product);
         
-        // 4. Đặt thông báo và Redirect
-        HttpSession session = request.getSession();
+        // 5. Đặt thông báo và Redirect
         if (result) {
             session.setAttribute("message", "Product updated successfully!");
             session.setAttribute("messageType", "success");

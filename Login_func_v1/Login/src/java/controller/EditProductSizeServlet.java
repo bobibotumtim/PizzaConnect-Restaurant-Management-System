@@ -9,15 +9,19 @@ import java.util.List;
 import models.ProductIngredient;
 import models.ProductSize;
 import services.ProductService;
+import services.ValidationService;
+import services.ValidationService.ValidationResult;
 
 @WebServlet(name = "EditProductSizeServlet", urlPatterns = {"/EditProductSizeServlet"})
 public class EditProductSizeServlet extends HttpServlet {
 
     private ProductService productService;
+    private ValidationService validationService;
 
     @Override
     public void init() throws ServletException {
         productService = new ProductService();
+        validationService = new ValidationService();
     }
 
     @Override
@@ -32,26 +36,54 @@ public class EditProductSizeServlet extends HttpServlet {
             int productSizeId = Integer.parseInt(request.getParameter("productSizeId"));
             String sizeCode = request.getParameter("sizeCode");
             double price = Double.parseDouble(request.getParameter("price"));
+            
+            // Lấy productId để validate (có thể từ hidden field hoặc query từ DB)
+            String productIdStr = request.getParameter("productId");
+            int productId = 0;
+            if (productIdStr != null && !productIdStr.isEmpty()) {
+                productId = Integer.parseInt(productIdStr);
+            }
 
-            // 2. Tạo đối tượng ProductSize
+            // 2. Validate dữ liệu
+            ValidationResult validationResult = validationService.validateEditProductSize(productSizeId, productId, sizeCode, price);
+            
+            if (!validationResult.isValid()) {
+                session.setAttribute("message", validationResult.getErrorMessage());
+                session.setAttribute("messageType", "error");
+                response.sendRedirect(request.getContextPath() + "/manageproduct");
+                return;
+            }
+
+            // 3. Tạo đối tượng ProductSize
             ProductSize sizeToUpdate = new ProductSize();
             sizeToUpdate.setProductSizeId(productSizeId);
             sizeToUpdate.setSizeCode(sizeCode);
             sizeToUpdate.setPrice(price);
-            // (Service sẽ không cần productId để update)
 
-            // 3. Lấy danh sách Nguyên liệu MỚI (Tái sử dụng logic cũ)
-            // (Tên mảng trong form Edit là "inventoryId[]", "quantity[]", "unit[]")
+            // 4. Lấy danh sách Nguyên liệu MỚI (Tái sử dụng logic cũ)
             List<ProductIngredient> newIngredients = parseIngredients(request);
+            
+            // 4.1. Validate từng ingredient mới
+            for (ProductIngredient ingredient : newIngredients) {
+                ValidationResult ingredientValidation = validationService.validateAddProductIngredient(
+                    productSizeId, ingredient.getInventoryId(), ingredient.getQuantityNeeded());
+                
+                if (!ingredientValidation.isValid()) {
+                    session.setAttribute("message", ingredientValidation.getErrorMessage());
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect(request.getContextPath() + "/manageproduct");
+                    return;
+                }
+            }
 
-            // 4. Gọi Service (để thực hiện Transaction Add/Update/Delete)
+            // 5. Gọi Service (để thực hiện Transaction Add/Update/Delete)
             boolean result = productService.updateSizeWithIngredients(sizeToUpdate, newIngredients);
 
             if (result) {
                 session.setAttribute("message", "Size updated successfully!");
                 session.setAttribute("messageType", "success");
             } else {
-                session.setAttribute("message", "Failed to update size.");
+                session.setAttribute("message", "Error updating size.");
                 session.setAttribute("messageType", "error");
             }
 

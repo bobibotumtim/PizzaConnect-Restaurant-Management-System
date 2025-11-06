@@ -9,15 +9,19 @@ import java.util.List;
 import models.ProductIngredient;
 import models.ProductSize;
 import services.ProductService;
+import services.ValidationService;
+import services.ValidationService.ValidationResult;
 
 @WebServlet(name = "AddProductSizeServlet", urlPatterns = {"/AddProductSizeServlet"})
 public class AddProductSizeServlet extends HttpServlet {
 
     private ProductService productService;
+    private ValidationService validationService;
 
     @Override
     public void init() throws ServletException {
         productService = new ProductService();
+        validationService = new ValidationService();
     }
 
     @Override
@@ -33,20 +37,43 @@ public class AddProductSizeServlet extends HttpServlet {
             String sizeCode = request.getParameter("sizeCode");
             double price = Double.parseDouble(request.getParameter("price"));
 
-            // 2. Tạo đối tượng ProductSize
+            // 2. Validate dữ liệu
+            ValidationResult validationResult = validationService.validateAddProductSize(productId, sizeCode, price);
+            
+            if (!validationResult.isValid()) {
+                session.setAttribute("message", validationResult.getErrorMessage());
+                session.setAttribute("messageType", "error");
+                response.sendRedirect(request.getContextPath() + "/manageproduct");
+                return;
+            }
+
+            // 3. Tạo đối tượng ProductSize
             ProductSize newSize = new ProductSize(productId, sizeCode, price);
 
-            // 3. Lấy danh sách Nguyên liệu (Tái sử dụng logic cũ)
+            // 4. Lấy danh sách Nguyên liệu (Tái sử dụng logic cũ)
             List<ProductIngredient> ingredients = parseIngredients(request);
+            
+            // 4.1. Validate từng ingredient
+            for (ProductIngredient ingredient : ingredients) {
+                ValidationResult ingredientValidation = validationService.validateAddProductIngredient(
+                    productId, ingredient.getInventoryId(), ingredient.getQuantityNeeded());
+                
+                if (!ingredientValidation.isValid()) {
+                    session.setAttribute("message", ingredientValidation.getErrorMessage());
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect(request.getContextPath() + "/manageproduct");
+                    return;
+                }
+            }
 
-            // 4. Gọi Service (để thực hiện Transaction)
+            // 5. Gọi Service (để thực hiện Transaction)
             boolean result = productService.addSizeWithIngredients(newSize, ingredients);
 
             if (result) {
                 session.setAttribute("message", "New size added successfully!");
                 session.setAttribute("messageType", "success");
             } else {
-                session.setAttribute("message", "Failed to add new size.");
+                session.setAttribute("message", "Error adding new size.");
                 session.setAttribute("messageType", "error");
             }
 
