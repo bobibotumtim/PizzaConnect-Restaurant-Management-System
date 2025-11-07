@@ -35,8 +35,6 @@ GO
 CREATE TABLE Customer (
     CustomerID INT IDENTITY(1,1) PRIMARY KEY,
     UserID INT NOT NULL UNIQUE,
-    LoyaltyPoint INT DEFAULT 0,
-    LastEarnedDate DATETIME NULL,
     FOREIGN KEY (UserID) REFERENCES [User](UserID)
 );
 GO
@@ -158,14 +156,14 @@ CREATE TABLE Discount (
 );
 GO
 
-CREATE TABLE CustomerDiscounts (
+CREATE TABLE CustomerDiscount (
     CustomerDiscountID INT IDENTITY(1,1) PRIMARY KEY,
     CustomerID INT NOT NULL FOREIGN KEY REFERENCES Customer(CustomerID),
     DiscountID INT NOT NULL FOREIGN KEY REFERENCES Discount(DiscountID),
     Quantity INT DEFAULT 0,
-    AcquiredDate DATETIME DEFAULT GETDATE(),
     ExpiryDate DATE,
     IsUsed BIT DEFAULT 0,
+    LastEarnedDate DATETIME NULL,
     UsedDate DATETIME NULL,
     CONSTRAINT UK_CustomerDiscount UNIQUE (CustomerID, DiscountID)
 );
@@ -250,11 +248,11 @@ VALUES
 GO
 
 -- Customers 
-INSERT INTO Customer (UserID, LoyaltyPoint, LastEarnedDate)
+INSERT INTO Customer (UserID)
 VALUES 
-(4, 20, '2025-10-20 14:30:00'),
-(5, 20, '2025-10-18 10:15:00'),
-(6, 5,  '2025-10-19 16:45:00');
+(4),
+(5),
+(6);
 GO
 
 -- Categories 
@@ -366,16 +364,14 @@ VALUES
 GO
 
 -- CustomerDiscount
-INSERT INTO CustomerDiscounts (CustomerID, DiscountID, Quantity, ExpiryDate, IsUsed)
+INSERT INTO CustomerDiscount (CustomerID, DiscountID, Quantity, ExpiryDate, IsUsed, LastEarnedDate)
 VALUES 
-(1, 2, 1, '2025-11-30', 0),  -- Customer 1 has 1 voucher 20K off
-(1, 3, 500, NULL, 0),        -- Customer 1 has 500 loyalty points
-(2, 3, 310, NULL, 0),        -- Customer 2 has 310 loyalty points
-(3, 2, 2, '2025-11-15', 0),  -- Customer 3 has 2 voucher 20K off
-(1, 4, 1, '2025-10-25', 0),  -- Weekend Special expiring soon
-(1, 5, 1, '2025-12-31', 0),  -- Birthday Discount
-(2, 6, 2, '2025-11-15', 0),  -- Free Drink Combo
-(3, 7, 1, '2025-12-31', 0);  -- Student Discount
+(1, 2, 1, '2025-11-30', 0, '2025-10-20 14:30:00'),  -- Customer 1 has 1 voucher 20K off
+(1, 3, 500, NULL, 0, '2025-10-21 14:30:00'),        -- Customer 1 has 500 loyalty points
+(2, 3, 310, NULL, 0, '2025-10-18 10:15:00'),        -- Customer 2 has 310 loyalty points
+(3, 2, 2, '2025-11-15', 0, '2025-10-18 10:25:00'),  -- Customer 3 has 2 voucher 20K off
+(1, 5, 1, '2025-12-31', 0, '2025-10-18 10:25:00'),  -- Birthday Discount
+(3, 7, 1, '2025-10-30', 0, '2025-10-18 10:25:00');  -- Student Discount expire soon
 GO
 
 -- Feedback
