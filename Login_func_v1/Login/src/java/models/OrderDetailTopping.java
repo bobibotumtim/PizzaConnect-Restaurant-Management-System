@@ -1,9 +1,13 @@
 package models;
 
+/**
+ * OrderDetailTopping model - Now uses ProductSizeID instead of ToppingID
+ * toppingID field actually stores ProductSizeID from database
+ */
 public class OrderDetailTopping {
     private int orderDetailToppingID;
     private int orderDetailID;
-    private int toppingID;
+    private int toppingID; // Actually ProductSizeID after migration
     private double toppingPrice;
     
     // For display purposes

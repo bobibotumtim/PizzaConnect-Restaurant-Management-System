@@ -105,7 +105,7 @@
                     DRINKS
                 </button>
                 <button onclick="selectCategory('SIDES')" class="category-tab flex-1 py-4 px-4 text-sm font-semibold transition-all text-gray-600 hover:bg-gray-100" data-category="SIDES">
-                    TOPPINGS
+                    SIDE DISHES
                 </button>
             </div>
 
@@ -521,7 +521,7 @@
             const categoryMap = {
                 'PIZZA': 'Pizza',
                 'BEVERAGES': 'Drink', 
-                'SIDES': 'Topping',
+                'SIDES': 'Side Dishes',  // Changed from 'Topping' to 'Side Dishes'
                 'DESSERTS': 'Dessert'
             };
             
