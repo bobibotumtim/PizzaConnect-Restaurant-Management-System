@@ -28,9 +28,9 @@ public class RoleFilter implements Filter {
             }
         }
         
-        // Employee pages (Role 1 or 2)
-        if (isEmployeePage(path)) {
-            if (user == null || (user.getRole() != 1 && user.getRole() != 2)) {
+        // Waiter-only pages (Role 2 ONLY - Admin cannot access)
+        if (isWaiterOnlyPage(path)) {
+            if (user == null || user.getRole() != 2) {
                 resp.sendRedirect(req.getContextPath() + "/login?error=access_denied");
                 return;
             }
@@ -53,8 +53,9 @@ public class RoleFilter implements Filter {
                path.contains("/inventory");
     }
     
-    private boolean isEmployeePage(String path) {
-        // Waiter (Role 2) can access: POS and Order Management only
+    private boolean isWaiterOnlyPage(String path) {
+        // Waiter-only (Role 2): POS and Order Management
+        // Admin (Role 1) CANNOT access these pages
         return path.contains("/pos") ||
                path.contains("/manage-orders");
     }

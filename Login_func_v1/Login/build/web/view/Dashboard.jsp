@@ -35,6 +35,7 @@
         <!-- Chart.js for charts (thay Recharts trong React) -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     </head>
+<<<<<<< HEAD
     <body class="flex h-screen bg-gray-50">
 
         <!-- Sidebar -->
@@ -150,6 +151,14 @@
 
 
             <!-- Main Content -->
+=======
+    <body>
+        <%@ include file="Sidebar.jsp" %>
+        <%@ include file="NavBar.jsp" %>
+        
+        <!-- Main Content -->
+        <div class="content-wrapper">
+>>>>>>> 709db26795bbd7f61ddcbbf319e9da3a73174486
 <div class="flex-1 flex flex-col overflow-hidden">
     <!-- Header -->
     <div class="bg-white border-b px-6 py-4 flex justify-between items-center flex-shrink-0">
@@ -403,5 +412,15 @@
     }
 </style>
 
+        </div> <!-- Close content-wrapper -->
+        
+        <!-- Initialize Lucide Icons -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            });
+        </script>
     </body>
 </html>

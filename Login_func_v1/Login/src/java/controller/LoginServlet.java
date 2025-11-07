@@ -1,6 +1,7 @@
 package controller;
 
 import dao.CustomerDAO;
+import dao.EmployeeDAO;
 import dao.UserDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
@@ -45,7 +46,24 @@ public class LoginServlet extends HttpServlet {
             // Admin -> Dashboard
             response.sendRedirect("dashboard"); 
         } else if (user.getRole() == 2) {
-            // Waiter/Employee -> POS
+            // Employee -> Get Employee info and set to session
+            EmployeeDAO empDAO = new EmployeeDAO();
+            Employee employee = empDAO.getEmployeeByUserID(user.getUserID());
+            if (employee != null) {
+                session.setAttribute("employee", employee);
+                System.out.println("✅ Employee set to session: " + employee.getName() + " - Specialization: " + employee.getSpecialization());
+                
+                // Check if employee is a Chef (has specialization)
+                String specialization = employee.getSpecialization();
+                if (specialization != null && !specialization.trim().isEmpty() && !specialization.equalsIgnoreCase("None")) {
+                    // Chef -> Redirect to ChefMonitor
+                    System.out.println("🍳 Chef detected - Redirecting to ChefMonitor");
+                    response.sendRedirect("ChefMonitor");
+                    return;
+                }
+            }
+            // Waiter or other employees -> Redirect to POS
+            System.out.println("👔 Employee (non-chef) - Redirecting to POS");
             response.sendRedirect("pos");
         } else {
             // Customer -> Home
