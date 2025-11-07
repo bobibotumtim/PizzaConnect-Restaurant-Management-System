@@ -6,6 +6,7 @@
             <file>file:/D:/SWP391/pizza_connect_newest/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/WEB-INF/web.xml</file>
             <file>file:/D:/SWP391/pizza_connect_newest/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/models/OrderDetail.java</file>
             <file>file:/D:/SWP391/pizza_connect_newest/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/controller/POSServlet.java</file>
+            <file>file:/D:/SWP391/pizza_connect_newest/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/dao/ToppingDAO.java</file>
             <file>file:/D:/SWP391/pizza_connect_newest/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/dao/DBContext.java</file>
             <file>file:/D:/SWP391/pizza_connect_newest/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/dao/OrderDetailDAO.java</file>
         </group>
