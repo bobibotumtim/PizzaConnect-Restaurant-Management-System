@@ -600,16 +600,89 @@
                     // === 8. Thêm hàng (Modal Add Size) ===
                     if (addIngBtn) {
                         e.preventDefault();
-                        const template = document.getElementById("ingredientTemplate_AddSize")?.cloneNode(true);
-                        const list = document.getElementById("ingredientList_AddSize");
 
-                        if (template && list) {
-                            template.classList.remove("hidden");
-                            template.removeAttribute("id");
-                            template.querySelector("select")?.setAttribute("required", "required");
-                            template.querySelector("input[name='ingredientQty[]']")?.setAttribute("required", "required");
-                            list.appendChild(template);
+                        const tableBody = document.getElementById('ingredientList_AddSize');
+                        const select = document.getElementById('newIngredientSelect_AddSize');
+                        const qtyInputEl = document.getElementById('newQuantity_AddSize');
+                        const unitInputEl = document.getElementById('newUnit_AddSize');
+
+                        if (!tableBody || !select || !qtyInputEl || !unitInputEl)
+                            return;
+
+                        const selectedOption = select.options[select.selectedIndex];
+                        const ingId = selectedOption.value;
+                        const ingName = selectedOption.text;
+                        const qtyValue = qtyInputEl.value.trim();
+                        const unit = selectedOption.getAttribute('data-unit') || '';
+
+                        if (!ingId) {
+                            alert("Please select an ingredient.");
+                            return;
                         }
+
+                        if (!qtyValue || parseFloat(qtyValue) <= 0) {
+                            alert("Please enter a valid quantity.");
+                            return;
+                        }
+
+                        console.log("Adding ingredient:", { ingName, qtyValue, ingId, unit });
+
+                        // ✅ Tạo DOM element thủ công (giống EditProductSizeForm)
+                        const tr = document.createElement('tr');
+                        tr.classList.add('border-b');
+
+                        // Tên nguyên liệu
+                        const tdName = document.createElement('td');
+                        tdName.className = 'px-2 py-1';
+                        tdName.textContent = ingName;
+
+                        // Số lượng + hidden inventoryId
+                        const tdQty = document.createElement('td');
+                        tdQty.className = 'px-2 py-1';
+
+                        const qtyInput = document.createElement('input');
+                        qtyInput.type = 'number';
+                        qtyInput.step = '0.01';
+                        qtyInput.name = 'ingredientQty[]';
+                        qtyInput.value = qtyValue;
+                        qtyInput.className = 'border p-1 w-24';
+
+                        const hiddenInv = document.createElement('input');
+                        hiddenInv.type = 'hidden';
+                        hiddenInv.name = 'ingredientId[]';
+                        hiddenInv.value = ingId;
+
+                        tdQty.append(qtyInput, hiddenInv);
+
+                        // Đơn vị
+                        const tdUnit = document.createElement('td');
+                        tdUnit.className = 'px-2 py-1';
+                        const unitInput = document.createElement('input');
+                        unitInput.type = 'text';
+                        unitInput.name = 'ingredientUnit[]';
+                        unitInput.value = unit;
+                        unitInput.className = 'border p-1 w-20';
+                        unitInput.readOnly = true;
+                        tdUnit.appendChild(unitInput);
+
+                        // Nút xoá
+                        const tdAction = document.createElement('td');
+                        tdAction.className = 'px-2 py-1 text-center';
+                        const removeBtn = document.createElement('button');
+                        removeBtn.type = 'button';
+                        removeBtn.textContent = '✕';
+                        removeBtn.className = 'removeBtn bg-red-500 text-white px-2 py-1 rounded inline-flex justify-center items-center';
+                        removeBtn.addEventListener('click', () => tr.remove());
+                        tdAction.appendChild(removeBtn);
+
+                        // Gắn tất cả lại
+                        tr.append(tdName, tdQty, tdUnit, tdAction);
+                        tableBody.appendChild(tr);
+
+                        // ✅ Reset form
+                        select.selectedIndex = 0;
+                        qtyInputEl.value = '';
+                        unitInputEl.value = '';
                     }
 
                     // === 9. Thêm hàng (Modal Edit Size) ===
@@ -718,6 +791,14 @@
                     if (e.target.id === 'editNewIngredientSelect_EditSize') {
                         const select = e.target;
                         const unitInput = document.getElementById('editNewUnit_EditSize');
+                        if (unitInput) {
+                            const option = select.selectedOptions[0];
+                            unitInput.value = option.getAttribute('data-unit') || '';
+                        }
+                    }
+                    if (e.target.id === 'newIngredientSelect_AddSize') {
+                        const select = e.target;
+                        const unitInput = document.getElementById('newUnit_AddSize');
                         if (unitInput) {
                             const option = select.selectedOptions[0];
                             unitInput.value = option.getAttribute('data-unit') || '';
