@@ -95,6 +95,10 @@ public class OrderDetailDAO extends DBContext {
                 d.setSizeName(rs.getString("SizeName"));
                 d.setSizeCode(rs.getString("SizeCode"));
                 
+                // Load toppings
+                OrderDetailToppingDAO toppingDAO = new OrderDetailToppingDAO();
+                d.setToppings(toppingDAO.getToppingsByOrderDetailID(d.getOrderDetailID()));
+                
                 list.add(d);
             }
         } catch (Exception e) { 
@@ -210,6 +214,10 @@ public class OrderDetailDAO extends DBContext {
                 d.setProductName(rs.getString("ProductName"));
                 d.setSizeName(rs.getString("SizeName"));
                 d.setSizeCode(rs.getString("SizeCode"));
+                
+                // Load toppings
+                OrderDetailToppingDAO toppingDAO = new OrderDetailToppingDAO();
+                d.setToppings(toppingDAO.getToppingsByOrderDetailID(d.getOrderDetailID()));
                 
                 list.add(d);
             }

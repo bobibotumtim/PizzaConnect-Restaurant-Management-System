@@ -963,7 +963,7 @@ public class OrderDAO extends DBContext {
     /**
      * Get order with all details (for editing in POS)
      */
-    public Order getOrderWithDetails(int orderId) {
+    public Order getOrderWithDetails(int orderId) throws SQLException {
         Order order = getOrderById(orderId);
         if (order != null) {
             List<OrderDetail> details = getOrderDetailsByOrderId(orderId);

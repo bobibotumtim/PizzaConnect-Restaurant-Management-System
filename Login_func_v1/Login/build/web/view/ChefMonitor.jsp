@@ -47,14 +47,15 @@
 
         .dish-card {
             position: relative;
-            width: 150px;
-            height: 100px;
+            width: 200px;
+            min-height: 120px;
             border-radius: 10px;
             color: black;
-            padding: 8px 10px;
+            padding: 10px 12px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: flex-start;
+            gap: 4px;
             cursor: pointer;
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             transition: transform 0.2s, box-shadow 0.2s;
@@ -68,16 +69,32 @@
         .waiting { background-color: #4a7aff; color: white; }
         .ongoing { background-color: #f2b134; }
 
-        .order-id { font-weight: bold; font-size: 14px; }
-        .name { font-size: 18px; font-weight: 600; }
+        .order-id { 
+            font-weight: bold; 
+            font-size: 14px; 
+            margin-bottom: 2px;
+        }
+        .name { 
+            font-size: 16px; 
+            font-weight: 600; 
+            line-height: 1.2;
+            padding-right: 35px;
+        }
         .quantity {
             position: absolute;
-            top: 8px;
-            right: 10px;
-            font-size: 20px;
+            top: 10px;
+            right: 12px;
+            font-size: 22px;
             font-weight: bold;
+            background: rgba(255,255,255,0.3);
+            padding: 2px 8px;
+            border-radius: 5px;
         }
-        .topping { font-size: 13px; }
+        .topping { 
+            font-size: 11px; 
+            line-height: 1.3;
+            margin-top: 2px;
+        }
 
         .selected {
             outline: 4px solid #333;
@@ -137,8 +154,15 @@
                             <span style="font-size: 12px;">(${dish.sizeName})</span>
                         </c:if>
                     </div>
-                    <div class="quantity">${dish.quantity}</div>
-                    <div class="topping">${dish.specialInstructions}</div>
+                    <div class="quantity">x${dish.quantity}</div>
+                    <c:if test="${not empty dish.toppings}">
+                        <div class="topping" style="font-weight: 600; color: #FFD700;">
+                            🧀 <c:forEach var="topping" items="${dish.toppings}" varStatus="status">${topping.toppingName}<c:if test="${!status.last}">, </c:if></c:forEach>
+                        </div>
+                    </c:if>
+                    <c:if test="${not empty dish.specialInstructions}">
+                        <div class="topping" style="font-style: italic;">📝 ${dish.specialInstructions}</div>
+                    </c:if>
                 </div>
             </c:forEach>
         </div>
@@ -162,8 +186,15 @@
                             <span style="font-size: 12px;">(${dish.sizeName})</span>
                         </c:if>
                     </div>
-                    <div class="quantity">${dish.quantity}</div>
-                    <div class="topping">${dish.specialInstructions}</div>
+                    <div class="quantity">x${dish.quantity}</div>
+                    <c:if test="${not empty dish.toppings}">
+                        <div class="topping" style="font-weight: 600; color: #8B4513;">
+                            🧀 <c:forEach var="topping" items="${dish.toppings}" varStatus="status">${topping.toppingName}<c:if test="${!status.last}">, </c:if></c:forEach>
+                        </div>
+                    </c:if>
+                    <c:if test="${not empty dish.specialInstructions}">
+                        <div class="topping" style="font-style: italic;">📝 ${dish.specialInstructions}</div>
+                    </c:if>
                 </div>
             </c:forEach>
         </div>
@@ -193,8 +224,18 @@
                             <span style="font-size: 12px;">(${dish.sizeName})</span>
                         </c:if>
                     </div>
-                    <div class="quantity">${dish.quantity}</div>
-                    <div class="topping">✅ Ready</div>
+                    <div class="quantity">x${dish.quantity}</div>
+                    <c:if test="${not empty dish.toppings}">
+                        <div class="topping" style="font-weight: 600; color: #228B22;">
+                            🧀 <c:forEach var="topping" items="${dish.toppings}" varStatus="status">${topping.toppingName}<c:if test="${!status.last}">, </c:if></c:forEach>
+                        </div>
+                    </c:if>
+                    <c:if test="${not empty dish.specialInstructions}">
+                        <div class="topping" style="font-style: italic;">📝 ${dish.specialInstructions}</div>
+                    </c:if>
+                    <c:if test="${empty dish.toppings and empty dish.specialInstructions}">
+                        <div class="topping">✅ Ready</div>
+                    </c:if>
                 </div>
             </c:forEach>
         </div>

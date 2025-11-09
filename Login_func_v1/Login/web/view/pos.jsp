@@ -495,24 +495,8 @@
         }
 
         // Load sample toppings
-        // Load toppings from database
-        async function loadSampleToppings() {
-            try {
-                console.log('🔄 Loading toppings from database...');
-                const response = await fetch('pos?action=getToppings');
-                const data = await response.json();
-                
-                if (data.success) {
-                    toppings = data.toppings;
-                    console.log('✅ Toppings loaded:', toppings.length, 'items');
-                } else {
-                    console.error('❌ Failed to load toppings');
-                    toppings = [];
-                }
-            } catch (error) {
-                console.error('❌ Error loading toppings:', error);
-                toppings = [];
-            }
+        function loadSampleToppings() {
+            toppings = [];
         }
 
         // Select category
