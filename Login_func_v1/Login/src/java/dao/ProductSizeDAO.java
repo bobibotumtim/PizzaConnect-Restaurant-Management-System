@@ -67,71 +67,7 @@ public class ProductSizeDAO extends DBContext {
         return false;
     }
 
-    public ProductSize getSizeById(int productSizeId) {
-        String sql = "SELECT ps.*, p.ProductName FROM ProductSize ps LEFT JOIN Product p ON ps.ProductID = p.ProductID WHERE ps.ProductSizeID = ?";
-        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setInt(1, productSizeId);
-
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    ProductSize psz = new ProductSize();
-                    psz.setProductSizeId(rs.getInt("ProductSizeID"));
-                    psz.setProductId(rs.getInt("ProductID"));
-                    psz.setSizeCode(rs.getString("SizeCode"));
-                    psz.setPrice(rs.getDouble("Price"));
-                    return psz;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-    
-    // Lấy ProductSize với thông tin Product để hiển thị
-    public ProductSize getSizeWithProductInfo(int productSizeId) {
-        String sql = """
-            SELECT ps.*, p.ProductName, p.Description, c.CategoryName
-            FROM ProductSize ps 
-            LEFT JOIN Product p ON ps.ProductID = p.ProductID
-            LEFT JOIN Category c ON p.CategoryID = c.CategoryID
-            WHERE ps.ProductSizeID = ? AND ps.IsDeleted = 0
-        """;
-        try (Connection con = getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, productSizeId);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    ProductSize psz = new ProductSize();
-                    psz.setProductSizeId(rs.getInt("ProductSizeID"));
-                    psz.setProductId(rs.getInt("ProductID"));
-                    psz.setSizeCode(rs.getString("SizeCode"));
-                    psz.setPrice(rs.getDouble("Price"));
-                    return psz;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    /**
-     * MỚI: Cập nhật thông tin cơ bản của Size (Hàm này (thay đổi CSDL) phải
-     * nhận Connection và ném lỗi)
-     */
-    public boolean updateProductSize(ProductSize size, Connection con) throws SQLException {
-        String sql = "UPDATE ProductSize SET SizeCode = ?, Price = ? WHERE ProductSizeID = ?";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, size.getSizeCode());
-            ps.setDouble(2, size.getPrice());
-            ps.setInt(3, size.getProductSizeId());
-            return ps.executeUpdate() > 0;
-        }
-        // Ném lỗi ra ngoài để Service rollback
-    }
-    
-    // Get ProductSize by ID (for validation)
+    // Get ProductSize by ID (for validation and general use)
     public ProductSize getProductSizeById(int productSizeId) {
         String sql = "SELECT * FROM ProductSize WHERE ProductSizeID = ? AND IsDeleted = 0";
         try (Connection con = getConnection();
@@ -151,6 +87,21 @@ public class ProductSizeDAO extends DBContext {
             e.printStackTrace();
         }
         return null;
+    }
+
+    /**
+     * Cập nhật thông tin cơ bản của Size (Hàm này (thay đổi CSDL) phải
+     * nhận Connection và ném lỗi)
+     */
+    public boolean updateProductSize(ProductSize size, Connection con) throws SQLException {
+        String sql = "UPDATE ProductSize SET SizeCode = ?, Price = ? WHERE ProductSizeID = ?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, size.getSizeCode());
+            ps.setDouble(2, size.getPrice());
+            ps.setInt(3, size.getProductSizeId());
+            return ps.executeUpdate() > 0;
+        }
+        // Ném lỗi ra ngoài để Service rollback
     }
     
     // Check if size exists for product (for validation)

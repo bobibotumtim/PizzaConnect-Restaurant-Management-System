@@ -1,14 +1,14 @@
 package controller;
 
-// ✅ THAY ĐỔI IMPORT
 import dao.CategoryDAO;
+import dao.ProductDAO;
 import dao.ProductSizeDAO;
-import services.ProductService; 
 import models.Product;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,14 +18,13 @@ import models.ProductSize;
 @WebServlet(name = "ManageProductServlet", urlPatterns = {"/manageproduct"})
 public class ManageProductServlet extends HttpServlet {
 
-    // ✅ Khởi tạo Service
-    private ProductService productService;
+    private ProductDAO productDAO;
     private CategoryDAO categoryDAO;
     private ProductSizeDAO sizeDAO;
 
     @Override
     public void init() throws ServletException {
-        productService = new ProductService();
+        productDAO = new ProductDAO();
         categoryDAO = new CategoryDAO();
         sizeDAO = new ProductSizeDAO();
     }
@@ -49,19 +48,29 @@ public class ManageProductServlet extends HttpServlet {
             }
         }
 
-        // === 2. Lấy dữ liệu từ Service (Đã lọc và phân trang) ===
+        // === 2. Lấy dữ liệu từ DAO (Đã lọc và phân trang) ===
         
         // Lấy tổng số sản phẩm (để tính tổng số trang)
-        int totalProducts = productService.getProductCount(searchName, statusFilter);
+        int totalProducts = 0;
+        try {
+            totalProducts = productDAO.getBaseProductCount(searchName, statusFilter);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         int totalPages = (int) Math.ceil((double) totalProducts / pageSize);
         if (totalPages == 0) totalPages = 1;
         if (currentPage > totalPages) currentPage = totalPages;
         
         // Lấy danh sách sản phẩm cho trang hiện tại
-        List<Product> products = productService.getProductsPaginated(searchName, statusFilter, currentPage, pageSize);
+        List<Product> products = null;
+        try {
+            products = productDAO.getBaseProductsPaginated(searchName, statusFilter, currentPage, pageSize);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         
         // Lấy map số lượng của TẤT CẢ size (ProductID -> Qty)
-        Map<Integer, Double> sizeAvailabilityMap = productService.getProductSizeAvailabilityMap();
+        Map<Integer, Double> sizeAvailabilityMap = productDAO.getProductSizeAvailabilityMap();
         
         // Tạo map mới (ProductID -> Boolean) để JSP sử dụng
         Map<Integer, Boolean> productAvailabilityStatus = new HashMap<>();

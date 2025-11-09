@@ -1,27 +1,35 @@
 package controller;
 
+import dao.DBContext;
+import dao.ProductDAO;
+import dao.ProductSizeDAO;
+import dao.ProductIngredientDAO;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import models.Product;
 import models.ProductIngredient;
 import models.ProductSize;
-import services.ProductService;
-import services.ValidationService;
-import services.ValidationService.ValidationResult;
 
 @WebServlet(name = "AddProductSizeServlet", urlPatterns = {"/AddProductSizeServlet"})
 public class AddProductSizeServlet extends HttpServlet {
 
-    private ProductService productService;
-    private ValidationService validationService;
+    private ProductDAO productDAO;
+    private ProductSizeDAO productSizeDAO;
+    private ProductIngredientDAO ingredientDAO;
+    private DBContext dbContext;
 
     @Override
     public void init() throws ServletException {
-        productService = new ProductService();
-        validationService = new ValidationService();
+        productDAO = new ProductDAO();
+        productSizeDAO = new ProductSizeDAO();
+        ingredientDAO = new ProductIngredientDAO();
+        dbContext = new DBContext();
     }
 
     @Override
@@ -37,11 +45,29 @@ public class AddProductSizeServlet extends HttpServlet {
             String sizeCode = request.getParameter("sizeCode");
             double price = Double.parseDouble(request.getParameter("price"));
 
-            // 2. Validate dữ liệu
-            ValidationResult validationResult = validationService.validateAddProductSize(productId, sizeCode, price);
+            // 2. Validate - kiểm tra product tồn tại
+            Product product = productDAO.getProductById(productId);
+            if (product == null) {
+                session.setAttribute("message", "Product not found");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect(request.getContextPath() + "/manageproduct");
+                return;
+            }
             
-            if (!validationResult.isValid()) {
-                session.setAttribute("message", validationResult.getErrorMessage());
+            // Kiểm tra size trùng
+            try {
+                if (productSizeDAO.isSizeExistsForProduct(productId, sizeCode, null)) {
+                    session.setAttribute("message", "Size already exists for this product");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect(request.getContextPath() + "/manageproduct");
+                    return;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            
+            if (price < 0) {
+                session.setAttribute("message", "Size price cannot be negative");
                 session.setAttribute("messageType", "error");
                 response.sendRedirect(request.getContextPath() + "/manageproduct");
                 return;
@@ -50,14 +76,13 @@ public class AddProductSizeServlet extends HttpServlet {
             // 3. Tạo đối tượng ProductSize
             ProductSize newSize = new ProductSize(productId, sizeCode, price);
 
-            // 4. Lấy danh sách Nguyên liệu (Tái sử dụng logic cũ)
+            // 4. Lấy danh sách Nguyên liệu
             List<ProductIngredient> ingredients = parseIngredients(request);
             
-            // 4.1. Validate từng ingredient và kiểm tra duplicate trong form
+            // 4.1. Validate từng ingredient
             java.util.Set<Integer> usedIngredients = new java.util.HashSet<>();
             
             for (ProductIngredient ingredient : ingredients) {
-                // Kiểm tra duplicate trong cùng form
                 if (usedIngredients.contains(ingredient.getInventoryId())) {
                     session.setAttribute("message", "Duplicate ingredient in the same form. Each ingredient can only be added once.");
                     session.setAttribute("messageType", "error");
@@ -66,25 +91,23 @@ public class AddProductSizeServlet extends HttpServlet {
                 }
                 usedIngredients.add(ingredient.getInventoryId());
                 
-                // Validate ingredient cơ bản
-                ValidationResult ingredientValidation = validationService.validateIngredientForNewProductSize(
-                    ingredient.getInventoryId(), ingredient.getQuantityNeeded());
+                if (!ingredientDAO.isInventoryExists(ingredient.getInventoryId())) {
+                    session.setAttribute("message", "Ingredient not found");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect(request.getContextPath() + "/manageproduct");
+                    return;
+                }
                 
-                if (!ingredientValidation.isValid()) {
-                    session.setAttribute("message", ingredientValidation.getErrorMessage());
+                if (ingredient.getQuantityNeeded() <= 0) {
+                    session.setAttribute("message", "Ingredient quantity must be greater than 0");
                     session.setAttribute("messageType", "error");
                     response.sendRedirect(request.getContextPath() + "/manageproduct");
                     return;
                 }
             }
 
-            // 5. Gọi Service (để thực hiện Transaction)
-            System.out.println("DEBUG: About to add size with " + ingredients.size() + " ingredients");
-            for (ProductIngredient ing : ingredients) {
-                System.out.println("DEBUG: Ingredient ID=" + ing.getInventoryId() + ", Qty=" + ing.getQuantityNeeded());
-            }
-            
-            boolean result = productService.addSizeWithIngredients(newSize, ingredients);
+            // 5. Thực hiện Transaction
+            boolean result = addSizeWithIngredients(newSize, ingredients);
 
             if (result) {
                 session.setAttribute("message", "New size added successfully!");
@@ -138,5 +161,45 @@ public class AddProductSizeServlet extends HttpServlet {
             }
         }
         return list;
+    }
+    
+    private boolean addSizeWithIngredients(ProductSize size, List<ProductIngredient> ingredients) {
+        Connection con = null;
+        try {
+            con = dbContext.getConnection();
+            con.setAutoCommit(false);
+
+            int newProductSizeId = productSizeDAO.addProductSize(size, con);
+            if (newProductSizeId == -1) {
+                throw new SQLException("Không thể tạo ProductSize, không lấy được ID.");
+            }
+
+            if (ingredients != null) {
+                for (ProductIngredient pi : ingredients) {
+                    pi.setProductSizeId(newProductSizeId);
+                    ingredientDAO.addIngredient(pi, con);
+                }
+            }
+            
+            con.commit();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                if (con != null) con.rollback();
+            } catch (SQLException e2) {
+                e2.printStackTrace();
+            }
+            return false;
+        } finally {
+            try {
+                if (con != null) {
+                    con.setAutoCommit(true);
+                    con.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

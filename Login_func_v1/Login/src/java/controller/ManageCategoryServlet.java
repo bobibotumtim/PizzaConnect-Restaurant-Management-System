@@ -2,8 +2,6 @@ package controller;
 
 import dao.CategoryDAO;
 import models.Category;
-import services.ValidationService;
-import services.ValidationService.ValidationResult;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -13,7 +11,6 @@ import java.util.List;
 @WebServlet("/managecategory")
 public class ManageCategoryServlet extends HttpServlet {
     private CategoryDAO categoryDAO = new CategoryDAO();
-    private ValidationService validationService = new ValidationService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -59,45 +56,61 @@ public class ManageCategoryServlet extends HttpServlet {
         String desc = request.getParameter("description");
 
         HttpSession session = request.getSession();
-        ValidationResult validationResult;
 
         if (idStr == null || idStr.isEmpty()) {
-            // Add new category
-            validationResult = validationService.validateAddCategory(name);
-            
-            if (validationResult.isValid()) {
-                Category c = new Category(name, desc);
-                boolean success = categoryDAO.addCategory(c);
-                
-                if (success) {
-                    session.setAttribute("message", "Category added successfully!");
-                    session.setAttribute("messageType", "success");
-                } else {
-                    session.setAttribute("message", "Error adding category.");
+            // Add new category - Validate
+            try {
+                if (categoryDAO.isCategoryNameExists(name, null)) {
+                    session.setAttribute("message", "Category name already exists");
                     session.setAttribute("messageType", "error");
+                    response.sendRedirect("managecategory");
+                    return;
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            
+            Category c = new Category(name, desc);
+            boolean success = categoryDAO.addCategory(c);
+            
+            if (success) {
+                session.setAttribute("message", "Category added successfully!");
+                session.setAttribute("messageType", "success");
             } else {
-                session.setAttribute("message", validationResult.getErrorMessage());
+                session.setAttribute("message", "Error adding category.");
                 session.setAttribute("messageType", "error");
             }
         } else {
-            // Update existing category
+            // Update existing category - Validate
             int id = Integer.parseInt(idStr);
-            validationResult = validationService.validateEditCategory(id, name);
             
-            if (validationResult.isValid()) {
-                Category c = new Category(id, name, desc);
-                boolean success = categoryDAO.updateCategory(c);
-                
-                if (success) {
-                    session.setAttribute("message", "Category updated successfully!");
-                    session.setAttribute("messageType", "success");
-                } else {
-                    session.setAttribute("message", "Error updating category.");
+            Category existing = categoryDAO.getCategoryById(id);
+            if (existing == null) {
+                session.setAttribute("message", "Category not found");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("managecategory");
+                return;
+            }
+            
+            try {
+                if (categoryDAO.isCategoryNameExists(name, id)) {
+                    session.setAttribute("message", "Category name already exists");
                     session.setAttribute("messageType", "error");
+                    response.sendRedirect("managecategory");
+                    return;
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            
+            Category c = new Category(id, name, desc);
+            boolean success = categoryDAO.updateCategory(c);
+            
+            if (success) {
+                session.setAttribute("message", "Category updated successfully!");
+                session.setAttribute("messageType", "success");
             } else {
-                session.setAttribute("message", validationResult.getErrorMessage());
+                session.setAttribute("message", "Error updating category.");
                 session.setAttribute("messageType", "error");
             }
         }
