@@ -201,6 +201,16 @@
         <url-pattern>/customer-menu</url-pattern>
     </servlet-mapping>
 
+    <!-- Customer Feedback Servlet -->
+    <servlet>
+        <servlet-name>CustomerFeedbackServlet</servlet-name>
+        <servlet-class>controller.CustomerFeedbackServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CustomerFeedbackServlet</servlet-name>
+        <url-pattern>/customer-feedback</url-pattern>
+    </servlet-mapping>
+
     <!-- Note: InventoryServlet and ChatBotServlet use @WebServlet annotation in code -->
 
 </web-app>

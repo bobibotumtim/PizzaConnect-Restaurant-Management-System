@@ -56,6 +56,13 @@ String userName = currentUser.getName(); %>
         >
           <i data-lucide="users" class="w-6 h-6"></i>
         </a>
+
+        <a
+          href="${pageContext.request.contextPath}/customer-feedback"
+          class="w-12 h-12 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition"
+        >
+          <i data-lucide="message-circle" class="w-6 h-6"></i>
+        </a>
       </nav>
 
       <a
@@ -85,7 +92,9 @@ String userName = currentUser.getName(); %>
         </div>
 
         <!-- Dashboard Cards Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto"
+        >
           <!-- Sales Reports Card -->
           <div
             class="dashboard-card bg-white rounded-2xl shadow-xl overflow-hidden"
@@ -121,7 +130,7 @@ String userName = currentUser.getName(); %>
             </div>
           </div>
 
-          <!-- Edit User Card -->
+          <!-- User Management Card -->
           <div
             class="dashboard-card bg-white rounded-2xl shadow-xl overflow-hidden"
             onclick="window.location.href='${pageContext.request.contextPath}/manager-users'"
@@ -155,14 +164,52 @@ String userName = currentUser.getName(); %>
               <i data-lucide="arrow-right" class="w-5 h-5 text-orange-600"></i>
             </div>
           </div>
+
+          <!-- Customer Feedback Card -->
+          <div
+            class="dashboard-card bg-white rounded-2xl shadow-xl overflow-hidden"
+            onclick="window.location.href='${pageContext.request.contextPath}/customer-feedback'"
+          >
+            <div class="p-8">
+              <div
+                class="icon-container w-20 h-20 rounded-2xl flex items-center justify-center mb-6 shadow-lg"
+              >
+                <i
+                  data-lucide="message-circle"
+                  class="w-10 h-10 text-white"
+                ></i>
+              </div>
+              <div class="mb-2">
+                <span
+                  class="text-sm font-semibold text-orange-500 uppercase tracking-wide"
+                  >Feedback</span
+                >
+              </div>
+              <h3 class="text-2xl font-bold text-gray-800 mb-3">
+                Customer Feedback
+              </h3>
+              <p class="text-gray-600 leading-relaxed">
+                View and respond to customer feedback, monitor satisfaction
+                ratings, and improve service quality.
+              </p>
+            </div>
+            <div
+              class="bg-gradient-to-r from-orange-50 to-orange-100 px-8 py-4 flex items-center justify-between"
+            >
+              <span class="text-sm font-medium text-orange-600"
+                >View Feedback</span
+              >
+              <i data-lucide="arrow-right" class="w-5 h-5 text-orange-600"></i>
+            </div>
+          </div>
         </div>
 
         <!-- Quick Stats (Optional) -->
-        <div class="mt-12 grid grid-cols-3 gap-6 max-w-4xl mx-auto">
+        <div class="mt-12 grid grid-cols-3 gap-6 max-w-6xl mx-auto">
           <div
             class="bg-white bg-opacity-20 backdrop-blur-lg rounded-xl p-6 text-center"
           >
-            <div class="text-3xl font-bold text-white mb-1">2</div>
+            <div class="text-3xl font-bold text-white mb-1">3</div>
             <div class="text-white text-opacity-80 text-sm">
               Available Features
             </div>
