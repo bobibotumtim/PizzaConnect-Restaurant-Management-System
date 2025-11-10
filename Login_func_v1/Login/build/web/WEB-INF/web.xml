@@ -151,8 +151,6 @@
         <servlet-name>VerifyCodeServlet</servlet-name>
         <url-pattern>/verifyCode</url-pattern>
     </servlet-mapping>
-    
-<<<<<<< HEAD
         <!-- Discount Import Servlet -->
     <servlet>
         <servlet-name>DiscountImportServlet</servlet-name>
@@ -198,7 +196,6 @@
         <url-pattern>/inventory</url-pattern>
     </servlet-mapping>
     -->
-=======
     <servlet>
         <servlet-name>ManageToppingServlet</servlet-name>
         <servlet-class>controller.ManageToppingServlet</servlet-class>
@@ -208,7 +205,5 @@
         <url-pattern>/manage-topping</url-pattern>
     </servlet-mapping>
     
-
->>>>>>> 709db26795bbd7f61ddcbbf319e9da3a73174486
 </web-app>
 

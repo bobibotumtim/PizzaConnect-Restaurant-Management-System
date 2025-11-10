@@ -317,11 +317,14 @@
                                             <c:if test="${param.filter != 'inactive'}">
                                                 <td class="px-4 py-4">
                                                     <div class="flex justify-center space-x-2">
-                                                        <button onclick="openEditModal(${discount.discountId}, '<c:out value="${discount.description}" />', '${discount.discountType}', ${discount.value}, ${discount.maxDiscount != null ? discount.maxDiscount : 'null'}, ${discount.minOrderTotal}, '${discount.startDate}', '<c:out value="${discount.endDate}" />')"
-                                                                class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center p-2 rounded hover:bg-blue-50 transition-colors"
-                                                                title="Edit Discount">
-                                                            <i data-lucide="edit" class="w-4 h-4"></i>
-                                                        </button>
+                                                        <!-- Only show edit button if discount can be edited (start date > today) -->
+                                                        <c:if test="${requestScope['canEdit_' += discount.discountId]}">
+                                                            <button onclick="openEditModal(${discount.discountId}, '<c:out value="${discount.description}" />', '${discount.discountType}', ${discount.value}, ${discount.maxDiscount != null ? discount.maxDiscount : 'null'}, ${discount.minOrderTotal}, '${discount.startDate}', '<c:out value="${discount.endDate}" />')"
+                                                                    class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center p-2 rounded hover:bg-blue-50 transition-colors"
+                                                                    title="Edit Discount">
+                                                                <i data-lucide="edit" class="w-4 h-4"></i>
+                                                            </button>
+                                                        </c:if>
                                                         <button onclick="confirmDelete(${discount.discountId}, '${discount.startDate}')" 
                                                                 class="text-red-600 hover:text-red-800 text-sm font-medium flex items-center p-2 rounded hover:bg-red-50 transition-colors"
                                                                 title="Delete Discount">
@@ -433,6 +436,10 @@
                 <input type="hidden" name="action" value="add">
                 <input type="hidden" name="currentFilter" value="${param.filter != 'inactive' ? 'active' : 'inactive'}">
                 <input type="hidden" name="currentPage" value="${currentPage}">
+                <input type="hidden" name="currentType" value="${param.type}">
+                <input type="hidden" name="currentStartDate" value="${param.startDate}">
+                <input type="hidden" name="currentEndDate" value="${param.endDate}">
+                <input type="hidden" name="currentSearch" value="${param.search}">
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
@@ -487,7 +494,10 @@
                 <input type="hidden" name="discountId" id="editDiscountId">
                 <input type="hidden" name="currentFilter" value="${param.filter != 'inactive' ? 'active' : 'inactive'}">
                 <input type="hidden" name="currentPage" value="${currentPage}">
-
+                <input type="hidden" name="currentType" value="${param.type}">
+                <input type="hidden" name="currentStartDate" value="${param.startDate}">
+                <input type="hidden" name="currentEndDate" value="${param.endDate}">
+                <input type="hidden" name="currentSearch" value="${param.search}">
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
@@ -548,6 +558,10 @@
                 <input type="hidden" name="discountId" id="deleteDiscountId">
                 <input type="hidden" name="currentFilter" value="${param.filter != 'inactive' ? 'active' : 'inactive'}">
                 <input type="hidden" name="currentPage" value="${currentPage}">
+                <input type="hidden" name="currentType" value="${param.type}">
+                <input type="hidden" name="currentStartDate" value="${param.startDate}">
+                <input type="hidden" name="currentEndDate" value="${param.endDate}">
+                <input type="hidden" name="currentSearch" value="${param.search}">
                 <div class="flex justify-end space-x-3">
                     <button type="button" onclick="closeDeleteModal()" 
                             class="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
@@ -603,8 +617,6 @@
         * Open edit discount modal with pre-filled data
         */
         function openEditModal(id, description, type, value, maxDiscount, minOrderTotal, startDate, endDate) {
-            console.log("Today:", new Date());
-    console.log("Tomorrow:", new Date(new Date().setDate(new Date().getDate() + 1)));
             document.getElementById('editDiscountId').value = id;
             document.getElementById('editDescription').value = description;
             document.getElementById('editDiscountType').value = type;
@@ -613,29 +625,20 @@
             document.getElementById('editMinOrderTotal').value = minOrderTotal;
 
             // Set start date constraints for edit - must be tomorrow or later
-            const today = new Date();
-            const tomorrow = new Date(today);
+            const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             const tomorrowStr = tomorrow.toISOString().split('T')[0];
             const startDateField = document.getElementById('editStartDate');
-            startDateField.value = tomorrowStr; // Default to tomorrow for edit
+            startDateField.value = startDate; // Use original start date
             startDateField.min = tomorrowStr; // Cannot be before tomorrow
 
-            console.log("Tomorrow string:", tomorrowStr);
-    
-
-            // Set end date constraints - must be at least 2 days from today
+            // Set end date constraints - must be tomorrow or later if provided
             const endDateField = document.getElementById('editEndDate');
-            const dayAfterTomorrow = new Date(tomorrow);
-            dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
-            endDateField.min = dayAfterTomorrow.toISOString().split('T')[0];
+            endDateField.min = tomorrowStr;
 
-            // If original end date exists and is valid, use it
+            // If original end date exists, use it
             if (endDate && endDate !== '' && endDate !== 'null') {
-                const originalEndDate = new Date(endDate);
-                if (originalEndDate >= dayAfterTomorrow) {
-                    endDateField.value = endDate;
-                }
+                endDateField.value = endDate;
             } else {
                 endDateField.value = '';
             }
@@ -661,11 +664,8 @@
         function confirmDelete(discountId, startDate) {
             const deleteMessage = document.getElementById('deleteMessage');
             const today = new Date().toISOString().split('T')[0];
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const tomorrowStr = tomorrow.toISOString().split('T')[0];
             
-            const isFutureDiscount = startDate >= tomorrowStr;
+            const isFutureDiscount = startDate > today;
             
             let messageText = 'Are you sure you want to delete discount with ID <strong>' + discountId + '</strong>?';
             
@@ -711,12 +711,9 @@
          * @param {string} startDateFieldId - The ID of start date input field
          */
         function setDefaultDates(startDateFieldId, endDateFieldId) {
-            const today = new Date();
-            const tomorrow = new Date(today);
+            const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
-            
             const tomorrowStr = tomorrow.toISOString().split('T')[0];
-            const todayStr = today.toISOString().split('T')[0];
             
             // Set start date to tomorrow and set min to tomorrow
             const startDateField = document.getElementById(startDateFieldId);
@@ -725,12 +722,10 @@
                 startDateField.min = tomorrowStr;
             }
 
-            // Set end date min to day after tomorrow (tomorrow + 1)
+            // Set end date min to tomorrow
             const endDateField = document.getElementById(endDateFieldId);
             if (endDateField) {
-                const dayAfterTomorrow = new Date(tomorrow);
-                dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
-                endDateField.min = dayAfterTomorrow.toISOString().split('T')[0];
+                endDateField.min = tomorrowStr;
             }
         }
 
@@ -824,12 +819,10 @@
             const description = document.getElementById('editDescription').value;
             const discountId = document.getElementById('editDiscountId').value;
             
-            // Show appropriate confirmation message based on current date vs start date
+            // Show confirmation message for edit
             const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
             const startDate = new Date(document.getElementById('editStartDate').value);
-            const isFutureDiscount = startDate >= tomorrow;
+            const isFutureDiscount = startDate > today;
             
             if (isFutureDiscount) {
                 // Future discount - immediate update
@@ -838,11 +831,9 @@
                     return false;
                 }
             } else {
-                // Active or past discount - scheduled update
-                const confirmed = confirm('This discount is already active. Changes will be scheduled and applied at the end of the day. Continue?');
-                if (!confirmed) {
-                    return false;
-                }
+                // Should not reach here as edit button should be hidden for started discounts
+                alert('Cannot edit discount that has already started.');
+                return false;
             }
             
             return checkDuplicateDescription(description, 'editDescriptionError', discountId);
@@ -857,24 +848,13 @@
         function validateDiscountForm(startDateId, endDateId) {
             const startDate = document.getElementById(startDateId).value;
             const endDate = document.getElementById(endDateId).value;
-            const today = new Date();
-            const tomorrow = new Date(today);
+            const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             const tomorrowStr = tomorrow.toISOString().split('T')[0];
             
-            const dayAfterTomorrow = new Date(tomorrow);
-            dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
-            const dayAfterTomorrowStr = dayAfterTomorrow.toISOString().split('T')[0];
-
             // Start date must be tomorrow or later
             if (startDate < tomorrowStr) {
                 alert('Start date must be tomorrow or later');
-                return false;
-            }
-
-            // End date must be day after tomorrow or later if provided
-            if (endDate && endDate < dayAfterTomorrowStr) {
-                alert('End date must be at least 2 days from today');
                 return false;
             }
 
@@ -932,10 +912,11 @@
         * Initialize page when DOM is loaded
         */
         document.addEventListener('DOMContentLoaded', function () {
-            const today = new Date();
-            const tomorrow = new Date(today);
+            const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
             const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+            console.log(tomorrowStr);
             
             // Set add modal date constraints
             const addStartDate = document.getElementById('addStartDate');
@@ -946,9 +927,7 @@
             
             const addEndDate = document.getElementById('addEndDate');
             if (addEndDate) {
-                const dayAfterTomorrow = new Date(tomorrow);
-                dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
-                addEndDate.min = dayAfterTomorrow.toISOString().split('T')[0];
+                addEndDate.min = tomorrowStr;
             }
             
             // Add description duplicate check
