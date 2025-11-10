@@ -145,3 +145,22 @@ The chatbot is now fully functional and integrated into your application.
 - ❌ Removed ChatBotNoLayout.jsp
 
 Only production files remain! 🚀
+
+## 🤖 Gemini AI Integration (Optional)
+
+Chatbot now supports Google Gemini Pro API for answering questions outside the rule-based system.
+
+### Quick Setup:
+1. Get API key from: https://makersuite.google.com/app/apikey
+2. Open `Login/src/java/util/Config.java`
+3. Replace `YOUR_GEMINI_API_KEY_HERE` with your key
+4. Set `ENABLE_GEMINI = true`
+
+### How It Works:
+- **Rule-based first** (fast) - Menu, prices, promotions
+- **Gemini fallback** (smart) - Other questions
+
+See `GEMINI_INTEGRATION.md` for full documentation.
+
+### Without Gemini:
+Chatbot works perfectly with rule-based responses only. Gemini is optional for enhanced capabilities.
