@@ -265,6 +265,32 @@ public class ManageOrderServlet extends HttpServlet {
             
             if (success) {
                 System.out.println("✅ Payment status updated successfully");
+                
+                // If payment is "Paid" → Set order to Completed (status = 2) and table to Available
+                if ("Paid".equalsIgnoreCase(paymentStatus)) {
+                    // Update order status to Completed
+                    boolean statusUpdated = orderDAO.updateOrderStatus(orderId, 2);
+                    
+                    if (statusUpdated) {
+                        System.out.println("✅ Order #" + orderId + " set to Completed (Paid)");
+                        
+                        // Set table to Available
+                        Order order = orderDAO.getOrderById(orderId);
+                        if (order != null && order.getTableID() > 0) {
+                            dao.TableDAO tableDAO = new dao.TableDAO();
+                            boolean tableUpdated = tableDAO.updateTableStatus(order.getTableID(), "available");
+                            
+                            if (tableUpdated) {
+                                System.out.println("✅ Table #" + order.getTableID() + " set to available (Order #" + orderId + " Paid & Completed)");
+                            } else {
+                                System.err.println("⚠️ Failed to update table status for Table #" + order.getTableID());
+                            }
+                        }
+                    } else {
+                        System.err.println("⚠️ Failed to update order status to Completed");
+                    }
+                }
+                
                 request.getSession().setAttribute("message", "Cập nhật trạng thái thanh toán thành công!");
             } else {
                 System.out.println("❌ Failed to update payment status");
