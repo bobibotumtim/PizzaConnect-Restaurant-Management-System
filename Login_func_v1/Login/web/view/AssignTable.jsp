@@ -8,6 +8,7 @@
     <title>Table Management - PizzaConnect</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         
@@ -287,10 +288,10 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="tablesGrid">
                 <c:forEach var="table" items="${tables}">
                     <div class="table-card bg-white rounded-xl shadow-md overflow-hidden cursor-pointer border-t-4 ${table.status == 'available' ? 'border-green-500' : table.status == 'occupied' ? 'border-orange-500' : 'border-red-500'}" 
-                         data-status="${table.status}" data-table-id="${table.tableID}">
+                         data-status="${table.status}" data-table-id="${table.tableID}" data-table-number="${table.tableNumber}">
                         <div class="p-6">
                             <div class="flex justify-between items-center mb-4">
-                                <div class="text-2xl font-bold text-gray-800">
+                                <div class="table-number text-2xl font-bold text-gray-800">
                                     <i class="fas fa-chair text-orange-500"></i> ${table.tableNumber}
                                 </div>
                                 <c:choose>
@@ -335,9 +336,9 @@
     <!-- Order Details Modal -->
     <div class="modal fade" id="orderModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
+            <div class="modal-content rounded-xl overflow-hidden">
+                <div class="modal-header bg-gradient-to-r from-orange-400 to-orange-600 text-white border-0">
+                    <h5 class="modal-title font-bold">
                         <i class="fas fa-receipt"></i> Order Details - <span id="modalTableNumber"></span>
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -403,7 +404,9 @@
             card.addEventListener('click', function() {
                 const status = this.dataset.status;
                 const tableId = this.dataset.tableId;
-                const tableNumber = this.querySelector('.table-number').textContent.trim();
+                const tableNumber = this.dataset.tableNumber;
+                
+                console.log('Table clicked:', tableNumber, 'Status:', status, 'ID:', tableId);
                 
                 if (status === 'occupied') {
                     // Show modal with orders
