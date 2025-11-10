@@ -117,4 +117,67 @@ public class ProductIngredientDAO extends DBContext {
         }
         // Ném lỗi ra để Service rollback
     }
+    
+    /**
+     * Check if ingredient exists for product size (for validation)
+     */
+    public boolean isIngredientExistsForProductSize(int productSizeId, int inventoryId) {
+        String sql = "SELECT COUNT(*) FROM ProductIngredient WHERE ProductSizeID = ? AND InventoryID = ?";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, productSizeId);
+            ps.setInt(2, inventoryId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    /**
+     * Check if inventory exists (for validation)
+     */
+    public boolean isInventoryExists(int inventoryId) {
+        String sql = "SELECT COUNT(*) FROM Inventory WHERE InventoryID = ? AND Quantity > 0";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, inventoryId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    /**
+     * Lấy danh sách nguyên liệu cần trừ cho một ProductSize với số lượng món
+     * Trả về Map với key là InventoryID và value là số lượng cần trừ
+     */
+    public Map<Integer, Double> getIngredientsToDeduct(int productSizeId, int quantity) {
+        Map<Integer, Double> ingredientsMap = new HashMap<>();
+        String sql = "SELECT InventoryID, QuantityNeeded FROM ProductIngredient WHERE ProductSizeID = ?";
+        
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, productSizeId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int inventoryId = rs.getInt("InventoryID");
+                    double quantityNeeded = rs.getDouble("QuantityNeeded");
+                    ingredientsMap.put(inventoryId, quantityNeeded * quantity);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ingredientsMap;
+    }
 }

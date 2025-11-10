@@ -1,16 +1,22 @@
 package controller;
 
+import dao.CategoryDAO;
+import dao.ProductDAO;
+import dao.DBContext;
 import models.Product;
-import services.ProductService;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 @WebServlet(name = "AddProductServlet", urlPatterns = {"/AddProductServlet"})
 public class AddProductServlet extends HttpServlet {
 
-    private ProductService productService = new ProductService();
+    private ProductDAO productDAO = new ProductDAO();
+    private CategoryDAO categoryDAO = new CategoryDAO();
+    private DBContext dbContext = new DBContext();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -23,20 +29,40 @@ public class AddProductServlet extends HttpServlet {
         String imageUrl = request.getParameter("imageUrl");
         boolean isAvailable = true;
 
-        // 2. Tạo đối tượng Product
+        HttpSession session = request.getSession();
+        
+        // 2. Validate - kiểm tra tên trùng
+        try {
+            if (productDAO.isProductNameExists(productName, null)) {
+                session.setAttribute("message", "Product name already exists");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect(request.getContextPath() + "/manageproduct");
+                return;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        // Kiểm tra category tồn tại
+        if (categoryDAO.getCategoryByName(categoryName) == null) {
+            session.setAttribute("message", "Invalid category");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect(request.getContextPath() + "/manageproduct");
+            return;
+        }
+
+        // 3. Tạo đối tượng Product
         Product product = new Product();
         product.setProductName(productName);
         product.setDescription(description);
-        product.setCategoryName(categoryName); // Service sẽ tự tìm ID
+        product.setCategoryName(categoryName);
         product.setImageUrl(imageUrl);
         product.setAvailable(isAvailable);
-        // product.setSizes(null) - Hoàn toàn OK
 
-        // 3. Gọi Service
-        boolean result = productService.addProductWithSizes(product); // Dùng hàm này là OK
+        // 4. Thêm Product với Transaction
+        boolean result = addProductWithSizes(product);
         
-        // 4. Đặt thông báo và Redirect
-        HttpSession session = request.getSession();
+        // 5. Đặt thông báo và Redirect
         if (result) {
             session.setAttribute("message", "Product added successfully!");
             session.setAttribute("messageType", "success");
@@ -46,5 +72,36 @@ public class AddProductServlet extends HttpServlet {
         }
         
         response.sendRedirect(request.getContextPath() + "/manageproduct");
+    }
+    
+    private boolean addProductWithSizes(Product product) {
+        Connection con = null;
+        try {
+            con = dbContext.getConnection();
+            con.setAutoCommit(false);
+
+            int categoryId = categoryDAO.getCategoryIdByName(product.getCategoryName(), con);
+            productDAO.addProduct(product, categoryId, con);
+
+            con.commit();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            try {
+                if (con != null) con.rollback();
+            } catch (SQLException e2) {
+                e2.printStackTrace();
+            }
+            return false;
+        } finally {
+            try {
+                if (con != null) {
+                    con.setAutoCommit(true);
+                    con.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

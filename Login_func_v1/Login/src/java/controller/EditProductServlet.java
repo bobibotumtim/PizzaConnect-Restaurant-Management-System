@@ -1,16 +1,22 @@
 package controller;
 
+import dao.CategoryDAO;
+import dao.ProductDAO;
+import dao.DBContext;
 import models.Product;
-import services.ProductService;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 @WebServlet(name = "EditProductServlet", urlPatterns = {"/EditProductServlet"})
 public class EditProductServlet extends HttpServlet {
 
-    private ProductService productService = new ProductService();
+    private ProductDAO productDAO = new ProductDAO();
+    private CategoryDAO categoryDAO = new CategoryDAO();
+    private DBContext dbContext = new DBContext();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -24,20 +30,42 @@ public class EditProductServlet extends HttpServlet {
         String imageUrl = request.getParameter("imageUrl");
         boolean isAvailable = true;
 
-        // 2. Tạo đối tượng Product
+        HttpSession session = request.getSession();
+        
+        // 2. Validate - kiểm tra product tồn tại
+        Product existing = productDAO.getProductById(productId);
+        if (existing == null) {
+            session.setAttribute("message", "Product not found");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect(request.getContextPath() + "/manageproduct");
+            return;
+        }
+        
+        // Kiểm tra tên trùng (trừ chính nó)
+        try {
+            if (productDAO.isProductNameExists(productName, productId)) {
+                session.setAttribute("message", "Product name already exists");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect(request.getContextPath() + "/manageproduct");
+                return;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 3. Tạo đối tượng Product
         Product product = new Product();
-        product.setProductId(productId); // ID rất quan trọng
+        product.setProductId(productId);
         product.setProductName(productName);
         product.setDescription(description);
         product.setCategoryName(categoryName);
         product.setImageUrl(imageUrl);
         product.setAvailable(isAvailable);
 
-        // 3. Gọi Service (Dùng hàm mới: updateBaseProduct)
-        boolean result = productService.updateBaseProduct(product);
+        // 4. Cập nhật Product với Transaction
+        boolean result = updateBaseProduct(product);
         
-        // 4. Đặt thông báo và Redirect
-        HttpSession session = request.getSession();
+        // 5. Đặt thông báo và Redirect
         if (result) {
             session.setAttribute("message", "Product updated successfully!");
             session.setAttribute("messageType", "success");
@@ -47,5 +75,36 @@ public class EditProductServlet extends HttpServlet {
         }
         
         response.sendRedirect(request.getContextPath() + "/manageproduct");
+    }
+    
+    private boolean updateBaseProduct(Product product) {
+        Connection con = null;
+        try {
+            con = dbContext.getConnection();
+            con.setAutoCommit(false);
+
+            int categoryId = categoryDAO.getCategoryIdByName(product.getCategoryName(), con);
+            productDAO.updateBaseProduct(product, categoryId, con);
+            
+            con.commit();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            try {
+                if (con != null) con.rollback();
+            } catch (SQLException e2) {
+                e2.printStackTrace();
+            }
+            return false;
+        } finally {
+            try {
+                if (con != null) {
+                    con.setAutoCommit(true);
+                    con.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
