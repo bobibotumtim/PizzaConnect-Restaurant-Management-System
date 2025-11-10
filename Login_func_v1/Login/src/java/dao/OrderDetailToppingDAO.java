@@ -18,7 +18,7 @@ public class OrderDetailToppingDAO {
 
     // Add topping to order detail (now using ProductSizeID)
     public boolean addToppingToOrderDetail(int orderDetailID, int productSizeID, double toppingPrice) {
-        String sql = "INSERT INTO OrderDetailTopping (OrderDetailID, ProductSizeID, ToppingPrice) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO OrderDetailTopping (OrderDetailID, ProductSizeID, ProductPrice) VALUES (?, ?, ?)";
         
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, orderDetailID);
@@ -51,7 +51,7 @@ public class OrderDetailToppingDAO {
                 odt.setOrderDetailToppingID(rs.getInt("OrderDetailToppingID"));
                 odt.setOrderDetailID(rs.getInt("OrderDetailID"));
                 odt.setToppingID(rs.getInt("ProductSizeID")); // Now using ProductSizeID
-                odt.setToppingPrice(rs.getDouble("ToppingPrice"));
+                odt.setToppingPrice(rs.getDouble("ProductPrice"));
                 odt.setToppingName(rs.getString("ToppingName"));
                 list.add(odt);
             }
@@ -63,7 +63,7 @@ public class OrderDetailToppingDAO {
 
     // Get total topping price for an order detail
     public double getTotalToppingPrice(int orderDetailID) {
-        String sql = "SELECT ISNULL(SUM(ToppingPrice), 0) as TotalToppingPrice " +
+        String sql = "SELECT ISNULL(SUM(ProductPrice), 0) as TotalToppingPrice " +
                      "FROM OrderDetailTopping WHERE OrderDetailID = ?";
         
         try (PreparedStatement ps = conn.prepareStatement(sql)) {

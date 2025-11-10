@@ -73,6 +73,8 @@ public class OrderDetailDAO extends DBContext {
             ORDER BY od.OrderDetailID
         """;
         
+        OrderDetailToppingDAO toppingDAO = new OrderDetailToppingDAO();
+        
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, status);
@@ -96,7 +98,6 @@ public class OrderDetailDAO extends DBContext {
                 d.setSizeCode(rs.getString("SizeCode"));
                 
                 // Load toppings
-                OrderDetailToppingDAO toppingDAO = new OrderDetailToppingDAO();
                 d.setToppings(toppingDAO.getToppingsByOrderDetailID(d.getOrderDetailID()));
                 
                 list.add(d);
@@ -192,6 +193,8 @@ public class OrderDetailDAO extends DBContext {
             ORDER BY od.OrderDetailID
         """;
         
+        OrderDetailToppingDAO toppingDAO = new OrderDetailToppingDAO();
+        
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, status);
@@ -216,7 +219,6 @@ public class OrderDetailDAO extends DBContext {
                 d.setSizeCode(rs.getString("SizeCode"));
                 
                 // Load toppings
-                OrderDetailToppingDAO toppingDAO = new OrderDetailToppingDAO();
                 d.setToppings(toppingDAO.getToppingsByOrderDetailID(d.getOrderDetailID()));
                 
                 list.add(d);
