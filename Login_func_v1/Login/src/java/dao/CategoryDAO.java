@@ -18,7 +18,7 @@ public class CategoryDAO extends DBContext {
     // Get all categories
     public List<Category> getAllCategories() {
         List<Category> list = new ArrayList<>();
-        String sql = "SELECT * FROM Category ORDER BY CategoryName";
+        String sql = "SELECT * FROM Category WHERE IsDeleted = 0 ORDER BY CategoryName";
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
