@@ -145,19 +145,9 @@
     <div style="flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px 0;">
         <% if (sidebarIsAdmin) { %>
             <!-- ADMIN MENU -->
-            <a href="<%= sidebarContextPath %>/home" class="sidebar-item <%= sidebarCurrentPath.contains("/home") ? "active" : "" %>">
-                <div class="sidebar-icon"><i data-lucide="home"></i></div>
-                <span class="sidebar-text">Home</span>
-            </a>
-            
             <a href="<%= sidebarContextPath %>/dashboard" class="sidebar-item <%= sidebarCurrentPath.contains("/dashboard") ? "active" : "" %>">
                 <div class="sidebar-icon"><i data-lucide="layout-dashboard"></i></div>
                 <span class="sidebar-text">Dashboard</span>
-            </a>
-            
-            <a href="<%= sidebarContextPath %>/menu" class="sidebar-item <%= sidebarCurrentPath.contains("/menu") ? "active" : "" %>">
-                <div class="sidebar-icon"><i data-lucide="utensils"></i></div>
-                <span class="sidebar-text">Menu</span>
             </a>
             
             <a href="<%= sidebarContextPath %>/manageproduct" class="sidebar-item <%= sidebarCurrentPath.contains("/manageproduct") ? "active" : "" %>">
@@ -188,11 +178,6 @@
             <a href="<%= sidebarContextPath %>/inventory" class="sidebar-item <%= sidebarCurrentPath.contains("/inventory") ? "active" : "" %>">
                 <div class="sidebar-icon"><i data-lucide="box"></i></div>
                 <span class="sidebar-text">Inventory</span>
-            </a>
-            
-            <a href="<%= sidebarContextPath %>/sales-reports" class="sidebar-item <%= sidebarCurrentPath.contains("/sales-reports") || sidebarCurrentPath.contains("/salesreports") ? "active" : "" %>">
-                <div class="sidebar-icon"><i data-lucide="bar-chart-3"></i></div>
-                <span class="sidebar-text">Sales Reports</span>
             </a>
             
             <div class="sidebar-divider"></div>
@@ -247,9 +232,9 @@
                 <span class="sidebar-text">Menu</span>
             </a>
             
-            <a href="<%= sidebarContextPath %>/chatbot" class="sidebar-item <%= sidebarCurrentPath.contains("/chatbot") ? "active" : "" %>">
-                <div class="sidebar-icon"><i data-lucide="message-circle"></i></div>
-                <span class="sidebar-text">AI Assistant</span>
+            <a href="<%= sidebarContextPath %>/order-history" class="sidebar-item <%= sidebarCurrentPath.contains("/order-history") ? "active" : "" %>">
+                <div class="sidebar-icon"><i data-lucide="shopping-bag"></i></div>
+                <span class="sidebar-text">Order History</span>
             </a>
             
             <div class="sidebar-divider"></div>
