@@ -1,23 +1,26 @@
 package models;
 
+/**
+ * OrderDetailTopping model - Now uses ProductSizeID instead of ToppingID
+ * toppingID field actually stores ProductSizeID from database
+ */
 public class OrderDetailTopping {
     private int orderDetailToppingID;
     private int orderDetailID;
-    private int productSizeID;  // Schema mới: ProductSizeID thay vì ToppingID
-    private double productPrice; // Schema mới: ProductPrice thay vì ToppingPrice
+    private int toppingID; // Actually ProductSizeID after migration
+    private double toppingPrice;
     
     // For display purposes
     private String toppingName;
-    private String sizeName;
 
     // Constructors
     public OrderDetailTopping() {
     }
 
-    public OrderDetailTopping(int orderDetailID, int productSizeID, double productPrice) {
+    public OrderDetailTopping(int orderDetailID, int toppingID, double toppingPrice) {
         this.orderDetailID = orderDetailID;
-        this.productSizeID = productSizeID;
-        this.productPrice = productPrice;
+        this.toppingID = toppingID;
+        this.toppingPrice = toppingPrice;
     }
 
     // Getters and Setters
@@ -37,20 +40,20 @@ public class OrderDetailTopping {
         this.orderDetailID = orderDetailID;
     }
 
-    public int getProductSizeID() {
-        return productSizeID;
+    public int getToppingID() {
+        return toppingID;
     }
 
-    public void setProductSizeID(int productSizeID) {
-        this.productSizeID = productSizeID;
+    public void setToppingID(int toppingID) {
+        this.toppingID = toppingID;
     }
 
-    public double getProductPrice() {
-        return productPrice;
+    public double getToppingPrice() {
+        return toppingPrice;
     }
 
-    public void setProductPrice(double productPrice) {
-        this.productPrice = productPrice;
+    public void setToppingPrice(double toppingPrice) {
+        this.toppingPrice = toppingPrice;
     }
 
     public String getToppingName() {
@@ -61,44 +64,14 @@ public class OrderDetailTopping {
         this.toppingName = toppingName;
     }
 
-    public String getSizeName() {
-        return sizeName;
-    }
-
-    public void setSizeName(String sizeName) {
-        this.sizeName = sizeName;
-    }
-
-    // Backward compatibility - deprecated methods
-    @Deprecated
-    public int getToppingID() {
-        return productSizeID;
-    }
-
-    @Deprecated
-    public void setToppingID(int toppingID) {
-        this.productSizeID = toppingID;
-    }
-
-    @Deprecated
-    public double getToppingPrice() {
-        return productPrice;
-    }
-
-    @Deprecated
-    public void setToppingPrice(double toppingPrice) {
-        this.productPrice = toppingPrice;
-    }
-
     @Override
     public String toString() {
         return "OrderDetailTopping{" +
                 "orderDetailToppingID=" + orderDetailToppingID +
                 ", orderDetailID=" + orderDetailID +
-                ", productSizeID=" + productSizeID +
-                ", productPrice=" + productPrice +
+                ", toppingID=" + toppingID +
+                ", toppingPrice=" + toppingPrice +
                 ", toppingName='" + toppingName + '\'' +
-                ", sizeName='" + sizeName + '\'' +
                 '}';
     }
 }

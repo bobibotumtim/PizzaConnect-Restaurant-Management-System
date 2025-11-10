@@ -38,15 +38,23 @@
         width: 240px;
     }
     
-    /* Hide scrollbar */
+    /* Hide scrollbar completely */
     .sidebar::-webkit-scrollbar {
-        width: 0px;
-        background: transparent;
+        display: none;
+        width: 0;
+        height: 0;
     }
     
     .sidebar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
+    
+    /* Also hide for the navigation items container */
+    .sidebar > div::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
     }
     
     .sidebar-item {
@@ -150,11 +158,6 @@
             <a href="<%= sidebarContextPath %>/managecategory" class="sidebar-item <%= sidebarCurrentPath.contains("/managecategory") ? "active" : "" %>">
                 <div class="sidebar-icon"><i data-lucide="folder"></i></div>
                 <span class="sidebar-text">Categories</span>
-            </a>
-            
-            <a href="<%= sidebarContextPath %>/manage-topping" class="sidebar-item <%= sidebarCurrentPath.contains("/manage-topping") ? "active" : "" %>">
-                <div class="sidebar-icon"><i data-lucide="pizza"></i></div>
-                <span class="sidebar-text">Toppings</span>
             </a>
             
             <a href="<%= sidebarContextPath %>/admin" class="sidebar-item <%= sidebarCurrentPath.contains("/admin") ? "active" : "" %>">

@@ -2,8 +2,12 @@ package models;
 
 import java.sql.Timestamp;
 
+/**
+ * Topping model - Now backed by Product + ProductSize (CategoryID = 3)
+ * toppingID actually stores ProductSizeID from database
+ */
 public class Topping {
-    private int toppingID;
+    private int toppingID; // Actually ProductSizeID after migration
     private String toppingName;
     private double price;
     private boolean isAvailable;

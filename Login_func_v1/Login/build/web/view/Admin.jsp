@@ -234,13 +234,13 @@
                                 <option value="2" <%="2" .equals(selectedRole)
                                                                     ? "selected" : "" %>>Employee - All</option>
                                 <option value="Manager" <%="Manager" .equals(selectedRole)
-                                                                    ? "selected" : "" %>>├─ Manager</option>
+                                                                    ? "selected" : "" %>>Manager</option>
                                 <option value="Cashier" <%="Cashier" .equals(selectedRole)
-                                                                    ? "selected" : "" %>>├─ Cashier</option>
+                                                                    ? "selected" : "" %>>Cashier</option>
                                 <option value="Waiter" <%="Waiter" .equals(selectedRole)
-                                                                    ? "selected" : "" %>>├─ Waiter</option>
+                                                                    ? "selected" : "" %>>Waiter</option>
                                 <option value="Chef" <%="Chef" .equals(selectedRole)
-                                                                    ? "selected" : "" %>>└─ Chef</option>
+                                                                    ? "selected" : "" %>>Chef</option>
                                 <option value="3" <%="3" .equals(selectedRole)
                                                                     ? "selected" : "" %>>Customer</option>
                             </select>

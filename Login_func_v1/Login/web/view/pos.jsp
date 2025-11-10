@@ -105,7 +105,7 @@
                     DRINKS
                 </button>
                 <button onclick="selectCategory('SIDES')" class="category-tab flex-1 py-4 px-4 text-sm font-semibold transition-all text-gray-600 hover:bg-gray-100" data-category="SIDES">
-                    TOPPINGS
+                    SIDE DISHES
                 </button>
             </div>
 
@@ -405,6 +405,18 @@
                         console.log('✅ Table panel hidden');
                     }
                     
+                    // Hide Clear and Print Bill buttons in EDIT mode
+                    const clearBtn = document.getElementById('clearBtn');
+                    const printBtn = document.getElementById('printBtn');
+                    if (clearBtn) {
+                        clearBtn.style.display = 'none';
+                        console.log('✅ Clear button hidden');
+                    }
+                    if (printBtn) {
+                        printBtn.style.display = 'none';
+                        console.log('✅ Print Bill button hidden');
+                    }
+                    
                     // Set selected table (order already has table, no need to select)
                     selectedTable = existingOrder.tableID;
                     console.log('✅ selectedTable set to:', selectedTable);
@@ -505,7 +517,7 @@
             const categoryMap = {
                 'PIZZA': 'Pizza',
                 'BEVERAGES': 'Drink', 
-                'SIDES': 'Topping',
+                'SIDES': 'Side Dishes',  // Changed from 'Topping' to 'Side Dishes'
                 'DESSERTS': 'Dessert'
             };
             
@@ -737,12 +749,15 @@
                 
                 cartItems.innerHTML = cart.map(item => 
                     '<div class="bg-blue-500 text-white rounded-lg p-3 relative">' +
-                        '<button onclick="removeFromCart(\'' + item.uniqueId + '\')" ' +
-                                'class="absolute top-2 right-2 text-white hover:text-red-200 bg-red-500 rounded-full p-1">' +
-                            '<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
-                                '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>' +
-                            '</svg>' +
-                        '</button>' +
+                        // Only show remove button for NEW items (not existing items)
+                        (item.isExisting ? '' : 
+                            '<button onclick="removeFromCart(\'' + item.uniqueId + '\')" ' +
+                                    'class="absolute top-2 right-2 text-white hover:text-red-200 bg-red-500 rounded-full p-1">' +
+                                '<svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">' +
+                                    '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>' +
+                                '</svg>' +
+                            '</button>'
+                        ) +
                         
                         '<div class="text-xs font-semibold mb-1">' + item.orderId + '</div>' +
                         
