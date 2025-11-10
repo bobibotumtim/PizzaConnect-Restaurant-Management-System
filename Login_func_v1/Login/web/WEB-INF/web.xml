@@ -191,6 +191,26 @@
         <url-pattern>/home</url-pattern>
     </servlet-mapping>
 
+    <!-- Customer Menu Servlet -->
+    <servlet>
+        <servlet-name>CustomerMenuServlet</servlet-name>
+        <servlet-class>controller.CustomerMenuServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CustomerMenuServlet</servlet-name>
+        <url-pattern>/customer-menu</url-pattern>
+    </servlet-mapping>
+
+    <!-- Home Test Servlet -->
+    <servlet>
+        <servlet-name>HomeTestServlet</servlet-name>
+        <servlet-class>controller.HomeTestServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>HomeTestServlet</servlet-name>
+        <url-pattern>/home-test</url-pattern>
+    </servlet-mapping>
+
     <!-- Note: InventoryServlet uses @WebServlet annotation in code -->
 
 </web-app>
