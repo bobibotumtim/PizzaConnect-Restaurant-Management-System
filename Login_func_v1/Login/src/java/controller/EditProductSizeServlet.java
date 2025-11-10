@@ -1,23 +1,33 @@
 package controller;
 
+import dao.DBContext;
+import dao.ProductSizeDAO;
+import dao.ProductIngredientDAO;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import models.ProductIngredient;
 import models.ProductSize;
-import services.ProductService;
 
 @WebServlet(name = "EditProductSizeServlet", urlPatterns = {"/EditProductSizeServlet"})
 public class EditProductSizeServlet extends HttpServlet {
 
-    private ProductService productService;
+    private ProductSizeDAO productSizeDAO;
+    private ProductIngredientDAO ingredientDAO;
+    private DBContext dbContext;
 
     @Override
     public void init() throws ServletException {
-        productService = new ProductService();
+        productSizeDAO = new ProductSizeDAO();
+        ingredientDAO = new ProductIngredientDAO();
+        dbContext = new DBContext();
     }
 
     @Override
@@ -32,26 +42,87 @@ public class EditProductSizeServlet extends HttpServlet {
             int productSizeId = Integer.parseInt(request.getParameter("productSizeId"));
             String sizeCode = request.getParameter("sizeCode");
             double price = Double.parseDouble(request.getParameter("price"));
+            
+            // Lấy productId để validate (có thể từ hidden field hoặc query từ DB)
+            String productIdStr = request.getParameter("productId");
+            int productId = 0;
+            if (productIdStr != null && !productIdStr.isEmpty()) {
+                productId = Integer.parseInt(productIdStr);
+            }
 
-            // 2. Tạo đối tượng ProductSize
+            // 2. Validate - kiểm tra size tồn tại
+            ProductSize existing = productSizeDAO.getProductSizeById(productSizeId);
+            if (existing == null) {
+                session.setAttribute("message", "Size not found");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect(request.getContextPath() + "/manageproduct");
+                return;
+            }
+            
+            // Kiểm tra size trùng (trừ chính nó)
+            try {
+                if (productSizeDAO.isSizeExistsForProduct(productId, sizeCode, productSizeId)) {
+                    session.setAttribute("message", "Size already exists for this product");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect(request.getContextPath() + "/manageproduct");
+                    return;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            
+            if (price < 0) {
+                session.setAttribute("message", "Size price cannot be negative");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect(request.getContextPath() + "/manageproduct");
+                return;
+            }
+
+            // 3. Tạo đối tượng ProductSize
             ProductSize sizeToUpdate = new ProductSize();
             sizeToUpdate.setProductSizeId(productSizeId);
             sizeToUpdate.setSizeCode(sizeCode);
             sizeToUpdate.setPrice(price);
-            // (Service sẽ không cần productId để update)
 
-            // 3. Lấy danh sách Nguyên liệu MỚI (Tái sử dụng logic cũ)
-            // (Tên mảng trong form Edit là "inventoryId[]", "quantity[]", "unit[]")
+            // 4. Lấy danh sách Nguyên liệu MỚI
             List<ProductIngredient> newIngredients = parseIngredients(request);
+            
+            // 4.1. Validate từng ingredient mới và kiểm tra duplicate trong form
+            java.util.Set<Integer> usedIngredients = new java.util.HashSet<>();
+            
+            for (ProductIngredient ingredient : newIngredients) {
+                // Kiểm tra duplicate trong cùng form
+                if (usedIngredients.contains(ingredient.getInventoryId())) {
+                    session.setAttribute("message", "Duplicate ingredient in the same form. Each ingredient can only be added once.");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect(request.getContextPath() + "/manageproduct");
+                    return;
+                }
+                usedIngredients.add(ingredient.getInventoryId());
+                
+                if (!ingredientDAO.isInventoryExists(ingredient.getInventoryId())) {
+                    session.setAttribute("message", "Ingredient not found");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect(request.getContextPath() + "/manageproduct");
+                    return;
+                }
+                
+                if (ingredient.getQuantityNeeded() <= 0) {
+                    session.setAttribute("message", "Ingredient quantity must be greater than 0");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect(request.getContextPath() + "/manageproduct");
+                    return;
+                }
+            }
 
-            // 4. Gọi Service (để thực hiện Transaction Add/Update/Delete)
-            boolean result = productService.updateSizeWithIngredients(sizeToUpdate, newIngredients);
+            // 5. Thực hiện Transaction
+            boolean result = updateSizeWithIngredients(sizeToUpdate, newIngredients);
 
             if (result) {
                 session.setAttribute("message", "Size updated successfully!");
                 session.setAttribute("messageType", "success");
             } else {
-                session.setAttribute("message", "Failed to update size.");
+                session.setAttribute("message", "Error updating size.");
                 session.setAttribute("messageType", "error");
             }
 
@@ -100,5 +171,64 @@ public class EditProductSizeServlet extends HttpServlet {
             }
         }
         return list;
+    }
+    
+    private boolean updateSizeWithIngredients(ProductSize size, List<ProductIngredient> newIngredients) {
+        Connection con = null;
+        try {
+            con = dbContext.getConnection();
+            con.setAutoCommit(false);
+
+            // 1. Cập nhật thông tin ProductSize
+            productSizeDAO.updateProductSize(size, con);
+
+            // 2. Xử lý công thức
+            int productSizeId = size.getProductSizeId();
+            List<ProductIngredient> oldIngredients = ingredientDAO.getIngredientsByProductSizeId(productSizeId);
+            Set<Integer> newInventoryIds = new HashSet<>();
+
+            if (newIngredients != null) {
+                for (ProductIngredient pi : newIngredients) {
+                    newInventoryIds.add(pi.getInventoryId());
+                    pi.setProductSizeId(productSizeId);
+
+                    boolean exists = oldIngredients.stream()
+                                    .anyMatch(old -> old.getInventoryId() == pi.getInventoryId());
+                    
+                    if (exists) {
+                        ingredientDAO.updateIngredient(pi, con);
+                    } else {
+                        ingredientDAO.addIngredient(pi, con);
+                    }
+                }
+            }
+            
+            // 3. Xóa các công thức cũ không còn trong list mới
+            for (ProductIngredient oldPi : oldIngredients) {
+                if (!newInventoryIds.contains(oldPi.getInventoryId())) {
+                    ingredientDAO.deleteIngredient(productSizeId, oldPi.getInventoryId(), con);
+                }
+            }
+
+            con.commit();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                if (con != null) con.rollback();
+            } catch (SQLException e2) {
+                e2.printStackTrace();
+            }
+            return false;
+        } finally {
+            try {
+                if (con != null) {
+                    con.setAutoCommit(true);
+                    con.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

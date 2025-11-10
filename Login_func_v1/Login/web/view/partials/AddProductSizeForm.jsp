@@ -32,30 +32,35 @@
 
     <hr class="my-3">
 
-    <%-- ✅ LOGIC CÔNG THỨC: Giữ nguyên 100% từ file AddProductModal.jsp cũ của bạn --%>
+    <%-- ✅ LOGIC CÔNG THỨC: Giống như EditProductSizeForm --%>
     <h3 class="text-lg font-semibold text-gray-700 mb-2">Ingredients for this Size</h3>
-    <div id="ingredientList_AddSize">
-        <%-- Nơi JS thêm các hàng --%>
-    </div>
     
-    <%-- Template để JS clone --%>
-    <div id="ingredientTemplate_AddSize" class="ingredient-row flex gap-2 mb-2 hidden">
-        <select name="ingredientId[]" class="ingredientSelect flex-1 border p-2 rounded">
+    <table class="w-full border border-gray-300 mb-4" id="ingredientTable_AddSize">
+        <thead class="bg-gray-200">
+            <tr>
+                <th class="p-2 text-left">Ingredient</th>
+                <th class="p-2 text-left">Quantity</th>
+                <th class="p-2 text-left">Unit</th>
+                <th class="p-2 text-left">Action</th>
+            </tr>
+        </thead>
+        <tbody id="ingredientList_AddSize">
+            <%-- Nơi JS thêm các hàng ingredient --%>
+        </tbody>
+    </table>
+
+    <%-- Form để add ingredient mới (giống EditProductSizeForm) --%>
+    <div class="flex gap-1 items-center mb-1">
+        <select id="newIngredientSelect_AddSize" class="border p-2 rounded min-w-[150px]">
             <option value="">-- Select Ingredient --</option>
-            <c:forEach var="ing" items="${ingredientList}">
-                <option value="${ing.inventoryID}" data-unit="${ing.unit}">
-                    ${ing.inventoryName}
-                </option>
+            <c:forEach var="inv" items="${ingredientList}">
+                <option value="${inv.inventoryID}" data-unit="${inv.unit}">${inv.inventoryName}</option>
             </c:forEach>
         </select>
-        <input type="number" name="ingredientQty[]" placeholder="Quantity" step="0.01" class="w-24 border p-2 rounded">
-        <input type="text" name="ingredientUnit[]" placeholder="Unit" class="unitField w-24 border p-2 rounded" readonly>
-        <button type="button" class="removeIng bg-red-500 text-white px-2 rounded">✕</button>
+        <input type="number" id="newQuantity_AddSize" placeholder="Quantity" step="0.01" class="border w-20 rounded">
+        <input type="text" id="newUnit_AddSize" placeholder="Unit" class="border w-20 rounded" readonly>
+        <button type="button" id="addIngredientBtn_AddSize" class="bg-green-500 text-white px-2 py-2 rounded">Add</button>
     </div>
-
-    <button type="button" id="addIngredientBtn_AddSize" class="bg-blue-500 text-white px-3 py-1 rounded mt-2">
-        + Add Ingredient
-    </button>
 
     <button type="submit" class="mt-4 bg-green-600 text-white px-4 py-2 rounded">Save New Size</button>
 </form>

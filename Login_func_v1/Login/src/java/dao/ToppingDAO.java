@@ -16,13 +16,14 @@ public class ToppingDAO {
         }
     }
 
-    // Get all toppings (from Product + ProductSize where CategoryID = 3)
+    // Get all toppings (from Product table with Category = 'Topping')
     public List<Topping> getAllToppings() {
         List<Topping> list = new ArrayList<>();
         String sql = "SELECT ps.ProductSizeID, p.ProductName, ps.Price, p.IsAvailable, p.CreatedDate " +
                      "FROM Product p " +
                      "INNER JOIN ProductSize ps ON p.ProductID = ps.ProductID " +
-                     "WHERE p.CategoryID = 3 AND ps.SizeCode = 'F' " +
+                     "INNER JOIN Category c ON p.CategoryID = c.CategoryID " +
+                     "WHERE c.CategoryName = 'Topping' AND ps.SizeCode = 'F' " +
                      "ORDER BY p.ProductName";
         
         try (PreparedStatement ps = conn.prepareStatement(sql);
@@ -30,7 +31,7 @@ public class ToppingDAO {
             
             while (rs.next()) {
                 Topping t = new Topping();
-                t.setToppingID(rs.getInt("ProductSizeID")); // Now using ProductSizeID
+                t.setToppingID(rs.getInt("ProductSizeID"));
                 t.setToppingName(rs.getString("ProductName"));
                 t.setPrice(rs.getDouble("Price"));
                 t.setAvailable(rs.getBoolean("IsAvailable"));
@@ -39,17 +40,19 @@ public class ToppingDAO {
             }
         } catch (SQLException e) {
             System.err.println("❌ Error getting all toppings: " + e.getMessage());
+            e.printStackTrace();
         }
         return list;
     }
 
-    // Get available toppings only
+    // Get available toppings only (from Product table with Category = 'Topping')
     public List<Topping> getAvailableToppings() {
         List<Topping> list = new ArrayList<>();
         String sql = "SELECT ps.ProductSizeID, p.ProductName, ps.Price, p.IsAvailable " +
                      "FROM Product p " +
                      "INNER JOIN ProductSize ps ON p.ProductID = ps.ProductID " +
-                     "WHERE p.CategoryID = 3 AND ps.SizeCode = 'F' AND p.IsAvailable = 1 " +
+                     "INNER JOIN Category c ON p.CategoryID = c.CategoryID " +
+                     "WHERE c.CategoryName = 'Topping' AND ps.SizeCode = 'F' AND p.IsAvailable = 1 " +
                      "ORDER BY p.ProductName";
         
         try (PreparedStatement ps = conn.prepareStatement(sql);
@@ -57,7 +60,7 @@ public class ToppingDAO {
             
             while (rs.next()) {
                 Topping t = new Topping();
-                t.setToppingID(rs.getInt("ProductSizeID")); // Now using ProductSizeID
+                t.setToppingID(rs.getInt("ProductSizeID"));
                 t.setToppingName(rs.getString("ProductName"));
                 t.setPrice(rs.getDouble("Price"));
                 t.setAvailable(rs.getBoolean("IsAvailable"));
@@ -65,16 +68,18 @@ public class ToppingDAO {
             }
         } catch (SQLException e) {
             System.err.println("❌ Error getting available toppings: " + e.getMessage());
+            e.printStackTrace();
         }
         return list;
     }
 
-    // Get topping by ProductSizeID
+    // Get topping by ProductSizeID (toppingID is actually ProductSizeID)
     public Topping getToppingByID(int productSizeID) {
         String sql = "SELECT ps.ProductSizeID, p.ProductName, ps.Price, p.IsAvailable, p.CreatedDate " +
                      "FROM Product p " +
                      "INNER JOIN ProductSize ps ON p.ProductID = ps.ProductID " +
-                     "WHERE ps.ProductSizeID = ? AND p.CategoryID = 3";
+                     "INNER JOIN Category c ON p.CategoryID = c.CategoryID " +
+                     "WHERE ps.ProductSizeID = ? AND c.CategoryName = 'Topping'";
         
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, productSizeID);
@@ -82,7 +87,7 @@ public class ToppingDAO {
             
             if (rs.next()) {
                 Topping t = new Topping();
-                t.setToppingID(rs.getInt("ProductSizeID")); // Now using ProductSizeID
+                t.setToppingID(rs.getInt("ProductSizeID"));
                 t.setToppingName(rs.getString("ProductName"));
                 t.setPrice(rs.getDouble("Price"));
                 t.setAvailable(rs.getBoolean("IsAvailable"));
@@ -91,25 +96,41 @@ public class ToppingDAO {
             }
         } catch (SQLException e) {
             System.err.println("❌ Error getting topping by ID: " + e.getMessage());
+            e.printStackTrace();
         }
         return null;
     }
 
-    // Add new topping (creates Product + ProductSize)
+    // Add new topping (creates Product + ProductSize with Category = 'Topping')
     public boolean addTopping(String toppingName, double price) {
+        String sqlGetCategoryID = "SELECT CategoryID FROM Category WHERE CategoryName = 'Topping'";
         String sqlProduct = "INSERT INTO Product (ProductName, Description, CategoryID, ImageURL, IsAvailable) " +
-                           "VALUES (?, ?, 3, ?, 1)";
+                           "VALUES (?, ?, ?, ?, 1)";
         String sqlProductSize = "INSERT INTO ProductSize (ProductID, SizeCode, SizeName, Price, IsDeleted) " +
                                "VALUES (?, 'F', 'Fixed', ?, 0)";
         
         try {
             conn.setAutoCommit(false);
             
+            // Get CategoryID for 'Topping'
+            int categoryID = 0;
+            try (PreparedStatement psGetCat = conn.prepareStatement(sqlGetCategoryID);
+                 ResultSet rs = psGetCat.executeQuery()) {
+                if (rs.next()) {
+                    categoryID = rs.getInt("CategoryID");
+                } else {
+                    System.err.println("❌ Category 'Topping' not found");
+                    conn.rollback();
+                    return false;
+                }
+            }
+            
             // Insert Product
             PreparedStatement psProduct = conn.prepareStatement(sqlProduct, Statement.RETURN_GENERATED_KEYS);
             psProduct.setString(1, toppingName);
             psProduct.setString(2, "Topping - " + toppingName);
-            psProduct.setString(3, toppingName.toLowerCase().replace(" ", "_") + ".jpg");
+            psProduct.setInt(3, categoryID);
+            psProduct.setString(4, toppingName.toLowerCase().replace(" ", "_") + ".jpg");
             psProduct.executeUpdate();
             
             // Get generated ProductID
@@ -137,6 +158,7 @@ public class ToppingDAO {
                 System.err.println("❌ Rollback error: " + ex.getMessage());
             }
             System.err.println("❌ Error adding topping: " + e.getMessage());
+            e.printStackTrace();
             return false;
         } finally {
             try {
@@ -191,6 +213,7 @@ public class ToppingDAO {
                 System.err.println("❌ Rollback error: " + ex.getMessage());
             }
             System.err.println("❌ Error updating topping: " + e.getMessage());
+            e.printStackTrace();
             return false;
         } finally {
             try {
@@ -242,6 +265,7 @@ public class ToppingDAO {
                 System.err.println("❌ Rollback error: " + ex.getMessage());
             }
             System.err.println("❌ Error deleting topping: " + e.getMessage());
+            e.printStackTrace();
             return false;
         } finally {
             try {
@@ -276,6 +300,7 @@ public class ToppingDAO {
             return false;
         } catch (SQLException e) {
             System.err.println("❌ Error toggling topping availability: " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }

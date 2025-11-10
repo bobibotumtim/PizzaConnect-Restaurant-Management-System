@@ -55,17 +55,66 @@ public class ManageCategoryServlet extends HttpServlet {
         String name = request.getParameter("categoryName");
         String desc = request.getParameter("description");
 
+        HttpSession session = request.getSession();
+
         if (idStr == null || idStr.isEmpty()) {
-            // Add new
+            // Add new category - Validate
+            try {
+                if (categoryDAO.isCategoryNameExists(name, null)) {
+                    session.setAttribute("message", "Category name already exists");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect("managecategory");
+                    return;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            
             Category c = new Category(name, desc);
-            categoryDAO.addCategory(c);
-            response.sendRedirect("managecategory?message=added");
+            boolean success = categoryDAO.addCategory(c);
+            
+            if (success) {
+                session.setAttribute("message", "Category added successfully!");
+                session.setAttribute("messageType", "success");
+            } else {
+                session.setAttribute("message", "Error adding category.");
+                session.setAttribute("messageType", "error");
+            }
         } else {
-            // Update existing
+            // Update existing category - Validate
             int id = Integer.parseInt(idStr);
+            
+            Category existing = categoryDAO.getCategoryById(id);
+            if (existing == null) {
+                session.setAttribute("message", "Category not found");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect("managecategory");
+                return;
+            }
+            
+            try {
+                if (categoryDAO.isCategoryNameExists(name, id)) {
+                    session.setAttribute("message", "Category name already exists");
+                    session.setAttribute("messageType", "error");
+                    response.sendRedirect("managecategory");
+                    return;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            
             Category c = new Category(id, name, desc);
-            categoryDAO.updateCategory(c);
-            response.sendRedirect("managecategory?message=updated");
+            boolean success = categoryDAO.updateCategory(c);
+            
+            if (success) {
+                session.setAttribute("message", "Category updated successfully!");
+                session.setAttribute("messageType", "success");
+            } else {
+                session.setAttribute("message", "Error updating category.");
+                session.setAttribute("messageType", "error");
+            }
         }
+        
+        response.sendRedirect("managecategory");
     }
 }

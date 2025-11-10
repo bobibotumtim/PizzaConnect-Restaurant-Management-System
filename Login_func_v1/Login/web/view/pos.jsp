@@ -506,7 +506,6 @@
             };
         }
 
-        // Load sample toppings
         // Load toppings from database
         async function loadSampleToppings() {
             try {
@@ -516,9 +515,9 @@
                 
                 if (data.success) {
                     toppings = data.toppings;
-                    console.log('✅ Toppings loaded:', toppings.length, 'items');
+                    console.log('✅ Toppings loaded:', toppings);
                 } else {
-                    console.error('❌ Failed to load toppings');
+                    console.error('❌ Failed to load toppings:', data.message);
                     toppings = [];
                 }
             } catch (error) {
