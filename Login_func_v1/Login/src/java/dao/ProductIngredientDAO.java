@@ -156,4 +156,28 @@ public class ProductIngredientDAO extends DBContext {
         }
         return false;
     }
+    
+    /**
+     * Lấy danh sách nguyên liệu cần trừ cho một ProductSize với số lượng món
+     * Trả về Map với key là InventoryID và value là số lượng cần trừ
+     */
+    public Map<Integer, Double> getIngredientsToDeduct(int productSizeId, int quantity) {
+        Map<Integer, Double> ingredientsMap = new HashMap<>();
+        String sql = "SELECT InventoryID, QuantityNeeded FROM ProductIngredient WHERE ProductSizeID = ?";
+        
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, productSizeId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int inventoryId = rs.getInt("InventoryID");
+                    double quantityNeeded = rs.getDouble("QuantityNeeded");
+                    ingredientsMap.put(inventoryId, quantityNeeded * quantity);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ingredientsMap;
+    }
 }
