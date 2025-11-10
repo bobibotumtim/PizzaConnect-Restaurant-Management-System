@@ -167,6 +167,10 @@ public class InventoryDAO {
 
     // Update (cập nhật LastUpdated = GETDATE(), giữ nguyên Status)
     public void update(Inventory inv) {
+        // Get old quantity for logging
+        Inventory oldInv = getById(inv.getInventoryID());
+        double oldQuantity = oldInv != null ? oldInv.getQuantity() : 0;
+        
         String sql = "UPDATE Inventory SET ItemName = ?, Quantity = ?, Unit = ?, LastUpdated = GETDATE() WHERE InventoryID = ?";
         try (Connection conn = getConn();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -175,6 +179,54 @@ public class InventoryDAO {
             ps.setString(3, inv.getUnit());
             ps.setInt(4, inv.getInventoryID());
             ps.executeUpdate();
+            
+            // Log the change if quantity changed
+            if (oldQuantity != inv.getQuantity()) {
+                logInventoryChange(inv.getInventoryID(), oldQuantity, inv.getQuantity(), 
+                                 "UPDATE", "Manual inventory update");
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+    
+    // Update with logging - enhanced version
+    public void updateWithLogging(Inventory inv, String reason) {
+        // Get old quantity for logging
+        Inventory oldInv = getById(inv.getInventoryID());
+        double oldQuantity = oldInv != null ? oldInv.getQuantity() : 0;
+        
+        String sql = "UPDATE Inventory SET ItemName = ?, Quantity = ?, Unit = ?, LastUpdated = GETDATE() WHERE InventoryID = ?";
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, inv.getItemName());
+            ps.setDouble(2, inv.getQuantity());
+            ps.setString(3, inv.getUnit());
+            ps.setInt(4, inv.getInventoryID());
+            ps.executeUpdate();
+            
+            // Log the change
+            if (oldQuantity != inv.getQuantity()) {
+                String changeType = inv.getQuantity() > oldQuantity ? "RESTOCK" : "USAGE";
+                logInventoryChange(inv.getInventoryID(), oldQuantity, inv.getQuantity(), 
+                                 changeType, reason != null ? reason : "Inventory update");
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+    
+    // Method to update quantity only (for usage tracking)
+    public void updateQuantity(int inventoryId, double newQuantity, String changeType, String reason) {
+        // Get old quantity for logging
+        Inventory oldInv = getById(inventoryId);
+        double oldQuantity = oldInv != null ? oldInv.getQuantity() : 0;
+        
+        String sql = "UPDATE Inventory SET Quantity = ?, LastUpdated = GETDATE() WHERE InventoryID = ?";
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setDouble(1, newQuantity);
+            ps.setInt(2, inventoryId);
+            ps.executeUpdate();
+            
+            // Log the change
+            logInventoryChange(inventoryId, oldQuantity, newQuantity, changeType, reason);
         } catch (Exception e) { e.printStackTrace(); }
     }
 
@@ -240,4 +292,66 @@ public class InventoryDAO {
     }
 
     // (Không cung cấp delete để tránh xóa vật lý; nếu cần vẫn có thể thêm)
+    
+    /**
+     * Log inventory changes for monitoring and trend analysis
+     * @param inventoryId Inventory item ID
+     * @param oldQuantity Previous quantity
+     * @param newQuantity New quantity
+     * @param changeType Type of change (UPDATE, USAGE, RESTOCK)
+     * @param reason Reason for change
+     */
+    private void logInventoryChange(int inventoryId, double oldQuantity, double newQuantity, 
+                                   String changeType, String reason) {
+        String sql = "INSERT INTO InventoryLog (InventoryID, OldQuantity, NewQuantity, ChangeType, ChangeReason, LogDate) " +
+                    "VALUES (?, ?, ?, ?, ?, GETDATE())";
+        
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setInt(1, inventoryId);
+            ps.setDouble(2, oldQuantity);
+            ps.setDouble(3, newQuantity);
+            ps.setString(4, changeType);
+            ps.setString(5, reason);
+            
+            ps.executeUpdate();
+            
+        } catch (Exception e) {
+            // Don't let logging errors break the main operation
+            System.err.println("Failed to log inventory change: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Method to be called when inventory is used for orders
+     * @param inventoryId Inventory item ID
+     * @param quantityUsed Amount used
+     * @param orderId Order ID that used the inventory
+     */
+    public void recordInventoryUsage(int inventoryId, double quantityUsed, int orderId) {
+        Inventory inv = getById(inventoryId);
+        if (inv != null) {
+            double newQuantity = inv.getQuantity() - quantityUsed;
+            if (newQuantity < 0) newQuantity = 0; // Prevent negative inventory
+            
+            updateQuantity(inventoryId, newQuantity, "USAGE", 
+                          "Used for order #" + orderId + " (Qty: " + quantityUsed + ")");
+        }
+    }
+    
+    /**
+     * Method to restock inventory
+     * @param inventoryId Inventory item ID
+     * @param quantityAdded Amount added
+     * @param reason Reason for restocking
+     */
+    public void restockInventory(int inventoryId, double quantityAdded, String reason) {
+        Inventory inv = getById(inventoryId);
+        if (inv != null) {
+            double newQuantity = inv.getQuantity() + quantityAdded;
+            updateQuantity(inventoryId, newQuantity, "RESTOCK", 
+                          reason != null ? reason : "Inventory restocked (Qty: +" + quantityAdded + ")");
+        }
+    }
 }

@@ -145,7 +145,15 @@
         <url-pattern>/customer-feedback</url-pattern>
     </servlet-mapping>
 
-
+    <!-- Inventory Monitor Servlet -->
+    <servlet>
+        <servlet-name>MonitorServlet</servlet-name>
+        <servlet-class>controller.MonitorServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>MonitorServlet</servlet-name>
+        <url-pattern>/monitor</url-pattern>
+    </servlet-mapping>
 
 </web-app>
 

@@ -60,6 +60,13 @@
                 <i data-lucide="box" class="w-6 h-6"></i>
             </a>
 
+            <!-- Inventory Monitor -->
+            <a href="${pageContext.request.contextPath}/view/InventoryMonitorBeautiful.jsp"
+               class="nav-btn <%= currentPath.contains("/InventoryMonitor") || "monitor".equals(activePage) ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+               title="Inventory Monitor">
+                <i data-lucide="activity" class="w-6 h-6"></i>
+            </a>
+
             <!-- Sales Reports -->
             <a href="${pageContext.request.contextPath}/sales-reports"
                class="nav-btn <%= currentPath.contains("/sales-reports") || "reports".equals(activePage) ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
@@ -147,6 +154,10 @@
                 <a href="${pageContext.request.contextPath}/manageinventory" class="flex items-center space-x-3 text-gray-300 hover:text-white hover:bg-gray-700 p-3 rounded-lg">
                     <i data-lucide="box" class="w-5 h-5"></i>
                     <span>Inventory</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/view/InventoryMonitorBeautiful.jsp" class="flex items-center space-x-3 text-gray-300 hover:text-white hover:bg-gray-700 p-3 rounded-lg">
+                    <i data-lucide="activity" class="w-5 h-5"></i>
+                    <span>Inventory Monitor</span>
                 </a>
                 <a href="${pageContext.request.contextPath}/sales-reports" class="flex items-center space-x-3 text-gray-300 hover:text-white hover:bg-gray-700 p-3 rounded-lg">
                     <i data-lucide="bar-chart-2" class="w-5 h-5"></i>

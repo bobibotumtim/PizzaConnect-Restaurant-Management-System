@@ -114,8 +114,15 @@
                 <!-- Inventory -->
                 <a href="${pageContext.request.contextPath}/manageinventory"
                    class="nav-btn <%= currentPath.contains("/manageinventory") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                   title="Inventory">
+                   title="Manage Inventory">
                     <i data-lucide="box" class="w-6 h-6"></i>
+                </a>
+
+                <!-- Inventory Monitor -->
+                <a href="${pageContext.request.contextPath}/view/InventoryMonitorBeautiful.jsp"
+                   class="nav-btn <%= currentPath.contains("/InventoryMonitor") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Inventory Monitor">
+                    <i data-lucide="activity" class="w-6 h-6"></i>
                 </a>
 
                 <!-- Sales Reports -->
@@ -303,6 +310,64 @@
             </div>
         </div>
         
+        <!-- Quick Actions Section -->
+        <div class="mt-4 bg-white rounded-xl p-4 shadow-sm">
+            <h2 class="text-base font-bold text-gray-800 mb-4 flex items-center">
+                <i data-lucide="zap" class="w-5 h-5 mr-2 text-orange-500"></i>
+                Quick Actions
+            </h2>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- Inventory Monitor -->
+                <a href="${pageContext.request.contextPath}/view/InventoryMonitorBeautiful.jsp" 
+                   class="bg-gradient-to-r from-red-500 to-red-600 rounded-lg p-4 text-white hover:from-red-600 hover:to-red-700 transition-all duration-200 transform hover:scale-105">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-red-100 text-xs">Inventory</p>
+                            <p class="text-lg font-bold">Monitor</p>
+                        </div>
+                        <i data-lucide="activity" class="w-6 h-6 text-red-200"></i>
+                    </div>
+                </a>
+                
+                <!-- Manage Inventory -->
+                <a href="${pageContext.request.contextPath}/manageinventory" 
+                   class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-4 text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 transform hover:scale-105">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-blue-100 text-xs">Manage</p>
+                            <p class="text-lg font-bold">Inventory</p>
+                        </div>
+                        <i data-lucide="box" class="w-6 h-6 text-blue-200"></i>
+                    </div>
+                </a>
+                
+                <!-- Sales Reports -->
+                <a href="${pageContext.request.contextPath}/sales-reports" 
+                   class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-4 text-white hover:from-green-600 hover:to-green-700 transition-all duration-200 transform hover:scale-105">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-green-100 text-xs">Sales</p>
+                            <p class="text-lg font-bold">Reports</p>
+                        </div>
+                        <i data-lucide="bar-chart-2" class="w-6 h-6 text-green-200"></i>
+                    </div>
+                </a>
+                
+                <!-- Customer Feedback -->
+                <a href="${pageContext.request.contextPath}/view/CustomerFeedbackWorking.jsp" 
+                   class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-4 text-white hover:from-purple-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-purple-100 text-xs">Customer</p>
+                            <p class="text-lg font-bold">Feedback</p>
+                        </div>
+                        <i data-lucide="message-circle" class="w-6 h-6 text-purple-200"></i>
+                    </div>
+                </a>
+            </div>
+        </div>
+
         <!-- Customer Feedback Section -->
         <div class="mt-4 bg-white rounded-xl p-4 shadow-sm">
             <div class="flex items-center justify-between mb-4">

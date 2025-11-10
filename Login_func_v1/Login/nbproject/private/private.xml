@@ -3,14 +3,11 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/FPTSHOP/Documents/GitHub/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/WEB-INF/web.xml</file>
             <file>file:/C:/Users/FPTSHOP/Documents/GitHub/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/dao/InventoryDAO.java</file>
-            <file>file:/C:/Users/FPTSHOP/Documents/GitHub/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/controller/AddProductServlet.java</file>
-            <file>file:/C:/Users/FPTSHOP/Documents/GitHub/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/web/view/inventory-form.jsp</file>
-            <file>file:/C:/Users/FPTSHOP/Documents/GitHub/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/models/OrderDetail.java</file>
+            <file>file:/C:/Users/FPTSHOP/Documents/GitHub/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/build/web/view/inventory-form.jsp</file>
             <file>file:/C:/Users/FPTSHOP/Documents/GitHub/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/dao/DBContext.java</file>
+            <file>file:/C:/Users/FPTSHOP/Documents/GitHub/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/build/web/view/ManageInventory.jsp</file>
             <file>file:/C:/Users/FPTSHOP/Documents/GitHub/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/controller/InventoryServlet.java</file>
-            <file>file:/C:/Users/FPTSHOP/Documents/GitHub/PizzaConnect-Restaurant-Management-System/Login_func_v1/Login/src/java/models/Inventory.java</file>
         </group>
     </open-files>
 </project-private>
