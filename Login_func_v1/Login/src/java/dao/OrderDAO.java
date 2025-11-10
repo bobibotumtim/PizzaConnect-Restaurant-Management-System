@@ -81,6 +81,20 @@ public class OrderDAO extends DBContext {
                 }
             }
 
+            // 3️⃣ Update table status to Occupied
+            if (tableID > 0) {
+                String sqlUpdateTable = "UPDATE [Table] SET Status = 'Occupied' WHERE TableID = ?";
+                try (PreparedStatement psTable = con.prepareStatement(sqlUpdateTable)) {
+                    psTable.setInt(1, tableID);
+                    int rowsUpdated = psTable.executeUpdate();
+                    if (rowsUpdated > 0) {
+                        System.out.println("✅ Table #" + tableID + " set to Occupied (Order #" + orderId + " created)");
+                    } else {
+                        System.err.println("⚠️ Failed to update table status for Table #" + tableID);
+                    }
+                }
+            }
+
             con.commit();
             return orderId;
 
@@ -904,5 +918,88 @@ public class OrderDAO extends DBContext {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    /**
+     * Add items to existing order
+     * Used when waiter adds more items to an order from POS
+     */
+    public boolean addItemsToOrder(int orderId, List<OrderDetail> newItems) throws Exception {
+        Connection con = null;
+        
+        try {
+            con = useConnection();
+            con.setAutoCommit(false);
+            
+            // Insert new order details
+            String sqlDetail = """
+                INSERT INTO [OrderDetail] 
+                (OrderID, ProductSizeID, Quantity, TotalPrice, SpecialInstructions, Status)
+                VALUES (?, ?, ?, ?, ?, 'Waiting')
+            """;
+            
+            double additionalTotal = 0;
+            try (PreparedStatement psDetail = con.prepareStatement(sqlDetail)) {
+                for (OrderDetail d : newItems) {
+                    psDetail.setInt(1, orderId);
+                    psDetail.setInt(2, d.getProductSizeID());
+                    psDetail.setInt(3, d.getQuantity());
+                    psDetail.setDouble(4, d.getTotalPrice());
+                    psDetail.setString(5, d.getSpecialInstructions());
+                    psDetail.addBatch();
+                    additionalTotal += d.getTotalPrice();
+                }
+                psDetail.executeBatch();
+            }
+            
+            // Update total price of order
+            String sqlUpdate = "UPDATE [Order] SET TotalPrice = TotalPrice + ? WHERE OrderID = ?";
+            try (PreparedStatement psUpdate = con.prepareStatement(sqlUpdate)) {
+                psUpdate.setDouble(1, additionalTotal);
+                psUpdate.setInt(2, orderId);
+                psUpdate.executeUpdate();
+            }
+            
+            con.commit();
+            System.out.println("✅ Added " + newItems.size() + " items to Order #" + orderId);
+            return true;
+            
+        } catch (Exception e) {
+            if (con != null) con.rollback();
+            System.err.println("❌ Error adding items to order: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        } finally {
+            if (externalConn == null && con != null) con.close();
+        }
+    }
+
+    /**
+     * Get order with all details (for editing in POS)
+     */
+    public Order getOrderWithDetails(int orderId) {
+        Order order = getOrderById(orderId);
+        if (order != null) {
+            List<OrderDetail> details = getOrderDetailsByOrderId(orderId);
+            
+            // Load toppings for each order detail
+            OrderDetailToppingDAO toppingDAO = new OrderDetailToppingDAO();
+            for (OrderDetail detail : details) {
+                List<OrderDetailTopping> toppings = toppingDAO.getToppingsByOrderDetailID(detail.getOrderDetailID());
+                detail.setToppings(toppings);
+            }
+            
+            order.setDetails(details);
+        }
+        return order;
+    }
+    
+    // 🟢 Auto-update Order status khi tất cả món đã served
+    public boolean autoUpdateOrderStatusIfAllServed(int orderId) {
+        OrderDetailDAO detailDAO = new OrderDetailDAO();
+        if (detailDAO.areAllItemsServed(orderId)) {
+            return updateOrderStatus(orderId, 1); // Status = 1 (Đã phục vụ xong)
+        }
+        return false;
     }
 }

@@ -9,7 +9,7 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet("/manageinventory")
+@WebServlet(urlPatterns = {"/inventory", "/manageinventory"})
 public class InventoryServlet extends HttpServlet {
     private InventoryDAO dao = new InventoryDAO();
 

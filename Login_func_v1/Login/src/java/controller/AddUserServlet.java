@@ -177,7 +177,7 @@ public class AddUserServlet extends HttpServlet {
                     EmployeeDAO employeeDAO = new EmployeeDAO();
                     Employee employee = new Employee();
                     employee.setUserID(userId);
-                    employee.setRole(employeeRole);
+                    employee.setEmployeeRole(employeeRole);
                     
                     int employeeId = employeeDAO.insertEmployee(employee);
                     if (employeeId <= 0) {

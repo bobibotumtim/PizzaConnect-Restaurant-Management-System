@@ -161,11 +161,14 @@ public class DashboardController extends HttpServlet {
     }
     
     private String getProductNameById(int productId) {
-        ProductDAO productDAO = new ProductDAO();
-        //Product product = productDAO.getProductById(productId);
-        Product product = null;
-        if (product != null) {
-            return product.getProductName();
+        try {
+            ProductDAO productDAO = new ProductDAO();
+            Product product = productDAO.getBaseProductById(productId);
+            if (product != null) {
+                return product.getProductName();
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting product name for ID " + productId + ": " + e.getMessage());
         }
         return "Unknown Product";
     }

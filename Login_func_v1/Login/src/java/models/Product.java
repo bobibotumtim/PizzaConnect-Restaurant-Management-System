@@ -9,6 +9,7 @@ public class Product {
     private String categoryName;     // ✅ chỉ lấy tên category
     private String imageUrl;
     private boolean isAvailable;
+    private double price;            // For display purposes (usually from ProductSize)
 
     public Product() {}
 
@@ -43,12 +44,19 @@ public class Product {
 
     public String getCategoryName() { return categoryName; }
     public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
+    
+    // Alias for backward compatibility
+    public String getCategory() { return categoryName; }
+    public void setCategory(String category) { this.categoryName = category; }
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
     public boolean isAvailable() { return isAvailable; }
     public void setAvailable(boolean available) { isAvailable = available; }
+    
+    public double getPrice() { return price; }
+    public void setPrice(double price) { this.price = price; }
 
     @Override
     public String toString() {

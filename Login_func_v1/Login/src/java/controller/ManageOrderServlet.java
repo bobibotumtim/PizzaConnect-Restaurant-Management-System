@@ -32,6 +32,14 @@ public class ManageOrderServlet extends HttpServlet {
 
         User user = (User) session.getAttribute("user");
         request.setAttribute("currentUser", user);
+        
+        // Block Chef access to ManageOrders
+        models.Employee employee = (models.Employee) session.getAttribute("employee");
+        if (employee != null && employee.isChef()) {
+            System.out.println("🚫 Chef blocked from accessing ManageOrders");
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Chefs cannot access Order Management. Please use Chef Monitor.");
+            return;
+        }
 
         String action = request.getParameter("action");
         
@@ -122,10 +130,11 @@ public class ManageOrderServlet extends HttpServlet {
                     System.out.println("➡️ Routing to handleUpdatePayment");
                     handleUpdatePayment(request, response, orderDAO);
                     break;
-                case "delete":
-                    System.out.println("➡️ Routing to handleDelete");
-                    handleDelete(request, response, orderDAO);
-                    break;
+                // ❌ DELETE DISABLED - Orders cannot be deleted, only cancelled
+                // case "delete":
+                //     System.out.println("➡️ Routing to handleDelete");
+                //     handleDelete(request, response, orderDAO);
+                //     break;
                 default:
                     System.out.println("⚠️ Unknown action: " + action + " - redirecting to manage-orders");
                     response.sendRedirect(request.getContextPath() + "/manage-orders");
@@ -203,6 +212,33 @@ public class ManageOrderServlet extends HttpServlet {
             
             if (success) {
                 System.out.println("✅ Order status updated successfully");
+                
+                // Nếu Cancelled (3) → Set payment về Unpaid
+                if (status == 3) {
+                    boolean paymentUpdated = orderDAO.updatePaymentStatus(orderId, "Unpaid");
+                    if (paymentUpdated) {
+                        System.out.println("✅ Payment status set to Unpaid (Order #" + orderId + " Cancelled)");
+                    } else {
+                        System.err.println("⚠️ Failed to update payment status for Order #" + orderId);
+                    }
+                }
+                
+                // Nếu Completed (2) hoặc Cancelled (3) → Set bàn về available
+                if (status == 2 || status == 3) {
+                    Order order = orderDAO.getOrderById(orderId);
+                    if (order != null && order.getTableID() > 0) {
+                        dao.TableDAO tableDAO = new dao.TableDAO();
+                        boolean tableUpdated = tableDAO.updateTableStatus(order.getTableID(), "available");
+                        
+                        if (tableUpdated) {
+                            String statusText = (status == 2) ? "Completed" : "Cancelled";
+                            System.out.println("✅ Table #" + order.getTableID() + " set to available (Order #" + orderId + " " + statusText + ")");
+                        } else {
+                            System.err.println("⚠️ Failed to update table status for Table #" + order.getTableID());
+                        }
+                    }
+                }
+                
                 request.getSession().setAttribute("message", "Cập nhật trạng thái đơn hàng thành công!");
             } else {
                 System.out.println("❌ Failed to update order status");
