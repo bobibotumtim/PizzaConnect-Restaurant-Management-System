@@ -1,6 +1,8 @@
 package controller;
 
 import dao.UserDAO;
+import dao.EmployeeDAO;
+import dao.CustomerDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
@@ -9,6 +11,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import models.User;
+import models.Employee;
+import models.Customer;
 
 @WebServlet(name = "EditUserServlet", urlPatterns = { "/edituser" })
 public class EditUserServlet extends HttpServlet {
@@ -82,6 +86,7 @@ public class EditUserServlet extends HttpServlet {
         String password = request.getParameter("password");
         String confirmPassword = request.getParameter("confirmPassword");
         String roleStr = request.getParameter("role");
+        String employeeRole = request.getParameter("employeeRole");
         String dateOfBirthStr = request.getParameter("dateOfBirth");
         String gender = request.getParameter("gender");
         String isActiveStr = request.getParameter("isActive");
@@ -268,10 +273,10 @@ public class EditUserServlet extends HttpServlet {
                 // Xử lý Employee/Customer records
                 EmployeeDAO employeeDAO = new EmployeeDAO();
                 CustomerDAO customerDAO = new CustomerDAO();
-                
+
                 // Nếu role thay đổi, cần xóa record cũ và tạo mới
                 int oldRole = userDAO.getUserById(userId).getRole();
-                
+
                 if (role == 2) { // Employee
                     if (employeeRole == null || employeeRole.trim().isEmpty()) {
                         request.setAttribute("error", "Employee role is required for Employee users!");
@@ -280,22 +285,22 @@ public class EditUserServlet extends HttpServlet {
                         request.getRequestDispatcher("/view/EditUser.jsp").forward(request, response);
                         return;
                     }
-                    
+
                     // Validate employee role
-                    if (!employeeRole.equals("Manager") && !employeeRole.equals("Cashier") && 
-                        !employeeRole.equals("Waiter") && !employeeRole.equals("Chef")) {
+                    if (!employeeRole.equals("Manager") && !employeeRole.equals("Cashier") &&
+                            !employeeRole.equals("Waiter") && !employeeRole.equals("Chef")) {
                         request.setAttribute("error", "Invalid employee role selected!");
                         request.setAttribute("currentUser", currentUser);
                         request.setAttribute("editUser", existingUser);
                         request.getRequestDispatcher("/view/EditUser.jsp").forward(request, response);
                         return;
                     }
-                    
+
                     // Nếu role cũ là Customer, xóa customer record
                     if (oldRole == 3) {
                         customerDAO.deleteCustomerByUserId(userId);
                     }
-                    
+
                     // Kiểm tra xem employee record đã tồn tại chưa
                     Employee existingEmployee = employeeDAO.getEmployeeByUserId(userId);
                     if (existingEmployee != null) {
@@ -313,7 +318,7 @@ public class EditUserServlet extends HttpServlet {
                     if (oldRole == 2) {
                         employeeDAO.deleteEmployee(userId);
                     }
-                    
+
                     // Kiểm tra xem customer record đã tồn tại chưa
                     Customer existingCustomer = customerDAO.getCustomerByUserID(userId);
                     if (existingCustomer == null) {
@@ -331,7 +336,7 @@ public class EditUserServlet extends HttpServlet {
                         customerDAO.deleteCustomerByUserId(userId);
                     }
                 }
-                
+
                 request.setAttribute("message", "User updated successfully!");
                 request.setAttribute("currentUser", currentUser);
                 request.setAttribute("editUser", existingUser);

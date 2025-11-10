@@ -2,12 +2,15 @@ package controller;
 
 import dao.UserDAO;
 import dao.OrderDAO;
+import dao.EmployeeDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 import models.User;
+import models.Employee;
 
 public class AdminServlet extends HttpServlet {
 
@@ -30,6 +33,7 @@ public class AdminServlet extends HttpServlet {
         }
 
         UserDAO userDAO = new UserDAO();
+        EmployeeDAO employeeDAO = new EmployeeDAO();
 
         // === Phần lọc role (đã sửa) ===
         String roleFilter = request.getParameter("roleFilter");
@@ -45,8 +49,8 @@ public class AdminServlet extends HttpServlet {
 
         if ("all".equalsIgnoreCase(roleFilter)) {
             filteredUsers = allUsers;
-        } else if ("Manager".equals(roleFilter) || "Cashier".equals(roleFilter) || 
-                   "Waiter".equals(roleFilter) || "Chef".equals(roleFilter)) {
+        } else if ("Manager".equals(roleFilter) || "Cashier".equals(roleFilter) ||
+                "Waiter".equals(roleFilter) || "Chef".equals(roleFilter)) {
             // Filter by employee role
             filteredUsers = new ArrayList<>();
             for (User user : allUsers) {
@@ -68,7 +72,7 @@ public class AdminServlet extends HttpServlet {
                 } else if (rf.startsWith("staff") || rf.startsWith("employee")) {
                     roleInt = 2;
                 } else if (rf.startsWith("customer") || rf.startsWith("user")) {
-                    roleInt = 0;
+                    roleInt = 3;
                 }
             }
             if (roleInt != null) {
