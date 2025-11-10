@@ -54,9 +54,13 @@ public class RoleFilter implements Filter {
     }
     
     private boolean isWaiterOnlyPage(String path) {
-        // Waiter-only (Role 2): POS and Order Management
+        // Waiter-only (Role 2): POS, Order Management, Assign Table, Waiter Monitor, Waiter Dashboard
         // Admin (Role 1) CANNOT access these pages
         return path.contains("/pos") ||
-               path.contains("/manage-orders");
+               path.contains("/manage-orders") ||
+               path.contains("/assign-table") ||
+               path.contains("/waiter-monitor") ||
+               path.contains("/WaiterMonitor") ||
+               path.contains("/waiter-dashboard");
     }
 }

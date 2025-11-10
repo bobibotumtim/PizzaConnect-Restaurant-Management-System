@@ -47,13 +47,13 @@
         <div class="flex items-center gap-4">
             <div class="text-2xl font-bold text-orange-600">🍕 PIZZA POS</div>
             <div id="selectedTableDisplay" class="px-4 py-2 bg-purple-100 text-purple-800 rounded-lg font-semibold">
-                Chưa chọn bàn
+                No table selected
             </div>
             <div class="relative">
                 <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
-                <input type="text" id="searchInput" placeholder="Tìm món..." 
+                <input type="text" id="searchInput" placeholder="Search items..." 
                        class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-80 focus:outline-none focus:ring-2 focus:ring-orange-500">
             </div>
         </div>
@@ -78,8 +78,8 @@
         <!-- LEFT PANEL - Table Selection -->
         <div class="w-64 bg-white border-r flex flex-col">
             <div class="p-4 border-b bg-purple-600 text-white">
-                <h3 class="font-bold text-lg">Quản lý bàn</h3>
-                <input type="text" id="tableSearch" placeholder="Tìm bàn..." 
+                <h3 class="font-bold text-lg">Table Management</h3>
+                <input type="text" id="tableSearch" placeholder="Search table..." 
                        class="mt-2 w-full px-3 py-2 rounded-lg text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300">
             </div>
             
@@ -88,7 +88,7 @@
                     <!-- Tables will be loaded here -->
                     <div class="text-center text-gray-400 col-span-2 py-8">
                         <div class="text-3xl mb-2">🪑</div>
-                        <div class="text-sm">Đang tải bàn...</div>
+                        <div class="text-sm">Loading tables...</div>
                     </div>
                 </div>
             </div>
@@ -316,7 +316,7 @@
             if (!tablesToDisplay || tablesToDisplay.length === 0) {
                 grid.innerHTML = '<div class="text-center text-gray-400 col-span-2 py-8">' +
                                 '<div class="text-3xl mb-2">🪑</div>' +
-                                '<div class="text-sm">Không có bàn</div>' +
+                                '<div class="text-sm">No tables</div>' +
                                 '</div>';
                 return;
             }
@@ -325,7 +325,7 @@
                 const isAvailable = table.status === 'available';
                 const bgColor = isAvailable ? 'bg-green-100 hover:bg-green-200 border-green-300' : 'bg-red-100 border-red-300';
                 const textColor = isAvailable ? 'text-green-800' : 'text-red-800';
-                const statusText = isAvailable ? 'Trống' : 'Đang dùng';
+                const statusText = isAvailable ? 'Available' : 'Occupied';
                 const cursorClass = isAvailable ? 'cursor-pointer' : 'cursor-not-allowed opacity-60';
                 
                 return '<button onclick="' + (isAvailable ? 'selectTable(' + table.tableID + ')' : 'void(0)') + '" ' +
@@ -353,7 +353,7 @@
         function selectTable(tableId) {
             const table = tables.find(t => t.tableID === tableId);
             if (!table || table.status !== 'available') {
-                alert('⚠️ Bàn này không khả dụng!');
+                alert('⚠️ This table is not available!');
                 return;
             }
             
@@ -369,7 +369,7 @@
             });
             
             // Update header display
-            document.getElementById('selectedTableDisplay').textContent = 'Bàn ' + table.tableNumber;
+            document.getElementById('selectedTableDisplay').textContent = 'Table ' + table.tableNumber;
             document.getElementById('selectedTableDisplay').classList.remove('bg-purple-100', 'text-purple-800');
             document.getElementById('selectedTableDisplay').classList.add('bg-purple-600', 'text-white');
             
@@ -381,8 +381,8 @@
             const grid = document.getElementById('tableGrid');
             grid.innerHTML = '<div class="text-center text-red-400 col-span-2 py-8">' +
                             '<div class="text-3xl mb-2">⚠️</div>' +
-                            '<div class="text-sm">Lỗi tải bàn</div>' +
-                            '<button onclick="loadTables()" class="mt-2 px-3 py-1 bg-red-500 text-white rounded text-xs">Thử lại</button>' +
+                            '<div class="text-sm">Error loading tables</div>' +
+                            '<button onclick="loadTables()" class="mt-2 px-3 py-1 bg-red-500 text-white rounded text-xs">Retry</button>' +
                             '</div>';
         }
 
@@ -423,7 +423,7 @@
                     
                     // Update header to show order info
                     document.getElementById('selectedTableDisplay').textContent = 
-                        'Đơn #' + existingOrder.orderID + ' - Bàn ' + existingOrder.tableID;
+                        'Order #' + existingOrder.orderID + ' - Table ' + existingOrder.tableID;
                     document.getElementById('selectedTableDisplay').classList.remove('bg-purple-100', 'text-purple-800');
                     document.getElementById('selectedTableDisplay').classList.add('bg-blue-600', 'text-white');
                     
@@ -448,12 +448,12 @@
                     
                 } else {
                     console.error('❌ Failed to load order:', data.message);
-                    alert('❌ Không thể tải đơn hàng: ' + data.message);
+                    alert('❌ Cannot load order: ' + data.message);
                     window.location.href = 'manage-orders';
                 }
             } catch (error) {
                 console.error('❌ Error loading order:', error);
-                alert('❌ Lỗi tải đơn hàng!');
+                alert('❌ Error loading order!');
                 window.location.href = 'manage-orders';
             }
         }

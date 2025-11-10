@@ -1002,4 +1002,40 @@ public class OrderDAO extends DBContext {
         }
         return false;
     }
+    
+    // 🟢 Lấy danh sách Order theo TableID (chưa hoàn thành)
+    public List<Order> getOrdersByTableId(int tableId) {
+        List<Order> orders = new ArrayList<>();
+        String sql = """
+            SELECT o.*, c.LoyaltyPoint, u.Name as CustomerName
+            FROM [Order] o
+            LEFT JOIN Customer c ON o.CustomerID = c.CustomerID
+            LEFT JOIN [User] u ON c.UserID = u.UserID
+            WHERE o.TableID = ? AND o.Status < 4
+            ORDER BY o.OrderDate DESC
+        """;
+        
+        try (Connection con = useConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, tableId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Order order = new Order();
+                    order.setOrderID(rs.getInt("OrderID"));
+                    order.setCustomerID(rs.getInt("CustomerID"));
+                    order.setEmployeeID(rs.getInt("EmployeeID"));
+                    order.setTableID(rs.getInt("TableID"));
+                    order.setOrderDate(rs.getTimestamp("OrderDate"));
+                    order.setStatus(rs.getInt("Status"));
+                    order.setPaymentStatus(rs.getString("PaymentStatus"));
+                    order.setTotalPrice(rs.getDouble("TotalPrice"));
+                    order.setNote(rs.getString("Note"));
+                    orders.add(order);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error getting orders by table: " + e.getMessage());
+        }
+        return orders;
+    }
 }

@@ -16,6 +16,9 @@
     else if (navbarCurrentPath.contains("/WaiterMonitor")) pageTitle = "Waiter Monitor";
     else if (navbarCurrentPath.contains("/manage-orders")) pageTitle = "Manage Orders";
     else if (navbarCurrentPath.contains("/pos")) pageTitle = "POS";
+    else if (navbarCurrentPath.contains("/chatbot")) pageTitle = "AI Assistant";
+    else if (navbarCurrentPath.contains("/customer-menu")) pageTitle = "Menu";
+    else if (navbarCurrentPath.contains("/home")) pageTitle = "Home";
     else if (navbarCurrentPath.contains("/menu")) pageTitle = "Menu";
     else if (navbarCurrentPath.contains("/manageproduct")) pageTitle = "Products";
     else if (navbarCurrentPath.contains("/managecategory")) pageTitle = "Categories";
