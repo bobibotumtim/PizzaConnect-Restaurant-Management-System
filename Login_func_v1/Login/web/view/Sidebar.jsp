@@ -221,6 +221,11 @@
                 <span class="sidebar-text">Waiter Monitor</span>
             </a>
             
+            <a href="<%= sidebarContextPath %>/assign-table" class="sidebar-item <%= sidebarCurrentPath.contains("/assign-table") ? "active" : "" %>">
+                <div class="sidebar-icon"><i data-lucide="layout-grid"></i></div>
+                <span class="sidebar-text">Assign Table</span>
+            </a>
+            
             <a href="<%= sidebarContextPath %>/manage-orders" class="sidebar-item <%= sidebarCurrentPath.contains("/manage-orders") ? "active" : "" %>">
                 <div class="sidebar-icon"><i data-lucide="file-text"></i></div>
                 <span class="sidebar-text">Manage Orders</span>

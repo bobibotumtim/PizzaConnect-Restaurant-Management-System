@@ -62,9 +62,9 @@ public class LoginServlet extends HttpServlet {
                     return;
                 }
             }
-            // Waiter or other employees -> Redirect to POS
-            System.out.println("👔 Employee (non-chef) - Redirecting to POS");
-            response.sendRedirect("pos");
+            // Waiter or other employees -> Redirect to Waiter Dashboard
+            System.out.println("👔 Employee (non-chef) - Redirecting to Waiter Dashboard");
+            response.sendRedirect("waiter-dashboard");
         } else {
             // Customer -> Home
             CustomerDAO cdao = new CustomerDAO();
