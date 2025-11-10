@@ -32,11 +32,28 @@
         }
 
         .section-title {
-            font-size: 22px;
-            font-weight: 600;
+            font-size: 20px;
+            font-weight: 700;
             margin-top: 25px;
             margin-bottom: 15px;
-            text-decoration: underline;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .section-waiting {
+            background: linear-gradient(135deg, #4a7aff 0%, #3461e0 100%);
+        }
+        
+        .section-preparing {
+            background: linear-gradient(135deg, #f2b134 0%, #d99a1f 100%);
+        }
+        
+        .section-ready {
+            background: linear-gradient(135deg, #63f063 0%, #4ad84a 100%);
         }
 
         .dish-container {
@@ -144,7 +161,7 @@
 
     <!-- ==================== Waiting Section ==================== -->
     <div>
-        <div class="section-title">Waiting dishes</div>
+        <div class="section-title section-waiting">⏳ Waiting Dishes</div>
         <div id="waiting" class="dish-container">
             <c:forEach var="dish" items="${waitingList}">
                 <div class="dish-card waiting" onclick="selectDish(this)" data-id="${dish.orderDetailID}">
@@ -160,9 +177,6 @@
                             🧀 <c:forEach var="topping" items="${dish.toppings}" varStatus="status">${topping.toppingName}<c:if test="${!status.last}">, </c:if></c:forEach>
                         </div>
                     </c:if>
-                    <c:if test="${not empty dish.specialInstructions}">
-                        <div class="topping" style="font-style: italic;">📝 ${dish.specialInstructions}</div>
-                    </c:if>
                 </div>
             </c:forEach>
         </div>
@@ -176,7 +190,7 @@
         </div>
 
         <!-- ==================== Preparing Section ==================== -->
-        <div class="section-title">Preparing dishes</div>
+        <div class="section-title section-preparing">🔥 Preparing Dishes</div>
         <div id="ongoing" class="dish-container">
             <c:forEach var="dish" items="${preparingList}">
                 <div class="dish-card ongoing" onclick="selectDish(this)" data-id="${dish.orderDetailID}">
@@ -191,9 +205,6 @@
                         <div class="topping" style="font-weight: 600; color: #8B4513;">
                             🧀 <c:forEach var="topping" items="${dish.toppings}" varStatus="status">${topping.toppingName}<c:if test="${!status.last}">, </c:if></c:forEach>
                         </div>
-                    </c:if>
-                    <c:if test="${not empty dish.specialInstructions}">
-                        <div class="topping" style="font-style: italic;">📝 ${dish.specialInstructions}</div>
                     </c:if>
                 </div>
             </c:forEach>
@@ -214,7 +225,7 @@
         </div>
 
         <!-- ==================== Ready Section ==================== -->
-        <div class="section-title">Ready dishes (Waiter will serve)</div>
+        <div class="section-title section-ready">✅ Ready Dishes (Waiter will serve)</div>
         <div id="ready" class="dish-container">
             <c:forEach var="dish" items="${readyList}">
                 <div class="dish-card" style="background-color: #90EE90;" data-id="${dish.orderDetailID}">
@@ -229,12 +240,6 @@
                         <div class="topping" style="font-weight: 600; color: #228B22;">
                             🧀 <c:forEach var="topping" items="${dish.toppings}" varStatus="status">${topping.toppingName}<c:if test="${!status.last}">, </c:if></c:forEach>
                         </div>
-                    </c:if>
-                    <c:if test="${not empty dish.specialInstructions}">
-                        <div class="topping" style="font-style: italic;">📝 ${dish.specialInstructions}</div>
-                    </c:if>
-                    <c:if test="${empty dish.toppings and empty dish.specialInstructions}">
-                        <div class="topping">✅ Ready</div>
                     </c:if>
                 </div>
             </c:forEach>
