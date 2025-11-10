@@ -126,7 +126,17 @@
 <div class="sidebar">
     <!-- Header/Logo -->
     <div class="sidebar-header">
-        <a href="<%= sidebarContextPath %>/dashboard" style="text-decoration: none; color: inherit;">
+        <% 
+            String logoLink = sidebarContextPath + "/home"; // Default for customer
+            if (sidebarIsAdmin) {
+                logoLink = sidebarContextPath + "/dashboard";
+            } else if (sidebarIsChef) {
+                logoLink = sidebarContextPath + "/ChefMonitor";
+            } else if (sidebarIsWaiter) {
+                logoLink = sidebarContextPath + "/waiter-dashboard";
+            }
+        %>
+        <a href="<%= logoLink %>" style="text-decoration: none; color: inherit;">
             <div class="sidebar-logo">&#127829;</div>
         </a>
     </div>

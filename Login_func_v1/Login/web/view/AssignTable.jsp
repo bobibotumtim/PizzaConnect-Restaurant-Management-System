@@ -1,54 +1,15 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assigned Tables - Waiter</title>
+    <title>Table Management - PizzaConnect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .main-content {
-            margin-left: 80px;
-            padding: 30px;
-            transition: margin-left 0.3s ease;
-        }
-        
-        .header-section {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        .header-title {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
-        
-        .header-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-        }
         
         .tables-grid {
             display: grid;
@@ -257,98 +218,117 @@
             font-weight: bold;
             color: #667eea;
         }
+        .table-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .table-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
-<body>
+<body class="bg-gray-50">
     <!-- Include Sidebar -->
     <jsp:include page="Sidebar.jsp" />
     
-    <div class="main-content">
-        <!-- Header -->
-        <div class="header-section">
-            <div class="header-title">
-                <div class="header-icon">
-                    <i data-lucide="layout-grid" style="width: 28px; height: 28px;"></i>
-                </div>
-                <div>
-                    <h1 style="margin: 0; font-size: 28px; font-weight: bold; color: #1f2937;">Assigned Tables</h1>
-                    <p style="margin: 0; color: #6b7280;">Manage and monitor your assigned tables</p>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Statistics -->
-        <div class="stats-row">
-            <div class="stat-card">
-                <div class="stat-number" style="color: #10b981;" id="availableCount">0</div>
-                <div class="stat-label">Available Tables</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" style="color: #f59e0b;" id="occupiedCount">0</div>
-                <div class="stat-label">Occupied Tables</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" style="color: #667eea;" id="totalTables">0</div>
-                <div class="stat-label">Total Tables</div>
-            </div>
-        </div>
-        
-        <!-- Filter Section -->
-        <div class="filter-section">
-            <div class="filter-buttons">
-                <button class="filter-btn active" data-filter="all">
-                    <i class="fas fa-th"></i> All Tables
-                </button>
-                <button class="filter-btn" data-filter="available">
-                    <i class="fas fa-check-circle"></i> Available
-                </button>
-                <button class="filter-btn" data-filter="occupied">
-                    <i class="fas fa-utensils"></i> Occupied
-                </button>
-                <button class="filter-btn" data-filter="unavailable">
-                    <i class="fas fa-times-circle"></i> Unavailable
-                </button>
-            </div>
-        </div>
-        
-        <!-- Tables Grid -->
-        <div class="tables-grid" id="tablesGrid">
-            <c:forEach var="table" items="${tables}">
-                <div class="table-card ${table.status}" data-status="${table.status}" data-table-id="${table.tableID}">
-                    <div class="table-header">
-                        <div class="table-number">
-                            <i class="fas fa-chair"></i> ${table.tableNumber}
-                        </div>
-                        <span class="status-badge ${table.status}">
-                            <c:choose>
-                                <c:when test="${table.status == 'available'}">Available</c:when>
-                                <c:when test="${table.status == 'occupied'}">Occupied</c:when>
-                                <c:otherwise>Unavailable</c:otherwise>
-                            </c:choose>
-                        </span>
+    <div class="content-wrapper">
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            
+            <!-- Header -->
+            <div class="mb-8">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="w-14 h-14 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center">
+                        <i data-lucide="layout-grid" class="w-8 h-8 text-white"></i>
                     </div>
-                    
-                    <div class="table-info">
-                        <div class="info-row">
-                            <i class="fas fa-users"></i>
-                            <span>Capacity: ${table.capacity} people</span>
-                        </div>
-                        
-                        <c:if test="${table.status == 'occupied'}">
-                            <div class="info-row">
-                                <i class="fas fa-clock"></i>
-                                <span>Has active orders</span>
+                    <div>
+                        <h1 class="text-4xl font-bold text-gray-800">Table Management</h1>
+                        <p class="text-gray-600">Manage and monitor your assigned tables</p>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Statistics -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-md p-6 text-center">
+                    <div class="text-4xl font-bold text-green-600" id="availableCount">0</div>
+                    <div class="text-gray-600 text-sm mt-2">Available Tables</div>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 text-center">
+                    <div class="text-4xl font-bold text-orange-600" id="occupiedCount">0</div>
+                    <div class="text-gray-600 text-sm mt-2">Occupied Tables</div>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 text-center">
+                    <div class="text-4xl font-bold text-orange-500" id="totalTables">0</div>
+                    <div class="text-gray-600 text-sm mt-2">Total Tables</div>
+                </div>
+            </div>
+            
+            <!-- Filter Section -->
+            <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Filter by Status</h3>
+                <div class="flex flex-wrap gap-3">
+                    <button class="filter-btn px-6 py-2 rounded-lg font-medium transition-all bg-orange-500 text-white" data-filter="all">
+                        <i class="fas fa-th"></i> All Tables
+                    </button>
+                    <button class="filter-btn px-6 py-2 rounded-lg font-medium transition-all bg-gray-100 text-gray-700 hover:bg-gray-200" data-filter="available">
+                        <i class="fas fa-check-circle"></i> Available
+                    </button>
+                    <button class="filter-btn px-6 py-2 rounded-lg font-medium transition-all bg-gray-100 text-gray-700 hover:bg-gray-200" data-filter="occupied">
+                        <i class="fas fa-utensils"></i> Occupied
+                    </button>
+                    <button class="filter-btn px-6 py-2 rounded-lg font-medium transition-all bg-gray-100 text-gray-700 hover:bg-gray-200" data-filter="unavailable">
+                        <i class="fas fa-times-circle"></i> Unavailable
+                    </button>
+                </div>
+            </div>
+        
+            <!-- Tables Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="tablesGrid">
+                <c:forEach var="table" items="${tables}">
+                    <div class="table-card bg-white rounded-xl shadow-md overflow-hidden cursor-pointer border-t-4 ${table.status == 'available' ? 'border-green-500' : table.status == 'occupied' ? 'border-orange-500' : 'border-red-500'}" 
+                         data-status="${table.status}" data-table-id="${table.tableID}">
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <div class="text-2xl font-bold text-gray-800">
+                                    <i class="fas fa-chair text-orange-500"></i> ${table.tableNumber}
+                                </div>
+                                <c:choose>
+                                    <c:when test="${table.status == 'available'}">
+                                        <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold uppercase">Available</span>
+                                    </c:when>
+                                    <c:when test="${table.status == 'occupied'}">
+                                        <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold uppercase">Occupied</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold uppercase">Unavailable</span>
+                                    </c:otherwise>
+                                </c:choose>
                             </div>
-                        </c:if>
-                    </div>
-                    
-                    <c:if test="${table.status == 'occupied'}">
-                        <div class="order-count">
-                            <i class="fas fa-receipt"></i> View Order Details
+                            
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-2 text-gray-600 text-sm">
+                                    <i class="fas fa-users w-5"></i>
+                                    <span>Capacity: ${table.capacity} people</span>
+                                </div>
+                                
+                                <c:if test="${table.status == 'occupied'}">
+                                    <div class="flex items-center gap-2 text-gray-600 text-sm">
+                                        <i class="fas fa-clock w-5"></i>
+                                        <span>Has active orders</span>
+                                    </div>
+                                </c:if>
+                            </div>
+                            
+                            <c:if test="${table.status == 'occupied'}">
+                                <div class="mt-4 bg-orange-50 text-orange-700 p-3 rounded-lg text-center font-semibold text-sm">
+                                    <i class="fas fa-receipt"></i> View Order Details
+                                </div>
+                            </c:if>
                         </div>
-                    </c:if>
-                </div>
-            </c:forEach>
+                    </div>
+                </c:forEach>
+            </div>
         </div>
     </div>
     
@@ -398,8 +378,12 @@
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 // Update active button
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
+                document.querySelectorAll('.filter-btn').forEach(b => {
+                    b.classList.remove('bg-orange-500', 'text-white');
+                    b.classList.add('bg-gray-100', 'text-gray-700');
+                });
+                this.classList.remove('bg-gray-100', 'text-gray-700');
+                this.classList.add('bg-orange-500', 'text-white');
                 
                 const filter = this.dataset.filter;
                 const cards = document.querySelectorAll('.table-card');
