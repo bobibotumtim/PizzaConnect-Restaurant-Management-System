@@ -19,9 +19,27 @@ public class SalesReportServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        // Check authentication
+        // Check authentication - Allow Admin (role=1) and Manager (role=2 with jobRole=Manager)
         User currentUser = (User) request.getSession().getAttribute("user");
-        if (currentUser == null || currentUser.getRole() != 1) {
+        if (currentUser == null) {
+            response.sendRedirect(request.getContextPath() + "/view/Login.jsp");
+            return;
+        }
+        
+        // Check if user is Admin or Manager
+        boolean isAuthorized = false;
+        if (currentUser.getRole() == 1) {
+            // Admin has access
+            isAuthorized = true;
+        } else if (currentUser.getRole() == 2) {
+            // Check if Employee is Manager
+            models.Employee employee = (models.Employee) request.getSession().getAttribute("employee");
+            if (employee != null && "Manager".equalsIgnoreCase(employee.getJobRole())) {
+                isAuthorized = true;
+            }
+        }
+        
+        if (!isAuthorized) {
             response.sendRedirect(request.getContextPath() + "/view/Home.jsp");
             return;
         }
