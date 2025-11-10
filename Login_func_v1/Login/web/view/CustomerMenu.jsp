@@ -42,6 +42,7 @@
 <body class="bg-gray-50">
     <%@ include file="Sidebar.jsp" %>
     <%@ include file="NavBar.jsp" %>
+    <%@ include file="ChatBotWidget.jsp" %>
     
     <div class="content-wrapper">
         <div class="max-w-7xl mx-auto px-6 py-8">

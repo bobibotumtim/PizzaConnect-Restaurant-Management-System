@@ -230,6 +230,29 @@
                 <div class="sidebar-icon"><i data-lucide="file-text"></i></div>
                 <span class="sidebar-text">Manage Orders</span>
             </a>
+        <% } else { %>
+            <!-- CUSTOMER MENU -->
+            <a href="<%= sidebarContextPath %>/home" class="sidebar-item <%= sidebarCurrentPath.contains("/home") ? "active" : "" %>">
+                <div class="sidebar-icon"><i data-lucide="home"></i></div>
+                <span class="sidebar-text">Home</span>
+            </a>
+            
+            <a href="<%= sidebarContextPath %>/customer-menu" class="sidebar-item <%= sidebarCurrentPath.contains("/customer-menu") ? "active" : "" %>">
+                <div class="sidebar-icon"><i data-lucide="utensils"></i></div>
+                <span class="sidebar-text">Menu</span>
+            </a>
+            
+            <a href="<%= sidebarContextPath %>/chatbot" class="sidebar-item <%= sidebarCurrentPath.contains("/chatbot") ? "active" : "" %>">
+                <div class="sidebar-icon"><i data-lucide="message-circle"></i></div>
+                <span class="sidebar-text">AI Assistant</span>
+            </a>
+            
+            <div class="sidebar-divider"></div>
+            
+            <a href="<%= sidebarContextPath %>/profile" class="sidebar-item <%= sidebarCurrentPath.contains("/profile") ? "active" : "" %>">
+                <div class="sidebar-icon"><i data-lucide="user"></i></div>
+                <span class="sidebar-text">Profile</span>
+            </a>
         <% } %>
     </div>
     

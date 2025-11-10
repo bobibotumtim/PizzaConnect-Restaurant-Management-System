@@ -201,7 +201,7 @@
         <url-pattern>/customer-menu</url-pattern>
     </servlet-mapping>
 
-    <!-- Note: InventoryServlet uses @WebServlet annotation in code -->
+    <!-- Note: InventoryServlet and ChatBotServlet use @WebServlet annotation in code -->
 
 </web-app>
 
