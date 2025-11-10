@@ -11,23 +11,23 @@ public class Employee extends User {
     }
 
     public Employee(int employeeID, String jobRole,
-            int userID, String name, String password, int userRole,
-            String email, String phone, Date dateOfBirth,
-            String gender, boolean isActive) {
+                    int userID, String name, String password, int userRole,
+                    String email, String phone, Date dateOfBirth,
+                    String gender, boolean isActive) {
         super(userID, name, password, userRole, email, phone, dateOfBirth, gender, isActive);
         this.employeeID = employeeID;
         this.jobRole = jobRole;
     }
 
     public Employee(int employeeID, String jobRole,
-            int userID, String name, String email, String phone, int userRole) {
+                    int userID, String name, String email, String phone, int userRole) {
         super(userID, name, email, phone, userRole);
         this.employeeID = employeeID;
         this.jobRole = jobRole;
     }
 
     public Employee(String jobRole,
-            int userID, String name, String email, String phone, int userRole) {
+                    int userID, String name, String email, String phone, int userRole) {
         super(userID, name, email, phone, userRole);
         this.jobRole = jobRole;
     }
@@ -35,8 +35,8 @@ public class Employee extends User {
     // Constructor nhận đối tượng User
     public Employee(int employeeID, String jobRole, User user) {
         super(user.getUserID(), user.getName(), user.getPassword(), user.getRole(),
-                user.getEmail(), user.getPhone(), user.getDateOfBirth(),
-                user.getGender(), user.isActive());
+              user.getEmail(), user.getPhone(), user.getDateOfBirth(),
+              user.getGender(), user.isActive());
         this.employeeID = employeeID;
         this.jobRole = jobRole;
     }
@@ -56,6 +56,15 @@ public class Employee extends User {
 
     public void setJobRole(String jobRole) {
         this.jobRole = jobRole;
+    }
+    
+    // Alias methods for compatibility (cannot override getRole() from User)
+    public String getEmployeeRole() {
+        return jobRole;
+    }
+    
+    public void setEmployeeRole(String role) {
+        this.jobRole = role;
     }
 
     public String getSpecialization() {

@@ -1,6 +1,6 @@
 package controller;
 
-import services.ProductIngredientService;
+import dao.ProductIngredientDAO;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
@@ -11,7 +11,7 @@ import java.util.Map;
 @WebServlet(name = "LoadAddSizeFormServlet", urlPatterns = {"/LoadAddSizeFormServlet"})
 public class LoadAddSizeFormServlet extends HttpServlet {
     
-    private ProductIngredientService ingredientService = new ProductIngredientService();
+    private ProductIngredientDAO ingredientDAO = new ProductIngredientDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -20,11 +20,11 @@ public class LoadAddSizeFormServlet extends HttpServlet {
         // 1. Lấy ProductID để truyền vào form
         request.setAttribute("productId", request.getParameter("productId"));
         
-        // 2. Lấy danh sách nguyên liệu (giống hệt logic cũ)
-        List<Map<String, Object>> ingredientList = ingredientService.getAllInventories();
+        // 2. Lấy danh sách nguyên liệu
+        List<Map<String, Object>> ingredientList = ingredientDAO.getAllInventories();
         request.setAttribute("ingredientList", ingredientList);
 
-        // 3. Forward đến file JSP TÁI SỬ DỤNG
+        // 3. Forward đến file JSP
         request.getRequestDispatcher("/view/partials/AddProductSizeForm.jsp").forward(request, response);
     }
 }

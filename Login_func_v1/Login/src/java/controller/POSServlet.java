@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.util.*;
 import models.*;
 import dao.*;
+import java.sql.SQLException;
 
 public class POSServlet extends HttpServlet {
 
@@ -1208,7 +1209,7 @@ public class POSServlet extends HttpServlet {
     /**
      * Save toppings for an order detail
      */
-    private void saveToppingsForOrderDetail(int orderDetailID, List<OrderDetailTopping> toppings) {
+    private void saveToppingsForOrderDetail(int orderDetailID, List<OrderDetailTopping> toppings) throws SQLException {
         if (toppings == null || toppings.isEmpty()) {
             return;
         }

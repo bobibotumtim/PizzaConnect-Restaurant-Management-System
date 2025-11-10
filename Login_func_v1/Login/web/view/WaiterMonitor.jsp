@@ -254,7 +254,7 @@
         // Play notification sound when there are ready items
         <c:if test="${not empty readyList}">
             // You can add audio notification here
-            console.log('${readyList.size()} món sẵn sàng phục vụ!');
+            console.log('${readyList.size()} dishes ready to serve!');
         </c:if>
     </script>
 </body>

@@ -213,6 +213,16 @@ public class ManageOrderServlet extends HttpServlet {
             if (success) {
                 System.out.println("✅ Order status updated successfully");
                 
+                // Nếu Cancelled (3) → Set payment về Unpaid
+                if (status == 3) {
+                    boolean paymentUpdated = orderDAO.updatePaymentStatus(orderId, "Unpaid");
+                    if (paymentUpdated) {
+                        System.out.println("✅ Payment status set to Unpaid (Order #" + orderId + " Cancelled)");
+                    } else {
+                        System.err.println("⚠️ Failed to update payment status for Order #" + orderId);
+                    }
+                }
+                
                 // Nếu Completed (2) hoặc Cancelled (3) → Set bàn về available
                 if (status == 2 || status == 3) {
                     Order order = orderDAO.getOrderById(orderId);

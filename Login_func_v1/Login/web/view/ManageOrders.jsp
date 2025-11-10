@@ -204,10 +204,17 @@
                                                         class="bg-white rounded-xl shadow-md p-6 border-l-4 border-red-500">
                                                         <div class="text-sm text-gray-600 mb-2">Total Revenue</div>
                                                         <div class="text-3xl font-bold text-red-600">
-                                                            <% double totalRevenue=0; if (orders !=null) { for (Order
-                                                                order : orders) { totalRevenue +=order.getTotalPrice();
-                                                                } } %>
-                                                                <%= String.format("%,.0f", totalRevenue) %>đ
+                                                            <% double totalRevenue=0; 
+                                                               if (orders !=null) { 
+                                                                   for (Order order : orders) { 
+                                                                       // Only count Completed orders (status = 2)
+                                                                       if (order.getStatus() == 2) {
+                                                                           totalRevenue += order.getTotalPrice();
+                                                                       }
+                                                                   } 
+                                                               } 
+                                                            %>
+                                                            <%= String.format("%,.0f", totalRevenue) %>đ
                                                         </div>
                                                     </div>
                                                 </div>

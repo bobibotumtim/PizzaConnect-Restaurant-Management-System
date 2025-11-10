@@ -38,15 +38,23 @@
         width: 240px;
     }
     
-    /* Hide scrollbar */
+    /* Hide scrollbar completely */
     .sidebar::-webkit-scrollbar {
-        width: 0px;
-        background: transparent;
+        display: none;
+        width: 0;
+        height: 0;
     }
     
     .sidebar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
+    
+    /* Also hide for the navigation items container */
+    .sidebar > div::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
     }
     
     .sidebar-item {
@@ -147,9 +155,9 @@
                 <span class="sidebar-text">Products</span>
             </a>
             
-            <a href="<%= sidebarContextPath %>/manage-topping" class="sidebar-item <%= sidebarCurrentPath.contains("/manage-topping") ? "active" : "" %>">
-                <div class="sidebar-icon"><i data-lucide="pizza"></i></div>
-                <span class="sidebar-text">Toppings</span>
+            <a href="<%= sidebarContextPath %>/managecategory" class="sidebar-item <%= sidebarCurrentPath.contains("/managecategory") ? "active" : "" %>">
+                <div class="sidebar-icon"><i data-lucide="folder"></i></div>
+                <span class="sidebar-text">Categories</span>
             </a>
             
             <a href="<%= sidebarContextPath %>/admin" class="sidebar-item <%= sidebarCurrentPath.contains("/admin") ? "active" : "" %>">
@@ -159,7 +167,7 @@
             
             <a href="<%= sidebarContextPath %>/discount" class="sidebar-item <%= sidebarCurrentPath.contains("/discount") ? "active" : "" %>">
                 <div class="sidebar-icon"><i data-lucide="percent"></i></div>
-                <span class="sidebar-text">Discount</span>
+                <span class="sidebar-text">Discounts</span>
             </a>
             
             <a href="<%= sidebarContextPath %>/table" class="sidebar-item <%= sidebarCurrentPath.contains("/table") ? "active" : "" %>">
@@ -170,6 +178,11 @@
             <a href="<%= sidebarContextPath %>/inventory" class="sidebar-item <%= sidebarCurrentPath.contains("/inventory") ? "active" : "" %>">
                 <div class="sidebar-icon"><i data-lucide="box"></i></div>
                 <span class="sidebar-text">Inventory</span>
+            </a>
+            
+            <a href="<%= sidebarContextPath %>/sales-reports" class="sidebar-item <%= sidebarCurrentPath.contains("/sales-reports") || sidebarCurrentPath.contains("/salesreports") ? "active" : "" %>">
+                <div class="sidebar-icon"><i data-lucide="bar-chart-3"></i></div>
+                <span class="sidebar-text">Sales Reports</span>
             </a>
             
             <div class="sidebar-divider"></div>
@@ -203,9 +216,37 @@
                 <span class="sidebar-text">Waiter Monitor</span>
             </a>
             
+            <a href="<%= sidebarContextPath %>/assign-table" class="sidebar-item <%= sidebarCurrentPath.contains("/assign-table") ? "active" : "" %>">
+                <div class="sidebar-icon"><i data-lucide="layout-grid"></i></div>
+                <span class="sidebar-text">Assign Table</span>
+            </a>
+            
             <a href="<%= sidebarContextPath %>/manage-orders" class="sidebar-item <%= sidebarCurrentPath.contains("/manage-orders") ? "active" : "" %>">
                 <div class="sidebar-icon"><i data-lucide="file-text"></i></div>
                 <span class="sidebar-text">Manage Orders</span>
+            </a>
+        <% } else { %>
+            <!-- CUSTOMER MENU -->
+            <a href="<%= sidebarContextPath %>/home" class="sidebar-item <%= sidebarCurrentPath.contains("/home") ? "active" : "" %>">
+                <div class="sidebar-icon"><i data-lucide="home"></i></div>
+                <span class="sidebar-text">Home</span>
+            </a>
+            
+            <a href="<%= sidebarContextPath %>/customer-menu" class="sidebar-item <%= sidebarCurrentPath.contains("/customer-menu") ? "active" : "" %>">
+                <div class="sidebar-icon"><i data-lucide="utensils"></i></div>
+                <span class="sidebar-text">Menu</span>
+            </a>
+            
+            <a href="<%= sidebarContextPath %>/chatbot" class="sidebar-item <%= sidebarCurrentPath.contains("/chatbot") ? "active" : "" %>">
+                <div class="sidebar-icon"><i data-lucide="message-circle"></i></div>
+                <span class="sidebar-text">AI Assistant</span>
+            </a>
+            
+            <div class="sidebar-divider"></div>
+            
+            <a href="<%= sidebarContextPath %>/profile" class="sidebar-item <%= sidebarCurrentPath.contains("/profile") ? "active" : "" %>">
+                <div class="sidebar-icon"><i data-lucide="user"></i></div>
+                <span class="sidebar-text">Profile</span>
             </a>
         <% } %>
     </div>

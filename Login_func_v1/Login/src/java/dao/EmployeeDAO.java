@@ -46,4 +46,63 @@ public class EmployeeDAO extends DBContext {
 
         return null;
     }
+
+    public Employee getEmployeeByUserId(int userID) {
+        return getEmployeeByUserID(userID);
+    }
+
+    public int insertEmployee(Employee employee) {
+        String sql = "INSERT INTO Employee (UserID, Role, Specialization) VALUES (?, ?, ?)";
+        
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setInt(1, employee.getUserID());
+            ps.setString(2, employee.getEmployeeRole());
+            ps.setString(3, employee.getSpecialization());
+            
+            int affectedRows = ps.executeUpdate();
+            
+            if (affectedRows > 0) {
+                ResultSet rs = ps.getGeneratedKeys();
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return -1;
+    }
+
+    public boolean updateEmployeeRole(int userID, String role) {
+        String sql = "UPDATE Employee SET Role = ? WHERE UserID = ?";
+        
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, role);
+            ps.setInt(2, userID);
+            
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return false;
+    }
+
+    public boolean deleteEmployee(int userID) {
+        String sql = "DELETE FROM Employee WHERE UserID = ?";
+        
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, userID);
+            
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return false;
+    }
 }

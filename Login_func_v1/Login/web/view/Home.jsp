@@ -1,11 +1,16 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.*" %>
-<%@ page import="models.Product" %>
+<%@ page import="models.*" %>
+<%@ page import="java.text.NumberFormat" %>
+<%@ page import="java.util.Locale" %>
 <%
-    Map<String, List<Product>> productsByCategory = 
-        (Map<String, List<Product>>) request.getAttribute("productsByCategory");
-    List<Product> featuredProducts = 
-        (List<Product>) request.getAttribute("featuredProducts");
+    Map<String, Map<Product, List<ProductSize>>> productsByCategory = 
+        (Map<String, Map<Product, List<ProductSize>>>) request.getAttribute("productsByCategory");
+    Map<Product, List<ProductSize>> featuredProducts = 
+        (Map<Product, List<ProductSize>>) request.getAttribute("featuredProducts");
+    
+    // Format currency
+    NumberFormat currencyFormat = NumberFormat.getInstance(new Locale("vi", "VN"));
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -77,6 +82,7 @@
 <body class="bg-gray-50">
     <%@ include file="Sidebar.jsp" %>
     <%@ include file="NavBar.jsp" %>
+    <%@ include file="ChatBotWidget.jsp" %>
     
     <div class="content-wrapper">
         <div class="max-w-7xl mx-auto px-6 py-8">
@@ -128,18 +134,45 @@
             
             <!-- Featured Products -->
             <div id="products" class="mb-12">
-                <h2 class="text-3xl font-bold text-gray-800 mb-6">Featured Products</h2>
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-3xl font-bold text-gray-800">Featured Products</h2>
+                    <a href="customer-menu" class="text-orange-600 hover:text-orange-700 font-semibold flex items-center gap-2">
+                        View Full Menu
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </a>
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <% if (featuredProducts != null) {
-                        for (Product product : featuredProducts) { %>
+<%
+    if (featuredProducts != null && !featuredProducts.isEmpty()) {
+        for (Map.Entry<Product, List<ProductSize>> entry : featuredProducts.entrySet()) {
+            Product product = entry.getKey();
+            List<ProductSize> sizes = entry.getValue();
+            
+            // Calculate min price without Stream API
+            double minPrice = Double.MAX_VALUE;
+            for (ProductSize size : sizes) {
+                if (size.getPrice() < minPrice) {
+                    minPrice = size.getPrice();
+                }
+            }
+            if (minPrice == Double.MAX_VALUE) {
+                minPrice = 0;
+            }
+%>
                     <div class="product-card bg-white rounded-xl shadow-md overflow-hidden">
                         <div class="h-48 bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
-                            <% if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) { %>
+<%
+            if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
+%>
                                 <img src="<%= product.getImageUrl() %>" alt="<%= product.getProductName() %>" 
                                      class="w-full h-full object-cover">
-                            <% } else { %>
-                                <span class="text-6xl">&#127829;</span>
-                            <% } %>
+<%
+            } else {
+%>
+                                <span class="text-6xl">🍕</span>
+<%
+            }
+%>
                         </div>
                         <div class="p-6">
                             <div class="text-sm text-orange-600 font-semibold mb-2">
@@ -151,54 +184,97 @@
                             <p class="text-gray-600 text-sm mb-4">
                                 <%= product.getDescription() != null ? product.getDescription() : "Delicious and fresh" %>
                             </p>
+                            <div class="mb-4">
+                                <div class="flex flex-wrap gap-2">
+<%
+            for (ProductSize size : sizes) {
+                String sizeLabel = "";
+                switch(size.getSizeCode()) {
+                    case "S": sizeLabel = "S"; break;
+                    case "M": sizeLabel = "M"; break;
+                    case "L": sizeLabel = "L"; break;
+                    case "F": sizeLabel = "Fixed"; break;
+                    default: sizeLabel = size.getSizeCode();
+                }
+%>
+                                    <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-semibold">
+                                        <%= sizeLabel %>: <%= currencyFormat.format(size.getPrice()) %>₫
+                                    </span>
+<%
+            }
+%>
+                                </div>
+                            </div>
                             <div class="flex items-center justify-between">
-                                <span class="text-2xl font-bold text-orange-600">
-                                    From 50,000&#8363;
-                                </span>
+                                <div>
+                                    <span class="text-xs text-gray-500">From</span>
+                                    <span class="text-2xl font-bold text-orange-600 block">
+                                        <%= currencyFormat.format(minPrice) %>₫
+                                    </span>
+                                </div>
                                 <button class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-all">
                                     Order
                                 </button>
                             </div>
                         </div>
                     </div>
-                    <% }
-                    } %>
+<%
+        }
+    }
+%>
                 </div>
             </div>
             
-            <!-- Products by Category -->
-            <% if (productsByCategory != null) {
-                for (Map.Entry<String, List<Product>> entry : productsByCategory.entrySet()) {
-                    String category = entry.getKey();
-                    List<Product> products = entry.getValue();
-            %>
+            <!-- Quick Category Preview -->
+<%
+    if (productsByCategory != null && !productsByCategory.isEmpty()) {
+%>
             <div class="mb-12">
-                <h2 class="text-3xl font-bold text-gray-800 mb-6"><%= category %></h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <% for (Product product : products) { %>
-                    <div class="product-card bg-white rounded-xl shadow-md overflow-hidden">
-                        <div class="h-40 bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
-                            <% if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) { %>
-                                <img src="<%= product.getImageUrl() %>" alt="<%= product.getProductName() %>" 
-                                     class="w-full h-full object-cover">
-                            <% } else { %>
-                                <span class="text-5xl">&#127829;</span>
-                            <% } %>
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-3xl font-bold text-gray-800">Browse by Category</h2>
+                    <a href="customer-menu" class="text-orange-600 hover:text-orange-700 font-semibold">
+                        See All →
+                    </a>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<%
+        int categoryCount = 0;
+        for (Map.Entry<String, Map<Product, List<ProductSize>>> entry : productsByCategory.entrySet()) {
+            if (categoryCount >= 3) break;
+            String category = entry.getKey();
+            Map<Product, List<ProductSize>> products = entry.getValue();
+            categoryCount++;
+%>
+                    <a href="customer-menu?category=<%= category %>" 
+                       class="block bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all">
+                        <div class="h-32 bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+                            <span class="text-5xl">
+<%
+            if (category.contains("Pizza")) {
+%>🍕<%
+            } else if (category.contains("Drink")) {
+%>🥤<%
+            } else if (category.contains("Topping")) {
+%>🧀<%
+            } else {
+%>🍽️<%
+            }
+%>
+                            </span>
                         </div>
-                        <div class="p-4">
-                            <h3 class="text-lg font-bold text-gray-800 mb-2">
-                                <%= product.getProductName() %>
-                            </h3>
-                            <button class="w-full bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-all">
-                                Order Now
-                            </button>
+                        <div class="p-6 text-center">
+                            <h3 class="text-xl font-bold text-gray-800 mb-2"><%= category %></h3>
+                            <p class="text-gray-600 text-sm"><%= products.size() %> items available</p>
                         </div>
-                    </div>
-                    <% } %>
+                    </a>
+<%
+        }
+%>
                 </div>
             </div>
-            <% }
-            } %>
+<%
+    }
+%>
             
         </div>
     </div>

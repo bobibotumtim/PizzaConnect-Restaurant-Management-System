@@ -7,11 +7,13 @@ import java.io.IOException;
 import java.util.List;
 import models.*;
 import dao.*;
+import service.InventoryDeductionService;
 
 @WebServlet("/ChefMonitor")
 public class ChefMonitorServlet extends HttpServlet {
 
     private OrderDetailDAO orderDetailDAO = new OrderDetailDAO();
+    private InventoryDeductionService inventoryService = new InventoryDeductionService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -81,8 +83,44 @@ public class ChefMonitorServlet extends HttpServlet {
         if ("start".equals(action)) {
             updated = orderDetailDAO.updateOrderDetailStatus(orderDetailId, "Preparing", chef.getEmployeeID());
         } else if ("ready".equals(action)) {
-            updated = orderDetailDAO.updateOrderDetailStatus(orderDetailId, "Ready", chef.getEmployeeID());
-            // TODO: Trừ nguyên liệu tại đây nếu cần
+            // Lấy thông tin OrderDetail để trừ nguyên liệu
+            List<OrderDetail> orderDetails = orderDetailDAO.getOrderDetailsByStatus("Preparing");
+            OrderDetail targetOrderDetail = null;
+            
+            for (OrderDetail od : orderDetails) {
+                if (od.getOrderDetailID() == orderDetailId) {
+                    targetOrderDetail = od;
+                    break;
+                }
+            }
+            
+            if (targetOrderDetail != null) {
+                // Kiểm tra xem có đủ nguyên liệu không
+                boolean hasEnoughIngredients = inventoryService.checkIngredientsAvailability(targetOrderDetail);
+                
+                if (!hasEnoughIngredients) {
+                    req.setAttribute("error", "⚠️ Không đủ nguyên liệu để hoàn thành món này!");
+                    doGet(req, resp);
+                    return;
+                }
+                
+                // Cập nhật trạng thái
+                updated = orderDetailDAO.updateOrderDetailStatus(orderDetailId, "Ready", chef.getEmployeeID());
+                
+                if (updated) {
+                    // Trừ nguyên liệu sau khi cập nhật trạng thái thành công
+                    boolean ingredientsDeducted = inventoryService.deductIngredientsForOrderDetail(targetOrderDetail);
+                    
+                    if (!ingredientsDeducted) {
+                        System.err.println("⚠️ Món đã được đánh dấu Ready nhưng có lỗi khi trừ nguyên liệu");
+                        req.setAttribute("error", "⚠️ Món đã sẵn sàng nhưng có lỗi khi cập nhật kho!");
+                    }
+                }
+            } else {
+                req.setAttribute("error", "Không tìm thấy thông tin món ăn!");
+                doGet(req, resp);
+                return;
+            }
         } else if ("cancel".equals(action)) {
             updated = orderDetailDAO.updateOrderDetailStatus(orderDetailId, "Cancelled", chef.getEmployeeID());
         }

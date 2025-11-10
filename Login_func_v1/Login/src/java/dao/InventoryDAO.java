@@ -239,5 +239,37 @@ public class InventoryDAO {
         return null;
     }
 
+    // Trừ nguyên liệu khi chef hoàn thành món
+    public boolean deductInventory(int inventoryId, double quantity) {
+        String sql = "UPDATE Inventory SET Quantity = Quantity - ?, LastUpdated = GETDATE() WHERE InventoryID = ? AND Quantity >= ?";
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setDouble(1, quantity);
+            ps.setInt(2, inventoryId);
+            ps.setDouble(3, quantity);
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (Exception e) { 
+            e.printStackTrace(); 
+            return false;
+        }
+    }
+    
+    // Kiểm tra xem có đủ nguyên liệu không
+    public boolean hasEnoughInventory(int inventoryId, double quantity) {
+        String sql = "SELECT Quantity FROM Inventory WHERE InventoryID = ?";
+        try (Connection conn = getConn();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, inventoryId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    double currentQuantity = rs.getDouble("Quantity");
+                    return currentQuantity >= quantity;
+                }
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        return false;
+    }
+
     // (Không cung cấp delete để tránh xóa vật lý; nếu cần vẫn có thể thêm)
 }

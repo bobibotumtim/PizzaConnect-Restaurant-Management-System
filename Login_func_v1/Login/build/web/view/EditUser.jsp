@@ -230,7 +230,7 @@
                                 dao.EmployeeDAO empDAO = new dao.EmployeeDAO();
                                 models.Employee emp = empDAO.getEmployeeByUserId(editUser.getUserID());
                                 if (emp != null) {
-                                    currentEmployeeRole = emp.getRole();
+                                    currentEmployeeRole = emp.getJobRole();
                                 }
                             }
                         %>
@@ -365,4 +365,3 @@
     </script>
 </body>
 </html>
-

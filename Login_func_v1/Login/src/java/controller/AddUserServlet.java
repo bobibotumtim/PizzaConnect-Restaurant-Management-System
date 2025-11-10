@@ -153,8 +153,34 @@ public class AddUserServlet extends HttpServlet {
             if (userId > 0) {
                 // Nếu là Employee hoặc Customer, thêm vào bảng tương ứng
                 if (role == 2) { // Employee
-                    // TODO: Thêm logic để tạo Employee record
-                    // Có thể cần tạo EmployeeDAO và thêm vào bảng Employee
+                    if (employeeRole == null || employeeRole.trim().isEmpty()) {
+                        request.setAttribute("error", "Employee role is required for Employee users!");
+                        request.setAttribute("currentUser", currentUser);
+                        request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
+                        return;
+                    }
+                    
+                    // Validate employee role
+                    if (!employeeRole.equals("Manager") && !employeeRole.equals("Cashier") && 
+                        !employeeRole.equals("Waiter") && !employeeRole.equals("Chef")) {
+                        request.setAttribute("error", "Invalid employee role selected!");
+                        request.setAttribute("currentUser", currentUser);
+                        request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
+                        return;
+                    }
+                    
+                    EmployeeDAO employeeDAO = new EmployeeDAO();
+                    Employee employee = new Employee();
+                    employee.setUserID(userId);
+                    employee.setEmployeeRole(employeeRole);
+                    
+                    int employeeId = employeeDAO.insertEmployee(employee);
+                    if (employeeId <= 0) {
+                        request.setAttribute("error", "User created but failed to create employee record.");
+                        request.setAttribute("currentUser", currentUser);
+                        request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
+                        return;
+                    }
                 } else if (role == 3) { // Customer
                     // TODO: Thêm logic để tạo Customer record
                     // Có thể cần tạo CustomerDAO và thêm vào bảng Customer

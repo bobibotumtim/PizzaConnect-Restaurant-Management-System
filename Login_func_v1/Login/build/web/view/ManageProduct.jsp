@@ -137,33 +137,108 @@
             }
         %>
 
-        <%-- ✅ Sidebar (Lấy từ file cũ) --%>
-        <div class="w-20 bg-gray-800 flex flex-col items-center py-6 justify-between">
-            <div class="flex flex-col items-center space-y-6">
+        <%-- ✅ Sidebar --%>
+        <%
+            String currentPath = request.getRequestURI();
+        %>
+        
+        <div class="w-20 bg-gray-800 flex flex-col items-center py-6 space-y-8">
+
+            <!-- Logo/Home -->
+            <a href="${pageContext.request.contextPath}/home"
+               class="nav-btn <%= currentPath.contains("/home") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+               title="Home">
+                <i data-lucide="home" class="w-6 h-6"></i>
+            </a>
+
+            <!-- Navigation -->
+            <div class="flex-1 flex flex-col space-y-6 mt-8">
+
+                <!-- Dashboard -->
                 <a href="${pageContext.request.contextPath}/dashboard"
-                   class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <i data-lucide="pizza" class="w-7 h-7 text-white"></i>
+                   class="nav-btn <%= currentPath.contains("/dashboard") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Dashboard">
+                    <i data-lucide="grid" class="w-6 h-6"></i>
                 </a>
-                <div class="flex flex-col items-center space-y-4 mt-8">
-                    <a href="${pageContext.request.contextPath}/dashboard"
-                       class="nav-btn <c:if test="${fn:contains(pageContext.request.requestURI, '/dashboard')}">bg-orange-500 text-white</c:if>"
-                           title="Dashboard">
-                           <i data-lucide="grid" class="w-6 h-6"></i>
-                       </a>
-                       <a href="${pageContext.request.contextPath}/manageproduct"
-                       class="nav-btn <c:if test="${fn:contains(pageContext.request.requestURI, '/manageproduct')}">bg-orange-500 text-white</c:if>"
-                           title="Products">
-                           <i data-lucide="box" class="w-6 h-6"></i>
-                       </a>
-                    <%-- (Thêm các link khác nếu bạn muốn) --%>
-                </div>
-            </div>
-            <div class="flex flex-col items-center space-y-4">
-                <a href="${pageContext.request.contextPath}/logout"
-                   class="nav-btn text-gray-400 hover:bg-red-500 hover:text-white" title="Logout">
-                    <i data-lucide="log-out" class="w-6 h-6"></i>
+
+                <!-- Orders -->
+                <a href="${pageContext.request.contextPath}/manage-orders"
+                   class="nav-btn <%= currentPath.contains("/orders") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Orders">
+                    <i data-lucide="file-text" class="w-6 h-6"></i>
+                </a>
+
+                <!-- Manage Products (Current Page) -->
+                <a href="${pageContext.request.contextPath}/manageproduct"
+                   class="nav-btn <%= currentPath.contains("/manageproduct") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Manage Products">
+                    <i data-lucide="utensils" class="w-6 h-6"></i>
+                </a>
+
+                <!-- POS -->
+                <a href="${pageContext.request.contextPath}/pos"
+                   class="nav-btn <%= currentPath.contains("/pos") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="POS">
+                    <i data-lucide="shopping-cart" class="w-6 h-6"></i>
+                </a>
+
+                <!-- Manage Categories -->
+                <a href="${pageContext.request.contextPath}/managecategory"
+                   class="nav-btn <%= currentPath.contains("/managecategory") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Manage Categories">
+                    <i data-lucide="package" class="w-6 h-6"></i>
+                </a>
+
+                <!-- Manage Users (Admin) -->
+                <a href="${pageContext.request.contextPath}/admin"
+                   class="nav-btn <%= currentPath.contains("/admin") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Manage Users">
+                    <i data-lucide="users" class="w-6 h-6"></i>
+                </a>
+
+                <!-- Discount -->
+                <a href="${pageContext.request.contextPath}/discount"
+                   class="nav-btn <%= currentPath.contains("/discount") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Discount">
+                    <i data-lucide="percent" class="w-6 h-6"></i>
+                </a>
+
+                <!-- Tables -->
+                <a href="${pageContext.request.contextPath}/table"
+                   class="nav-btn <%= currentPath.contains("/table") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Tables">
+                    <i data-lucide="layout-grid" class="w-6 h-6"></i>
+                </a>
+
+                <!-- Inventory -->
+                <a href="${pageContext.request.contextPath}/inventory"
+                   class="nav-btn <%= currentPath.contains("/inventory") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Inventory">
+                    <i data-lucide="box" class="w-6 h-6"></i>
+                </a>
+
+                <!-- Profile -->
+                <a href="${pageContext.request.contextPath}/profile"
+                   class="nav-btn <%= currentPath.contains("/profile") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Profile">
+                    <i data-lucide="user" class="w-6 h-6"></i>
+                </a>
+
+                <!-- Settings -->
+                <a href="${pageContext.request.contextPath}/settings"
+                   class="nav-btn <%= currentPath.contains("/settings") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+                   title="Settings">
+                    <i data-lucide="settings" class="w-6 h-6"></i>
                 </a>
             </div>
+
+            <!-- Logout -->
+            <a href="${pageContext.request.contextPath}/logout"
+               class="nav-btn <%= currentPath.contains("/logout") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
+               title="Logout">
+                <i data-lucide="log-out" class="w-6 h-6"></i>
+            </a>
+
         </div>
 
         <%-- ✅ Alert Message Box (Lấy từ file cũ) --%>
@@ -525,16 +600,89 @@
                     // === 8. Thêm hàng (Modal Add Size) ===
                     if (addIngBtn) {
                         e.preventDefault();
-                        const template = document.getElementById("ingredientTemplate_AddSize")?.cloneNode(true);
-                        const list = document.getElementById("ingredientList_AddSize");
 
-                        if (template && list) {
-                            template.classList.remove("hidden");
-                            template.removeAttribute("id");
-                            template.querySelector("select")?.setAttribute("required", "required");
-                            template.querySelector("input[name='ingredientQty[]']")?.setAttribute("required", "required");
-                            list.appendChild(template);
+                        const tableBody = document.getElementById('ingredientList_AddSize');
+                        const select = document.getElementById('newIngredientSelect_AddSize');
+                        const qtyInputEl = document.getElementById('newQuantity_AddSize');
+                        const unitInputEl = document.getElementById('newUnit_AddSize');
+
+                        if (!tableBody || !select || !qtyInputEl || !unitInputEl)
+                            return;
+
+                        const selectedOption = select.options[select.selectedIndex];
+                        const ingId = selectedOption.value;
+                        const ingName = selectedOption.text;
+                        const qtyValue = qtyInputEl.value.trim();
+                        const unit = selectedOption.getAttribute('data-unit') || '';
+
+                        if (!ingId) {
+                            alert("Please select an ingredient.");
+                            return;
                         }
+
+                        if (!qtyValue || parseFloat(qtyValue) <= 0) {
+                            alert("Please enter a valid quantity.");
+                            return;
+                        }
+
+                        console.log("Adding ingredient:", { ingName, qtyValue, ingId, unit });
+
+                        // ✅ Tạo DOM element thủ công (giống EditProductSizeForm)
+                        const tr = document.createElement('tr');
+                        tr.classList.add('border-b');
+
+                        // Tên nguyên liệu
+                        const tdName = document.createElement('td');
+                        tdName.className = 'px-2 py-1';
+                        tdName.textContent = ingName;
+
+                        // Số lượng + hidden inventoryId
+                        const tdQty = document.createElement('td');
+                        tdQty.className = 'px-2 py-1';
+
+                        const qtyInput = document.createElement('input');
+                        qtyInput.type = 'number';
+                        qtyInput.step = '0.01';
+                        qtyInput.name = 'ingredientQty[]';
+                        qtyInput.value = qtyValue;
+                        qtyInput.className = 'border p-1 w-24';
+
+                        const hiddenInv = document.createElement('input');
+                        hiddenInv.type = 'hidden';
+                        hiddenInv.name = 'ingredientId[]';
+                        hiddenInv.value = ingId;
+
+                        tdQty.append(qtyInput, hiddenInv);
+
+                        // Đơn vị
+                        const tdUnit = document.createElement('td');
+                        tdUnit.className = 'px-2 py-1';
+                        const unitInput = document.createElement('input');
+                        unitInput.type = 'text';
+                        unitInput.name = 'ingredientUnit[]';
+                        unitInput.value = unit;
+                        unitInput.className = 'border p-1 w-20';
+                        unitInput.readOnly = true;
+                        tdUnit.appendChild(unitInput);
+
+                        // Nút xoá
+                        const tdAction = document.createElement('td');
+                        tdAction.className = 'px-2 py-1 text-center';
+                        const removeBtn = document.createElement('button');
+                        removeBtn.type = 'button';
+                        removeBtn.textContent = '✕';
+                        removeBtn.className = 'removeBtn bg-red-500 text-white px-2 py-1 rounded inline-flex justify-center items-center';
+                        removeBtn.addEventListener('click', () => tr.remove());
+                        tdAction.appendChild(removeBtn);
+
+                        // Gắn tất cả lại
+                        tr.append(tdName, tdQty, tdUnit, tdAction);
+                        tableBody.appendChild(tr);
+
+                        // ✅ Reset form
+                        select.selectedIndex = 0;
+                        qtyInputEl.value = '';
+                        unitInputEl.value = '';
                     }
 
                     // === 9. Thêm hàng (Modal Edit Size) ===
@@ -643,6 +791,14 @@
                     if (e.target.id === 'editNewIngredientSelect_EditSize') {
                         const select = e.target;
                         const unitInput = document.getElementById('editNewUnit_EditSize');
+                        if (unitInput) {
+                            const option = select.selectedOptions[0];
+                            unitInput.value = option.getAttribute('data-unit') || '';
+                        }
+                    }
+                    if (e.target.id === 'newIngredientSelect_AddSize') {
+                        const select = e.target;
+                        const unitInput = document.getElementById('newUnit_AddSize');
                         if (unitInput) {
                             const option = select.selectedOptions[0];
                             unitInput.value = option.getAttribute('data-unit') || '';

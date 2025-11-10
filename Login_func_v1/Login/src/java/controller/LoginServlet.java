@@ -62,24 +62,22 @@ public class LoginServlet extends HttpServlet {
                     return;
                 }
             }
-            // Waiter or other employees -> Redirect to POS
-            System.out.println("👔 Employee (non-chef) - Redirecting to POS");
-            response.sendRedirect("pos");
+            // Waiter or other employees -> Redirect to Waiter Dashboard
+            System.out.println("👔 Employee (non-chef) - Redirecting to Waiter Dashboard");
+            response.sendRedirect("waiter-dashboard");
         } else {
             // Customer -> Home
             CustomerDAO cdao = new CustomerDAO();
-            {
-                Customer acc = cdao.getCustomerByUserID(user.getUserID());
-                if (acc == null) { 
-                    request.setAttribute("error",
-                            "No profile information found. Please contact support or complete your profile.");
-                    request.getRequestDispatcher("view/Detail.jsp").forward(request, response);
-                    return;
-                }
-                request.setAttribute("customer", acc);
-                request.setAttribute("user", user);
-                request.getRequestDispatcher("view/Home.jsp").forward(request, response);
+            Customer acc = cdao.getCustomerByUserID(user.getUserID());
+            if (acc == null) { 
+                request.setAttribute("error",
+                        "No profile information found. Please contact support or complete your profile.");
+                request.getRequestDispatcher("view/Detail.jsp").forward(request, response);
+                return;
             }
+            session.setAttribute("customer", acc);
+            // Redirect to home servlet to load products
+            response.sendRedirect("home");
         }
     }
 

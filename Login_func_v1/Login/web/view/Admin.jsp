@@ -204,10 +204,23 @@
                         <div class="flex items-center space-x-4">
                             <select id="roleFilter" onchange="filterUsersByRole()" 
                                     class="border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-500">
-                                <option value="all" <%= "all".equalsIgnoreCase(selectedRole) ? "selected" : "" %>>All Roles</option>
-                                <option value="1" <%= "1".equals(selectedRole) ? "selected" : "" %>>Admin</option>
-                                <option value="2" <%= "2".equals(selectedRole) ? "selected" : "" %>>Employee</option>
-                                <option value="3" <%= "3".equals(selectedRole) ? "selected" : "" %>>Customer</option>
+                                <option value="all" <%="all"
+                                                                    .equalsIgnoreCase(selectedRole) ? "selected" : "" %>
+                                        >All Roles</option>
+                                <option value="1" <%="1" .equals(selectedRole)
+                                                                    ? "selected" : "" %>>Admin</option>
+                                <option value="2" <%="2" .equals(selectedRole)
+                                                                    ? "selected" : "" %>>Employee - All</option>
+                                <option value="Manager" <%="Manager" .equals(selectedRole)
+                                                                    ? "selected" : "" %>>Manager</option>
+                                <option value="Cashier" <%="Cashier" .equals(selectedRole)
+                                                                    ? "selected" : "" %>>Cashier</option>
+                                <option value="Waiter" <%="Waiter" .equals(selectedRole)
+                                                                    ? "selected" : "" %>>Waiter</option>
+                                <option value="Chef" <%="Chef" .equals(selectedRole)
+                                                                    ? "selected" : "" %>>Chef</option>
+                                <option value="3" <%="3" .equals(selectedRole)
+                                                                    ? "selected" : "" %>>Customer</option>
                             </select>
                             <a href="adduser" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center">
                                 <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
@@ -237,12 +250,35 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                <% for (User user : users) { %>
-                                <tr class="hover:bg-gray-50" data-role="<%= user.getRole() %>">
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#<%= user.getUserID() %></td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900"><%= user.getName() %></td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500"><%= user.getEmail() %></td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500"><%= user.getPhone() %></td>
+                                <% 
+                                dao.EmployeeDAO empDAO = new dao.EmployeeDAO();
+                                for (User user : users) { 
+                                    String employeeRole = "";
+                                    if (user.getRole() == 2) {
+                                        models.Employee emp = empDAO.getEmployeeByUserId(user.getUserID());
+                                        if (emp != null) {
+                                            employeeRole = emp.getEmployeeRole();
+                                        }
+                                    }
+                                %>
+                                <tr class="hover:bg-gray-50"
+                                    data-role="<%= user.getRole() %>">
+                                    <td
+                                        class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        #<%= user.getUserID() %>
+                                    </td>
+                                    <td
+                                        class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        <%= user.getName() %>
+                                    </td>
+                                    <td
+                                        class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <%= user.getEmail() %>
+                                    </td>
+                                    <td
+                                        class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <%= user.getPhone() %>
+                                    </td>
                                     <td class="px-4 py-4 whitespace-nowrap">
                                         <% if (user.getRole() == 1) { %>
                                         <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Admin</span>
