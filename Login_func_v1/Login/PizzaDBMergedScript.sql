@@ -190,7 +190,24 @@ CREATE TABLE OrderDiscount (
 GO
 
 -- ===============================
--- Feedback
+-- PAYMENT SYSTEM 
+-- ===============================
+
+CREATE TABLE Payment (
+    PaymentID INT IDENTITY(1,1) PRIMARY KEY,
+    OrderID INT NOT NULL,
+    PaymentMethod NVARCHAR(50) NOT NULL CHECK (PaymentMethod IN ('Cash', 'QR Code')),
+    Amount DECIMAL(10,2) NOT NULL,
+    PaymentStatus NVARCHAR(50) DEFAULT 'Pending' CHECK (PaymentStatus IN ('Pending', 'Completed', 'Failed')),
+    PaymentDate DATETIME DEFAULT GETDATE(),
+    TransactionID NVARCHAR(100) NULL,
+    QRCodeURL NVARCHAR(500) NULL,
+    FOREIGN KEY (OrderID) REFERENCES [Order](OrderID) ON DELETE CASCADE
+);
+GO
+
+-- ===============================
+-- Feedback System
 -- ===============================
 
 CREATE TABLE Feedback (
@@ -383,6 +400,19 @@ VALUES
 (3, 2, 2, '2025-11-15', 0, '2025-10-18 10:25:00'),  -- Customer 3 has 2 voucher 20K off
 (1, 5, 1, '2025-12-31', 0, '2025-10-18 10:25:00'),  -- Birthday Discount
 (3, 7, 1, '2025-10-30', 0, '2025-10-18 10:25:00');  -- Student Discount expire soon
+GO
+
+
+-- Payment
+INSERT INTO Payment (OrderID, PaymentMethod, Amount, PaymentStatus, PaymentDate, TransactionID, QRCodeURL)
+VALUES 
+(1, 'Cash', 55000, 'Completed', '2025-10-20 14:30:00', NULL, NULL),
+(2, 'QR Code', 120000, 'Completed', '2025-10-20 15:00:00', 'TXN001234', 'https://img.vietqr.io/image/vietinbank-113366668888-compact2.jpg?amount=120000&addInfo=Order2&accountName=Pizza Store'),
+(3, 'Cash', 60000, 'Completed', '2025-10-19 12:30:00', NULL, NULL),
+(4, 'Cash', 180000, 'Completed', '2025-10-18 19:45:00', NULL, NULL),
+(5, 'QR Code', 220000, 'Completed', '2025-10-15 14:00:00', 'TXN001236', 'https://img.vietqr.io/image/vietinbank-113366668888-compact2.jpg?amount=220000&addInfo=Order5&accountName=Pizza Store'),
+(6, 'QR Code', 90000, 'Completed', '2025-10-13 12:30:00', 'TXN001237', 'https://img.vietqr.io/image/vietinbank-113366668888-compact2.jpg?amount=90000&addInfo=Order6&accountName=Pizza Store'),
+(7, 'Cash', 120000, 'Completed', '2025-10-10 16:30:00', NULL, NULL);
 GO
 
 -- Feedback

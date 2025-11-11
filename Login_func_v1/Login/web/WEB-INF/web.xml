@@ -252,5 +252,15 @@
         <url-pattern>/customer-menu</url-pattern>
     </servlet-mapping>
 
+    <!-- Bill Servlet -->
+    <servlet>
+        <servlet-name>BillServlet</servlet-name>
+        <servlet-class>controller.BillServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BillServlet</servlet-name>
+        <url-pattern>/bill</url-pattern>
+    </servlet-mapping>
+
 </web-app>
 

@@ -166,6 +166,10 @@
                         <span>Discount (<span id="discountPercent">0</span>%):</span>
                         <span id="discountAmount" class="font-semibold">-0đ</span>
                     </div>
+                    <div class="flex justify-between text-gray-600">
+                        <span>Tax (10%):</span>
+                        <span id="taxAmount" class="font-semibold">-0đ</span>
+                    </div>
                     <div class="flex justify-between text-lg font-bold text-gray-800 pt-2 border-t">
                         <span>Total:</span>
                         <span id="totalAmount" class="text-orange-600">0đ</span>
@@ -189,14 +193,6 @@
                         Order
                     </button>
                 </div>
-
-                <button onclick="printBill()" id="printBtn" disabled
-                        class="w-full py-3 px-4 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-                    </svg>
-                    Print Bill
-                </button>
             </div>
         </div>
     </div>
@@ -405,16 +401,11 @@
                         console.log('✅ Table panel hidden');
                     }
                     
-                    // Hide Clear and Print Bill buttons in EDIT mode
+                    // Hide Clear buttons in EDIT mode
                     const clearBtn = document.getElementById('clearBtn');
-                    const printBtn = document.getElementById('printBtn');
                     if (clearBtn) {
                         clearBtn.style.display = 'none';
                         console.log('✅ Clear button hidden');
-                    }
-                    if (printBtn) {
-                        printBtn.style.display = 'none';
-                        console.log('✅ Print Bill button hidden');
                     }
                     
                     // Set selected table (order already has table, no need to select)
@@ -848,7 +839,6 @@
         function updateButtonStates(enabled) {
             document.getElementById('clearBtn').disabled = !enabled;
             document.getElementById('orderBtn').disabled = !enabled;
-            document.getElementById('printBtn').disabled = !enabled;
         }
 
         // Update totals
@@ -869,9 +859,12 @@
             }, 0);
             const discount = parseFloat(document.getElementById('discountInput').value) || 0;
             const discountAmount = (subtotal * discount) / 100;
-            const total = subtotal - discountAmount;
+            // Calculate tax
+            const tax = (subtotal - discountAmount) * 0.1;
+            const total = subtotal - discountAmount + tax;
             
             document.getElementById('subtotalAmount').textContent = formatCurrency(subtotal) + 'đ';
+            document.getElementById('taxAmount').textContent = formatCurrency(tax) + 'đ';
             document.getElementById('totalAmount').textContent = formatCurrency(total) + 'đ';
             
             const discountRow = document.getElementById('discountRow');
@@ -935,7 +928,8 @@
             const discount = parseFloat(document.getElementById('discountInput').value) || 0;
             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             const discountAmount = (subtotal * discount) / 100;
-            const total = subtotal - discountAmount;
+            const tax = (subtotal - discountAmount) * 0.1;
+            const total = subtotal - discountAmount + tax;
             
             // Prepare order data
             const orderData = {
@@ -1036,67 +1030,6 @@
                                    '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>' +
                                    '</svg> Order';
             }
-        }
-
-        // Print bill
-        function printBill() {
-            if (cart.length === 0) return;
-            
-            const customerName = document.getElementById('customerName').value.trim() || 'Walk-in Customer';
-            const discount = parseFloat(document.getElementById('discountInput').value) || 0;
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const discountAmount = (subtotal * discount) / 100;
-            const total = subtotal - discountAmount;
-            
-            // Create print window
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(
-                '<html>' +
-                '<head>' +
-                    '<title>Pizza Bill</title>' +
-                    '<style>' +
-                        'body { font-family: Arial, sans-serif; margin: 20px; }' +
-                        '.header { text-align: center; margin-bottom: 20px; }' +
-                        '.item { display: flex; justify-content: space-between; margin: 5px 0; }' +
-                        '.total { border-top: 1px solid #000; margin-top: 10px; padding-top: 10px; font-weight: bold; }' +
-                    '</style>' +
-                '</head>' +
-                '<body>' +
-                    '<div class="header">' +
-                        '<h2>🍕 PizzaConnect</h2>' +
-                        '<p>Customer: ' + customerName + '</p>' +
-                        '<p>Date: ' + new Date().toLocaleString('vi-VN') + '</p>' +
-                    '</div>' +
-                    
-                    cart.map(item => 
-                        '<div class="item">' +
-                            '<span>' + item.name + (item.toppings.length > 0 ? ' + ' + item.toppings.join(', ') : '') + '</span>' +
-                            '<span>' + item.quantity + ' x ' + formatCurrency(item.price) + 'đ = ' + formatCurrency(item.price * item.quantity) + 'đ</span>' +
-                        '</div>'
-                    ).join('') +
-                    
-                    '<div class="total">' +
-                        '<div class="item">' +
-                            '<span>Subtotal:</span>' +
-                            '<span>' + formatCurrency(subtotal) + 'đ</span>' +
-                        '</div>' +
-                        (discount > 0 ? 
-                            '<div class="item">' +
-                                '<span>Discount (' + discount + '%):</span>' +
-                                '<span>-' + formatCurrency(discountAmount) + 'đ</span>' +
-                            '</div>'
-                        : '') +
-                        '<div class="item">' +
-                            '<span>Total:</span>' +
-                            '<span>' + formatCurrency(total) + 'đ</span>' +
-                        '</div>' +
-                    '</div>' +
-                '</body>' +
-                '</html>'
-            );
-            
-            printWindow.document.close();
-            printWindow.print();
         }
     </script>
 </body>
