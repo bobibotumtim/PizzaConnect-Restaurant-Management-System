@@ -51,7 +51,16 @@ public class LoginServlet extends HttpServlet {
             Employee employee = empDAO.getEmployeeByUserID(user.getUserID());
             if (employee != null) {
                 session.setAttribute("employee", employee);
-                System.out.println("✅ Employee set to session: " + employee.getName() + " - Specialization: " + employee.getSpecialization());
+                System.out.println("✅ Employee set to session: " + employee.getName() + " - Job Role: " + employee.getJobRole());
+                
+                // Check if employee is a Manager
+                String jobRole = employee.getJobRole();
+                if (jobRole != null && jobRole.equalsIgnoreCase("Manager")) {
+                    // Manager -> Redirect to Manager Dashboard
+                    System.out.println("👔 Manager detected - Redirecting to Manager Dashboard");
+                    response.sendRedirect("manager-dashboard");
+                    return;
+                }
                 
                 // Check if employee is a Chef (has specialization)
                 String specialization = employee.getSpecialization();

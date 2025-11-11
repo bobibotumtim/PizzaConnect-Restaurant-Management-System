@@ -30,10 +30,11 @@ public class InventoryDAO {
             sql.append(" AND ItemName LIKE ?");
         }
         
-        if (statusFilter != null && !statusFilter.equals("all")) {
-            if (statusFilter.equals("active")) {
+        // Add status filter condition
+        if (statusFilter != null && !statusFilter.equalsIgnoreCase("all")) {
+            if (statusFilter.equalsIgnoreCase("active")) {
                 sql.append(" AND Status = 'Active'");
-            } else if (statusFilter.equals("inactive")) {
+            } else if (statusFilter.equalsIgnoreCase("inactive")) {
                 sql.append(" AND Status = 'Inactive'");
             }
         }
@@ -56,7 +57,7 @@ public class InventoryDAO {
     // Lấy theo trang (page bắt đầu từ 1)
     public List<Inventory> getInventoriesByPage(int page, int pageSize) {
         List<Inventory> list = new ArrayList<>();
-        String sql = "SELECT InventoryID, ItemName, Quantity, Unit, LastUpdated, Status " +
+        String sql = "SELECT InventoryID, ItemName, Quantity, Unit, LastUpdated " +
                      "FROM Inventory " +
                      "ORDER BY InventoryID " +
                      "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
@@ -73,7 +74,6 @@ public class InventoryDAO {
                     inv.setQuantity(rs.getDouble("Quantity"));
                     inv.setUnit(rs.getString("Unit"));
                     inv.setLastUpdated(rs.getTimestamp("LastUpdated"));
-                    inv.setStatus(rs.getString("Status"));
                     list.add(inv);
                 }
             }
@@ -93,10 +93,11 @@ public class InventoryDAO {
             sql.append(" AND ItemName LIKE ?");
         }
         
-        if (statusFilter != null && !statusFilter.equals("all")) {
-            if (statusFilter.equals("active")) {
+        // Add status filter condition
+        if (statusFilter != null && !statusFilter.equalsIgnoreCase("all")) {
+            if (statusFilter.equalsIgnoreCase("active")) {
                 sql.append(" AND Status = 'Active'");
-            } else if (statusFilter.equals("inactive")) {
+            } else if (statusFilter.equalsIgnoreCase("inactive")) {
                 sql.append(" AND Status = 'Inactive'");
             }
         }
