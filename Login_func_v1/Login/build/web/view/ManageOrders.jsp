@@ -52,34 +52,29 @@
                             text-transform: uppercase;
                         }
 
-                        .status-pending {
-                            background: #f59e0b;
+                        /* Order Status Colors - New Workflow */
+                        .status-waiting {
+                            background: #f59e0b;  /* Orange - Chờ chef làm */
                             color: white;
                         }
 
-                        .status-processing {
-                            background: #3b82f6;
+                        .status-ready {
+                            background: #3b82f6;  /* Blue - Chef làm xong */
+                            color: white;
+                        }
+
+                        .status-dining {
+                            background: #8b5cf6;  /* Purple - Khách đang ăn */
                             color: white;
                         }
 
                         .status-completed {
-                            background: #10b981;
+                            background: #10b981;  /* Green - Đã thanh toán */
                             color: white;
                         }
 
                         .status-cancelled {
-                            background: #ef4444;
-                            color: white;
-                        }
-                        
-                        /* New status colors */
-                        .status-dining {
-                            background: #f59e0b;
-                            color: white;
-                        }
-                        
-                        .status-served {
-                            background: #3b82f6;
+                            background: #ef4444;  /* Red - Đã hủy */
                             color: white;
                         }
 
@@ -204,7 +199,7 @@
                                                         <div class="text-sm text-gray-600 mb-2">Completed</div>
                                                         <div class="text-3xl font-bold text-green-600">
                                                             <% int completed=0; if (orders !=null) { for (Order order :
-                                                                orders) { if (order.getStatus()==2) completed++; } } %>
+                                                                orders) { if (order.getStatus()==3) completed++; } } %>
                                                                 <%= completed %>
                                                         </div>
                                                     </div>
@@ -215,8 +210,8 @@
                                                             <% double totalRevenue=0; 
                                                                if (orders !=null) { 
                                                                    for (Order order : orders) { 
-                                                                       // Only count Completed orders (status = 2)
-                                                                       if (order.getStatus() == 2) {
+                                                                       // Only count Completed orders (status = 3)
+                                                                       if (order.getStatus() == 3) {
                                                                            totalRevenue += order.getTotalPrice();
                                                                        }
                                                                    } 
@@ -241,16 +236,19 @@
                                                                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
                                                                     <option value="">All Orders</option>
                                                                     <option value="0" <%=selectedStatus !=null &&
-                                                                        selectedStatus==0 ? "selected" : "" %>>Dining
+                                                                        selectedStatus==0 ? "selected" : "" %>>Waiting
                                                                     </option>
                                                                     <option value="1" <%=selectedStatus !=null &&
                                                                         selectedStatus==1 ? "selected" : "" %>
-                                                                        >Served</option>
+                                                                        >Ready</option>
                                                                     <option value="2" <%=selectedStatus !=null &&
-                                                                        selectedStatus==2 ? "selected" : "" %>>Completed
+                                                                        selectedStatus==2 ? "selected" : "" %>>Dining
                                                                     </option>
                                                                     <option value="3" <%=selectedStatus !=null &&
-                                                                        selectedStatus==3 ? "selected" : "" %>>Cancelled
+                                                                        selectedStatus==3 ? "selected" : "" %>>Completed
+                                                                    </option>
+                                                                    <option value="4" <%=selectedStatus !=null &&
+                                                                        selectedStatus==4 ? "selected" : "" %>>Cancelled
                                                                     </option>
                                                                 </select>
 
@@ -375,10 +373,11 @@
                                                                                 <td class="px-4 py-4">
                                                                                     <% String statusClass="" ;
                                                                                         switch(order.getStatus()) { 
-                                                                                        case 0: statusClass="status-dining" ; break;
-                                                                                        case 1: statusClass="status-served" ; break;
-                                                                                        case 2: statusClass="status-completed" ; break;
-                                                                                        case 3: statusClass="status-cancelled" ; break;
+                                                                                        case 0: statusClass="status-waiting" ; break;   // Waiting
+                                                                                        case 1: statusClass="status-ready" ; break;      // Ready
+                                                                                        case 2: statusClass="status-dining" ; break;     // Dining
+                                                                                        case 3: statusClass="status-completed" ; break;  // Completed
+                                                                                        case 4: statusClass="status-cancelled" ; break;  // Cancelled
                                                                                         } %>
                                                                                         <span
                                                                                             class="status-badge <%= statusClass %>" style="font-size: 0.65rem; padding: 4px 10px;">
@@ -431,8 +430,8 @@
                                                                                                     View
                                                                                                 </button>
                                                                                                 
-                                                                                                <!-- PRINT BILL BUTTON - Show for all orders except cancelled -->
-                                                                                                <% if (status != 3) { %>
+                                                                                                <!-- PRINT BILL BUTTON - Show for all orders except cancelled (4) -->
+                                                                                                <% if (status != 4) { %>
                                                                                                     <a href="${pageContext.request.contextPath}/bill?orderId=<%= order.getOrderID() %>"
                                                                                                     target="_blank"
                                                                                                     class="px-2 py-1 text-white bg-purple-600 hover:bg-purple-700 rounded text-xs font-medium whitespace-nowrap inline-flex items-center gap-1"
@@ -444,7 +443,8 @@
                                                                                                     </a>
                                                                                                 <% } %>
                                                                                                 
-                                                                                                <% if (status == 0 || status == 1) { %>
+                                                                                                <!-- ADD BUTTON - Show for Waiting, Ready, Dining (not Completed or Cancelled) -->
+                                                                                                <% if (status >= 0 && status <= 2) { %>
                                                                                                 <a href="${pageContext.request.contextPath}/pos?orderId=<%= order.getOrderID() %>"
                                                                                                     class="px-2 py-1 text-white bg-green-600 hover:bg-green-700 rounded text-xs font-medium whitespace-nowrap inline-flex items-center gap-1"
                                                                                                     title="Add More Items">
@@ -456,8 +456,36 @@
                                                                                                 <% } %>
 
                                                                                                 <%
-                                                                                                // 4. PAID BUTTON - Show for Unpaid orders except Cancelled
-                                                                                                if (!isPaid && status != 3) {
+                                                                                                // SERVE BUTTON - Show only for Ready status (1)
+                                                                                                if (status == 1) {
+                                                                                                %>
+                                                                                                    <form
+                                                                                                        style="display: inline;"
+                                                                                                        method="post"
+                                                                                                        onsubmit="return confirm('Đã đưa món cho khách?')">
+                                                                                                        <input
+                                                                                                            type="hidden"
+                                                                                                            name="action"
+                                                                                                            value="updateStatus">
+                                                                                                        <input
+                                                                                                            type="hidden"
+                                                                                                            name="orderId"
+                                                                                                            value="<%= order.getOrderID() %>">
+                                                                                                        <input
+                                                                                                            type="hidden"
+                                                                                                            name="status"
+                                                                                                            value="2">
+                                                                                                        <button
+                                                                                                            type="submit"
+                                                                                                            class="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 whitespace-nowrap">
+                                                                                                            Serve
+                                                                                                        </button>
+                                                                                                    </form>
+                                                                                                <% } %>
+
+                                                                                                <%
+                                                                                                // 4. PAID BUTTON - Show for Unpaid orders except Cancelled (4)
+                                                                                                if (!isPaid && status != 4) {
                                                                                                 %>
                                                                                                     <form
                                                                                                         style="display: inline;"
@@ -487,32 +515,32 @@
                                                                                                 <% } %>
 
                                                                                                 <%
-                                                                                                // 5. CANCEL BUTTON - Pending: no confirm, Processing: need confirm
+                                                                                                // 5. CANCEL BUTTON - Show for Waiting, Ready, Dining only
                                                                                                 if (status == 0) {
-                                                                                                    // Pending: Cancel without confirm
+                                                                                                    // Waiting: Cancel without confirm
                                                                                                 %>
                                                                                                     <form style="display: inline;" method="post">
                                                                                                         <input type="hidden" name="action" value="updateStatus">
                                                                                                         <input type="hidden" name="orderId" value="<%= order.getOrderID() %>">
-                                                                                                        <input type="hidden" name="status" value="3">
+                                                                                                        <input type="hidden" name="status" value="4">
                                                                                                         <button type="submit" class="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 whitespace-nowrap">
                                                                                                             Cancel
                                                                                                         </button>
                                                                                                     </form>
-                                                                                                <% } else if (status == 1) {
-                                                                                                    // Processing: Cancel WITH confirm
+                                                                                                <% } else if (status == 1 || status == 2) {
+                                                                                                    // Ready or Dining: Cancel WITH confirm
                                                                                                 %>
                                                                                                     <form style="display: inline;" method="post" 
-                                                                                                        onsubmit="return confirm('⚠️ Đơn đang làm trong bếp! Bạn chắc chắn muốn hủy?')">
+                                                                                                        onsubmit="return confirm('⚠️ Bạn chắc chắn muốn hủy đơn hàng này?')">
                                                                                                         <input type="hidden" name="action" value="updateStatus">
                                                                                                         <input type="hidden" name="orderId" value="<%= order.getOrderID() %>">
-                                                                                                        <input type="hidden" name="status" value="3">
+                                                                                                        <input type="hidden" name="status" value="4">
                                                                                                         <button type="submit" class="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 whitespace-nowrap">
                                                                                                             Cancel
                                                                                                         </button>
                                                                                                     </form>
                                                                                                 <% }
-                                                                                                // Completed (2) and Cancelled (3): NO Cancel button
+                                                                                                // Completed (3) and Cancelled (4): NO Cancel button
                                                                                                 %>
                                                                                         </div>
                                                                                     </td>

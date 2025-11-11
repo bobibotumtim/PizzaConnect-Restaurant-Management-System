@@ -133,20 +133,22 @@ public class Order {
     // Helper methods for display
     public String getStatusText() {
         switch (status) {
-            case 0: return "Dining";
-            case 1: return "Served";
-            case 2: return "Completed";
-            case 3: return "Cancelled";
+            case 0: return "Waiting";      // Chờ chef làm
+            case 1: return "Ready";        // Chef làm xong hết
+            case 2: return "Dining";       // Khách đang ăn
+            case 3: return "Completed";    // Đã thanh toán
+            case 4: return "Cancelled";    // Đã hủy
             default: return "Unknown";
         }
     }
     
     public String getStatusBadgeClass() {
         switch (status) {
-            case 0: return "badge-warning";   // Dining - yellow
-            case 1: return "badge-info";      // Served - blue
-            case 2: return "badge-success";   // Completed - green
-            case 3: return "badge-danger";    // Cancelled - red
+            case 0: return "badge-warning";    // Waiting - yellow
+            case 1: return "badge-info";       // Ready - blue
+            case 2: return "badge-primary";    // Dining - purple
+            case 3: return "badge-success";    // Completed - green
+            case 4: return "badge-danger";     // Cancelled - red
             default: return "badge-secondary";
         }
     }

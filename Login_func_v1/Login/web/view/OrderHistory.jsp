@@ -19,23 +19,28 @@
             text-transform: uppercase;
         }
 
-        .status-dining {
-            background: #f59e0b;
+        .status-waiting {
+            background: #f59e0b;  /* Orange - Chờ chef làm */
             color: white;
         }
 
-        .status-served {
-            background: #3b82f6;
+        .status-ready {
+            background: #3b82f6;  /* Blue - Chef làm xong */
+            color: white;
+        }
+
+        .status-dining {
+            background: #8b5cf6;  /* Purple - Khách đang ăn */
             color: white;
         }
 
         .status-completed {
-            background: #10b981;
+            background: #10b981;  /* Green - Đã thanh toán */
             color: white;
         }
 
         .status-cancelled {
-            background: #ef4444;
+            background: #ef4444;  /* Red - Đã hủy */
             color: white;
         }
 
@@ -104,7 +109,7 @@
                                 int completed = 0;
                                 if (orders != null) {
                                     for (Order order : orders) {
-                                        if (order.getStatus() == 2) completed++;
+                                        if (order.getStatus() == 3) completed++;
                                     }
                                 }
                             %>
@@ -118,7 +123,7 @@
                                 double totalSpent = 0;
                                 if (orders != null) {
                                     for (Order order : orders) {
-                                        if (order.getStatus() == 2) { // Only completed orders
+                                        if (order.getStatus() == 3) { // Only completed orders (status = 3)
                                             totalSpent += order.getTotalPrice();
                                         }
                                     }
@@ -183,10 +188,11 @@
                                                 <% 
                                                     String statusClass = "";
                                                     switch(order.getStatus()) {
-                                                        case 0: statusClass = "status-dining"; break;
-                                                        case 1: statusClass = "status-served"; break;
-                                                        case 2: statusClass = "status-completed"; break;
-                                                        case 3: statusClass = "status-cancelled"; break;
+                                                        case 0: statusClass = "status-waiting"; break;   // Waiting
+                                                        case 1: statusClass = "status-ready"; break;      // Ready
+                                                        case 2: statusClass = "status-dining"; break;     // Dining
+                                                        case 3: statusClass = "status-completed"; break;  // Completed
+                                                        case 4: statusClass = "status-cancelled"; break;  // Cancelled
                                                     }
                                                 %>
                                                 <span class="status-badge <%= statusClass %>">

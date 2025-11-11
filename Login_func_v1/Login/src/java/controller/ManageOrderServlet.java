@@ -213,26 +213,38 @@ public class ManageOrderServlet extends HttpServlet {
             if (success) {
                 System.out.println("✅ Order status updated successfully");
                 
-                // Nếu Cancelled (3) → Set payment về Unpaid
-                if (status == 3) {
+                // Nếu Cancelled (4) → Set payment về Unpaid và trả bàn
+                if (status == 4) {
                     boolean paymentUpdated = orderDAO.updatePaymentStatus(orderId, "Unpaid");
                     if (paymentUpdated) {
                         System.out.println("✅ Payment status set to Unpaid (Order #" + orderId + " Cancelled)");
                     } else {
                         System.err.println("⚠️ Failed to update payment status for Order #" + orderId);
                     }
-                }
-                
-                // Nếu Completed (2) hoặc Cancelled (3) → Set bàn về available
-                if (status == 2 || status == 3) {
+                    
+                    // Trả bàn
                     Order order = orderDAO.getOrderById(orderId);
                     if (order != null && order.getTableID() > 0) {
                         dao.TableDAO tableDAO = new dao.TableDAO();
                         boolean tableUpdated = tableDAO.updateTableStatus(order.getTableID(), "available");
                         
                         if (tableUpdated) {
-                            String statusText = (status == 2) ? "Completed" : "Cancelled";
-                            System.out.println("✅ Table #" + order.getTableID() + " set to available (Order #" + orderId + " " + statusText + ")");
+                            System.out.println("✅ Table #" + order.getTableID() + " set to available (Order #" + orderId + " Cancelled)");
+                        } else {
+                            System.err.println("⚠️ Failed to update table status for Table #" + order.getTableID());
+                        }
+                    }
+                }
+                
+                // Nếu Completed (3) → Trả bàn (payment đã được set ở handleUpdatePayment)
+                if (status == 3) {
+                    Order order = orderDAO.getOrderById(orderId);
+                    if (order != null && order.getTableID() > 0) {
+                        dao.TableDAO tableDAO = new dao.TableDAO();
+                        boolean tableUpdated = tableDAO.updateTableStatus(order.getTableID(), "available");
+                        
+                        if (tableUpdated) {
+                            System.out.println("✅ Table #" + order.getTableID() + " set to available (Order #" + orderId + " Completed)");
                         } else {
                             System.err.println("⚠️ Failed to update table status for Table #" + order.getTableID());
                         }
@@ -266,10 +278,10 @@ public class ManageOrderServlet extends HttpServlet {
             if (success) {
                 System.out.println("✅ Payment status updated successfully");
                 
-                // If payment is "Paid" → Set order to Completed (status = 2) and table to Available
+                // If payment is "Paid" → Set order to Completed (status = 3) and table to Available
                 if ("Paid".equalsIgnoreCase(paymentStatus)) {
-                    // Update order status to Completed
-                    boolean statusUpdated = orderDAO.updateOrderStatus(orderId, 2);
+                    // Update order status to Completed (3)
+                    boolean statusUpdated = orderDAO.updateOrderStatus(orderId, 3);
                     
                     if (statusUpdated) {
                         System.out.println("✅ Order #" + orderId + " set to Completed (Paid)");
