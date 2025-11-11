@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 public class DBContext {
     private static final String USER = "sa";
     private static final String PASSWORD = "123";
-    private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=pizza_demo_DB_Merged;encrypt=true;trustServerCertificate=true";
+    private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=pizza_demo_DB;encrypt=true;trustServerCertificate=true";
 
     // Load the SQL Server JDBC driver
     static {

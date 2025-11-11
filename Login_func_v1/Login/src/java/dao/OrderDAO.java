@@ -144,7 +144,7 @@ public class OrderDAO extends DBContext {
     // 🟢 Get all orders
     public List<Order> getAll() {
         List<Order> list = new ArrayList<>();
-        String sql = "SELECT * FROM [Order] ORDER BY OrderDate DESC";
+        String sql = "SELECT * FROM [Order] ORDER BY OrderID DESC";
 
         try (Connection con = useConnection();
              PreparedStatement ps = con.prepareStatement(sql);
@@ -613,29 +613,24 @@ public class OrderDAO extends DBContext {
     
     // 🟢 Simple method to only update status and payment
     public boolean updateOrderStatusAndPayment(int orderId, int status, String paymentStatus) {
-        String sql = "UPDATE [Order] SET Status=?, PaymentStatus=? WHERE OrderID=?";
+        String sql = "UPDATE [Order] SET Status = ?, PaymentStatus = ? WHERE OrderID = ?";
         try (Connection con = useConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            
-            System.out.println("🔄 Quick update Order ID: " + orderId + ", Status: " + status + ", Payment: " + paymentStatus);
-            
+                PreparedStatement ps = con.prepareStatement(sql)) {
+
+            System.out.println(
+                    "🔄 Updating Order ID: " + orderId + ", Status: " + status + ", Payment: " + paymentStatus);
+
             ps.setInt(1, status);
             ps.setString(2, paymentStatus);
             ps.setInt(3, orderId);
-            
+
             int rowsAffected = ps.executeUpdate();
-            System.out.println("✅ Quick update successful. Rows affected: " + rowsAffected);
-            
-            // Force commit
-            if (!con.getAutoCommit()) {
-                con.commit();
-                System.out.println("✅ Transaction committed");
-            }
-            
+            System.out.println("✅ Order status and payment updated. Rows affected: " + rowsAffected);
+
             return rowsAffected > 0;
-            
+
         } catch (Exception e) {
-            System.out.println("❌ Error in quick update: " + e.getMessage());
+            System.out.println("❌ Error updating order status and payment: " + e.getMessage());
             e.printStackTrace();
             return false;
         }

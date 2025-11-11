@@ -5,22 +5,20 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PaymentDAO extends DBContext{
+public class PaymentDAO extends DBContext {
 
     public boolean createPayment(Payment payment) {
-        String sql = "INSERT INTO Payment (OrderID, PaymentMethod, Amount, PaymentStatus, PaymentDate, " +
-                "TransactionID, QRCodeURL) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Payment (OrderID, Amount, PaymentStatus, PaymentDate, " +
+                "QRCodeURL) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1, payment.getOrderID());
-            ps.setString(2, payment.getPaymentMethod());
-            ps.setDouble(3, payment.getAmount());
-            ps.setString(4, payment.getPaymentStatus());
-            ps.setTimestamp(5, new Timestamp(payment.getPaymentDate().getTime()));
-            ps.setString(6, payment.getTransactionID());
-            ps.setString(7, payment.getQrCodeURL());
+            ps.setDouble(2, payment.getAmount());
+            ps.setString(3, payment.getPaymentStatus());
+            ps.setTimestamp(4, new Timestamp(payment.getPaymentDate().getTime()));
+            ps.setString(5, payment.getQrCodeURL());
 
             int affectedRows = ps.executeUpdate();
 
@@ -74,21 +72,23 @@ public class PaymentDAO extends DBContext{
     }
 
     public boolean updatePayment(Payment payment) {
-        String sql = "UPDATE Payment SET PaymentMethod = ?, Amount = ?, PaymentStatus = ?, " +
-                "TransactionID = ?, QRCodeURL = ? WHERE PaymentID = ?";
+        String sql = "UPDATE Payment SET Amount = ?, PaymentStatus = ?, " +
+                "PaymentDate = ?, QRCodeURL = ? WHERE PaymentID = ?";
 
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, payment.getPaymentMethod());
-            ps.setDouble(2, payment.getAmount());
-            ps.setString(3, payment.getPaymentStatus());
-            ps.setString(4, payment.getTransactionID());
-            ps.setString(5, payment.getQrCodeURL());
-            ps.setInt(6, payment.getPaymentID());
+            ps.setDouble(1, payment.getAmount());
+            ps.setString(2, payment.getPaymentStatus());
+            ps.setTimestamp(3, new Timestamp(payment.getPaymentDate().getTime()));
+            ps.setString(4, payment.getQrCodeURL());
+            ps.setInt(5, payment.getPaymentID());
 
-            return ps.executeUpdate() > 0;
+            int rowsAffected = ps.executeUpdate();
+            System.out.println("✅ Payment updated. Rows affected: " + rowsAffected);
+            return rowsAffected > 0;
         } catch (SQLException e) {
+            System.err.println("❌ Error updating payment: " + e.getMessage());
             e.printStackTrace();
         }
         return false;
@@ -115,11 +115,9 @@ public class PaymentDAO extends DBContext{
         Payment payment = new Payment();
         payment.setPaymentID(rs.getInt("PaymentID"));
         payment.setOrderID(rs.getInt("OrderID"));
-        payment.setPaymentMethod(rs.getString("PaymentMethod"));
         payment.setAmount(rs.getDouble("Amount"));
         payment.setPaymentStatus(rs.getString("PaymentStatus"));
         payment.setPaymentDate(rs.getTimestamp("PaymentDate"));
-        payment.setTransactionID(rs.getString("TransactionID"));
         payment.setQrCodeURL(rs.getString("QRCodeURL"));
         return payment;
     }

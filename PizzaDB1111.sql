@@ -1,11 +1,11 @@
-﻿-- ===============================
--- 🛠️ TẠO VÀ SỬ DỤNG DATABASE (Phiên bản Topping là Product + OrderDetailTopping với ProductPrice)
+-- ===============================
+-- 🛠️ CREATE AND USE DATABASE 
 -- ===============================
 
-CREATE DATABASE pizza_demo_DB_FinalModel;
+CREATE DATABASE pizza_demo_DB;
 GO
 
-USE pizza_demo_DB_FinalModel;
+USE pizza_demo_DB;
 GO
 
 -- ===============================
@@ -80,6 +80,7 @@ CREATE TABLE Inventory (
     ItemName NVARCHAR(100) NOT NULL,
     Quantity DECIMAL(10,2) DEFAULT 0,
     Unit NVARCHAR(50),
+    Status NVARCHAR(20) NOT NULL DEFAULT 'Active',
     LastUpdated DATETIME DEFAULT GETDATE()
 );
 GO
@@ -117,7 +118,7 @@ CREATE TABLE [Order] (
     EmployeeID INT FOREIGN KEY REFERENCES Employee(EmployeeID),
     TableID INT NULL FOREIGN KEY REFERENCES [Table](TableID),
     OrderDate DATETIME DEFAULT GETDATE(),
-    [Status] INT DEFAULT 0 CHECK ([Status] IN (0,1,2,3,4)),  -- 0=Pending,1=Preparing,2=Served,3=Completed,4=Cancelled
+    [Status] INT DEFAULT 0 CHECK ([Status] IN (0,1,2,3,4)),  -- 0=Waiting,1=Ready,2=Dining,3=Completed,4=Cancelled
     PaymentStatus NVARCHAR(50) CHECK (PaymentStatus IN ('Unpaid', 'Paid')),
     TotalPrice DECIMAL(10,2) DEFAULT 0,
     Note NVARCHAR(255)
@@ -139,12 +140,12 @@ CREATE TABLE OrderDetail (
 );
 GO
 
--- Bảng OrderDetailTopping ĐÃ SỬA: ToppingPrice -> ProductPrice
+-- OrderDetailTopping FIXED: ToppingPrice -> ProductPrice
 CREATE TABLE OrderDetailTopping (
 	OrderDetailToppingID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
 	OrderDetailID INT NOT NULL FOREIGN KEY REFERENCES OrderDetail(OrderDetailID) ON DELETE CASCADE,
-	ProductPrice DECIMAL(10, 2) NOT NULL, -- ĐÃ ĐỔI TÊN TỪ ToppingPrice
-	ProductSizeID INT NOT NULL, -- ProductSizeID của Topping (Tức là ProductSizeID của một Topping Product)
+	ProductPrice DECIMAL(10, 2) NOT NULL, -- RENAMED from ToppingPrice
+	ProductSizeID INT NOT NULL, -- ProductSizeID of Topping (ProductSizeID of a Topping Product)
 	CONSTRAINT FK_OrderDetailTopping_ProductSize_Topping FOREIGN KEY (ProductSizeID)
 	REFERENCES ProductSize(ProductSizeID)
 );
@@ -196,11 +197,9 @@ GO
 CREATE TABLE Payment (
     PaymentID INT IDENTITY(1,1) PRIMARY KEY,
     OrderID INT NOT NULL,
-    PaymentMethod NVARCHAR(50) NOT NULL CHECK (PaymentMethod IN ('Cash', 'QR Code')),
     Amount DECIMAL(10,2) NOT NULL,
     PaymentStatus NVARCHAR(50) DEFAULT 'Pending' CHECK (PaymentStatus IN ('Pending', 'Completed', 'Failed')),
     PaymentDate DATETIME DEFAULT GETDATE(),
-    TransactionID NVARCHAR(100) NULL,
     QRCodeURL NVARCHAR(500) NULL,
     FOREIGN KEY (OrderID) REFERENCES [Order](OrderID) ON DELETE CASCADE
 );
@@ -283,19 +282,19 @@ GO
 -- Categories
 INSERT INTO Category (CategoryName, Description)
 VALUES 
-(N'Pizza', N'All pizza products'),
-(N'Drink', N'All beverages'),
-(N'Topping', N'Extra toppings');
+('Pizza', 'All pizza products'),
+('Drink', 'All beverages'),
+('Topping', 'Extra toppings');
 GO
 
--- Products (Topping là Product)
+-- Products (Topping as Product)
 INSERT INTO Product (ProductName, Description, CategoryID, ImageURL, IsAvailable)
 VALUES 
-(N'Hawaiian Pizza', N'Pizza with ham and pineapple', 1, N'hawaiian.jpg', 1), -- ProductID 1
-(N'Iced Milk Coffee', N'Coffee with condensed milk', 2, N'icedMilkCoffee.jpg', 1), -- ProductID 2
-(N'Peach Orange Tea', N'Peach tea with orange flavor', 2, N'peachOrangeTea.jpg', 1), -- ProductID 3
-(N'Extra Cheese Topping', N'Extra cheese for pizza', 3, N'extraCheese.jpg', 1), -- Topping ProductID 4
-(N'Sausage Topping', N'Sausage topping', 3, N'sausage.jpg', 1); -- Topping ProductID 5
+('Hawaiian Pizza', 'Pizza with ham and pineapple', 1, 'hawaiian.jpg', 1), -- ProductID 1
+('Iced Milk Coffee', 'Coffee with condensed milk', 2, 'icedMilkCoffee.jpg', 1), -- ProductID 2
+('Peach Orange Tea', 'Peach tea with orange flavor', 2, 'peachOrangeTea.jpg', 1), -- ProductID 3
+('Extra Cheese Topping', 'Extra cheese for pizza', 3, 'extraCheese.jpg', 1), -- Topping ProductID 4
+('Sausage Topping', 'Sausage topping', 3, 'sausage.jpg', 1); -- Topping ProductID 5
 GO
 
 -- Product sizes & prices
@@ -311,11 +310,11 @@ VALUES
 GO
 
 -- Inventory
-INSERT INTO Inventory (ItemName, Quantity, Unit)
+INSERT INTO Inventory (ItemName, Quantity, Unit, Status)
 VALUES 
-(N'Dough', 10, N'kg'), (N'Cheese', 5, N'kg'), (N'Ham', 3, N'kg'), (N'Pineapple', 2, N'kg'),
-(N'Ground Coffee', 10, N'kg'), (N'Condensed Milk', 5, N'liter'), (N'Sliced Peach', 2, N'kg'), (N'Dried Tea', 3, N'kg'),
-(N'Topping Cheese Stock', 5, N'kg'), (N'Topping Sausage Stock', 4, N'kg');
+('Dough', 10, 'kg', 'Active'), ('Cheese', 5, 'kg', 'Active'), ('Ham', 3, 'kg', 'Active'), ('Pineapple', 2, 'kg', 'Active'),
+('Ground Coffee', 10, 'kg', 'Active'), ('Condensed Milk', 5, 'liter', 'Active'), ('Sliced Peach', 2, 'kg', 'Active'), ('Dried Tea', 3, 'kg', 'Active'),
+('Topping Cheese Stock', 5, 'kg', 'Active'), ('Topping Sausage Stock', 4, 'kg', 'Active');
 GO
 
 -- Ingredients by size
@@ -338,37 +337,37 @@ GO
 -- Orders
 INSERT INTO [Order] (CustomerID, EmployeeID, TableID, [Status], PaymentStatus, TotalPrice, Note)
 VALUES 
-(1, 1, 5, 0, 'Unpaid', 120000, N'Order 1: Pizza S'), -- OrderID 1
-(1, 2, 3, 1, 'Paid', 55000, N'Order 2: Coffee + Tea'), -- OrderID 2
-(2, 2, 2, 3, 'Paid', 135000, N'Order 3: Pizza S + Extra Cheese Topping'); -- OrderID 3
+(1, 1, 5, 0, 'Unpaid', 120000, 'Order 1: Pizza S'), -- OrderID 1
+(1, 2, 3, 1, 'Unpaid', 55000, 'Order 2: Coffee + Tea'), -- OrderID 2
+(2, 2, 2, 3, 'Paid', 135000, 'Order 3: Pizza S + Extra Cheese Topping'); -- OrderID 3
 GO
 
--- Order details (Món chính)
+-- Order details (Main items)
 INSERT INTO OrderDetail (OrderID, ProductSizeID, Quantity, TotalPrice, SpecialInstructions, EmployeeID, [Status], StartTime, EndTime)
 VALUES
 (1, 1, 1, 120000, NULL, 3, 'In Progress', GETDATE(), NULL), -- OrderDetailID 1: Pizza S (Order 1)
-(2, 4, 1, 25000, N'Less ice', NULL, 'Waiting', NULL, NULL), -- OrderDetailID 2: Coffee F (Order 2)
-(2, 5, 1, 30000, N'No sugar', NULL, 'Waiting', NULL, NULL), -- OrderDetailID 3: Tea F (Order 2)
+(2, 4, 1, 25000, 'Less ice', NULL, 'Waiting', NULL, NULL), -- OrderDetailID 2: Coffee F (Order 2)
+(2, 5, 1, 30000, 'No sugar', NULL, 'Waiting', NULL, NULL), -- OrderDetailID 3: Tea F (Order 2)
 (3, 1, 1, 120000, NULL, 3, 'Done', DATEADD(MINUTE, -30, GETDATE()), GETDATE()); -- OrderDetailID 4: Pizza S (Order 3)
 GO
 
--- OrderDetailTopping (Gắn Topping Product với món chính OrderDetail)
--- OrderDetail 4 (Pizza S) có thêm Topping Extra Cheese (ProductSizeID 6)
+-- OrderDetailTopping (Attach Topping Product to main OrderDetail)
+-- OrderDetail 4 (Pizza S) has Extra Cheese Topping (ProductSizeID 6)
 INSERT INTO OrderDetailTopping (OrderDetailID, ProductSizeID, ProductPrice)
 VALUES
-(4, 6, 15000); -- OrderDetailToppingID 1: Gắn Topping Cheese (ID 6) vào Pizza (OrderDetail ID 4). ProductPrice là giá cố định của ProductSizeID 6.
+(4, 6, 15000); -- OrderDetailToppingID 1: Attach Cheese Topping (ID 6) to Pizza (OrderDetail ID 4). ProductPrice is fixed price of ProductSizeID 6.
 GO
 
 -- Discounts
 INSERT INTO Discount (Description, DiscountType, Value, MaxDiscount, MinOrderTotal, StartDate, EndDate, IsActive)
 VALUES
-(N'10% off drinks', 'Percentage', 10, NULL, 0, '2025-10-01', '2025-10-31', 1),
-(N'Fixed 20K off over 200K', 'Fixed', 20000, NULL, 200000, '2025-10-15', '2025-11-15', 1),
-(N'Loyalty points', 'Loyalty', 100, NULL, 0, '2025-10-01', NULL, 1);
+('10% off drinks', 'Percentage', 10, NULL, 0, '2025-10-01', '2025-10-31', 1),
+('Fixed 20K off over 200K', 'Fixed', 20000, NULL, 200000, '2025-10-15', '2025-11-15', 1),
+('Loyalty points', 'Loyalty', 100, NULL, 0, '2025-10-01', NULL, 1);
 GO
 
 -- ===============================
--- 📊 VIEW (Không thay đổi)
+-- 📊 VIEW (No changes)
 -- ===============================
 
 CREATE VIEW v_ProductSizeAvailable
@@ -412,7 +411,7 @@ WHERE
 GO 
 
 -- ===========================
--- ⚙️ PROCEDURES (Cập nhật tên DB mới)
+-- ⚙️ PROCEDURES (Updated with new DB name)
 -- ===========================
 CREATE PROCEDURE ScheduleDeletion
     @EntityType NVARCHAR(20),
@@ -437,9 +436,9 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    IF DB_NAME() != 'pizza_demo_DB_FinalModel'
+    IF DB_NAME() != 'pizza_demo_DB'
     BEGIN
-        PRINT 'This procedure is designed for pizza_demo_DB_FinalModel only. Current database: ' + DB_NAME();
+        PRINT 'This procedure is designed for pizza_demo_DB only. Current database: ' + DB_NAME();
         RETURN;
     END
     
@@ -486,4 +485,42 @@ BEGIN
     
     PRINT 'Processed ' + CAST(@ProcessedCount AS NVARCHAR) + ' items from deletion queue.';
 END
+GO
+
+-- ===========================
+-- SQL Server Agent Jobs
+-- ===========================
+
+USE msdb;
+GO
+
+-- Create job for deletion queue
+EXEC dbo.sp_add_job
+    @job_name = N'ProcessDeletionQueue_pizza_demo_DB',
+    @enabled = 1,
+    @description = N'Process scheduled deletions daily at 00:00 - pizza_demo_DB only';
+
+-- Add job step for deletion queue
+EXEC sp_add_jobstep
+    @job_name = N'ProcessDeletionQueue_pizza_demo_DB',
+    @step_name = N'ProcessDeletionQueue',
+    @subsystem = N'TSQL',
+    @command = N'EXEC ProcessDeletionQueue',
+    @database_name = N'pizza_demo_DB';
+
+-- Add schedule (run daily at 00:01)
+EXEC sp_add_schedule
+    @schedule_name = N'DailyMidnight',
+    @freq_type = 4, -- Daily
+    @freq_interval = 1,
+    @active_start_time = 000100; -- 00:01
+
+-- Attach schedule to the job
+EXEC sp_attach_schedule
+    @job_name = N'ProcessDeletionQueue_pizza_demo_DB',
+    @schedule_name = N'DailyMidnight';
+
+-- Add job to SQL Server Agent
+EXEC sp_add_jobserver
+    @job_name = N'ProcessDeletionQueue_pizza_demo_DB';
 GO

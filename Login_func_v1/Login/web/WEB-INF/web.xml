@@ -209,21 +209,6 @@
         <url-pattern>/test-export</url-pattern>
     </servlet-mapping>
 
-    <!-- Inventory Management Servlet - Temporarily commented out for debugging -->
-    <!--
-    <servlet>
-        <servlet-name>InventoryServlet</servlet-name>
-        <servlet-class>controller.InventoryServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>InventoryServlet</servlet-name>
-        <url-pattern>/manageinventory</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>InventoryServlet</servlet-name>
-        <url-pattern>/inventory</url-pattern>
-    </servlet-mapping>
-    -->
     <!-- Home Servlet -->
     <servlet>
         <servlet-name>HomeServlet</servlet-name>
@@ -242,7 +227,11 @@
         <servlet-name>InventoryServlet</servlet-name>
         <url-pattern>/inventory</url-pattern>
     </servlet-mapping>
-
+    <servlet-mapping>
+        <servlet-name>InventoryServlet</servlet-name>
+        <url-pattern>/manageinventory</url-pattern>
+    </servlet-mapping>
+    
     <servlet>
         <servlet-name>CustomerMenuServlet</servlet-name>
         <servlet-class>controller.CustomerMenuServlet</servlet-class>
@@ -260,6 +249,7 @@
     <servlet-mapping>
         <servlet-name>BillServlet</servlet-name>
         <url-pattern>/bill</url-pattern>
+        <url-pattern>/bill/*</url-pattern>
     </servlet-mapping>
 
 </web-app>

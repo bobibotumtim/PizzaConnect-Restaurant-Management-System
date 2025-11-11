@@ -133,20 +133,22 @@ public class Order {
     // Helper methods for display
     public String getStatusText() {
         switch (status) {
-            case 0: return "Dining";
-            case 1: return "Served";
-            case 2: return "Completed";
-            case 3: return "Cancelled";
+            case 0: return "Waiting";
+            case 1: return "Ready";
+            case 2: return "Dining";
+            case 3: return "Completed";
+            case 4: return "Cancelled";
             default: return "Unknown";
         }
     }
     
     public String getStatusBadgeClass() {
         switch (status) {
-            case 0: return "badge-warning";   // Dining - yellow
-            case 1: return "badge-info";      // Served - blue
-            case 2: return "badge-success";   // Completed - green
-            case 3: return "badge-danger";    // Cancelled - red
+            case 0: return "badge-light";       // Waiting
+            case 1: return "badge-warning";      // Ready - yellow
+            case 2: return "badge-info";        // Dining - blue
+            case 3: return "badge-success";      // Completed - green
+            case 4: return "badge-danger";      // Cancelled - red
             default: return "badge-secondary";
         }
     }

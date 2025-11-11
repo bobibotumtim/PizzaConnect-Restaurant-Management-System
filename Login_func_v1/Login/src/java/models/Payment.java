@@ -5,20 +5,17 @@ import java.util.Date;
 public class Payment {
     private int paymentID;
     private int orderID;
-    private String paymentMethod;
     private double amount;
     private String paymentStatus;
     private Date paymentDate;
-    private String transactionID;
     private String qrCodeURL;
 
     // Constructors
     public Payment() {
     }
 
-    public Payment(int orderID, String paymentMethod, double amount, String paymentStatus) {
+    public Payment(int orderID, double amount, String paymentStatus) {
         this.orderID = orderID;
-        this.paymentMethod = paymentMethod;
         this.amount = amount;
         this.paymentStatus = paymentStatus;
         this.paymentDate = new Date();
@@ -39,14 +36,6 @@ public class Payment {
 
     public void setOrderID(int orderID) {
         this.orderID = orderID;
-    }
-
-    public String getPaymentMethod() {
-        return paymentMethod;
-    }
-
-    public void setPaymentMethod(String paymentMethod) {
-        this.paymentMethod = paymentMethod;
     }
 
     public double getAmount() {
@@ -73,14 +62,6 @@ public class Payment {
         this.paymentDate = paymentDate;
     }
 
-    public String getTransactionID() {
-        return transactionID;
-    }
-
-    public void setTransactionID(String transactionID) {
-        this.transactionID = transactionID;
-    }
-
     public String getQrCodeURL() {
         return qrCodeURL;
     }
@@ -94,11 +75,9 @@ public class Payment {
         return "Payment{" +
                 "paymentID=" + paymentID +
                 ", orderID=" + orderID +
-                ", paymentMethod='" + paymentMethod + '\'' +
                 ", amount=" + amount +
                 ", paymentStatus='" + paymentStatus + '\'' +
                 ", paymentDate=" + paymentDate +
-                ", transactionID='" + transactionID + '\'' +
                 ", qrCodeURL='" + qrCodeURL + '\'' +
                 '}';
     }
