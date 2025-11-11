@@ -79,80 +79,8 @@ public class ChatBotServlet extends HttpServlet {
             return "I didn't catch that. Could you please repeat?";
         }
 
-        String lowerMessage = message.toLowerCase().trim();
-
-        // Menu queries
-        if (lowerMessage.contains("menu") || lowerMessage.contains("show") && lowerMessage.contains("product")) {
-            return getMenuResponse();
-        }
-
-        // Pizza queries
-        if (lowerMessage.contains("pizza")) {
-            return getPizzaResponse();
-        }
-
-        // Drink queries
-        if (lowerMessage.contains("drink") || lowerMessage.contains("beverage")) {
-            return getDrinkResponse();
-        }
-
-        // Price queries
-        if (lowerMessage.contains("price") || lowerMessage.contains("cost") || lowerMessage.contains("how much")) {
-            return getPriceResponse();
-        }
-
-        // Best seller queries
-        if (lowerMessage.contains("best") || lowerMessage.contains("popular") || lowerMessage.contains("recommend")) {
-            return getBestSellerResponse();
-        }
-
-        // Promotion queries
-        if (lowerMessage.contains("promotion") || lowerMessage.contains("discount") || lowerMessage.contains("offer") || lowerMessage.contains("deal")) {
-            return getPromotionResponse();
-        }
-
-        // Opening hours
-        if (lowerMessage.contains("hour") || lowerMessage.contains("open") || lowerMessage.contains("close") || lowerMessage.contains("time")) {
-            return "We're open daily from 10:00 AM to 10:00 PM. 🕐<br><br>You can visit us anytime during these hours or order online!";
-        }
-
-        // Location
-        if (lowerMessage.contains("location") || lowerMessage.contains("address") || lowerMessage.contains("where")) {
-            return "We're located at 123 Pizza Street, District 1, Ho Chi Minh City. 📍<br><br>You can also order online for delivery!";
-        }
-
-        // Order status
-        if (lowerMessage.contains("order") && (lowerMessage.contains("status") || lowerMessage.contains("track"))) {
-            return "To check your order status, please go to your profile page and view your order history. 📦<br><br>You can also contact our staff for assistance!";
-        }
-
-        // Contact
-        if (lowerMessage.contains("contact") || lowerMessage.contains("phone") || lowerMessage.contains("call")) {
-            return "You can reach us at:<br>📞 Phone: 0909-000-001<br>📧 Email: support@pizzaconnect.com<br><br>We're here to help!";
-        }
-
-        // Delivery
-        if (lowerMessage.contains("deliver") || lowerMessage.contains("shipping")) {
-            return "Yes, we offer delivery service! 🚚<br><br>Delivery is free for orders above 200,000₫. Standard delivery takes 30-45 minutes.";
-        }
-
-        // Payment
-        if (lowerMessage.contains("payment") || lowerMessage.contains("pay")) {
-            return "We accept multiple payment methods:<br>💵 Cash<br>💳 Credit/Debit Cards<br>📱 Mobile Payment (Momo, ZaloPay)<br><br>Choose what's convenient for you!";
-        }
-
-        // Greeting (check for standalone greetings, not words containing these)
-        if (lowerMessage.matches(".*\\b(hello|hi|hey)\\b.*")) {
-            return "Hello! 👋 Welcome to PizzaConnect! How can I help you today?";
-        }
-
-        // Thank you
-        if (lowerMessage.contains("thank")) {
-            return "You're welcome! 😊 Is there anything else I can help you with?";
-        }
-
-        // Fallback to Gemini AI for other questions
-        return getGeminiResponse(message);
+        // ALL questions go to Gemini AI with full restaurant context
+        return getGeminiResponseWithContext(message);
     }
 
     private String getMenuResponse() {
@@ -276,32 +204,24 @@ public class ChatBotServlet extends HttpServlet {
                 + "Don't miss out on these amazing deals!";
     }
 
-    private String getGeminiResponse(String userMessage) {
-        System.out.println("=== getGeminiResponse called ===");
+    private String getGeminiResponseWithContext(String userMessage) {
+        System.out.println("=== getGeminiResponseWithContext called ===");
         System.out.println("User message: " + userMessage);
         
         try {
             // Check if Gemini is enabled
-            System.out.println("Checking if Gemini is enabled...");
-            System.out.println("ENABLE_GEMINI = " + util.Config.ENABLE_GEMINI);
-            
             if (!util.Config.ENABLE_GEMINI) {
                 System.out.println("Gemini is DISABLED, returning default response");
                 return getDefaultResponse();
             }
 
-            System.out.println("Gemini is ENABLED, proceeding...");
+            System.out.println("Gemini is ENABLED, building context from database...");
 
-            // Build context about restaurant
-            String context = "PizzaConnect is a pizza restaurant. "
-                    + "We serve pizzas (S: 120,000₫, M: 160,000₫, L: 200,000₫), "
-                    + "drinks (25,000-30,000₫), and toppings (15,000-20,000₫). "
-                    + "Open daily 10AM-10PM. Located at 123 Pizza Street, District 1, HCMC. "
-                    + "We offer delivery (free over 200,000₫). "
-                    + "Accept cash, cards, and mobile payment.";
+            // Build rich context from database
+            String context = buildRestaurantContext();
 
             // Call Gemini API
-            System.out.println("Calling GeminiAPI.generateResponse...");
+            System.out.println("Calling GeminiAPI with full context...");
             String geminiResponse = GeminiAPI.generateResponse(userMessage, context);
 
             if (geminiResponse != null && !geminiResponse.trim().isEmpty()) {
@@ -313,10 +233,73 @@ public class ChatBotServlet extends HttpServlet {
             }
 
         } catch (Exception e) {
-            System.err.println("Exception in getGeminiResponse: " + e.getMessage());
+            System.err.println("Exception in getGeminiResponseWithContext: " + e.getMessage());
             e.printStackTrace();
             return getDefaultResponse();
         }
+    }
+    
+    private String buildRestaurantContext() {
+        StringBuilder context = new StringBuilder();
+        
+        // Basic info
+        context.append("You are a helpful assistant for PizzaConnect restaurant.\n\n");
+        context.append("RESTAURANT INFO:\n");
+        context.append("- Name: PizzaConnect\n");
+        context.append("- Location: 123 Pizza Street, District 1, Ho Chi Minh City\n");
+        context.append("- Phone: 0909-000-001\n");
+        context.append("- Email: support@pizzaconnect.com\n");
+        context.append("- Hours: 10:00 AM - 10:00 PM (Daily)\n");
+        context.append("- Delivery: Free for orders above 200,000₫\n");
+        context.append("- Payment: Cash, Credit/Debit Cards, Mobile Payment (Momo, ZaloPay)\n\n");
+        
+        // Get menu from database
+        try {
+            List<Product> products = productDAO.getAllBaseProducts();
+            if (!products.isEmpty()) {
+                context.append("CURRENT MENU:\n");
+                
+                Map<String, List<Product>> byCategory = new HashMap<>();
+                for (Product p : products) {
+                    if (p.isAvailable()) {
+                        byCategory.computeIfAbsent(p.getCategoryName(), k -> new ArrayList<>()).add(p);
+                    }
+                }
+                
+                for (Map.Entry<String, List<Product>> entry : byCategory.entrySet()) {
+                    context.append("\n").append(entry.getKey()).append(":\n");
+                    for (Product p : entry.getValue()) {
+                        List<ProductSize> sizes = sizeDAO.getSizesByProductId(p.getProductId());
+                        context.append("- ").append(p.getProductName());
+                        if (p.getDescription() != null) {
+                            context.append(" (").append(p.getDescription()).append(")");
+                        }
+                        context.append(" - Sizes: ");
+                        for (ProductSize size : sizes) {
+                            context.append(size.getSizeCode()).append(" (")
+                                   .append(currencyFormat.format(size.getPrice())).append("₫) ");
+                        }
+                        context.append("\n");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error building menu context: " + e.getMessage());
+        }
+        
+        context.append("\nPROMOTIONS:\n");
+        context.append("- First Order Special: 20% off\n");
+        context.append("- Combo Deal: Large pizza + 2 drinks save 30,000₫\n");
+        context.append("- Loyalty Program: Earn points with every purchase\n\n");
+        
+        context.append("INSTRUCTIONS:\n");
+        context.append("- Answer in a friendly, helpful way\n");
+        context.append("- Keep responses concise (2-4 sentences)\n");
+        context.append("- Use the menu information above to answer questions\n");
+        context.append("- Suggest products when appropriate\n");
+        context.append("- Be helpful and encouraging\n");
+        
+        return context.toString();
     }
 
     private String getDefaultResponse() {
