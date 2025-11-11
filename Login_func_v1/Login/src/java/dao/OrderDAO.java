@@ -176,6 +176,39 @@ public class OrderDAO extends DBContext {
         return list;
     }
 
+    // 🟢 Get orders by customer ID
+    public List<Order> getOrdersByCustomerId(int customerId) {
+        List<Order> list = new ArrayList<>();
+        String sql = "SELECT * FROM [Order] WHERE CustomerID = ? ORDER BY OrderDate DESC";
+
+        try (Connection con = useConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, customerId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Order o = new Order();
+                    o.setOrderID(rs.getInt("OrderID"));
+                    o.setCustomerID(rs.getInt("CustomerID"));
+                    o.setEmployeeID(rs.getInt("EmployeeID"));
+                    o.setTableID(rs.getInt("TableID"));
+                    o.setOrderDate(rs.getTimestamp("OrderDate"));
+                    o.setStatus(rs.getInt("Status"));
+                    o.setPaymentStatus(rs.getString("PaymentStatus"));
+                    o.setTotalPrice(rs.getDouble("TotalPrice"));
+                    o.setNote(rs.getString("Note"));
+                    list.add(o);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("✅ Orders loaded for customer " + customerId + ": " + list.size());
+        return list;
+    }
+
     // 🟢 Get order by ID
     public Order getOrderById(int orderId) {
         String sql = "SELECT * FROM [Order] WHERE OrderID = ?";
