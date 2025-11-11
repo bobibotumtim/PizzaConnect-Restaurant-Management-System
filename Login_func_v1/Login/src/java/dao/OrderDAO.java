@@ -81,14 +81,14 @@ public class OrderDAO extends DBContext {
                 }
             }
 
-            // 3️⃣ Update table status to Occupied
+            // 3️⃣ Update table status to occupied (lowercase for consistency)
             if (tableID > 0) {
-                String sqlUpdateTable = "UPDATE [Table] SET Status = 'Occupied' WHERE TableID = ?";
+                String sqlUpdateTable = "UPDATE [Table] SET Status = 'occupied' WHERE TableID = ?";
                 try (PreparedStatement psTable = con.prepareStatement(sqlUpdateTable)) {
                     psTable.setInt(1, tableID);
                     int rowsUpdated = psTable.executeUpdate();
                     if (rowsUpdated > 0) {
-                        System.out.println("✅ Table #" + tableID + " set to Occupied (Order #" + orderId + " created)");
+                        System.out.println("✅ Table #" + tableID + " set to occupied (Order #" + orderId + " created)");
                     } else {
                         System.err.println("⚠️ Failed to update table status for Table #" + tableID);
                     }
