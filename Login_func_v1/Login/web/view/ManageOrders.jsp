@@ -124,7 +124,15 @@
                                                     <%= user !=null ? user.getName() : "User" %>
                                                 </div>
                                                 <div class="text-sm text-red-100">
-                                                    <%= user !=null && user.getRole()==1 ? "Admin" : "Employee" %>
+                                                    <% if (user != null) {
+                                                        if (user.getRole() == 1) { %>
+                                                            Admin
+                                                        <% } else if (user.getRole() == 3) { %>
+                                                            Customer
+                                                        <% } else { %>
+                                                            Employee
+                                                        <% }
+                                                    } %>
                                                 </div>
                                             </div>
                                             <a href="Login?action=logout"
