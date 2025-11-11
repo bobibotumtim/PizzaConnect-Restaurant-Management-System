@@ -4,13 +4,11 @@ import dao.SalesReportDAO;
 import models.SalesReportData;
 import models.User;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-@WebServlet(urlPatterns = {"/sales-reports", "/salesreports"})
 public class SalesReportServlet extends HttpServlet {
     
     private final SalesReportDAO salesReportDAO = new SalesReportDAO();

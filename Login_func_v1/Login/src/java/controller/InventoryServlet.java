@@ -4,12 +4,10 @@ import dao.InventoryDAO;
 import models.Inventory;
 import utils.URLUtils;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(urlPatterns = {"/inventory", "/manageinventory"})
 public class InventoryServlet extends HttpServlet {
     private InventoryDAO dao = new InventoryDAO();
 
