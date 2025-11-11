@@ -4,6 +4,7 @@ import dao.UserDAO;
 import dao.OrderDAO;
 import dao.EmployeeDAO;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.List;
@@ -12,7 +13,8 @@ import java.util.stream.Collectors;
 import models.User;
 import models.Employee;
 
-public class AdminServlet extends HttpServlet {
+@WebServlet(name = "ManagerUserManagementServlet", urlPatterns = {"/manager-users"})
+public class ManagerUserManagementServlet extends HttpServlet {
 
     private static final int USERS_PER_PAGE = 10;
 
@@ -27,42 +29,30 @@ public class AdminServlet extends HttpServlet {
         }
 
         User currentUser = (User) session.getAttribute("user");
+        Employee employee = (Employee) session.getAttribute("employee");
         
         // Check if user is Admin or Manager
         boolean isAuthorized = false;
-        Employee employee = (Employee) session.getAttribute("employee");
-        
-        System.out.println("[AdminServlet doGet] currentUser.role=" + currentUser.getRole());
-        System.out.println("[AdminServlet doGet] employee=" + employee);
-        if (employee != null) {
-            System.out.println("[AdminServlet doGet] employee.jobRole=" + employee.getJobRole());
-        }
-        
         if (currentUser.getRole() == 1) {
-            // Admin has access
             isAuthorized = true;
-            System.out.println("[AdminServlet doGet] Authorized as Admin");
-        } else if (currentUser.getRole() == 2) {
-            // Check if Employee is Manager
-            if (employee != null && "Manager".equalsIgnoreCase(employee.getJobRole())) {
+        } else if (currentUser.getRole() == 2 && employee != null) {
+            String jobRole = employee.getJobRole();
+            System.out.println("[ManagerUserManagement] JobRole from employee: '" + jobRole + "'");
+            if (jobRole != null && jobRole.trim().equalsIgnoreCase("Manager")) {
                 isAuthorized = true;
-                System.out.println("[AdminServlet doGet] Authorized as Manager");
-            } else {
-                System.out.println("[AdminServlet doGet] NOT authorized - employee is null or not Manager");
             }
         }
         
         if (!isAuthorized) {
-            System.out.println("[AdminServlet doGet] Access DENIED - redirecting to dashboard");
-            session.setAttribute("error", "Access denied. Admin or Manager role required.");
-            response.sendRedirect(request.getContextPath() + "/dashboard");
+            session.setAttribute("error", "Access denied. Manager role required.");
+            response.sendRedirect(request.getContextPath() + "/manager-dashboard");
             return;
         }
 
         UserDAO userDAO = new UserDAO();
         EmployeeDAO employeeDAO = new EmployeeDAO();
+        OrderDAO orderDAO = new OrderDAO();
 
-        // === Phần lọc role (đã sửa) ===
         String roleFilter = request.getParameter("roleFilter");
         if (roleFilter == null || roleFilter.trim().isEmpty()) {
             roleFilter = request.getParameter("role");
@@ -76,12 +66,11 @@ public class AdminServlet extends HttpServlet {
 
         if ("all".equalsIgnoreCase(roleFilter)) {
             filteredUsers = allUsers;
-        } else if ("Manager".equals(roleFilter) || "Cashier".equals(roleFilter) ||
-                "Waiter".equals(roleFilter) || "Chef".equals(roleFilter)) {
-            // Filter by employee role
+        } else if ("Manager".equals(roleFilter) || "Cashier".equals(roleFilter) || 
+                   "Waiter".equals(roleFilter) || "Chef".equals(roleFilter)) {
             filteredUsers = new ArrayList<>();
             for (User user : allUsers) {
-                if (user.getRole() == 2) { // Employee
+                if (user.getRole() == 2) {
                     Employee emp = employeeDAO.getEmployeeByUserId(user.getUserID());
                     if (emp != null && roleFilter.equals(emp.getEmployeeRole())) {
                         filteredUsers.add(user);
@@ -107,21 +96,12 @@ public class AdminServlet extends HttpServlet {
                 filteredUsers = allUsers.stream()
                         .filter(u -> u.getRole() == finalRoleInt)
                         .collect(Collectors.toList());
-
             } else {
                 filteredUsers = allUsers;
             }
         }
 
-        // Debug thông tin lọc
-        System.out.println("[AdminServlet] roleParam=" + request.getParameter("role")
-                + " roleFilter=" + roleFilter
-                + ", filteredUsers.size=" + (filteredUsers == null ? 0 : filteredUsers.size()));
-
-        OrderDAO orderDAO = new OrderDAO();
         int totalOrders = orderDAO.countAllOrders();
-
-        // Lấy số trang hiện tại (nếu không có thì mặc định = 1)
         int page = 1;
         String pageParam = request.getParameter("page");
         if (pageParam != null) {
@@ -131,21 +111,15 @@ public class AdminServlet extends HttpServlet {
             }
         }
 
-        // Phân trang dựa trên filteredUsers
         int totalUsers = filteredUsers.size();
         int totalPages = Math.max(1, (int) Math.ceil((double) totalUsers / USERS_PER_PAGE));
-        if (page < 1) {
-            page = 1;
-        }
-        if (page > totalPages) {
-            page = totalPages;
-        }
+        if (page < 1) page = 1;
+        if (page > totalPages) page = totalPages;
 
         int start = (page - 1) * USERS_PER_PAGE;
         int end = Math.min(start + USERS_PER_PAGE, totalUsers);
         List<User> paginatedUsers = filteredUsers.subList(start, end);
 
-        // Gửi dữ liệu sang JSP
         request.setAttribute("users", paginatedUsers);
         request.setAttribute("currentUser", currentUser);
         request.setAttribute("totalOrders", totalOrders);
@@ -155,12 +129,8 @@ public class AdminServlet extends HttpServlet {
 
         String message = (String) session.getAttribute("message");
         String error = (String) session.getAttribute("error");
-        if (message != null) {
-            session.removeAttribute("message");
-        }
-        if (error != null) {
-            session.removeAttribute("error");
-        }
+        if (message != null) session.removeAttribute("message");
+        if (error != null) session.removeAttribute("error");
 
         request.setAttribute("message", message);
         request.setAttribute("error", error);
@@ -172,7 +142,6 @@ public class AdminServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Kiểm tra session và quyền admin/manager
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
             response.sendRedirect("Login");
@@ -180,24 +149,21 @@ public class AdminServlet extends HttpServlet {
         }
 
         User user = (User) session.getAttribute("user");
+        Employee employee = (Employee) session.getAttribute("employee");
         
-        // Check if user is Admin or Manager
         boolean isAuthorized = false;
         if (user.getRole() == 1) {
-            // Admin has access
             isAuthorized = true;
-        } else if (user.getRole() == 2) {
-            // Check if Employee is Manager
-            Employee employee = (Employee) session.getAttribute("employee");
-            if (employee != null && "Manager".equalsIgnoreCase(employee.getJobRole())) {
+        } else if (user.getRole() == 2 && employee != null) {
+            String jobRole = employee.getJobRole();
+            if (jobRole != null && jobRole.trim().equalsIgnoreCase("Manager")) {
                 isAuthorized = true;
             }
         }
         
         if (!isAuthorized) {
-            System.out.println("[AdminServlet doPost] Access DENIED");
-            session.setAttribute("error", "Access denied. Admin or Manager role required.");
-            response.sendRedirect(request.getContextPath() + "/dashboard");
+            session.setAttribute("error", "Access denied. Manager role required.");
+            response.sendRedirect(request.getContextPath() + "/manager-dashboard");
             return;
         }
 
@@ -212,12 +178,11 @@ public class AdminServlet extends HttpServlet {
                     if (userId == user.getUserID()) {
                         session.setAttribute("error", "Cannot delete your own account!");
                     } else {
-                        System.out.println("[AdminServlet] Attempting to delete userID: " + userId);
                         boolean success = userDAO.deleteUser(userId);
                         if (success) {
                             session.setAttribute("message", "✅ User deleted successfully!");
                         } else {
-                            session.setAttribute("error", "❌ Failed to delete user! Check database constraints.");
+                            session.setAttribute("error", "❌ Failed to delete user!");
                         }
                     }
                 }
@@ -260,15 +225,10 @@ public class AdminServlet extends HttpServlet {
                     }
                 }
             }
-
-        } catch (NumberFormatException e) {
-            session.setAttribute("error", "Invalid user ID!");
         } catch (Exception e) {
-            session.setAttribute("error", "Unexpected error: " + e.getMessage());
-            e.printStackTrace();
+            session.setAttribute("error", "Error: " + e.getMessage());
         }
 
-        // Redirect để tránh submit lại form
-        response.sendRedirect("admin");
+        response.sendRedirect("manager-users");
     }
 }

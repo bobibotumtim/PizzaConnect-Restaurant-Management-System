@@ -16,6 +16,37 @@
         .pagination .page-item.active .page-link {
             background-color: #fd7e14; border-color:#fd7e14; color:white;
         }
+        
+        /* Modal Styling */
+        .modal-content {
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .modal-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .modal-title {
+            color: #0d6efd;
+            font-weight: 600;
+        }
+        
+        .modal-footer {
+            border-top: 1px solid #dee2e6;
+        }
+        
+        #modalErrorMessage {
+            margin-bottom: 1rem;
+        }
+        
+        /* Responsive modal */
+        @media (max-width: 576px) {
+            .modal-dialog {
+                margin: 0.5rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -39,7 +70,7 @@
                 <small class="text-muted">PizzaConnect Restaurant Management System</small>
             </div>
             <div>
-                <a href="manageinventory?action=add" class="btn btn-success">+ Add New Inventory</a>
+                <button type="button" class="btn btn-success" onclick="openAddModal()">+ Add New Inventory</button>
             </div>
         </div>
 
@@ -162,9 +193,13 @@
                                         </c:if>
                                     </c:url>
                                     
-                                    <a class="btn btn-sm btn-warning" href="${editUrl}">
+                                    <button type="button" class="btn btn-sm btn-warning edit-btn" 
+                                            data-id="${inv.inventoryID}" 
+                                            data-name="${inv.itemName}" 
+                                            data-quantity="${inv.quantity}" 
+                                            data-unit="${inv.unit}">
                                         Edit
-                                    </a>
+                                    </button>
                                     <c:choose>
                                         <c:when test="${inv.status == 'Active'}">
                                             <a class="btn btn-sm btn-danger" href="${toggleUrl}" 
@@ -367,6 +402,56 @@
     </div>
 </div>
 
+<!-- Add/Edit Inventory Modal -->
+<div class="modal fade" id="inventoryModal" tabindex="-1" aria-labelledby="inventoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="inventoryModalLabel">Add New Inventory</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="inventoryForm" method="POST" action="manageinventory">
+                <div class="modal-body">
+                    <!-- Hidden fields for preserving context -->
+                    <input type="hidden" id="inventoryId" name="id" value="">
+                    <input type="hidden" name="returnSearchName" value="${searchName}">
+                    <input type="hidden" name="returnStatusFilter" value="${statusFilter}">
+                    <input type="hidden" name="returnPage" value="${currentPage}">
+                    <input type="hidden" name="returnPageSize" value="${pageSize}">
+                    
+                    <!-- Error message display -->
+                    <div id="modalErrorMessage" class="alert alert-danger d-none" role="alert"></div>
+                    
+                    <!-- Item Name -->
+                    <div class="mb-3">
+                        <label for="itemName" class="form-label">Item Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="itemName" name="itemName" required 
+                               placeholder="Enter item name" aria-label="Item Name" tabindex="1">
+                    </div>
+                    
+                    <!-- Quantity -->
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">Quantity <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" class="form-control" id="quantity" name="quantity" 
+                               required min="0" placeholder="Enter quantity" aria-label="Quantity" tabindex="2">
+                    </div>
+                    
+                    <!-- Unit -->
+                    <div class="mb-3">
+                        <label for="unit" class="form-label">Unit <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="unit" name="unit" required 
+                               placeholder="e.g., kg, liters, pieces" aria-label="Unit" tabindex="3">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" tabindex="5" aria-label="Cancel">Cancel</button>
+                    <button type="submit" class="btn btn-success" tabindex="4" aria-label="Save Inventory">Save Inventory</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     // Function to change page size
@@ -379,11 +464,11 @@
     
     // Function to jump to specific page
     function jumpToPage(pageNumber) {
-        const totalPages = ${totalPages};
+        const maxPages = ${totalPages};
         const page = parseInt(pageNumber);
         
-        if (isNaN(page) || page < 1 || page > totalPages) {
-            alert('Please enter a valid page number between 1 and ' + totalPages);
+        if (isNaN(page) || page < 1 || page > maxPages) {
+            alert('Please enter a valid page number between 1 and ' + maxPages);
             return;
         }
         
@@ -395,6 +480,96 @@
     // Auto-submit search form when status filter changes
     document.getElementById('statusFilter').addEventListener('change', function() {
         this.form.submit();
+    });
+    
+    // Modal Functions
+    
+    // Open modal for adding new inventory
+    function openAddModal() {
+        // Reset form
+        document.getElementById('inventoryForm').reset();
+        document.getElementById('inventoryId').value = '';
+        document.getElementById('modalErrorMessage').classList.add('d-none');
+        
+        // Set title
+        document.getElementById('inventoryModalLabel').textContent = 'Add New Inventory';
+        
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('inventoryModal'));
+        modal.show();
+        
+        // Focus first field after modal animation
+        setTimeout(() => {
+            document.getElementById('itemName').focus();
+        }, 500);
+    }
+    
+    // Open modal for editing existing inventory
+    function openEditModal(id, itemName, quantity, unit) {
+        // Populate form with existing data
+        document.getElementById('inventoryId').value = id;
+        document.getElementById('itemName').value = itemName;
+        document.getElementById('quantity').value = quantity;
+        document.getElementById('unit').value = unit;
+        document.getElementById('modalErrorMessage').classList.add('d-none');
+        
+        // Set title
+        document.getElementById('inventoryModalLabel').textContent = 'Edit Inventory Item';
+        
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('inventoryModal'));
+        modal.show();
+        
+        // Focus first field after modal animation
+        setTimeout(() => {
+            document.getElementById('itemName').focus();
+        }, 500);
+    }
+    
+    // Client-side form validation
+    document.getElementById('inventoryForm').addEventListener('submit', function(e) {
+        const itemName = document.getElementById('itemName').value.trim();
+        const quantity = document.getElementById('quantity').value;
+        const unit = document.getElementById('unit').value.trim();
+        
+        let errors = [];
+        
+        // Validate item name
+        if (!itemName) {
+            errors.push('Item name cannot be empty');
+        }
+        
+        // Validate unit
+        if (!unit) {
+            errors.push('Unit cannot be empty');
+        }
+        
+        // Validate quantity
+        if (!quantity || parseFloat(quantity) < 0) {
+            errors.push('Quantity must be a non-negative number');
+        }
+        
+        // Display errors if any
+        if (errors.length > 0) {
+            e.preventDefault();
+            const errorDiv = document.getElementById('modalErrorMessage');
+            errorDiv.textContent = errors.join('. ') + '.';
+            errorDiv.classList.remove('d-none');
+            return false;
+        }
+    });
+    
+    // Add event listeners to all edit buttons
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.edit-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const name = this.getAttribute('data-name');
+                const quantity = this.getAttribute('data-quantity');
+                const unit = this.getAttribute('data-unit');
+                openEditModal(id, name, quantity, unit);
+            });
+        });
     });
 </script>
 
