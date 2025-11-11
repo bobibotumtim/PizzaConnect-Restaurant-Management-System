@@ -369,8 +369,8 @@ public class TableDAO extends DBContext {
         
         // Use VIEW that calculates actual status based on active orders
         // ActualStatus will be: 'available', 'occupied', or 'unavailable'
-        // Only count orders with status < 2 (Dining=0, Served=1)
-        // Completed (2) and Cancelled (3) orders should NOT make table occupied
+        // Only count orders with status < 3 (Waiting=0, Ready=1, Dining=2)
+        // Completed (3) and Cancelled (4) orders should NOT make table occupied
         String sql = """
             SELECT 
                 t.TableID,
@@ -385,7 +385,7 @@ public class TableDAO extends DBContext {
                     ELSE 'available'
                 END AS ActualStatus
             FROM [Table] t
-            LEFT JOIN [Order] o ON t.TableID = o.TableID AND o.[Status] < 2
+            LEFT JOIN [Order] o ON t.TableID = o.TableID AND o.[Status] < 3
             WHERE t.IsActive = 1
             GROUP BY t.TableID, t.TableNumber, t.Capacity, t.[Status], t.IsActive
             ORDER BY t.TableNumber
