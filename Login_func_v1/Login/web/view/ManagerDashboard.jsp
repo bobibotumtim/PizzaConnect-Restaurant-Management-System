@@ -17,7 +17,7 @@ String userName = currentUser.getName(); %>
     <style>
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
         min-height: 100vh;
       }
       .dashboard-card {
@@ -87,13 +87,13 @@ String userName = currentUser.getName(); %>
         </a>
 
         <a
-          href="${pageContext.request.contextPath}/manager-users"
+          href="${pageContext.request.contextPath}/profile"
           class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition"
         >
           <div class="min-w-[2.5rem] flex justify-center">
-            <i data-lucide="users" class="w-6 h-6"></i>
+            <i data-lucide="user-circle" class="w-6 h-6"></i>
           </div>
-          <span class="sidebar-text ml-3">User Management</span>
+          <span class="sidebar-text ml-3">Edit Profile</span>
         </a>
 
         <a
@@ -178,36 +178,36 @@ String userName = currentUser.getName(); %>
             </div>
           </div>
 
-          <!-- User Management Card -->
+          <!-- Edit Profile Card -->
           <div
             class="dashboard-card bg-white rounded-2xl shadow-xl overflow-hidden"
-            onclick="window.location.href='${pageContext.request.contextPath}/manager-users'"
+            onclick="window.location.href='${pageContext.request.contextPath}/profile'"
           >
             <div class="p-8">
               <div
                 class="icon-container w-20 h-20 rounded-2xl flex items-center justify-center mb-6 shadow-lg"
               >
-                <i data-lucide="user-cog" class="w-10 h-10 text-white"></i>
+                <i data-lucide="user-circle" class="w-10 h-10 text-white"></i>
               </div>
               <div class="mb-2">
                 <span
                   class="text-sm font-semibold text-orange-500 uppercase tracking-wide"
-                  >Management</span
+                  >Profile</span
                 >
               </div>
               <h3 class="text-2xl font-bold text-gray-800 mb-3">
-                User Management
+                Edit Profile
               </h3>
               <p class="text-gray-600 leading-relaxed">
-                Manage user accounts, update user information, and control
-                access permissions for staff members.
+                Update your personal information, change password, and manage
+                your account settings.
               </p>
             </div>
             <div
               class="bg-gradient-to-r from-orange-50 to-orange-100 px-8 py-4 flex items-center justify-between"
             >
               <span class="text-sm font-medium text-orange-600"
-                >Manage Users</span
+                >Edit Profile</span
               >
               <i data-lucide="arrow-right" class="w-5 h-5 text-orange-600"></i>
             </div>
