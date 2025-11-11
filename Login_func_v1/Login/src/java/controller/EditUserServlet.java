@@ -14,26 +14,26 @@ import models.User;
 import models.Employee;
 import models.Customer;
 
-@WebServlet(name = "EditUserServlet", urlPatterns = {"/edituser"})
+@WebServlet(name = "EditUserServlet", urlPatterns = { "/edituser" })
 public class EditUserServlet extends HttpServlet {
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         // Kiểm tra session và quyền admin
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
             response.sendRedirect("Login");
             return;
         }
-        
+
         User currentUser = (User) session.getAttribute("user");
         if (currentUser.getRole() != 1) { // 1 = admin role
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied. Admin role required.");
             return;
         }
-        
+
         // Lấy userId từ parameter
         String userIdStr = request.getParameter("id");
         if (userIdStr == null || userIdStr.trim().isEmpty()) {
@@ -45,17 +45,17 @@ public class EditUserServlet extends HttpServlet {
             int userId = Integer.parseInt(userIdStr);
             UserDAO userDAO = new UserDAO();
             User editUser = userDAO.getUserById(userId);
-            
+
             if (editUser == null) {
                 request.setAttribute("error", "User not found!");
                 response.sendRedirect("admin");
                 return;
             }
-            
+
             request.setAttribute("currentUser", currentUser);
             request.setAttribute("editUser", editUser);
             request.getRequestDispatcher("/view/EditUser.jsp").forward(request, response);
-            
+
         } catch (NumberFormatException e) {
             response.sendRedirect("admin");
         }
@@ -64,20 +64,20 @@ public class EditUserServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         // Kiểm tra session và quyền admin
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
             response.sendRedirect("Login");
             return;
         }
-        
+
         User currentUser = (User) session.getAttribute("user");
         if (currentUser.getRole() != 1) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied. Admin role required.");
             return;
         }
-        
+
         // Lấy thông tin từ form
         String userIdStr = request.getParameter("userId");
         String name = request.getParameter("name");
@@ -90,13 +90,13 @@ public class EditUserServlet extends HttpServlet {
         String dateOfBirthStr = request.getParameter("dateOfBirth");
         String gender = request.getParameter("gender");
         String isActiveStr = request.getParameter("isActive");
-        
+
         // Validation
         if (userIdStr == null || userIdStr.trim().isEmpty()) {
             response.sendRedirect("admin");
             return;
         }
-        
+
         if (name == null || name.trim().isEmpty()) {
             request.setAttribute("error", "Name is required!");
             request.setAttribute("currentUser", currentUser);
@@ -113,7 +113,7 @@ public class EditUserServlet extends HttpServlet {
             request.getRequestDispatcher("/view/EditUser.jsp").forward(request, response);
             return;
         }
-        
+
         if (email == null || email.trim().isEmpty()) {
             request.setAttribute("error", "Email is required!");
             request.setAttribute("currentUser", currentUser);
@@ -130,7 +130,7 @@ public class EditUserServlet extends HttpServlet {
             request.getRequestDispatcher("/view/EditUser.jsp").forward(request, response);
             return;
         }
-        
+
         if (phone == null || phone.trim().isEmpty()) {
             request.setAttribute("error", "Phone number is required!");
             request.setAttribute("currentUser", currentUser);
@@ -147,7 +147,7 @@ public class EditUserServlet extends HttpServlet {
             request.getRequestDispatcher("/view/EditUser.jsp").forward(request, response);
             return;
         }
-        
+
         if (roleStr == null || roleStr.trim().isEmpty()) {
             request.setAttribute("error", "User role is required!");
             request.setAttribute("currentUser", currentUser);
@@ -164,7 +164,7 @@ public class EditUserServlet extends HttpServlet {
             request.getRequestDispatcher("/view/EditUser.jsp").forward(request, response);
             return;
         }
-        
+
         // Password validation (only if password is provided)
         if (password != null && !password.trim().isEmpty()) {
             if (password.length() < 6) {
@@ -183,7 +183,7 @@ public class EditUserServlet extends HttpServlet {
                 request.getRequestDispatcher("/view/EditUser.jsp").forward(request, response);
                 return;
             }
-            
+
             if (!password.equals(confirmPassword)) {
                 request.setAttribute("error", "Passwords do not match!");
                 request.setAttribute("currentUser", currentUser);
@@ -201,12 +201,12 @@ public class EditUserServlet extends HttpServlet {
                 return;
             }
         }
-        
+
         try {
             int userId = Integer.parseInt(userIdStr);
             int role = Integer.parseInt(roleStr);
             boolean isActive = "true".equals(isActiveStr);
-            
+
             if (role < 1 || role > 3) {
                 request.setAttribute("error", "Invalid role selected!");
                 request.setAttribute("currentUser", currentUser);
@@ -217,7 +217,7 @@ public class EditUserServlet extends HttpServlet {
                 request.getRequestDispatcher("/view/EditUser.jsp").forward(request, response);
                 return;
             }
-            
+
             // Kiểm tra email đã tồn tại chưa (trừ user hiện tại)
             UserDAO userDAO = new UserDAO();
             User existingUser = userDAO.getUserById(userId);
@@ -225,7 +225,7 @@ public class EditUserServlet extends HttpServlet {
                 response.sendRedirect("admin");
                 return;
             }
-            
+
             // Kiểm tra email có bị trùng với user khác không
             if (!existingUser.getEmail().equals(email.trim())) {
                 if (userDAO.isUserExists(email.trim())) {
@@ -236,7 +236,7 @@ public class EditUserServlet extends HttpServlet {
                     return;
                 }
             }
-            
+
             // Parse date of birth
             Date dateOfBirth = null;
             if (dateOfBirthStr != null && !dateOfBirthStr.trim().isEmpty()) {
@@ -251,7 +251,7 @@ public class EditUserServlet extends HttpServlet {
                     return;
                 }
             }
-            
+
             // Cập nhật thông tin user
             existingUser.setName(name.trim());
             existingUser.setEmail(email.trim());
@@ -260,23 +260,23 @@ public class EditUserServlet extends HttpServlet {
             existingUser.setDateOfBirth(dateOfBirth);
             existingUser.setGender(gender != null && !gender.trim().isEmpty() ? gender.trim() : null);
             existingUser.setActive(isActive);
-            
+
             // Cập nhật password nếu có
             if (password != null && !password.trim().isEmpty()) {
                 existingUser.setPassword(password);
             }
-            
+
             // Cập nhật user trong database
             boolean success = userDAO.updateUser(existingUser);
-            
+
             if (success) {
                 // Xử lý Employee/Customer records
                 EmployeeDAO employeeDAO = new EmployeeDAO();
                 CustomerDAO customerDAO = new CustomerDAO();
-                
+
                 // Nếu role thay đổi, cần xóa record cũ và tạo mới
                 int oldRole = userDAO.getUserById(userId).getRole();
-                
+
                 if (role == 2) { // Employee
                     if (employeeRole == null || employeeRole.trim().isEmpty()) {
                         request.setAttribute("error", "Employee role is required for Employee users!");
@@ -285,22 +285,22 @@ public class EditUserServlet extends HttpServlet {
                         request.getRequestDispatcher("/view/EditUser.jsp").forward(request, response);
                         return;
                     }
-                    
+
                     // Validate employee role
-                    if (!employeeRole.equals("Manager") && !employeeRole.equals("Cashier") && 
-                        !employeeRole.equals("Waiter") && !employeeRole.equals("Chef")) {
+                    if (!employeeRole.equals("Manager") && !employeeRole.equals("Cashier") &&
+                            !employeeRole.equals("Waiter") && !employeeRole.equals("Chef")) {
                         request.setAttribute("error", "Invalid employee role selected!");
                         request.setAttribute("currentUser", currentUser);
                         request.setAttribute("editUser", existingUser);
                         request.getRequestDispatcher("/view/EditUser.jsp").forward(request, response);
                         return;
                     }
-                    
+
                     // Nếu role cũ là Customer, xóa customer record
                     if (oldRole == 3) {
                         customerDAO.deleteCustomerByUserId(userId);
                     }
-                    
+
                     // Kiểm tra xem employee record đã tồn tại chưa
                     Employee existingEmployee = employeeDAO.getEmployeeByUserId(userId);
                     if (existingEmployee != null) {
@@ -318,7 +318,7 @@ public class EditUserServlet extends HttpServlet {
                     if (oldRole == 2) {
                         employeeDAO.deleteEmployee(userId);
                     }
-                    
+
                     // Kiểm tra xem customer record đã tồn tại chưa
                     Customer existingCustomer = customerDAO.getCustomerByUserID(userId);
                     if (existingCustomer == null) {
@@ -336,7 +336,7 @@ public class EditUserServlet extends HttpServlet {
                         customerDAO.deleteCustomerByUserId(userId);
                     }
                 }
-                
+
                 request.setAttribute("message", "User updated successfully!");
                 request.setAttribute("currentUser", currentUser);
                 request.setAttribute("editUser", existingUser);
@@ -347,7 +347,7 @@ public class EditUserServlet extends HttpServlet {
                 request.setAttribute("editUser", existingUser);
                 request.getRequestDispatcher("/view/EditUser.jsp").forward(request, response);
             }
-            
+
         } catch (NumberFormatException e) {
             response.sendRedirect("admin");
         }

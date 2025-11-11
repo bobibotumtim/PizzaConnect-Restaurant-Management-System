@@ -49,8 +49,8 @@ public class AdminServlet extends HttpServlet {
 
         if ("all".equalsIgnoreCase(roleFilter)) {
             filteredUsers = allUsers;
-        } else if ("Manager".equals(roleFilter) || "Cashier".equals(roleFilter) || 
-                   "Waiter".equals(roleFilter) || "Chef".equals(roleFilter)) {
+        } else if ("Manager".equals(roleFilter) || "Cashier".equals(roleFilter) ||
+                "Waiter".equals(roleFilter) || "Chef".equals(roleFilter)) {
             // Filter by employee role
             filteredUsers = new ArrayList<>();
             for (User user : allUsers) {

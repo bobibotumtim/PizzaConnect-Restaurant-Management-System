@@ -3,12 +3,22 @@ package controller;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
 import models.User;
+import models.Customer;
+import models.Employee;
+import models.Discount;
+import models.CustomerDiscount;
 import dao.UserDAO;
+import dao.CustomerDAO;
+import dao.EmployeeDAO;
+import dao.DiscountDAO;
+import dao.CustomerDiscountDAO;
+import dao.OrderDAO;
 import dao.TokenDAO;
 import utils.EmailUtil;
 import java.io.IOException;
 import java.sql.Date;
 import java.security.SecureRandom;
+import java.util.List;
 import org.mindrot.jbcrypt.BCrypt;
 
 public class UserProfileServlet extends HttpServlet {
@@ -29,8 +39,73 @@ public class UserProfileServlet extends HttpServlet {
             return;
         }
 
-        request.setAttribute("user", session.getAttribute("user"));
+        User currentUser = (User) session.getAttribute("user");
+
+        try {
+            // Load additional data based on user role
+            if (currentUser.getRole() == 2) { // Employee
+                EmployeeDAO employeeDAO = new EmployeeDAO();
+                Employee employee = employeeDAO.getEmployeeByUserID(currentUser.getUserID());
+                if (employee != null) {
+                    request.setAttribute("employeeRole", employee.getRole());
+                }
+            }
+
+            if (currentUser.getRole() == 3) { // Customer
+                loadCustomerData(request, currentUser);
+            }
+
+            // Load active discounts for all users
+            DiscountDAO discountDAO = new DiscountDAO();
+            List<Discount> activeDiscounts = discountDAO.getDiscountsByStatus(true, 1, null, null, null, null);
+            request.setAttribute("activeDiscounts", activeDiscounts);
+
+        } catch (Exception e) {
+            request.setAttribute("error", "Error loading profile data: " + e.getMessage());
+        }
+
+        request.setAttribute("user", currentUser);
         request.getRequestDispatcher(PROFILE_JSP_PATH).forward(request, response);
+    }
+
+    private void loadCustomerData(HttpServletRequest request, User currentUser) {
+        try {
+            CustomerDAO customerDAO = new CustomerDAO();
+            CustomerDiscountDAO customerDiscountDAO = new CustomerDiscountDAO();
+            OrderDAO orderDAO = new OrderDAO();
+
+            // Get customer info
+            Customer customer = customerDAO.getCustomerByUserID(currentUser.getUserID());
+            if (customer != null) {
+                // Get loyalty points and vouchers
+                int loyaltyPoints = customerDiscountDAO.getCustomerLoyaltyPoints(customer.getCustomerID());
+                List<CustomerDiscount> customerDiscounts = customerDiscountDAO
+                        .getCustomerDiscounts(customer.getCustomerID());
+
+                request.setAttribute("loyaltyPoints", loyaltyPoints);
+                request.setAttribute("customerDiscounts", customerDiscounts);
+
+                // Get order history with pagination
+                int page = 1;
+                String pageParam = request.getParameter("orderPage");
+                if (pageParam != null && !pageParam.isEmpty()) {
+                    page = Integer.parseInt(pageParam);
+                }
+
+                int pageSize = 8;
+                List<Object[]> orders = orderDAO.getOrdersByCustomerId(customer.getCustomerID(), page, pageSize);
+                int totalOrders = orderDAO.getOrdersCountByCustomerId(customer.getCustomerID());
+                int totalPages = (int) Math.ceil((double) totalOrders / pageSize);
+
+                request.setAttribute("orders", orders);
+                request.setAttribute("orderCurrentPage", page);
+                request.setAttribute("orderTotalPages", totalPages);
+                request.setAttribute("orderTotalOrders", totalOrders);
+            }
+
+        } catch (Exception e) {
+            request.setAttribute("error", "Error loading customer data: " + e.getMessage());
+        }
     }
 
     @Override
@@ -114,8 +189,7 @@ public class UserProfileServlet extends HttpServlet {
                 phone,
                 dateOfBirth != null ? dateOfBirth : currentUser.getDateOfBirth(),
                 gender != null ? gender : currentUser.getGender(),
-                currentUser.isActive()
-        );
+                currentUser.isActive());
 
         // save updates
         boolean updated;
@@ -133,7 +207,7 @@ public class UserProfileServlet extends HttpServlet {
     }
 
     // -------------------- Helper Methods --------------------
-
+    // [Các helper methods giữ nguyên từ code cũ]
     private String getTrimmedParameter(HttpServletRequest request, String paramName) {
         String param = request.getParameter(paramName);
         return (param != null) ? param.trim() : null;
@@ -181,7 +255,7 @@ public class UserProfileServlet extends HttpServlet {
     }
 
     private boolean hasChanges(User user, String name, String email, String phone,
-                               String gender, Date dateOfBirth, String newPassword) {
+            String gender, Date dateOfBirth, String newPassword) {
         return (name != null && !name.equalsIgnoreCase(user.getName()))
                 || (email != null && !email.equalsIgnoreCase(user.getEmail()))
                 || (phone != null && !phone.equals(user.getPhone()))

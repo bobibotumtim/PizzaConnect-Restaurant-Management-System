@@ -1071,4 +1071,80 @@ public class OrderDAO extends DBContext {
         }
         return orders;
     }
+
+    // 🟢 Get orders by customer ID with pagination (for user profile)
+    public List<Object[]> getOrdersByCustomerId(int customerId, int page, int pageSize) {
+        List<Object[]> orders = new ArrayList<>();
+        int offset = (page - 1) * pageSize;
+
+        String sql = """
+                    SELECT
+                        o.OrderID, o.OrderDate, o.TotalPrice, o.Status, o.PaymentStatus, o.Note,
+                        t.TableNumber,
+                        COUNT(od.OrderDetailID) as ItemCount,
+                        u.Name as CustomerName
+                    FROM [Order] o
+                    LEFT JOIN [Table] t ON o.TableID = t.TableID
+                    LEFT JOIN OrderDetail od ON o.OrderID = od.OrderID
+                    LEFT JOIN Customer c ON o.CustomerID = c.CustomerID
+                    LEFT JOIN [User] u ON c.UserID = u.UserID
+                    WHERE o.CustomerID = ?
+                    GROUP BY o.OrderID, o.OrderDate, o.TotalPrice, o.Status, o.PaymentStatus, o.Note, t.TableNumber, u.Name
+                    ORDER BY o.OrderDate DESC
+                    OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
+                """;
+
+        try (Connection con = useConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, customerId);
+            ps.setInt(2, offset);
+            ps.setInt(3, pageSize);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Object[] orderData = new Object[] {
+                            rs.getInt("OrderID"),
+                            rs.getTimestamp("OrderDate"),
+                            rs.getDouble("TotalPrice"),
+                            rs.getInt("Status"),
+                            rs.getString("PaymentStatus"),
+                            rs.getString("Note"),
+                            rs.getString("TableNumber"),
+                            rs.getInt("ItemCount"),
+                            rs.getString("CustomerName")
+                    };
+                    orders.add(orderData);
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ Error getting orders by customer ID: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        System.out.println("✅ Orders loaded for customer " + customerId + " (page " + page + "): " + orders.size());
+        return orders;
+    }
+
+    // 🟢 Count total orders by customer ID
+    public int getOrdersCountByCustomerId(int customerId) {
+        String sql = "SELECT COUNT(*) FROM [Order] WHERE CustomerID = ?";
+
+        try (Connection con = useConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, customerId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ Error counting orders by customer ID: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return 0;
+    }
 }
