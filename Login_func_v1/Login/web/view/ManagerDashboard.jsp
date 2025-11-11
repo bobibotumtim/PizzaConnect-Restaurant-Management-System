@@ -31,46 +31,94 @@ String userName = currentUser.getName(); %>
       .icon-container {
         background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%);
       }
+      /* Expandable Sidebar Styles */
+      .sidebar {
+        width: 5rem;
+        transition: width 0.3s ease;
+      }
+      .sidebar:hover {
+        width: 16rem;
+      }
+      .sidebar-text {
+        opacity: 0;
+        white-space: nowrap;
+        transition: opacity 0.3s ease;
+      }
+      .sidebar:hover .sidebar-text {
+        opacity: 1;
+      }
     </style>
   </head>
   <body>
-    <!-- Sidebar -->
+    <!-- Expandable Sidebar -->
     <div
-      class="fixed left-0 top-0 h-full w-20 bg-gray-900 flex flex-col items-center py-6 space-y-8"
+      class="sidebar fixed left-0 top-0 h-full bg-gray-900 flex flex-col py-6 z-50 overflow-hidden"
     >
-      <div class="text-orange-500 text-3xl">
-        <i data-lucide="pizza" class="w-10 h-10"></i>
+      <!-- Logo -->
+      <div class="flex items-center px-4 mb-8">
+        <div class="text-orange-500 text-3xl min-w-[3rem] flex justify-center">
+          <i data-lucide="pizza" class="w-10 h-10"></i>
+        </div>
+        <span class="sidebar-text ml-3 text-white text-xl font-bold"
+          >PizzaConnect</span
+        >
       </div>
 
-      <nav class="flex-1 flex flex-col space-y-4">
+      <!-- Navigation -->
+      <nav class="flex-1 flex flex-col space-y-2 px-3">
         <a
           href="${pageContext.request.contextPath}/manager-dashboard"
-          class="w-12 h-12 flex items-center justify-center rounded-lg bg-orange-500 text-white"
+          class="flex items-center px-3 py-3 rounded-lg bg-orange-500 text-white"
         >
-          <i data-lucide="home" class="w-6 h-6"></i>
+          <div class="min-w-[2.5rem] flex justify-center">
+            <i data-lucide="home" class="w-6 h-6"></i>
+          </div>
+          <span class="sidebar-text ml-3">Dashboard</span>
+        </a>
+
+        <a
+          href="${pageContext.request.contextPath}/sales-reports"
+          class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition"
+        >
+          <div class="min-w-[2.5rem] flex justify-center">
+            <i data-lucide="file-text" class="w-6 h-6"></i>
+          </div>
+          <span class="sidebar-text ml-3">Sales Reports</span>
         </a>
 
         <a
           href="${pageContext.request.contextPath}/manager-users"
-          class="w-12 h-12 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition"
+          class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition"
         >
-          <i data-lucide="users" class="w-6 h-6"></i>
+          <div class="min-w-[2.5rem] flex justify-center">
+            <i data-lucide="users" class="w-6 h-6"></i>
+          </div>
+          <span class="sidebar-text ml-3">User Management</span>
         </a>
 
         <a
           href="${pageContext.request.contextPath}/customer-feedback"
-          class="w-12 h-12 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition"
+          class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition"
         >
-          <i data-lucide="message-circle" class="w-6 h-6"></i>
+          <div class="min-w-[2.5rem] flex justify-center">
+            <i data-lucide="message-circle" class="w-6 h-6"></i>
+          </div>
+          <span class="sidebar-text ml-3">Customer Feedback</span>
         </a>
       </nav>
 
-      <a
-        href="${pageContext.request.contextPath}/logout"
-        class="w-12 h-12 flex items-center justify-center rounded-lg text-gray-400 hover:bg-red-600 hover:text-white transition"
-      >
-        <i data-lucide="log-out" class="w-6 h-6"></i>
-      </a>
+      <!-- Logout -->
+      <div class="px-3">
+        <a
+          href="${pageContext.request.contextPath}/logout"
+          class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-red-600 hover:text-white transition"
+        >
+          <div class="min-w-[2.5rem] flex justify-center">
+            <i data-lucide="log-out" class="w-6 h-6"></i>
+          </div>
+          <span class="sidebar-text ml-3">Logout</span>
+        </a>
+      </div>
     </div>
 
     <!-- Main Content -->

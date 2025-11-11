@@ -87,6 +87,12 @@ public class SalesReportServlet extends HttpServlet {
         }
         
         try {
+            // Handle export action
+            if ("export".equals(action)) {
+                handleExport(request, response);
+                return;
+            }
+            
             // Validate date range
             if (!isValidDateRange(dateFrom, dateTo)) {
                 request.setAttribute("error", "Invalid date range. Please check your dates.");
@@ -180,13 +186,15 @@ public class SalesReportServlet extends HttpServlet {
         String format = request.getParameter("format");
         String dateFrom = request.getParameter("dateFrom");
         String dateTo = request.getParameter("dateTo");
-        String branch = request.getParameter("branch");
+        String reportType = request.getParameter("reportType");
+        
+        // Single branch system
+        String branch = "main";
         
         // Set defaults if parameters are null
-        if (format == null) format = "csv";
-        if (dateFrom == null) dateFrom = "2025-11-03";
-        if (dateTo == null) dateTo = "2025-11-03";
-        if (branch == null) branch = "all";
+        if (format == null) format = "pdf";
+        if (dateFrom == null) dateFrom = LocalDate.now().minusDays(7).toString();
+        if (dateTo == null) dateTo = LocalDate.now().toString();
         
         // Debug logging
         System.out.println("Export request - Format: " + format + ", DateFrom: " + dateFrom + ", DateTo: " + dateTo + ", Branch: " + branch);
@@ -200,12 +208,9 @@ public class SalesReportServlet extends HttpServlet {
                 exportToPDF(response, reportData, dateFrom, dateTo, branch);
             } else if ("excel".equals(format)) {
                 exportToExcel(response, reportData, dateFrom, dateTo, branch);
-            } else if ("csv".equals(format)) {
-                exportToCSV(response, reportData, dateFrom, dateTo, branch);
             } else {
-                // Default to showing data on page
-                request.setAttribute("message", "Export format not supported yet. Showing data on page.");
-                doGet(request, response);
+                // Default to PDF
+                exportToPDF(response, reportData, dateFrom, dateTo, branch);
             }
             
         } catch (Exception e) {
@@ -248,7 +253,6 @@ public class SalesReportServlet extends HttpServlet {
             html.append("<h2>PIZZA CONNECT RESTAURANT</h2>");
             html.append("<div class='summary'>");
             html.append("<p><strong>Khoảng thời gian:</strong> ").append(dateFrom).append(" đến ").append(dateTo).append("</p>");
-            html.append("<p><strong>Chi nhánh:</strong> ").append(getBranchName(branch)).append("</p>");
             html.append("<p><strong>Ngày tạo báo cáo:</strong> ").append(new java.util.Date()).append("</p>");
             html.append("</div>");
             
@@ -345,7 +349,6 @@ public class SalesReportServlet extends HttpServlet {
             // Header
             csv.append("SALES REPORT - PIZZA CONNECT\n");
             csv.append("Period:,").append(dateFrom).append(" to ").append(dateTo).append("\n");
-            csv.append("Branch:,").append(getBranchName(branch)).append("\n");
             csv.append("\n");
             
             // Summary Statistics
@@ -399,71 +402,7 @@ public class SalesReportServlet extends HttpServlet {
         }
     }
     
-    /**
-     * Export to CSV with real data
-     */
-    private void exportToCSV(HttpServletResponse response, SalesReportData reportData,
-                           String dateFrom, String dateTo, String branch) throws IOException {
-        try {
-            StringBuilder csv = new StringBuilder();
-            
-            // Header
-            csv.append("SALES REPORT - PIZZA CONNECT\n");
-            csv.append("Period:,").append(dateFrom).append(" to ").append(dateTo).append("\n");
-            csv.append("Branch:,").append(getBranchName(branch)).append("\n");
-            csv.append("\n");
-            
-            // Summary Statistics
-            csv.append("SUMMARY STATISTICS\n");
-            csv.append("Metric,Value\n");
-            csv.append("Total Revenue,").append(reportData.getTotalRevenue()).append("\n");
-            csv.append("Total Orders,").append(reportData.getTotalOrders()).append("\n");
-            csv.append("Total Customers,").append(reportData.getTotalCustomers()).append("\n");
-            csv.append("Average Order Value,").append(reportData.getAvgOrderValue()).append("\n");
-            csv.append("Growth Rate (%),").append(reportData.getGrowthRate()).append("\n");
-            csv.append("\n");
-            
-            // Top Products
-            csv.append("TOP PRODUCTS\n");
-            csv.append("Rank,Product Name,Quantity,Revenue\n");
-            if (reportData.getTopProducts() != null) {
-                int rank = 1;
-                for (models.TopProduct product : reportData.getTopProducts()) {
-                    csv.append(rank++).append(",")
-                       .append("\"").append(product.getProductName()).append("\",")
-                       .append(product.getQuantity()).append(",")
-                       .append(product.getRevenue()).append("\n");
-                }
-            }
-            csv.append("\n");
-            
-            // Daily Revenue
-            csv.append("DAILY REVENUE\n");
-            csv.append("Date,Revenue,Orders\n");
-            if (reportData.getDailyRevenue() != null) {
-                for (models.DailyRevenue daily : reportData.getDailyRevenue()) {
-                    csv.append("\"").append(daily.getDate()).append("\",")
-                       .append(daily.getRevenue()).append(",")
-                       .append(daily.getOrders()).append("\n");
-                }
-            }
-            
-            // Set response headers for CSV download
-            response.setContentType("text/csv; charset=UTF-8");
-            response.setHeader("Content-Disposition", 
-                "attachment; filename=\"SalesReport_" + dateFrom + "_" + dateTo + ".csv\"");
-            
-            // Write CSV data
-            response.getWriter().write(csv.toString());
-            response.getWriter().flush();
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.setContentType("application/json");
-            response.getWriter().write("{\"error\": \"Error generating CSV: " + e.getMessage() + "\"}");
-        }
-    }
-    
+
     /**
      * Validate date range
      */
@@ -540,12 +479,13 @@ public class SalesReportServlet extends HttpServlet {
      */
     private String getBranchName(String branch) {
         switch (branch) {
-            case "all": return "All Branches";
+            case "all": return "Tất Cả Chi Nhánh";
+            case "main": return "Chi Nhánh Chính - PizzaConnect";
             case "hcm1": return "Pizza Store Q1 - HCM";
             case "hcm2": return "Pizza Store Q3 - HCM";
             case "hn1": return "Pizza Store Hoan Kiem - HN";
             case "dn1": return "Pizza Store Hai Chau - DN";
-            default: return "Unknown";
+            default: return "Chi Nhánh Chính";
         }
     }
 }

@@ -34,7 +34,7 @@ public class CustomerFeedbackServlet extends HttpServlet {
             request.setAttribute("feedbackStats", stats);
             
             // Forward to JSP
-            request.getRequestDispatcher("/view/partials/CustomerFeedback.jsp").forward(request, response);
+            request.getRequestDispatcher("/view/CustomerFeedbackSimple.jsp").forward(request, response);
             
         } catch (Exception e) {
             e.printStackTrace();
