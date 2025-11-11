@@ -1,4 +1,4 @@
-package controllers;
+package controller;
 
 import dao.ProductSizeDAO;
 import jakarta.servlet.*;

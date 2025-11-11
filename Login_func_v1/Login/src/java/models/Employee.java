@@ -74,23 +74,28 @@ public class Employee extends User {
     public void setSpecialization(String specialization) {
         this.specialization = specialization;
     }
-    
+
     // Helper method to get display name for specialization
     public String getSpecializationDisplay() {
-        if (specialization == null) return "N/A";
+        if (specialization == null)
+            return "N/A";
         switch (specialization) {
-            case "Pizza": return "Chef Pizza";
-            case "Drinks": return "Chef Nước";
-            case "SideDishes": return "Chef Side Dishes";
-            default: return specialization;
+            case "Pizza":
+                return "Chef Pizza";
+            case "Drinks":
+                return "Chef Nước";
+            case "SideDishes":
+                return "Chef Side Dishes";
+            default:
+                return specialization;
         }
     }
-    
+
     // Helper method to check if employee is a Chef
     public boolean isChef() {
-        return specialization != null && 
-               !specialization.trim().isEmpty() && 
-               !specialization.equalsIgnoreCase("None");
+        return specialization != null &&
+                !specialization.trim().isEmpty() &&
+                !specialization.equalsIgnoreCase("None");
     }
 
     // ===== toString =====

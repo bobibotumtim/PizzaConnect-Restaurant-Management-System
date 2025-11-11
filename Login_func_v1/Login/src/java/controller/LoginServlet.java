@@ -51,7 +51,16 @@ public class LoginServlet extends HttpServlet {
             Employee employee = empDAO.getEmployeeByUserID(user.getUserID());
             if (employee != null) {
                 session.setAttribute("employee", employee);
-                System.out.println("✅ Employee set to session: " + employee.getName() + " - Specialization: " + employee.getSpecialization());
+                System.out.println("✅ Employee set to session: " + employee.getName() + " - Job Role: " + employee.getJobRole());
+                
+                // Check if employee is a Manager
+                String jobRole = employee.getJobRole();
+                if (jobRole != null && jobRole.equalsIgnoreCase("Manager")) {
+                    // Manager -> Redirect to Manager Dashboard
+                    System.out.println("👔 Manager detected - Redirecting to Manager Dashboard");
+                    response.sendRedirect("manager-dashboard");
+                    return;
+                }
                 
                 // Check if employee is a Chef (has specialization)
                 String specialization = employee.getSpecialization();
@@ -62,24 +71,22 @@ public class LoginServlet extends HttpServlet {
                     return;
                 }
             }
-            // Waiter or other employees -> Redirect to POS
-            System.out.println("👔 Employee (non-chef) - Redirecting to POS");
-            response.sendRedirect("pos");
+            // Waiter or other employees -> Redirect to Waiter Dashboard
+            System.out.println("👔 Employee (non-chef) - Redirecting to Waiter Dashboard");
+            response.sendRedirect("waiter-dashboard");
         } else {
             // Customer -> Home
             CustomerDAO cdao = new CustomerDAO();
-            {
-                Customer acc = cdao.getCustomerByUserID(user.getUserID());
-                if (acc == null) { 
-                    request.setAttribute("error",
-                            "No profile information found. Please contact support or complete your profile.");
-                    request.getRequestDispatcher("view/Detail.jsp").forward(request, response);
-                    return;
-                }
-                request.setAttribute("customer", acc);
-                request.setAttribute("user", user);
-                request.getRequestDispatcher("view/Home.jsp").forward(request, response);
+            Customer acc = cdao.getCustomerByUserID(user.getUserID());
+            if (acc == null) { 
+                request.setAttribute("error",
+                        "No profile information found. Please contact support or complete your profile.");
+                request.getRequestDispatcher("view/Detail.jsp").forward(request, response);
+                return;
             }
+            session.setAttribute("customer", acc);
+            // Redirect to home servlet to load products
+            response.sendRedirect("home");
         }
     }
 

@@ -11,18 +11,6 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-      .nav-btn {
-        width: 3rem;
-        height: 3rem;
-        border-radius: 0.75rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s;
-      }
-      .nav-btn:hover {
-        transform: translateY(-2px);
-      }
       .gradient-bg {
         background: linear-gradient(
           135deg,
@@ -42,6 +30,23 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
       }
       .card-gradient-orange {
         background: linear-gradient(135deg, #f97316, #ea580c);
+      }
+
+      /* Expandable Sidebar Styles */
+      .sidebar {
+        width: 5rem;
+        transition: width 0.3s ease;
+      }
+      .sidebar:hover {
+        width: 16rem;
+      }
+      .sidebar-text {
+        opacity: 0;
+        white-space: nowrap;
+        transition: opacity 0.3s ease;
+      }
+      .sidebar:hover .sidebar-text {
+        opacity: 1;
       }
 
       /* Mobile responsive styles */
@@ -84,48 +89,66 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
     </style>
   </head>
   <body class="flex h-screen bg-gray-50">
-    <!-- Sidebar Navigation -->
-    <div
-      class="sidebar w-20 bg-gray-800 flex flex-col items-center py-6 justify-between"
-    >
-      <div class="flex flex-col items-center space-y-6">
-        <a
-          href="${pageContext.request.contextPath}/dashboard"
-          class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg"
-        >
-          <i data-lucide="pizza" class="w-7 h-7 text-white"></i>
-        </a>
-        <div class="flex flex-col items-center space-y-4 mt-8">
-          <a
-            href="${pageContext.request.contextPath}/dashboard"
-            class="nav-btn text-gray-400 hover:bg-gray-700"
-            title="Dashboard"
-          >
-            <i data-lucide="grid" class="w-6 h-6"></i>
-          </a>
-          <a
-            href="${pageContext.request.contextPath}/manageproduct"
-            class="nav-btn text-gray-400 hover:bg-gray-700"
-            title="Products"
-          >
-            <i data-lucide="box" class="w-6 h-6"></i>
-          </a>
-          <a
-            href="${pageContext.request.contextPath}/manage-orders"
-            class="nav-btn text-gray-400 hover:bg-gray-700"
-            title="Orders"
-          >
-            <i data-lucide="file-text" class="w-6 h-6"></i>
-          </a>
-          <a
-            href="${pageContext.request.contextPath}/sales-reports"
-            class="nav-btn bg-orange-500 text-white"
-            title="Reports"
-          >
-            <i data-lucide="bar-chart-2" class="w-6 h-6"></i>
-          </a>
+    <!-- Expandable Sidebar -->
+    <div class="sidebar fixed left-0 top-0 h-full bg-gray-900 flex flex-col py-6 z-50 overflow-hidden">
+      <!-- Logo -->
+      <div class="flex items-center px-4 mb-8">
+        <div class="text-orange-500 text-3xl min-w-[3rem] flex justify-center">
+          <i data-lucide="pizza" class="w-10 h-10"></i>
         </div>
+        <span class="sidebar-text ml-3 text-white text-xl font-bold">PizzaConnect</span>
       </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 flex flex-col space-y-2 px-3">
+        <a href="${pageContext.request.contextPath}/manager-dashboard"
+           class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
+          <div class="min-w-[2.5rem] flex justify-center">
+            <i data-lucide="home" class="w-6 h-6"></i>
+          </div>
+          <span class="sidebar-text ml-3">Dashboard</span>
+        </a>
+
+        <a href="${pageContext.request.contextPath}/sales-reports"
+           class="flex items-center px-3 py-3 rounded-lg bg-orange-500 text-white">
+          <div class="min-w-[2.5rem] flex justify-center">
+            <i data-lucide="file-text" class="w-6 h-6"></i>
+          </div>
+          <span class="sidebar-text ml-3">Sales Reports</span>
+        </a>
+
+        <a href="${pageContext.request.contextPath}/manager-users"
+           class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
+          <div class="min-w-[2.5rem] flex justify-center">
+            <i data-lucide="users" class="w-6 h-6"></i>
+          </div>
+          <span class="sidebar-text ml-3">User Management</span>
+        </a>
+
+        <a href="${pageContext.request.contextPath}/customer-feedback"
+           class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
+          <div class="min-w-[2.5rem] flex justify-center">
+            <i data-lucide="message-circle" class="w-6 h-6"></i>
+          </div>
+          <span class="sidebar-text ml-3">Customer Feedback</span>
+        </a>
+      </nav>
+
+      <!-- Logout -->
+      <div class="px-3">
+        <a href="${pageContext.request.contextPath}/logout"
+           class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-red-600 hover:text-white transition">
+          <div class="min-w-[2.5rem] flex justify-center">
+            <i data-lucide="log-out" class="w-6 h-6"></i>
+          </div>
+          <span class="sidebar-text ml-3">Logout</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 ml-20">
+      <div class="main-content p-6">
       <div class="flex flex-col items-center space-y-4">
         <a
           href="${pageContext.request.contextPath}/logout"
@@ -220,11 +243,12 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
             Cấu Hình Báo Cáo
           </h2>
 
-          <form method="post" action="sales-reports" class="space-y-4">
+          <form id="reportForm" method="post" action="sales-reports" class="space-y-4">
             <input type="hidden" name="action" value="generate" />
+            <input type="hidden" id="exportFormat" name="format" value="excel" />
 
             <div
-              class="form-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+              class="form-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
             >
               <!-- Report Type -->
               <div>
@@ -269,23 +293,6 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
               </div>
-
-              <!-- Branch -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Chi Nhánh</label
-                >
-                <select
-                  name="branch"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                >
-                  <option value="all">Tất cả chi nhánh</option>
-                  <option value="hcm1">Pizza Store Q1 - HCM</option>
-                  <option value="hcm2">Pizza Store Q3 - HCM</option>
-                  <option value="hn1">Pizza Store Hoàn Kiếm - HN</option>
-                  <option value="dn1">Pizza Store Hải Châu - DN</option>
-                </select>
-              </div>
             </div>
 
             <!-- Export Format & Actions -->
@@ -310,14 +317,6 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
                     class="px-4 py-2 rounded-lg font-medium transition-all bg-orange-500 text-white shadow-md"
                   >
                     EXCEL
-                  </button>
-                  <button
-                    type="button"
-                    onclick="setFormat('csv')"
-                    id="csv-btn"
-                    class="px-4 py-2 rounded-lg font-medium transition-all bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  >
-                    CSV
                   </button>
                 </div>
               </div>
@@ -647,58 +646,12 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
       // Initialize Lucide icons
       lucide.createIcons();
 
-      let selectedFormat = "excel";
-
       // Mobile navigation
       const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
       if (mobileMenuToggle) {
         mobileMenuToggle.addEventListener("click", function () {
           alert("Mobile menu - feature coming soon!");
         });
-      }
-
-      function setFormat(format) {
-        selectedFormat = format;
-
-        // Update button styles
-        document.querySelectorAll('[id$="-btn"]').forEach((btn) => {
-          btn.className =
-            "px-4 py-2 rounded-lg font-medium transition-all bg-gray-100 text-gray-700 hover:bg-gray-200";
-        });
-
-        document.getElementById(format + "-btn").className =
-          "px-4 py-2 rounded-lg font-medium transition-all bg-orange-500 text-white shadow-md";
-      }
-
-      function exportData() {
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = "sales-reports";
-
-        // Add form data
-        const formData = new FormData(document.querySelector("form"));
-        formData.append("action", "export");
-        formData.append("format", selectedFormat);
-
-        for (let [key, value] of formData.entries()) {
-          const input = document.createElement("input");
-          input.type = "hidden";
-          input.name = key;
-          input.value = value;
-          form.appendChild(input);
-        }
-
-        document.body.appendChild(form);
-        form.submit();
-        document.body.removeChild(form);
-
-        // Show success notification after a short delay
-        setTimeout(function () {
-          showNotification(
-            "Xuất báo cáo thành công! File đã được tải xuống.",
-            "success"
-          );
-        }, 1000);
       }
 
       function showNotification(message, type) {
@@ -795,6 +748,92 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
           const percentage = total > 0 ? (revenue / total) * 100 : 0;
           bar.style.width = percentage + "%";
         });
+      });
+      
+      // Export functionality
+      function setFormat(format) {
+        document.getElementById('exportFormat').value = format;
+        
+        // Update button styles
+        document.querySelectorAll('[id$="-btn"]').forEach((btn) => {
+          btn.className = "px-4 py-2 rounded-lg font-medium transition-all bg-gray-100 text-gray-700 hover:bg-gray-200";
+        });
+        
+        document.getElementById(format + "-btn").className = "px-4 py-2 rounded-lg font-medium transition-all bg-orange-500 text-white shadow-md";
+      }
+      
+      function exportData() {
+        const form = document.getElementById('reportForm');
+        const reportType = form.reportType.value;
+        const dateFrom = form.dateFrom.value;
+        const dateTo = form.dateTo.value;
+        const exportFormat = document.getElementById('exportFormat').value;
+        
+        if (!reportType) {
+          alert('Vui lòng chọn loại báo cáo!');
+          return;
+        }
+        
+        if (!dateFrom || !dateTo) {
+          alert('Vui lòng chọn khoảng thời gian!');
+          return;
+        }
+        
+        if (new Date(dateFrom) > new Date(dateTo)) {
+          alert('Ngày bắt đầu không thể lớn hơn ngày kết thúc!');
+          return;
+        }
+        
+        const params = new URLSearchParams({
+          action: 'export',
+          reportType: reportType,
+          dateFrom: dateFrom,
+          dateTo: dateTo,
+          format: exportFormat || 'pdf'
+        });
+        
+        window.open('${pageContext.request.contextPath}/sales-reports?' + params.toString(), '_blank');
+      }
+      
+      function generateReport() {
+        const form = document.getElementById('reportForm');
+        form.action = '${pageContext.request.contextPath}/sales-reports';
+        form.method = 'GET';
+        
+        const reportType = form.reportType.value;
+        const dateFrom = form.dateFrom.value;
+        const dateTo = form.dateTo.value;
+        
+        if (!reportType) {
+          alert('Vui lòng chọn loại báo cáo!');
+          return;
+        }
+        
+        if (!dateFrom || !dateTo) {
+          alert('Vui lòng chọn khoảng thời gian!');
+          return;
+        }
+        
+        if (new Date(dateFrom) > new Date(dateTo)) {
+          alert('Ngày bắt đầu không thể lớn hơn ngày kết thúc!');
+          return;
+        }
+        
+        form.submit();
+      }
+      
+      function toggleExportDropdown() {
+        const dropdown = document.getElementById('exportDropdown');
+        dropdown.classList.toggle('hidden');
+      }
+      
+      document.addEventListener('click', function(event) {
+        const dropdown = document.getElementById('exportDropdown');
+        const exportBtn = document.querySelector('.export-btn');
+        
+        if (exportBtn && !exportBtn.contains(event.target) && !dropdown.contains(event.target)) {
+          dropdown.classList.add('hidden');
+        }
       });
     </script>
   </body>

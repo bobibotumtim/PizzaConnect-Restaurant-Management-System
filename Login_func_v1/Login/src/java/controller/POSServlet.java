@@ -392,15 +392,9 @@ public class POSServlet extends HttpServlet {
                     int orderId = processOrderSimple(jsonData, user, tableId);
                     
                     if (orderId > 0) {
-                        // Update table status to unavailable
-                        TableDAO tableDAO = new TableDAO();
-                        boolean statusUpdated = tableDAO.updateTableStatus(tableId, "unavailable");
-                        
-                        if (statusUpdated) {
-                            System.out.println("✅ Table status updated to 'unavailable' for Table ID: " + tableId);
-                        } else {
-                            System.err.println("⚠️ Failed to update table status for Table ID: " + tableId);
-                        }
+                        // ✅ NO NEED to update table status manually
+                        // Table status (occupied) is calculated automatically from Order table
+                        // See TableDAO.getActiveTablesWithStatus() for logic
                         
                         String response = "{\"success\": true, \"message\": \"Order created successfully!\", \"orderId\": " + orderId + "}";
                         resp.getWriter().write(response);

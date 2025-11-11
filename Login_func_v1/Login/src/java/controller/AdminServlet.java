@@ -27,8 +27,35 @@ public class AdminServlet extends HttpServlet {
         }
 
         User currentUser = (User) session.getAttribute("user");
-        if (currentUser.getRole() != 1) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied. Admin role required.");
+        
+        // Check if user is Admin or Manager
+        boolean isAuthorized = false;
+        Employee employee = (Employee) session.getAttribute("employee");
+        
+        System.out.println("[AdminServlet doGet] currentUser.role=" + currentUser.getRole());
+        System.out.println("[AdminServlet doGet] employee=" + employee);
+        if (employee != null) {
+            System.out.println("[AdminServlet doGet] employee.jobRole=" + employee.getJobRole());
+        }
+        
+        if (currentUser.getRole() == 1) {
+            // Admin has access
+            isAuthorized = true;
+            System.out.println("[AdminServlet doGet] Authorized as Admin");
+        } else if (currentUser.getRole() == 2) {
+            // Check if Employee is Manager
+            if (employee != null && "Manager".equalsIgnoreCase(employee.getJobRole())) {
+                isAuthorized = true;
+                System.out.println("[AdminServlet doGet] Authorized as Manager");
+            } else {
+                System.out.println("[AdminServlet doGet] NOT authorized - employee is null or not Manager");
+            }
+        }
+        
+        if (!isAuthorized) {
+            System.out.println("[AdminServlet doGet] Access DENIED - redirecting to dashboard");
+            session.setAttribute("error", "Access denied. Admin or Manager role required.");
+            response.sendRedirect(request.getContextPath() + "/dashboard");
             return;
         }
 
@@ -49,8 +76,8 @@ public class AdminServlet extends HttpServlet {
 
         if ("all".equalsIgnoreCase(roleFilter)) {
             filteredUsers = allUsers;
-        } else if ("Manager".equals(roleFilter) || "Cashier".equals(roleFilter) || 
-                   "Waiter".equals(roleFilter) || "Chef".equals(roleFilter)) {
+        } else if ("Manager".equals(roleFilter) || "Cashier".equals(roleFilter) ||
+                "Waiter".equals(roleFilter) || "Chef".equals(roleFilter)) {
             // Filter by employee role
             filteredUsers = new ArrayList<>();
             for (User user : allUsers) {
@@ -145,7 +172,7 @@ public class AdminServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Kiểm tra session và quyền admin
+        // Kiểm tra session và quyền admin/manager
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
             response.sendRedirect("Login");
@@ -153,8 +180,24 @@ public class AdminServlet extends HttpServlet {
         }
 
         User user = (User) session.getAttribute("user");
-        if (user.getRole() != 1) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied. Admin role required.");
+        
+        // Check if user is Admin or Manager
+        boolean isAuthorized = false;
+        if (user.getRole() == 1) {
+            // Admin has access
+            isAuthorized = true;
+        } else if (user.getRole() == 2) {
+            // Check if Employee is Manager
+            Employee employee = (Employee) session.getAttribute("employee");
+            if (employee != null && "Manager".equalsIgnoreCase(employee.getJobRole())) {
+                isAuthorized = true;
+            }
+        }
+        
+        if (!isAuthorized) {
+            System.out.println("[AdminServlet doPost] Access DENIED");
+            session.setAttribute("error", "Access denied. Admin or Manager role required.");
+            response.sendRedirect(request.getContextPath() + "/dashboard");
             return;
         }
 

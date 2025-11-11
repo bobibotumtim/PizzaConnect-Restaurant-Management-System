@@ -151,7 +151,15 @@
         <servlet-name>VerifyCodeServlet</servlet-name>
         <url-pattern>/verifyCode</url-pattern>
     </servlet-mapping>
-    
+        <!-- Discount Import Servlet -->
+        <servlet>
+        <servlet-name>DiscountImportServlet</servlet-name>
+        <servlet-class>controller.DiscountImportServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DiscountImportServlet</servlet-name>
+        <url-pattern>/discount/import</url-pattern>
+    </servlet-mapping>
     <servlet>
         <servlet-name>ManageToppingServlet</servlet-name>
         <servlet-class>controller.ManageToppingServlet</servlet-class>
@@ -171,6 +179,16 @@
         <url-pattern>/chef-monitor</url-pattern>
     </servlet-mapping>
 
+    <!-- Sales Report Servlet -->
+    <servlet>
+        <servlet-name>SalesReportServlet</servlet-name>
+        <servlet-class>controller.SalesReportServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SalesReportServlet</servlet-name>
+        <url-pattern>/sales-reports</url-pattern>
+    </servlet-mapping>
+
     <!-- Waiter Monitor Servlet -->
     <servlet>
         <servlet-name>WaiterMonitorServlet</servlet-name>
@@ -181,6 +199,31 @@
         <url-pattern>/waiter-monitor</url-pattern>
     </servlet-mapping>
 
+    <!-- Test Export Direct Servlet -->
+    <servlet>
+        <servlet-name>TestExportDirectServlet</servlet-name>
+        <servlet-class>controller.TestExportDirectServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TestExportDirectServlet</servlet-name>
+        <url-pattern>/test-export</url-pattern>
+    </servlet-mapping>
+
+    <!-- Inventory Management Servlet - Temporarily commented out for debugging -->
+    <!--
+    <servlet>
+        <servlet-name>InventoryServlet</servlet-name>
+        <servlet-class>controller.InventoryServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>InventoryServlet</servlet-name>
+        <url-pattern>/manageinventory</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>InventoryServlet</servlet-name>
+        <url-pattern>/inventory</url-pattern>
+    </servlet-mapping>
+    -->
     <!-- Home Servlet -->
     <servlet>
         <servlet-name>HomeServlet</servlet-name>
@@ -191,7 +234,47 @@
         <url-pattern>/home</url-pattern>
     </servlet-mapping>
 
-    <!-- Note: InventoryServlet uses @WebServlet annotation in code -->
+    <servlet>
+        <servlet-name>InventoryServlet</servlet-name>
+        <servlet-class>controller.InventoryServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>InventoryServlet</servlet-name>
+        <url-pattern>/inventory</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>InventoryServlet</servlet-name>
+        <url-pattern>/manageinventory</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>CustomerMenuServlet</servlet-name>
+        <servlet-class>controller.CustomerMenuServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CustomerMenuServlet</servlet-name>
+        <url-pattern>/customer-menu</url-pattern>
+    </servlet-mapping>
+
+    <!-- Customer Feedback Servlet -->
+    <servlet>
+        <servlet-name>CustomerFeedbackServlet</servlet-name>
+        <servlet-class>controller.CustomerFeedbackServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CustomerFeedbackServlet</servlet-name>
+        <url-pattern>/customer-feedback</url-pattern>
+    </servlet-mapping>
+
+    <!-- Bill Servlet -->
+    <servlet>
+        <servlet-name>BillServlet</servlet-name>
+        <servlet-class>controller.BillServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BillServlet</servlet-name>
+        <url-pattern>/bill</url-pattern>
+    </servlet-mapping>
 
 </web-app>
 

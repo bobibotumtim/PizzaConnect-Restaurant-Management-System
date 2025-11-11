@@ -15,7 +15,7 @@ public class EmployeeDAO extends DBContext {
                 """;
 
         try (Connection con = getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, userID);
             ResultSet rs = ps.executeQuery();
 
@@ -29,17 +29,15 @@ public class EmployeeDAO extends DBContext {
                         rs.getString("Phone"),
                         rs.getDate("DateOfBirth"),
                         rs.getString("Gender"),
-                        rs.getBoolean("isActive")
-                );
+                        rs.getBoolean("isActive"));
 
                 // Gán jobRole và specialization từ Employee table
                 Employee employee = new Employee(
                         rs.getInt("EmployeeID"),
                         rs.getString("JobRole"),
-                        u
-                );
+                        u);
                 employee.setSpecialization(rs.getString("Specialization"));
-                
+
                 return employee;
             }
         } catch (Exception e) {

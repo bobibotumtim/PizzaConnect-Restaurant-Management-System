@@ -124,7 +124,15 @@
                                                     <%= user !=null ? user.getName() : "User" %>
                                                 </div>
                                                 <div class="text-sm text-red-100">
-                                                    <%= user !=null && user.getRole()==1 ? "Admin" : "Employee" %>
+                                                    <% if (user != null) {
+                                                        if (user.getRole() == 1) { %>
+                                                            Admin
+                                                        <% } else if (user.getRole() == 3) { %>
+                                                            Customer
+                                                        <% } else { %>
+                                                            Employee
+                                                        <% }
+                                                    } %>
                                                 </div>
                                             </div>
                                             <a href="Login?action=logout"
@@ -403,107 +411,111 @@
                                                                                             <%= noteText %>
                                                                                         </div>
                                                                                 </td>
-                                                                                <td class="px-2 py-4">
-                                                                                    <div class="flex items-center justify-center gap-1 flex-wrap">
-                                                                                        <%
-                                                                                        // Get order status and payment status
-                                                                                        int status = order.getStatus();
-                                                                                        boolean isPaid = "Paid".equals(paymentStatus);
-                                                                                        
-                                                                                        // 1. VIEW BUTTON - Show for all orders
-                                                                                        %>
-                                                                                            <button
-                                                                                                onclick="openViewOrderModal(<%= order.getOrderID() %>)"
-                                                                                                class="px-2 py-1 text-white bg-gray-600 hover:bg-gray-700 rounded text-xs font-medium whitespace-nowrap"
-                                                                                                title="View Details">
-                                                                                                <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                                                                </svg>
-                                                                                                View
-                                                                                            </button>
+                                                                                    <td class="px-2 py-4">
+                                                                                        <div class="flex items-center justify-center gap-1 flex-wrap">
+                                                                                            <%
+                                                                                            // Get order status and payment status
+                                                                                            int status = order.getStatus();
+                                                                                            boolean isPaid = "Paid".equals(paymentStatus);
                                                                                             
-                                                                                            <% if (status == 0 || status == 1) { %>
-                                                                                            <a href="${pageContext.request.contextPath}/pos?orderId=<%= order.getOrderID() %>"
-                                                                                                class="px-2 py-1 text-white bg-green-600 hover:bg-green-700 rounded text-xs font-medium whitespace-nowrap inline-flex items-center gap-1"
-                                                                                                title="Add More Items">
-                                                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                                                                                </svg>
-                                                                                                Add
-                                                                                            </a>
-                                                                                            <% } %>
+                                                                                            // 1. VIEW BUTTON - Show for all orders
+                                                                                            %>
+                                                                                                <button
+                                                                                                    onclick="openViewOrderModal(<%= order.getOrderID() %>)"
+                                                                                                    class="px-2 py-1 text-white bg-gray-600 hover:bg-gray-700 rounded text-xs font-medium whitespace-nowrap"
+                                                                                                    title="View Details">
+                                                                                                    <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                                                                    </svg>
+                                                                                                    View
+                                                                                                </button>
+                                                                                                
+                                                                                                <!-- PRINT BILL BUTTON - Show for all orders except cancelled -->
+                                                                                                <% if (status != 3) { %>
+                                                                                                    <a href="${pageContext.request.contextPath}/bill?orderId=<%= order.getOrderID() %>"
+                                                                                                    target="_blank"
+                                                                                                    class="px-2 py-1 text-white bg-purple-600 hover:bg-purple-700 rounded text-xs font-medium whitespace-nowrap inline-flex items-center gap-1"
+                                                                                                    title="Print Bill">
+                                                                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                                                                                                        </svg>
+                                                                                                        Bill
+                                                                                                    </a>
+                                                                                                <% } %>
+                                                                                                
+                                                                                                <% if (status == 0 || status == 1) { %>
+                                                                                                <a href="${pageContext.request.contextPath}/pos?orderId=<%= order.getOrderID() %>"
+                                                                                                    class="px-2 py-1 text-white bg-green-600 hover:bg-green-700 rounded text-xs font-medium whitespace-nowrap inline-flex items-center gap-1"
+                                                                                                    title="Add More Items">
+                                                                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                                                                                    </svg>
+                                                                                                    Add
+                                                                                                </a>
+                                                                                                <% } %>
 
                                                                                                 <%
-                                                                                                // REMOVED: Process and Complete buttons
-                                                                                                // Status changes are now automatic via Chef/Waiter workflow
+                                                                                                // 4. PAID BUTTON - Show for Unpaid orders except Cancelled
+                                                                                                if (!isPaid && status != 3) {
                                                                                                 %>
+                                                                                                    <form
+                                                                                                        style="display: inline;"
+                                                                                                        method="post"
+                                                                                                        onsubmit="return confirm('Mark this order as Paid?')">
+                                                                                                        <input
+                                                                                                            type="hidden"
+                                                                                                            name="action"
+                                                                                                            value="updatePayment"
+                                                                                                            aria-label="Action">
+                                                                                                        <input
+                                                                                                            type="hidden"
+                                                                                                            name="orderId"
+                                                                                                            value="<%= order.getOrderID() %>"
+                                                                                                            aria-label="Order ID">
+                                                                                                        <input
+                                                                                                            type="hidden"
+                                                                                                            name="paymentStatus"
+                                                                                                            value="Paid"
+                                                                                                            aria-label="Payment Status">
+                                                                                                        <button
+                                                                                                            type="submit"
+                                                                                                            class="px-2 py-1 bg-emerald-500 text-white text-xs rounded hover:bg-emerald-600 whitespace-nowrap">
+                                                                                                            Paid
+                                                                                                        </button>
+                                                                                                    </form>
+                                                                                                <% } %>
 
-                                                                                                                <%
-                                                                                                                // 4. PAID BUTTON - Show for Unpaid orders except Cancelled
-                                                                                                                if (!isPaid && status != 3) {
-                                                                                                                %>
-                                                                                                                    <form
-                                                                                                                        style="display: inline;"
-                                                                                                                        method="post"
-                                                                                                                        onsubmit="return confirm('Mark this order as Paid?')">
-                                                                                                                        <input
-                                                                                                                            type="hidden"
-                                                                                                                            name="action"
-                                                                                                                            value="updatePayment"
-                                                                                                                            aria-label="Action">
-                                                                                                                        <input
-                                                                                                                            type="hidden"
-                                                                                                                            name="orderId"
-                                                                                                                            value="<%= order.getOrderID() %>"
-                                                                                                                            aria-label="Order ID">
-                                                                                                                        <input
-                                                                                                                            type="hidden"
-                                                                                                                            name="paymentStatus"
-                                                                                                                            value="Paid"
-                                                                                                                            aria-label="Payment Status">
-                                                                                                                        <button
-                                                                                                                            type="submit"
-                                                                                                                            class="px-2 py-1 bg-emerald-500 text-white text-xs rounded hover:bg-emerald-600 whitespace-nowrap">
-                                                                                                                            Paid
-                                                                                                                        </button>
-                                                                                                                    </form>
-                                                                                                                <% } %>
-
-                                                                                                                <%
-                                                                                                                // 5. CANCEL BUTTON - Pending: no confirm, Processing: need confirm
-                                                                                                                if (status == 0) {
-                                                                                                                    // Pending: Cancel without confirm
-                                                                                                                %>
-                                                                                                                    <form style="display: inline;" method="post">
-                                                                                                                        <input type="hidden" name="action" value="updateStatus">
-                                                                                                                        <input type="hidden" name="orderId" value="<%= order.getOrderID() %>">
-                                                                                                                        <input type="hidden" name="status" value="3">
-                                                                                                                        <button type="submit" class="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 whitespace-nowrap">
-                                                                                                                            Cancel
-                                                                                                                        </button>
-                                                                                                                    </form>
-                                                                                                                <% } else if (status == 1) {
-                                                                                                                    // Processing: Cancel WITH confirm
-                                                                                                                %>
-                                                                                                                    <form style="display: inline;" method="post" 
-                                                                                                                          onsubmit="return confirm('⚠️ Đơn đang làm trong bếp! Bạn chắc chắn muốn hủy?')">
-                                                                                                                        <input type="hidden" name="action" value="updateStatus">
-                                                                                                                        <input type="hidden" name="orderId" value="<%= order.getOrderID() %>">
-                                                                                                                        <input type="hidden" name="status" value="3">
-                                                                                                                        <button type="submit" class="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 whitespace-nowrap">
-                                                                                                                            Cancel
-                                                                                                                        </button>
-                                                                                                                    </form>
-                                                                                                                <% }
-                                                                                                                // Completed (2) and Cancelled (3): NO Cancel button
-                                                                                                                %>
-
-                                                                                                                                <%
-                                                                                                                                // ❌ DELETE DISABLED - Orders cannot be deleted, only cancelled
-                                                                                                                                // Delete functionality has been removed for data integrity
-                                                                                                                                %>
-                                                                                    </div>
+                                                                                                <%
+                                                                                                // 5. CANCEL BUTTON - Pending: no confirm, Processing: need confirm
+                                                                                                if (status == 0) {
+                                                                                                    // Pending: Cancel without confirm
+                                                                                                %>
+                                                                                                    <form style="display: inline;" method="post">
+                                                                                                        <input type="hidden" name="action" value="updateStatus">
+                                                                                                        <input type="hidden" name="orderId" value="<%= order.getOrderID() %>">
+                                                                                                        <input type="hidden" name="status" value="3">
+                                                                                                        <button type="submit" class="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 whitespace-nowrap">
+                                                                                                            Cancel
+                                                                                                        </button>
+                                                                                                    </form>
+                                                                                                <% } else if (status == 1) {
+                                                                                                    // Processing: Cancel WITH confirm
+                                                                                                %>
+                                                                                                    <form style="display: inline;" method="post" 
+                                                                                                        onsubmit="return confirm('⚠️ Đơn đang làm trong bếp! Bạn chắc chắn muốn hủy?')">
+                                                                                                        <input type="hidden" name="action" value="updateStatus">
+                                                                                                        <input type="hidden" name="orderId" value="<%= order.getOrderID() %>">
+                                                                                                        <input type="hidden" name="status" value="3">
+                                                                                                        <button type="submit" class="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 whitespace-nowrap">
+                                                                                                            Cancel
+                                                                                                        </button>
+                                                                                                    </form>
+                                                                                                <% }
+                                                                                                // Completed (2) and Cancelled (3): NO Cancel button
+                                                                                                %>
+                                                                                        </div>
+                                                                                    </td>
                                                                                 </td>
                                                                             </tr>
                                                                             <% } %>

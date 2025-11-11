@@ -1,0 +1,12 @@
+-- Check Inventory table structure
+SELECT 
+    COLUMN_NAME,
+    DATA_TYPE,
+    CHARACTER_MAXIMUM_LENGTH,
+    IS_NULLABLE
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = 'Inventory'
+ORDER BY ORDINAL_POSITION;
+
+-- Show sample data
+SELECT TOP 5 * FROM Inventory;

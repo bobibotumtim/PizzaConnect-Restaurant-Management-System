@@ -20,26 +20,43 @@ public class HomeServlet extends HttpServlet {
             // Get all products
             List<Product> allProducts = productDAO.getAllBaseProducts();
             
-            // Group products by category
-            Map<String, List<Product>> productsByCategory = new LinkedHashMap<>();
+            // Create a map to store products with their sizes
+            Map<Product, List<ProductSize>> productsWithSizes = new LinkedHashMap<>();
             
             for (Product product : allProducts) {
-                String category = product.getCategoryName();
-                if (!productsByCategory.containsKey(category)) {
-                    productsByCategory.put(category, new ArrayList<>());
+                List<ProductSize> sizes = productSizeDAO.getSizesByProductId(product.getProductId());
+                if (!sizes.isEmpty()) {
+                    productsWithSizes.put(product, sizes);
                 }
-                productsByCategory.get(category).add(product);
+            }
+            
+            // Group products by category
+            Map<String, Map<Product, List<ProductSize>>> productsByCategory = new LinkedHashMap<>();
+            
+            for (Map.Entry<Product, List<ProductSize>> entry : productsWithSizes.entrySet()) {
+                Product product = entry.getKey();
+                List<ProductSize> sizes = entry.getValue();
+                String category = product.getCategoryName();
+                
+                if (!productsByCategory.containsKey(category)) {
+                    productsByCategory.put(category, new LinkedHashMap<>());
+                }
+                productsByCategory.get(category).put(product, sizes);
             }
             
             // Get featured products (first 6)
-            List<Product> featuredProducts = allProducts.size() > 6 
-                ? allProducts.subList(0, 6) 
-                : allProducts;
+            List<Map.Entry<Product, List<ProductSize>>> featuredList = new ArrayList<>(productsWithSizes.entrySet());
+            Map<Product, List<ProductSize>> featuredProducts = new LinkedHashMap<>();
+            int limit = Math.min(6, featuredList.size());
+            for (int i = 0; i < limit; i++) {
+                Map.Entry<Product, List<ProductSize>> entry = featuredList.get(i);
+                featuredProducts.put(entry.getKey(), entry.getValue());
+            }
             
             // Send to JSP
             req.setAttribute("productsByCategory", productsByCategory);
             req.setAttribute("featuredProducts", featuredProducts);
-            req.setAttribute("allProducts", allProducts);
+            req.setAttribute("productsWithSizes", productsWithSizes);
             
             req.getRequestDispatcher("/view/Home.jsp").forward(req, resp);
             

@@ -14,26 +14,26 @@ import models.User;
 import models.Employee;
 import models.Customer;
 
-@WebServlet(name = "AddUserServlet", urlPatterns = {"/adduser"})
+@WebServlet(name = "AddUserServlet", urlPatterns = { "/adduser" })
 public class AddUserServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         // Kiểm tra session và quyền admin
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
             response.sendRedirect("Login");
             return;
         }
-        
+
         User user = (User) session.getAttribute("user");
         if (user.getRole() != 1) { // 1 = admin role
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied. Admin role required.");
             return;
         }
-        
+
         request.setAttribute("currentUser", user);
         request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
     }
@@ -41,20 +41,20 @@ public class AddUserServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         // Kiểm tra session và quyền admin
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
             response.sendRedirect("Login");
             return;
         }
-        
+
         User currentUser = (User) session.getAttribute("user");
         if (currentUser.getRole() != 1) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied. Admin role required.");
             return;
         }
-        
+
         // Lấy thông tin từ form
         String name = request.getParameter("name");
         String email = request.getParameter("email");
@@ -65,7 +65,7 @@ public class AddUserServlet extends HttpServlet {
         String employeeRole = request.getParameter("employeeRole");
         String dateOfBirthStr = request.getParameter("dateOfBirth");
         String gender = request.getParameter("gender");
-        
+
         // Validation
         if (name == null || name.trim().isEmpty()) {
             request.setAttribute("error", "Name is required!");
@@ -73,42 +73,42 @@ public class AddUserServlet extends HttpServlet {
             request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
             return;
         }
-        
+
         if (email == null || email.trim().isEmpty()) {
             request.setAttribute("error", "Email is required!");
             request.setAttribute("currentUser", currentUser);
             request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
             return;
         }
-        
+
         if (phone == null || phone.trim().isEmpty()) {
             request.setAttribute("error", "Phone number is required!");
             request.setAttribute("currentUser", currentUser);
             request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
             return;
         }
-        
+
         if (password == null || password.length() < 6) {
             request.setAttribute("error", "Password must be at least 6 characters long!");
             request.setAttribute("currentUser", currentUser);
             request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
             return;
         }
-        
+
         if (!password.equals(confirmPassword)) {
             request.setAttribute("error", "Passwords do not match!");
             request.setAttribute("currentUser", currentUser);
             request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
             return;
         }
-        
+
         if (roleStr == null || roleStr.trim().isEmpty()) {
             request.setAttribute("error", "User role is required!");
             request.setAttribute("currentUser", currentUser);
             request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
             return;
         }
-        
+
         try {
             int role = Integer.parseInt(roleStr);
             if (role < 1 || role > 3) {
@@ -117,7 +117,7 @@ public class AddUserServlet extends HttpServlet {
                 request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
                 return;
             }
-            
+
             // Kiểm tra email đã tồn tại chưa
             UserDAO userDAO = new UserDAO();
             if (userDAO.isUserExists(email)) {
@@ -126,7 +126,7 @@ public class AddUserServlet extends HttpServlet {
                 request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
                 return;
             }
-            
+
             // Parse date of birth
             Date dateOfBirth = null;
             if (dateOfBirthStr != null && !dateOfBirthStr.trim().isEmpty()) {
@@ -140,7 +140,7 @@ public class AddUserServlet extends HttpServlet {
                     return;
                 }
             }
-            
+
             // Tạo user mới
             User newUser = new User();
             newUser.setName(name.trim());
@@ -151,10 +151,10 @@ public class AddUserServlet extends HttpServlet {
             newUser.setDateOfBirth(dateOfBirth);
             newUser.setGender(gender != null && !gender.trim().isEmpty() ? gender.trim() : null);
             newUser.setActive(true);
-            
+
             // Thêm user vào database
             int userId = userDAO.insertUser(newUser);
-            
+
             if (userId > 0) {
                 // Nếu là Employee hoặc Customer, thêm vào bảng tương ứng
                 if (role == 2) { // Employee
@@ -164,21 +164,21 @@ public class AddUserServlet extends HttpServlet {
                         request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
                         return;
                     }
-                    
+
                     // Validate employee role
-                    if (!employeeRole.equals("Manager") && !employeeRole.equals("Cashier") && 
-                        !employeeRole.equals("Waiter") && !employeeRole.equals("Chef")) {
+                    if (!employeeRole.equals("Manager") && !employeeRole.equals("Cashier") &&
+                            !employeeRole.equals("Waiter") && !employeeRole.equals("Chef")) {
                         request.setAttribute("error", "Invalid employee role selected!");
                         request.setAttribute("currentUser", currentUser);
                         request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
                         return;
                     }
-                    
+
                     EmployeeDAO employeeDAO = new EmployeeDAO();
                     Employee employee = new Employee();
                     employee.setUserID(userId);
                     employee.setEmployeeRole(employeeRole);
-                    
+
                     int employeeId = employeeDAO.insertEmployee(employee);
                     if (employeeId <= 0) {
                         request.setAttribute("error", "User created but failed to create employee record.");
@@ -191,7 +191,7 @@ public class AddUserServlet extends HttpServlet {
                     Customer customer = new Customer();
                     customer.setUserID(userId);
                     customer.setLoyaltyPoint(0);
-                    
+
                     int customerId = customerDAO.insertCustomerReturnId(customer);
                     if (customerId <= 0) {
                         request.setAttribute("error", "User created but failed to create customer record.");
@@ -200,7 +200,7 @@ public class AddUserServlet extends HttpServlet {
                         return;
                     }
                 }
-                
+
                 request.setAttribute("message", "User created successfully! User ID: " + userId);
                 request.setAttribute("currentUser", currentUser);
                 request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
@@ -209,7 +209,7 @@ public class AddUserServlet extends HttpServlet {
                 request.setAttribute("currentUser", currentUser);
                 request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
             }
-            
+
         } catch (NumberFormatException e) {
             request.setAttribute("error", "Invalid role format!");
             request.setAttribute("currentUser", currentUser);

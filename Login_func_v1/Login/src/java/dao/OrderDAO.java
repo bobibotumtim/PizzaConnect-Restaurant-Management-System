@@ -81,14 +81,14 @@ public class OrderDAO extends DBContext {
                 }
             }
 
-            // 3️⃣ Update table status to Occupied
+            // 3️⃣ Update table status to occupied (lowercase for consistency)
             if (tableID > 0) {
-                String sqlUpdateTable = "UPDATE [Table] SET Status = 'Occupied' WHERE TableID = ?";
+                String sqlUpdateTable = "UPDATE [Table] SET Status = 'occupied' WHERE TableID = ?";
                 try (PreparedStatement psTable = con.prepareStatement(sqlUpdateTable)) {
                     psTable.setInt(1, tableID);
                     int rowsUpdated = psTable.executeUpdate();
                     if (rowsUpdated > 0) {
-                        System.out.println("✅ Table #" + tableID + " set to Occupied (Order #" + orderId + " created)");
+                        System.out.println("✅ Table #" + tableID + " set to occupied (Order #" + orderId + " created)");
                     } else {
                         System.err.println("⚠️ Failed to update table status for Table #" + tableID);
                     }
@@ -173,6 +173,39 @@ public class OrderDAO extends DBContext {
             e.printStackTrace();
         }
 
+        return list;
+    }
+
+    // 🟢 Get orders by customer ID
+    public List<Order> getOrdersByCustomerId(int customerId) {
+        List<Order> list = new ArrayList<>();
+        String sql = "SELECT * FROM [Order] WHERE CustomerID = ? ORDER BY OrderDate DESC";
+
+        try (Connection con = useConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, customerId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Order o = new Order();
+                    o.setOrderID(rs.getInt("OrderID"));
+                    o.setCustomerID(rs.getInt("CustomerID"));
+                    o.setEmployeeID(rs.getInt("EmployeeID"));
+                    o.setTableID(rs.getInt("TableID"));
+                    o.setOrderDate(rs.getTimestamp("OrderDate"));
+                    o.setStatus(rs.getInt("Status"));
+                    o.setPaymentStatus(rs.getString("PaymentStatus"));
+                    o.setTotalPrice(rs.getDouble("TotalPrice"));
+                    o.setNote(rs.getString("Note"));
+                    list.add(o);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("✅ Orders loaded for customer " + customerId + ": " + list.size());
         return list;
     }
 
@@ -1001,5 +1034,117 @@ public class OrderDAO extends DBContext {
             return updateOrderStatus(orderId, 1); // Status = 1 (Đã phục vụ xong)
         }
         return false;
+    }
+    
+    // 🟢 Lấy danh sách Order theo TableID (chưa hoàn thành)
+    public List<Order> getOrdersByTableId(int tableId) {
+        List<Order> orders = new ArrayList<>();
+        String sql = """
+            SELECT o.*, c.LoyaltyPoint, u.Name as CustomerName
+            FROM [Order] o
+            LEFT JOIN Customer c ON o.CustomerID = c.CustomerID
+            LEFT JOIN [User] u ON c.UserID = u.UserID
+            WHERE o.TableID = ? AND o.Status < 4
+            ORDER BY o.OrderDate DESC
+        """;
+        
+        try (Connection con = useConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, tableId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Order order = new Order();
+                    order.setOrderID(rs.getInt("OrderID"));
+                    order.setCustomerID(rs.getInt("CustomerID"));
+                    order.setEmployeeID(rs.getInt("EmployeeID"));
+                    order.setTableID(rs.getInt("TableID"));
+                    order.setOrderDate(rs.getTimestamp("OrderDate"));
+                    order.setStatus(rs.getInt("Status"));
+                    order.setPaymentStatus(rs.getString("PaymentStatus"));
+                    order.setTotalPrice(rs.getDouble("TotalPrice"));
+                    order.setNote(rs.getString("Note"));
+                    orders.add(order);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error getting orders by table: " + e.getMessage());
+        }
+        return orders;
+    }
+
+    // 🟢 Get orders by customer ID with pagination (for user profile)
+    public List<Object[]> getOrdersByCustomerId(int customerId, int page, int pageSize) {
+        List<Object[]> orders = new ArrayList<>();
+        int offset = (page - 1) * pageSize;
+
+        String sql = """
+                    SELECT
+                        o.OrderID, o.OrderDate, o.TotalPrice, o.Status, o.PaymentStatus, o.Note,
+                        t.TableNumber,
+                        COUNT(od.OrderDetailID) as ItemCount,
+                        u.Name as CustomerName
+                    FROM [Order] o
+                    LEFT JOIN [Table] t ON o.TableID = t.TableID
+                    LEFT JOIN OrderDetail od ON o.OrderID = od.OrderID
+                    LEFT JOIN Customer c ON o.CustomerID = c.CustomerID
+                    LEFT JOIN [User] u ON c.UserID = u.UserID
+                    WHERE o.CustomerID = ?
+                    GROUP BY o.OrderID, o.OrderDate, o.TotalPrice, o.Status, o.PaymentStatus, o.Note, t.TableNumber, u.Name
+                    ORDER BY o.OrderDate DESC
+                    OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
+                """;
+
+        try (Connection con = useConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, customerId);
+            ps.setInt(2, offset);
+            ps.setInt(3, pageSize);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Object[] orderData = new Object[] {
+                            rs.getInt("OrderID"),
+                            rs.getTimestamp("OrderDate"),
+                            rs.getDouble("TotalPrice"),
+                            rs.getInt("Status"),
+                            rs.getString("PaymentStatus"),
+                            rs.getString("Note"),
+                            rs.getString("TableNumber"),
+                            rs.getInt("ItemCount"),
+                            rs.getString("CustomerName")
+                    };
+                    orders.add(orderData);
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ Error getting orders by customer ID: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        System.out.println("✅ Orders loaded for customer " + customerId + " (page " + page + "): " + orders.size());
+        return orders;
+    }
+
+    // 🟢 Count total orders by customer ID
+    public int getOrdersCountByCustomerId(int customerId) {
+        String sql = "SELECT COUNT(*) FROM [Order] WHERE CustomerID = ?";
+
+        try (Connection con = useConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, customerId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ Error counting orders by customer ID: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return 0;
     }
 }

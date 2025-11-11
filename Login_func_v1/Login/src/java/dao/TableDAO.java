@@ -361,11 +361,35 @@ public class TableDAO extends DBContext {
     }
 
     /**
-     * Get all active tables with status information
+     * Get all active tables with ACTUAL status (considering active orders)
+     * Uses VIEW to calculate real-time status based on Order table
      */
     public List<Table> getActiveTablesWithStatus() {
         List<Table> tables = new ArrayList<>();
-        String sql = "SELECT * FROM [Table] WHERE IsActive = 1 ORDER BY TableNumber";
+        
+        // Use VIEW that calculates actual status based on active orders
+        // ActualStatus will be: 'available', 'occupied', or 'unavailable'
+        // Only count orders with status < 2 (Dining=0, Served=1)
+        // Completed (2) and Cancelled (3) orders should NOT make table occupied
+        String sql = """
+            SELECT 
+                t.TableID,
+                t.TableNumber,
+                t.Capacity,
+                t.[Status] AS TableStatus,
+                t.IsActive,
+                COUNT(o.OrderID) AS ActiveOrderCount,
+                CASE 
+                    WHEN t.[Status] = 'unavailable' THEN 'unavailable'
+                    WHEN COUNT(o.OrderID) > 0 THEN 'occupied'
+                    ELSE 'available'
+                END AS ActualStatus
+            FROM [Table] t
+            LEFT JOIN [Order] o ON t.TableID = o.TableID AND o.[Status] < 2
+            WHERE t.IsActive = 1
+            GROUP BY t.TableID, t.TableNumber, t.Capacity, t.[Status], t.IsActive
+            ORDER BY t.TableNumber
+        """;
 
         try (Connection connection = getConnection();
                 PreparedStatement stmt = connection.prepareStatement(sql);
@@ -376,12 +400,20 @@ public class TableDAO extends DBContext {
                 table.setTableID(rs.getInt("TableID"));
                 table.setTableNumber(rs.getString("TableNumber"));
                 table.setCapacity(rs.getInt("Capacity"));
-                table.setStatus(rs.getString("Status"));
+                // Use ActualStatus instead of TableStatus for display
+                table.setStatus(rs.getString("ActualStatus"));
                 table.setActive(rs.getBoolean("IsActive"));
                 tables.add(table);
+                
+                // Debug log
+                LOGGER.info("Table " + table.getTableNumber() + 
+                           " - DB Status: " + rs.getString("TableStatus") + 
+                           " - Actual Status: " + rs.getString("ActualStatus") +
+                           " - Active Orders: " + rs.getInt("ActiveOrderCount"));
             }
         } catch (SQLException e) {
             LOGGER.severe("Error fetching active tables with status: " + e.getMessage());
+            e.printStackTrace();
         }
         return tables;
     }
