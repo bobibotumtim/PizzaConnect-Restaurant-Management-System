@@ -417,6 +417,7 @@
                     <input type="hidden" name="returnSearchName" value="${searchName}">
                     <input type="hidden" name="returnStatusFilter" value="${statusFilter}">
                     <input type="hidden" name="returnPage" value="${currentPage}">
+                    <input type="hidden" name="returnPageSize" value="${pageSize}">
                     
                     <!-- Error message display -->
                     <div id="modalErrorMessage" class="alert alert-danger d-none" role="alert"></div>

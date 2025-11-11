@@ -34,10 +34,12 @@ public class InventoryServlet extends HttpServlet {
                         String editSearchName = request.getParameter("searchName");
                         String editStatusFilter = request.getParameter("statusFilter");
                         String editPage = request.getParameter("page");
+                        String editPageSize = request.getParameter("pageSize");
                         
                         request.setAttribute("returnSearchName", editSearchName);
                         request.setAttribute("returnStatusFilter", editStatusFilter);
                         request.setAttribute("returnPage", editPage);
+                        request.setAttribute("returnPageSize", editPageSize);
                         
                         request.getRequestDispatcher("view/inventory-form.jsp").forward(request, response);
                     } else {
@@ -87,9 +89,10 @@ public class InventoryServlet extends HttpServlet {
                 String toggleSearchName = request.getParameter("searchName");
                 String toggleStatusFilter = request.getParameter("statusFilter");
                 String togglePage = request.getParameter("page");
+                String togglePageSize = request.getParameter("pageSize");
                 
                 String redirectUrl = URLUtils.buildInventoryUrl("manageinventory", 
-                    toggleSearchName, toggleStatusFilter, togglePage);
+                    toggleSearchName, toggleStatusFilter, togglePage, togglePageSize);
                 
                 response.sendRedirect(redirectUrl);
                 break;
@@ -193,6 +196,7 @@ public class InventoryServlet extends HttpServlet {
         String returnSearchName = request.getParameter("returnSearchName");
         String returnStatusFilter = request.getParameter("returnStatusFilter");
         String returnPage = request.getParameter("returnPage");
+        String returnPageSize = request.getParameter("returnPageSize");
         
         // Basic validation
         if (name == null || name.trim().isEmpty()) {
@@ -201,6 +205,7 @@ public class InventoryServlet extends HttpServlet {
             request.setAttribute("returnSearchName", returnSearchName);
             request.setAttribute("returnStatusFilter", returnStatusFilter);
             request.setAttribute("returnPage", returnPage);
+            request.setAttribute("returnPageSize", returnPageSize);
             request.getRequestDispatcher("view/inventory-form.jsp").forward(request, response);
             return;
         }
@@ -211,6 +216,7 @@ public class InventoryServlet extends HttpServlet {
             request.setAttribute("returnSearchName", returnSearchName);
             request.setAttribute("returnStatusFilter", returnStatusFilter);
             request.setAttribute("returnPage", returnPage);
+            request.setAttribute("returnPageSize", returnPageSize);
             request.getRequestDispatcher("view/inventory-form.jsp").forward(request, response);
             return;
         }
@@ -226,6 +232,7 @@ public class InventoryServlet extends HttpServlet {
             request.setAttribute("returnSearchName", returnSearchName);
             request.setAttribute("returnStatusFilter", returnStatusFilter);
             request.setAttribute("returnPage", returnPage);
+            request.setAttribute("returnPageSize", returnPageSize);
             request.getRequestDispatcher("view/inventory-form.jsp").forward(request, response);
             return;
         }
@@ -241,6 +248,7 @@ public class InventoryServlet extends HttpServlet {
                 request.setAttribute("returnSearchName", returnSearchName);
                 request.setAttribute("returnStatusFilter", returnStatusFilter);
                 request.setAttribute("returnPage", returnPage);
+                request.setAttribute("returnPageSize", returnPageSize);
                 request.getRequestDispatcher("view/inventory-form.jsp").forward(request, response);
                 return;
             }
@@ -251,6 +259,7 @@ public class InventoryServlet extends HttpServlet {
             request.setAttribute("returnSearchName", returnSearchName);
             request.setAttribute("returnStatusFilter", returnStatusFilter);
             request.setAttribute("returnPage", returnPage);
+            request.setAttribute("returnPageSize", returnPageSize);
             request.getRequestDispatcher("view/inventory-form.jsp").forward(request, response);
             return;
         }
@@ -268,7 +277,7 @@ public class InventoryServlet extends HttpServlet {
             
             // Build redirect URL with preserved parameters
             String redirectUrl = URLUtils.buildInventoryUrl("manageinventory", 
-                returnSearchName, returnStatusFilter, returnPage);
+                returnSearchName, returnStatusFilter, returnPage, returnPageSize);
             
             response.sendRedirect(redirectUrl);
         } catch (Exception e) {
@@ -278,6 +287,7 @@ public class InventoryServlet extends HttpServlet {
             request.setAttribute("returnSearchName", returnSearchName);
             request.setAttribute("returnStatusFilter", returnStatusFilter);
             request.setAttribute("returnPage", returnPage);
+            request.setAttribute("returnPageSize", returnPageSize);
             request.getRequestDispatcher("view/inventory-form.jsp").forward(request, response);
         }
     }
