@@ -406,11 +406,13 @@
         </div>
 
         <%-- 1. Modal Thêm Product (ĐƠN GIẢN) --%>
+        <%-- 1. Modal Thêm Product (ĐƠN GIẢN) --%>
         <div id="addProductModal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <h2>Add New Product</h2>
-                <form action="${pageContext.request.contextPath}/AddProductServlet" method="post">
+                <%-- ✅ THAY ĐỔI 1: Thêm enctype="multipart/form-data" --%>
+                <form action="${pageContext.request.contextPath}/AddProductServlet" method="post" enctype="multipart/form-data">
                     <div class="form-group">
                         <label>Product Name:</label>
                         <input type="text" name="productName" required>
@@ -423,16 +425,15 @@
                         <label for="addCategoryName">Category:</label>
                         <select name="categoryName" id="addCategoryName" required>
                             <option value="">-- Select a Category --</option>
-
-                            <%-- Lặp qua 'categoryList' đã được nạp bởi ManageProductServlet --%>
                             <c:forEach var="cat" items="${categoryList}">
                                 <option value="${cat.categoryName}">${cat.categoryName}</option>
                             </c:forEach>
                         </select>
                     </div>
+                    <%-- ✅ THAY ĐỔI 2: Thay input type="text" bằng type="file" --%>
                     <div class="form-group">
-                        <label>Image URL:</label>
-                        <input type="text" name="imageUrl">
+                        <label>Product Image (File):</label>
+                        <input type="file" name="productImage" accept="image/*">
                     </div>
                     <button type="submit">Save Product</button>
                 </form>
@@ -444,8 +445,11 @@
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <h2>Edit Product</h2>
-                <form action="${pageContext.request.contextPath}/EditProductServlet" method="post">
+                <%-- ✅ THAY ĐỔI 3: Thêm enctype="multipart/form-data" --%>
+                <form action="${pageContext.request.contextPath}/EditProductServlet" method="post" enctype="multipart/form-data">
                     <input type="hidden" name="productId" id="editProductId">
+                    <%-- Thêm input hidden để lưu URL ảnh cũ --%>
+                    <input type="hidden" name="existingImageUrl" id="existingImageUrl"> 
                     <div class="form-group">
                         <label>Product Name:</label>
                         <input type="text" name="productName" id="editProductName" required>
@@ -458,16 +462,16 @@
                         <label for="editCategoryName">Category:</label>
                         <select name="categoryName" id="editCategoryName" required>
                             <option value="">-- Select a Category --</option>
-
-                            <%-- Dùng chung 'categoryList' --%>
                             <c:forEach var="cat" items="${categoryList}">
                                 <option value="${cat.categoryName}">${cat.categoryName}</option>
                             </c:forEach>
                         </select>
                     </div>
+                    <%-- ✅ THAY ĐỔI 4: Thay input type="text" bằng type="file" --%>
                     <div class="form-group">
-                        <label>Image URL:</label>
-                        <input type="text" name="imageUrl" id="editImageUrl">
+                        <label>New Product Image (Optional):</label>
+                        <input type="file" name="newProductImage" id="editNewProductImage" accept="image/*">
+                        <p class="text-xs text-gray-500 mt-1">Leave blank to keep current image.</p>
                     </div>
                     <button type="submit">Update Product</button>
                 </form>
@@ -534,7 +538,20 @@
                         document.getElementById("editProductName").value = data.name;
                         document.getElementById("editDescription").value = data.desc;
                         document.getElementById("editCategoryName").value = data.category;
-                        document.getElementById("editImageUrl").value = data.image;
+                        
+                        // ✅ Dòng này đã được thay thế để lưu URL cũ vào input hidden mới
+                        const existingImageUrlInput = document.getElementById("existingImageUrl");
+                        if (existingImageUrlInput) {
+                            existingImageUrlInput.value = data.image;
+                        }
+                        
+                        // Reset input file để không gửi file cũ
+                        const editNewProductImageInput = document.getElementById("editNewProductImage");
+                        if (editNewProductImageInput) {
+                            editNewProductImageInput.value = ''; 
+                        }
+
+                        // Cuối cùng mới hiển thị modal
                         editProductModal.style.display = "block";
                     }
 
