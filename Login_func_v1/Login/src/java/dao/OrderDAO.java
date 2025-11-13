@@ -1091,6 +1091,21 @@ public class OrderDAO extends DBContext {
         }
         return false;
     }
+
+    // Update order customer
+    public boolean updateOrderCustomer(int orderId, int customerId) {
+        String sql = "UPDATE [Order] SET CustomerID = ? WHERE OrderID = ?";
+        try (Connection con = useConnection();
+            PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, customerId);
+            ps.setInt(2, orderId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            System.out.println("❌ Error updating order customer: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
     
     // 🟢 Lấy danh sách Order theo TableID (chưa hoàn thành)
     public List<Order> getOrdersByTableId(int tableId) {

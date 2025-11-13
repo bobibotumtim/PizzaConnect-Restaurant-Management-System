@@ -6,12 +6,10 @@ import models.User;
 import models.Customer;
 import models.Employee;
 import models.Discount;
-import models.CustomerDiscount;
 import dao.UserDAO;
 import dao.CustomerDAO;
 import dao.EmployeeDAO;
 import dao.DiscountDAO;
-import dao.CustomerDiscountDAO;
 import dao.OrderDAO;
 import dao.TokenDAO;
 import utils.EmailUtil;
@@ -71,19 +69,15 @@ public class UserProfileServlet extends HttpServlet {
     private void loadCustomerData(HttpServletRequest request, User currentUser) {
         try {
             CustomerDAO customerDAO = new CustomerDAO();
-            CustomerDiscountDAO customerDiscountDAO = new CustomerDiscountDAO();
             OrderDAO orderDAO = new OrderDAO();
 
             // Get customer info
             Customer customer = customerDAO.getCustomerByUserID(currentUser.getUserID());
             if (customer != null) {
                 // Get loyalty points and vouchers
-                int loyaltyPoints = customerDiscountDAO.getCustomerLoyaltyPoints(customer.getCustomerID());
-                List<CustomerDiscount> customerDiscounts = customerDiscountDAO
-                        .getCustomerDiscounts(customer.getCustomerID());
+                int loyaltyPoints = customer.getLoyaltyPoint();
 
                 request.setAttribute("loyaltyPoints", loyaltyPoints);
-                request.setAttribute("customerDiscounts", customerDiscounts);
 
                 // Get order history with pagination
                 int page = 1;

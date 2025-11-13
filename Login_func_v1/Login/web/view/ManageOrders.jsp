@@ -359,14 +359,14 @@
                                             
                                             <!-- BILL BUTTON - Show for all orders except cancelled -->
                                             <% if (status != 4 && status != 3) { %>
-                                                <button onclick="openBillModal(<%= order.getOrderID() %>)"
-                                                    class="px-2 py-1 text-white bg-purple-600 hover:bg-purple-700 rounded text-xs font-medium whitespace-nowrap inline-flex items-center gap-1"
-                                                    title="View Bill">
+                                                <a href="${pageContext.request.contextPath}/payment?orderId=<%= order.getOrderID() %>"
+                                                class="px-2 py-1 text-white bg-purple-600 hover:bg-purple-700 rounded text-xs font-medium whitespace-nowrap inline-flex items-center gap-1"
+                                                title="Process Payment">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
                                                     </svg>
-                                                    Bill
-                                                </button>
+                                                    Pay
+                                                </a>
                                             <% } %>
                                             
                                             <% if (status == 0 || status == 1) { %>

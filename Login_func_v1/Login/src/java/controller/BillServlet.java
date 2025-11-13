@@ -17,16 +17,31 @@ public class BillServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        System.out.println("BillServlet: Processing GET request");
+        System.out.println("╔════════════════════════════════════════╗");
+        System.out.println("║         BillServlet.doGet()           ║");
+        System.out.println("╚════════════════════════════════════════╝");
 
         String orderIdParam = req.getParameter("orderId");
-        String embedded = req.getParameter("embedded");
+        String embeddedParam = req.getParameter("embedded");
+        boolean embedded = "true".equals(embeddedParam);
+
+        // Get discount parameters from payment page
+        String loyaltyDiscountParam = req.getParameter("loyaltyDiscount");
+        String regularDiscountParam = req.getParameter("regularDiscount");
+        String totalDiscountParam = req.getParameter("totalDiscount");
+        String finalAmountParam = req.getParameter("finalAmount");
+        String customerNameParam = req.getParameter("customerName");
 
         System.out.println("Order ID: " + orderIdParam);
         System.out.println("Embedded: " + embedded);
+        System.out.println("Loyalty Discount Param: " + loyaltyDiscountParam);
+        System.out.println("Regular Discount Param: " + regularDiscountParam);
+        System.out.println("Total Discount Param: " + totalDiscountParam);
+        System.out.println("Final Amount Param: " + finalAmountParam);
+        System.out.println("Customer Name Param: " + customerNameParam);
 
         if (orderIdParam == null || orderIdParam.trim().isEmpty()) {
-            if ("true".equals(embedded)) {
+            if (embedded) {
                 resp.setContentType("text/html;charset=UTF-8");
                 resp.getWriter().write("<div class='text-center py-8 text-red-600'>Order ID is required</div>");
                 return;
@@ -44,7 +59,7 @@ public class BillServlet extends HttpServlet {
             Order order = orderDAO.getOrderWithDetails(orderId);
 
             if (order == null) {
-                if ("true".equals(embedded)) {
+                if (embedded) {
                     resp.setContentType("text/html;charset=UTF-8");
                     resp.getWriter().write("<div class='text-center py-8 text-red-600'>Order not found</div>");
                     return;
@@ -54,57 +69,104 @@ public class BillServlet extends HttpServlet {
                 }
             }
 
+            // Get customer name
+            String customerName = "Khách vãng lai";
+            if (customerNameParam != null && !customerNameParam.trim().isEmpty()) {
+                customerName = customerNameParam;
+            } else if (order.getCustomerID() > 0) {
+                // Lấy customer name từ database nếu có customer ID
+                CustomerDAO customerDAO = new CustomerDAO();
+                Customer customer = customerDAO.getCustomerByUserID(order.getCustomerID());
+                if (customer != null && customer.getName() != null) {
+                    customerName = customer.getName();
+                }
+            }
+
+            // Process discount information from parameters
+            double loyaltyDiscount = 0;
+            double regularDiscount = 0;
+            double totalDiscount = 0;
+            double finalAmount = order.getTotalPrice();
+
+            // Ưu tiên sử dụng discount từ parameters (nếu có)
+            if (loyaltyDiscountParam != null && !loyaltyDiscountParam.isEmpty()) {
+                loyaltyDiscount = Double.parseDouble(loyaltyDiscountParam);
+            }
+            if (regularDiscountParam != null && !regularDiscountParam.isEmpty()) {
+                regularDiscount = Double.parseDouble(regularDiscountParam);
+            }
+            if (totalDiscountParam != null && !totalDiscountParam.isEmpty()) {
+                totalDiscount = Double.parseDouble(totalDiscountParam);
+            }
+            if (finalAmountParam != null && !finalAmountParam.isEmpty()) {
+                finalAmount = Double.parseDouble(finalAmountParam);
+            }
+
+            // Calculate subtotal
+            double subtotal = finalAmount + totalDiscount;
+
+            // Get discount information from database
+            OrderDiscountDAO orderDiscountDAO = new OrderDiscountDAO();
+            List<OrderDiscount> discounts = orderDiscountDAO.getDiscountsByOrderId(orderId);
+            double databaseDiscount = orderDiscountDAO.getTotalDiscountAmount(orderId);
+
+            // ƯU TIÊN: Sử dụng discount từ database nếu có
+            if (databaseDiscount > 0) {
+                totalDiscount = databaseDiscount;
+                // Có thể cần phân tích discount từ database để có loyaltyDiscount và
+                // regularDiscount
+            }
+
             // Get payment information
             PaymentDAO paymentDAO = new PaymentDAO();
             Payment payment = paymentDAO.getPaymentByOrderId(orderId);
 
-            // Get discount information
-            OrderDiscountDAO orderDiscountDAO = new OrderDiscountDAO();
-            List<OrderDiscount> discounts = orderDiscountDAO.getDiscountsByOrderId(orderId);
-            double totalDiscount = orderDiscountDAO.getTotalDiscountAmount(orderId);
-
-            // If no payment exists, create new one with QR Code as default
+            // If no payment exists, create new one with final amount
             if (payment == null) {
                 payment = new Payment();
                 payment.setOrderID(orderId);
-                payment.setAmount(order.getTotalPrice());
+                payment.setAmount(finalAmount);
                 payment.setPaymentStatus("Pending");
                 payment.setPaymentDate(new Date());
 
-                // Generate dynamic QR code URL
-                String qrUrl = generateQRCodeURL(order.getTotalPrice(), orderId);
+                String qrUrl = generateQRCodeURL(finalAmount, orderId);
                 payment.setQrCodeURL(qrUrl);
 
                 paymentDAO.createPayment(payment);
             } else {
-                String qrUrl = generateQRCodeURL(order.getTotalPrice(), orderId);
+                // Update payment amount với final amount đã discount
+                payment.setAmount(finalAmount);
+                String qrUrl = generateQRCodeURL(finalAmount, orderId);
                 payment.setQrCodeURL(qrUrl);
                 paymentDAO.updatePayment(payment);
             }
-
-            // Calculate subtotal (tổng giá trị đơn hàng trước discount)
-            double subtotal = order.getTotalPrice();
-
-            // Apply discount (thay vì tính thuế)
-            double discountAmount = totalDiscount;
-            double finalAmount = Math.max(0, subtotal - discountAmount);
-
-            // Update order total price với discount đã áp dụng
-            order.setTotalPrice(finalAmount);
 
             // Set attributes for JSP
             req.setAttribute("order", order);
             req.setAttribute("payment", payment);
             req.setAttribute("discounts", discounts);
             req.setAttribute("subtotal", subtotal);
-            req.setAttribute("discountAmount", discountAmount);
+            req.setAttribute("discountAmount", totalDiscount);
+            req.setAttribute("loyaltyDiscount", loyaltyDiscount);
+            req.setAttribute("regularDiscount", regularDiscount);
             req.setAttribute("totalDiscount", totalDiscount);
+            req.setAttribute("finalAmount", finalAmount);
             req.setAttribute("currentDate", new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date()));
-            req.setAttribute("embedded", "true".equals(embedded));
+            req.setAttribute("embedded", embedded);
+            req.setAttribute("customerName", customerName); // Thêm customer name
 
-            // Add QR code URL as separate attribute for JavaScript
-            String qrCodeUrl = generateQRCodeURL(order.getTotalPrice(), orderId);
+            // Add QR code URL as separate attribute
+            String qrCodeUrl = generateQRCodeURL(finalAmount, orderId);
             req.setAttribute("qrCodeUrl", qrCodeUrl);
+
+            System.out.println("Bill Data Prepared:");
+            System.out.println("   Customer Name: " + customerName);
+            System.out.println("   Subtotal: " + subtotal);
+            System.out.println("   Loyalty Discount: " + loyaltyDiscount);
+            System.out.println("   Regular Discount: " + regularDiscount);
+            System.out.println("   Total Discount: " + totalDiscount);
+            System.out.println("   Final Amount: " + finalAmount);
+            System.out.println("   Database Discount: " + databaseDiscount);
 
             System.out.println("Forwarding to Bill.jsp");
 
@@ -119,7 +181,7 @@ public class BillServlet extends HttpServlet {
 
         } catch (NumberFormatException e) {
             e.printStackTrace();
-            if ("true".equals(embedded)) {
+            if (embedded) {
                 resp.setContentType("text/html;charset=UTF-8");
                 resp.getWriter().write("<div class='text-center py-8 text-red-600'>Invalid order ID</div>");
             } else {
@@ -127,7 +189,7 @@ public class BillServlet extends HttpServlet {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            if ("true".equals(embedded)) {
+            if (embedded) {
                 resp.setContentType("text/html;charset=UTF-8");
                 resp.getWriter().write("<div class='text-center py-8 text-red-600'>Error generating bill: "
                         + e.getMessage() + "</div>");
@@ -138,23 +200,25 @@ public class BillServlet extends HttpServlet {
         }
     }
 
-    // ... (giữ nguyên các method khác: doPost, processPayment, getQRCodeURL,
-    // generateQRCodeURL)
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        System.out.println("BillServlet: Processing POST request");
+        System.out.println("╔════════════════════════════════════════╗");
+        System.out.println("║         BillServlet.doPost()          ║");
+        System.out.println("╚════════════════════════════════════════╝");
 
         String action = req.getParameter("action");
         String orderIdParam = req.getParameter("orderId");
-        String embedded = req.getParameter("embedded");
+        String embeddedParam = req.getParameter("embedded");
+        boolean embedded = "true".equals(embeddedParam);
 
         System.out.println("Action: " + action);
         System.out.println("Order ID: " + orderIdParam);
+        System.out.println("Embedded: " + embedded);
 
         if (orderIdParam == null || orderIdParam.trim().isEmpty()) {
-            if ("true".equals(embedded)) {
+            if (embedded) {
                 resp.setContentType("text/html;charset=UTF-8");
                 resp.getWriter().write("error:Order ID is required");
                 return;
@@ -168,12 +232,11 @@ public class BillServlet extends HttpServlet {
             int orderId = Integer.parseInt(orderIdParam);
 
             if ("processPayment".equals(action)) {
-                processPayment(req, resp, orderId);
+                processPayment(req, resp, orderId, embedded);
             } else if ("getQRCode".equals(action)) {
-                // API endpoint to get QR code URL
                 getQRCodeURL(req, resp, orderId);
             } else {
-                if ("true".equals(embedded)) {
+                if (embedded) {
                     resp.setContentType("text/html;charset=UTF-8");
                     resp.getWriter().write("error:Invalid action");
                 } else {
@@ -183,7 +246,7 @@ public class BillServlet extends HttpServlet {
 
         } catch (NumberFormatException e) {
             e.printStackTrace();
-            if ("true".equals(embedded)) {
+            if (embedded) {
                 resp.setContentType("text/html;charset=UTF-8");
                 resp.getWriter().write("error:Invalid order ID");
             } else {
@@ -191,7 +254,7 @@ public class BillServlet extends HttpServlet {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            if ("true".equals(embedded)) {
+            if (embedded) {
                 resp.setContentType("text/html;charset=UTF-8");
                 resp.getWriter().write("error:Error processing payment: " + e.getMessage());
             } else {
@@ -201,19 +264,17 @@ public class BillServlet extends HttpServlet {
         }
     }
 
-    private void processPayment(HttpServletRequest req, HttpServletResponse resp, int orderId)
+    private void processPayment(HttpServletRequest req, HttpServletResponse resp, int orderId, boolean embedded)
             throws ServletException, IOException {
 
-        String embedded = req.getParameter("embedded");
-
-        System.out.println("Processing payment for order: " + orderId);
+        System.out.println("💰 Processing payment for order: " + orderId);
 
         try {
             PaymentDAO paymentDAO = new PaymentDAO();
             Payment payment = paymentDAO.getPaymentByOrderId(orderId);
 
             if (payment == null) {
-                if ("true".equals(embedded)) {
+                if (embedded) {
                     resp.setContentType("text/html;charset=UTF-8");
                     resp.getWriter().write("error:Payment not found");
                     return;
@@ -230,14 +291,14 @@ public class BillServlet extends HttpServlet {
             boolean paymentUpdated = paymentDAO.updatePayment(payment);
 
             if (paymentUpdated) {
-                System.out.println("✅ Payment updated successfully for order: " + orderId);
+                System.out.println("Payment updated successfully for order: " + orderId);
 
                 // Update order payment status and set order to Completed
                 OrderDAO orderDAO = new OrderDAO();
                 boolean orderUpdated = orderDAO.updateOrderStatusAndPayment(orderId, 3, "Paid");
 
                 if (orderUpdated) {
-                    System.out.println("✅ Order status and payment updated successfully for order: " + orderId);
+                    System.out.println("Order status and payment updated successfully for order: " + orderId);
 
                     // Set table to Available if order has table
                     Order order = orderDAO.getOrderById(orderId);
@@ -246,14 +307,14 @@ public class BillServlet extends HttpServlet {
                         boolean tableUpdated = tableDAO.updateTableStatus(order.getTableID(), "available");
 
                         if (tableUpdated) {
-                            System.out.println("✅ Table #" + order.getTableID() + " set to available (Order #" + orderId
+                            System.out.println("Table #" + order.getTableID() + " set to available (Order #" + orderId
                                     + " Paid & Completed)");
                         } else {
-                            System.err.println("⚠️ Failed to update table status for Table #" + order.getTableID());
+                            System.err.println("Failed to update table status for Table #" + order.getTableID());
                         }
                     }
 
-                    if ("true".equals(embedded)) {
+                    if (embedded) {
                         resp.setContentType("text/html;charset=UTF-8");
                         resp.getWriter().write("success:Payment processed successfully");
                     } else {
@@ -262,8 +323,8 @@ public class BillServlet extends HttpServlet {
                                         + "&message=Payment processed successfully");
                     }
                 } else {
-                    System.err.println("❌ Failed to update order status for order: " + orderId);
-                    if ("true".equals(embedded)) {
+                    System.err.println("Failed to update order status for order: " + orderId);
+                    if (embedded) {
                         resp.setContentType("text/html;charset=UTF-8");
                         resp.getWriter().write("error:Failed to update order status");
                     } else {
@@ -271,8 +332,8 @@ public class BillServlet extends HttpServlet {
                     }
                 }
             } else {
-                System.err.println("❌ Failed to update payment for order: " + orderId);
-                if ("true".equals(embedded)) {
+                System.err.println("Failed to update payment for order: " + orderId);
+                if (embedded) {
                     resp.setContentType("text/html;charset=UTF-8");
                     resp.getWriter().write("error:Failed to process payment");
                 } else {
@@ -281,9 +342,9 @@ public class BillServlet extends HttpServlet {
             }
 
         } catch (Exception e) {
-            System.err.println("❌ Exception processing payment for order " + orderId + ": " + e.getMessage());
+            System.err.println("Exception processing payment for order " + orderId + ": " + e.getMessage());
             e.printStackTrace();
-            if ("true".equals(embedded)) {
+            if (embedded) {
                 resp.setContentType("text/html;charset=UTF-8");
                 resp.getWriter().write("error:Error processing payment: " + e.getMessage());
             } else {
@@ -322,7 +383,7 @@ public class BillServlet extends HttpServlet {
         // Generate QR code URL with dynamic information
         String baseUrl = "https://img.vietqr.io/image/vietinbank-113366668888-compact2.jpg";
         String amountStr = String.format("%.0f", amount);
-        String addInfo = "Thanh toan order" + orderId;
+        String addInfo = "Thanh toán order " + orderId;
 
         return baseUrl + "?amount=" + amountStr +
                 "&addInfo=" + addInfo +

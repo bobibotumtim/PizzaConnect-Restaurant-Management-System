@@ -5,13 +5,48 @@
     Payment payment = (Payment) request.getAttribute("payment");
     Double subtotal = (Double) request.getAttribute("subtotal");
     Double discountAmount = (Double) request.getAttribute("discountAmount");
+    Double loyaltyDiscount = (Double) request.getAttribute("loyaltyDiscount");
+    Double regularDiscount = (Double) request.getAttribute("regularDiscount");
+    Double totalDiscount = (Double) request.getAttribute("totalDiscount");
+    Double finalAmount = (Double) request.getAttribute("finalAmount");
     List<OrderDiscount> discounts = (List<OrderDiscount>) request.getAttribute("discounts");
     String currentDate = (String) request.getAttribute("currentDate");
     Boolean embedded = (Boolean) request.getAttribute("embedded");
+    String customerName = (String) request.getAttribute("customerName");
     
     if (embedded == null) embedded = false;
     if (discounts == null) discounts = new ArrayList<>();
     if (discountAmount == null) discountAmount = 0.0;
+    if (loyaltyDiscount == null) loyaltyDiscount = 0.0;
+    if (regularDiscount == null) regularDiscount = 0.0;
+    if (totalDiscount == null) totalDiscount = 0.0;
+    if (finalAmount == null) finalAmount = order != null ? order.getTotalPrice() : 0.0;
+    if (subtotal == null) subtotal = finalAmount + totalDiscount;
+    if (customerName == null) {
+        customerName = order != null && order.getCustomerName() != null ? order.getCustomerName() : "Khách vãng lai";
+    }
+    
+    // Tính toán lại từ database discounts nếu có
+    if (discounts != null && !discounts.isEmpty()) {
+        double dbLoyaltyDiscount = 0;
+        double dbRegularDiscount = 0;
+        
+        for (OrderDiscount od : discounts) {
+            // Giả sử discount ID 3 là loyalty discount (cần điều chỉnh theo database của bạn)
+            if (od.getDiscountId() == 3) {
+                dbLoyaltyDiscount += od.getAmount();
+            } else {
+                dbRegularDiscount += od.getAmount();
+            }
+        }
+        
+        // Ưu tiên sử dụng giá trị từ database
+        if (dbLoyaltyDiscount > 0) loyaltyDiscount = dbLoyaltyDiscount;
+        if (dbRegularDiscount > 0) regularDiscount = dbRegularDiscount;
+        if (dbLoyaltyDiscount + dbRegularDiscount > 0) {
+            totalDiscount = dbLoyaltyDiscount + dbRegularDiscount;
+        }
+    }
     
     NumberFormat numberFormat = NumberFormat.getNumberInstance(new Locale("vi", "VN"));
 %>
@@ -96,6 +131,16 @@
             font-weight: bold;
             font-size: 13px;
         }
+        .discount-breakdown {
+            margin: 3px 0;
+            padding-left: 10px;
+            font-size: 10px;
+        }
+        .discount-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 1px 0;
+        }
         .qr-section {
             text-align: center;
             margin: 8px 0;
@@ -174,7 +219,7 @@
                 <span><%= currentDate %></span>
             </div>
             <div class="info-line">
-                <span>Khách hàng: <%= order.getCustomerName() != null ? order.getCustomerName() : "Khách vãng lai" %></span>
+                <span>Khách hàng: <%= customerName %></span>
             </div>
             <% if (order.getTableID() > 0) { %>
             <div class="info-line">
@@ -207,30 +252,46 @@
 
             <div class="divider"></div>
 
-            <!-- Amount Calculation với Discount -->
+            <!-- Amount Calculation with Discount Breakdown -->
             <div class="amount-section">
                 <div class="amount-line text-bold">
                     <span>Tạm tính:</span>
                     <span><%= numberFormat.format(subtotal) %></span>
                 </div>
                 
-                <!-- Hiển thị discount thay vì thuế -->
-                <% if (discountAmount > 0) { %>
+                <!-- Display discount details -->
+                <% if (totalDiscount > 0) { %>
                     <div class="amount-line">
                         <span>Giảm giá:</span>
-                        <span>-<%= numberFormat.format(discountAmount) %></span>
+                        <span>-<%= numberFormat.format(totalDiscount) %></span>
+                    </div>
+                    
+                    <!-- Display discount breakdown -->
+                    <div class="discount-breakdown">
+                        <% if (loyaltyDiscount > 0) { %>
+                        <div class="discount-item">
+                            <span>• Điểm thưởng:</span>
+                            <span>-<%= numberFormat.format(loyaltyDiscount) %></span>
+                        </div>
+                        <% } %>
+                        <% if (regularDiscount > 0) { %>
+                        <div class="discount-item">
+                            <span>• Khuyến mãi:</span>
+                            <span>-<%= numberFormat.format(regularDiscount) %></span>
+                        </div>
+                        <% } %>
                     </div>
                 <% } %>
                 
                 <div class="amount-line total-line">
                     <span>Tổng cộng:</span>
-                    <span><%= numberFormat.format(order.getTotalPrice()) %></span>
+                    <span><%= numberFormat.format(finalAmount) %></span>
                 </div>
             </div>
 
             <div class="divider"></div>
             
-            <!-- QR Code Payment Section -->
+            <!-- QR Code Payment Section with final amount -->
             <div class="qr-section">
                 <div class="text-bold" style="margin-bottom: 5px;">
                     Thanh toán bằng QR Banking
@@ -240,12 +301,12 @@
                 </div>
                 
                 <div class="qr-code">
-                    <img src="<%= payment.getQrCodeURL() != null ? payment.getQrCodeURL() : generateQRCodeURL(order.getTotalPrice(), order.getOrderID()) %>" 
+                    <img src="<%= payment != null && payment.getQrCodeURL() != null ? payment.getQrCodeURL() : generateQRCodeURL(finalAmount, order.getOrderID()) %>" 
                          alt="QR Code">
                 </div>
                 
                 <div class="text-bold" style="margin: 5px 0;">
-                    Số tiền: <%= numberFormat.format(order.getTotalPrice()) %> VND
+                    Số tiền: <%= numberFormat.format(finalAmount) %> VND
                 </div>
                 
                 <div class="payment-instruction">

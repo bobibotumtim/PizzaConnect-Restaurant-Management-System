@@ -179,19 +179,6 @@ CREATE TABLE Discount (
 );
 GO
 
-CREATE TABLE CustomerDiscount (
-    CustomerDiscountID INT IDENTITY(1,1) PRIMARY KEY,
-    CustomerID INT NOT NULL FOREIGN KEY REFERENCES Customer(CustomerID),
-    DiscountID INT NOT NULL FOREIGN KEY REFERENCES Discount(DiscountID),
-    Quantity INT DEFAULT 0,
-    ExpiryDate DATE,
-    IsUsed BIT DEFAULT 0,
-    LastEarnedDate DATETIME NULL,
-    UsedDate DATETIME NULL,
-    CONSTRAINT UK_CustomerDiscount UNIQUE (CustomerID, DiscountID)
-);
-GO
-
 CREATE TABLE OrderDiscount (
     OrderID INT FOREIGN KEY REFERENCES [Order](OrderID),
     DiscountID INT FOREIGN KEY REFERENCES Discount(DiscountID),

@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+import models.Customer;
 import models.User;
 
 public class UserDAO extends DBContext {
@@ -326,6 +327,121 @@ public class UserDAO extends DBContext {
                 dob,
                 rs.getString("Gender"),
                 rs.getBoolean("IsActive"));
+    }
+
+    public List<User> searchCustomersByPhone(String phone, int limit) {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT u.* FROM [User] u WHERE u.Role = 3 AND u.Phone LIKE ? AND u.IsActive = 1 ORDER BY u.Phone";
+        
+        try (Connection con = getConnection();
+            PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, phone + "%");
+            if (limit > 0) {
+                ps.setMaxRows(limit);
+            }
+            
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                User user = new User();
+                user.setUserID(rs.getInt("UserID"));
+                user.setName(rs.getString("Name"));
+                user.setPhone(rs.getString("Phone"));
+                user.setEmail(rs.getString("Email"));
+                user.setDateOfBirth(rs.getDate("DateOfBirth"));
+                user.setGender(rs.getString("Gender"));
+                users.add(user);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
+
+    public Customer getCustomerByUserId(int userId) {
+        String sql = """
+                    SELECT
+                        c.CustomerID, c.UserID, c.LoyaltyPoint, c.LastEarnedDate,
+                        u.Name, u.Email, u.Phone, u.DateOfBirth, u.Gender, u.IsActive
+                    FROM Customer c
+                    INNER JOIN [User] u ON c.UserID = u.UserID
+                    WHERE c.UserID = ? AND u.IsActive = 1
+                """;
+
+        try (Connection con = getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Customer customer = new Customer();
+                customer.setCustomerID(rs.getInt("CustomerID"));
+                customer.setUserID(rs.getInt("UserID"));
+                customer.setLoyaltyPoint(rs.getInt("LoyaltyPoint"));
+                customer.setLastEarnedDate(rs.getTimestamp("LastEarnedDate"));
+                customer.setName(rs.getString("Name"));
+                customer.setPhone(rs.getString("Phone"));
+                customer.setEmail(rs.getString("Email"));
+                customer.setDateOfBirth(rs.getDate("DateOfBirth"));
+                customer.setGender(rs.getString("Gender"));
+                return customer;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Customer getCustomerByCustomerId(int customerId) {
+        String sql = "SELECT c.*, u.Name, u.Phone, u.Email, u.DateOfBirth, u.Gender " +
+                    "FROM Customer c " +
+                    "JOIN [User] u ON c.UserID = u.UserID " +
+                    "WHERE c.CustomerID = ?";
+        
+        try (Connection con = getConnection();
+            PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, customerId);
+            
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Customer customer = new Customer();
+                customer.setCustomerID(rs.getInt("CustomerID"));
+                customer.setUserID(rs.getInt("UserID"));
+                customer.setLoyaltyPoint(rs.getInt("LoyaltyPoint"));
+                customer.setLastEarnedDate(rs.getTimestamp("LastEarnedDate"));
+                // Set user information
+                customer.setName(rs.getString("Name"));
+                customer.setPhone(rs.getString("Phone"));
+                customer.setEmail(rs.getString("Email"));
+                customer.setDateOfBirth(rs.getDate("DateOfBirth"));
+                customer.setGender(rs.getString("Gender"));
+                return customer;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean updateCustomerLoyaltyPoints(int customerId, int newPoints) {
+        newPoints = Math.max(0, newPoints);
+
+        String sql = "UPDATE Customer SET LoyaltyPoint = ?, LastEarnedDate = GETDATE() WHERE CustomerID = ?";
+
+        try (Connection con = getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, newPoints);
+            ps.setInt(2, customerId);
+
+            int result = ps.executeUpdate();
+            if (result > 0) {
+                System.out.println("✅ Updated loyalty points for customer " + customerId + ": " + newPoints);
+                return true;
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Error updating loyalty points for customer " + customerId + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
     }
 
     // Count users by role
