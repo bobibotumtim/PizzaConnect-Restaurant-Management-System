@@ -186,26 +186,34 @@ public class OrderDetailDAO extends DBContext {
         }
     }
     
-    // Lấy OrderDetail theo status VÀ category (for Chef specialization)
-    public List<OrderDetail> getOrderDetailsByStatusAndCategory(String status, String categoryName) {
+    // Lấy OrderDetail theo status VÀ nhiều categories (for Chef specialization)
+    public List<OrderDetail> getOrderDetailsByStatusAndCategories(String status, List<String> categoryNames) {
         List<OrderDetail> list = new ArrayList<>();
-        String sql = """
+        if (categoryNames == null || categoryNames.isEmpty()) {
+            return list;
+        }
+        
+        // Tạo placeholders cho IN clause
+        String placeholders = String.join(",", Collections.nCopies(categoryNames.size(), "?"));
+        String sql = String.format("""
             SELECT od.*, p.ProductName, ps.SizeName, ps.SizeCode, o.TableID, c.CategoryName
             FROM OrderDetail od
             LEFT JOIN ProductSize ps ON od.ProductSizeID = ps.ProductSizeID
             LEFT JOIN Product p ON ps.ProductID = p.ProductID
             LEFT JOIN Category c ON p.CategoryID = c.CategoryID
             LEFT JOIN [Order] o ON od.OrderID = o.OrderID
-            WHERE od.Status = ? AND c.CategoryName = ?
+            WHERE od.Status = ? AND c.CategoryName IN (%s)
             ORDER BY od.OrderDetailID
-        """;
+        """, placeholders);
         
         OrderDetailToppingDAO toppingDAO = new OrderDetailToppingDAO();
         
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, status);
-            ps.setString(2, categoryName);
+            for (int i = 0; i < categoryNames.size(); i++) {
+                ps.setString(i + 2, categoryNames.get(i));
+            }
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 OrderDetail d = new OrderDetail();
@@ -236,14 +244,33 @@ public class OrderDetailDAO extends DBContext {
         return list;
     }
     
-    // Map specialization to category name
-    public String mapSpecializationToCategory(String specialization) {
+    // Lấy OrderDetail theo status VÀ category (for Chef specialization) - Deprecated, dùng getOrderDetailsByStatusAndCategories
+    @Deprecated
+    public List<OrderDetail> getOrderDetailsByStatusAndCategory(String status, String categoryName) {
+        return getOrderDetailsByStatusAndCategories(status, Arrays.asList(categoryName));
+    }
+    
+    // Map specialization to category names (có thể trả về nhiều categories)
+    public List<String> mapSpecializationToCategories(String specialization) {
         if (specialization == null) return null;
         switch (specialization) {
-            case "Pizza": return "Pizza";
-            case "Drinks": return "Drink";
-            case "SideDishes": return "Side Dishes";
-            default: return null;
+            case "Pizza": 
+                return Arrays.asList("Pizza");
+            case "Drinks": 
+                // Drinks + Dessert
+                return Arrays.asList("Drink", "Dessert");
+            case "SideDishes": 
+                // Side Dishes + Appetizer
+                return Arrays.asList("Side Dishes", "Appetizer");
+            default: 
+                return null;
         }
+    }
+    
+    // Map specialization to category name - Deprecated, dùng mapSpecializationToCategories
+    @Deprecated
+    public String mapSpecializationToCategory(String specialization) {
+        List<String> categories = mapSpecializationToCategories(specialization);
+        return (categories != null && !categories.isEmpty()) ? categories.get(0) : null;
     }
 }
