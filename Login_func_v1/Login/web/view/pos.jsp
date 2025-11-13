@@ -158,6 +158,10 @@
                         <span>Subtotal:</span>
                         <span id="subtotalAmount" class="font-semibold">0đ</span>
                     </div>
+                    <div class="flex justify-between text-gray-600">
+                        <span>Tax (10%):</span>
+                        <span id="taxAmount" class="font-semibold">0đ</span>
+                    </div>
                     <div class="flex justify-between text-lg font-bold text-gray-800 pt-2 border-t">
                         <span>Total:</span>
                         <span id="totalAmount" class="text-orange-600">0đ</span>
@@ -843,6 +847,9 @@
 
         // Update totals
         function updateTotals() {
+            console.log('💰 updateTotals() called');
+            console.log('🛒 Cart:', cart);
+            
             // Calculate subtotal including toppings
             const subtotal = cart.reduce((sum, item) => {
                 // Handle toppings - can be array of objects or array of strings
@@ -855,16 +862,46 @@
                 }
                 const itemPrice = parseFloat(item.price) || 0;
                 const itemQty = parseInt(item.quantity) || 1;
-                return sum + ((itemPrice + toppingPrice) * itemQty);
+                const itemTotal = (itemPrice + toppingPrice) * itemQty;
+                
+                console.log('  Item:', item.name, '- Base:', itemPrice, '+ Toppings:', toppingPrice, '× Qty:', itemQty, '= Total:', itemTotal);
+                
+                return sum + itemTotal;
             }, 0);
             
             // Calculate tax (10%)
             const tax = subtotal * 0.1;
             const total = subtotal + tax;
             
-            document.getElementById('subtotalAmount').textContent = formatCurrency(subtotal) + 'đ';
-            document.getElementById('taxAmount').textContent = formatCurrency(tax) + 'đ';
-            document.getElementById('totalAmount').textContent = formatCurrency(total) + 'đ';
+            console.log('💰 Subtotal:', subtotal);
+            console.log('💰 Tax (10%):', tax);
+            console.log('💰 Total:', total);
+            
+            // Update UI
+            const subtotalElement = document.getElementById('subtotalAmount');
+            const taxElement = document.getElementById('taxAmount');
+            const totalElement = document.getElementById('totalAmount');
+            
+            if (subtotalElement) {
+                subtotalElement.textContent = formatCurrency(subtotal) + 'đ';
+                console.log('✅ Updated subtotalAmount');
+            } else {
+                console.error('❌ Element subtotalAmount not found!');
+            }
+            
+            if (taxElement) {
+                taxElement.textContent = formatCurrency(tax) + 'đ';
+                console.log('✅ Updated taxAmount');
+            } else {
+                console.error('❌ Element taxAmount not found!');
+            }
+            
+            if (totalElement) {
+                totalElement.textContent = formatCurrency(total) + 'đ';
+                console.log('✅ Updated totalAmount');
+            } else {
+                console.error('❌ Element totalAmount not found!');
+            }
         }
 
         // Format currency
