@@ -110,11 +110,14 @@ public class OrderDetailDAO extends DBContext {
     
     // Cập nhật status của OrderDetail
     public boolean updateOrderDetailStatus(int orderDetailId, String status, int employeeId) {
+        System.out.println("🔍 DEBUG: Updating OrderDetail #" + orderDetailId + " to status: " + status + ", EmployeeID: " + employeeId);
+        
         String sql = """
             UPDATE OrderDetail 
-            SET Status = ?, EmployeeID = ?, 
+            SET Status = ?, 
+                EmployeeID = CASE WHEN ? > 0 THEN ? ELSE EmployeeID END,
                 StartTime = CASE WHEN ? = 'Preparing' AND StartTime IS NULL THEN GETDATE() ELSE StartTime END,
-                EndTime = CASE WHEN ? IN ('Ready', 'Served') THEN GETDATE() ELSE NULL END
+                EndTime = CASE WHEN ? IN ('Ready', 'Served', 'Cancelled') THEN GETDATE() ELSE NULL END
             WHERE OrderDetailID = ?
         """;
         
@@ -122,11 +125,15 @@ public class OrderDetailDAO extends DBContext {
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, status);
             ps.setInt(2, employeeId);
-            ps.setString(3, status);
+            ps.setInt(3, employeeId);
             ps.setString(4, status);
-            ps.setInt(5, orderDetailId);
+            ps.setString(5, status);
+            ps.setInt(6, orderDetailId);
             
-            return ps.executeUpdate() > 0;
+            int rowsAffected = ps.executeUpdate();
+            System.out.println("🔍 DEBUG: OrderDetail #" + orderDetailId + " - Rows affected: " + rowsAffected);
+            
+            return rowsAffected > 0;
         } catch (Exception e) { 
             e.printStackTrace(); 
             return false;
