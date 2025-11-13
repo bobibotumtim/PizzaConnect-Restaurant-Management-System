@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.mindrot.jbcrypt.BCrypt;
 
+import models.Customer;
 import models.User;
 
 public class UserDAO extends DBContext {
@@ -14,7 +15,7 @@ public class UserDAO extends DBContext {
     public boolean isUserExists(String email) {
         String sql = "SELECT 1 FROM [User] WHERE Email = ?";
         try (Connection connection = getConnection();
-            PreparedStatement ps = connection.prepareStatement(sql)) {
+                PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next();
@@ -33,7 +34,7 @@ public class UserDAO extends DBContext {
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (Connection connection = getConnection();
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             String hashed = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
             ps.setString(1, user.getName());
             ps.setString(2, hashed);
@@ -68,7 +69,7 @@ public class UserDAO extends DBContext {
                     WHERE Phone = ? AND IsActive = 1
                 """;
         try (Connection connection = getConnection();
-            PreparedStatement ps = connection.prepareStatement(sql)) {
+                PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, Phone);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -87,7 +88,7 @@ public class UserDAO extends DBContext {
     public User getUserById(int userId) {
         String sql = "SELECT * FROM [User] WHERE UserID = ?";
         try (Connection connection = getConnection();
-            PreparedStatement ps = connection.prepareStatement(sql)) {
+                PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -105,7 +106,7 @@ public class UserDAO extends DBContext {
         List<User> list = new ArrayList<>();
         String sql = "SELECT * FROM [User]";
         try (Connection connection = getConnection();
-            PreparedStatement ps = connection.prepareStatement(sql);
+                PreparedStatement ps = connection.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(mapUser(rs));
@@ -119,8 +120,8 @@ public class UserDAO extends DBContext {
     // Update user password (expects plain text password, will hash it)
     public boolean updatePassword(int userId, String newPassword) {
         String sql = "UPDATE [User] SET Password = ? WHERE UserID = ?";
-        try ( Connection connection = getConnection();
-            PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(sql)) {
             String hashed = BCrypt.hashpw(newPassword, BCrypt.gensalt());
             ps.setString(1, hashed);
             ps.setInt(2, userId);
@@ -138,10 +139,11 @@ public class UserDAO extends DBContext {
                     SET Name=?, Password=?, Role=?, Email=?, Phone=?, DateOfBirth=?, Gender=?, IsActive=?
                     WHERE UserID=?
                 """;
-        try ( Connection connection = getConnection();
-            PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, user.getName());
-            // Hash password if it's not already hashed (BCrypt hashes start with $2a$, $2b$, or $2y$)
+            // Hash password if it's not already hashed (BCrypt hashes start with $2a$,
+            // $2b$, or $2y$)
             String password = user.getPassword();
             if (password != null && !password.startsWith("$2")) {
                 password = BCrypt.hashpw(password, BCrypt.gensalt());
@@ -168,7 +170,7 @@ public class UserDAO extends DBContext {
     // Delete user by ID
     public boolean deleteUser(int userId) {
         String sql = "DELETE FROM [User] WHERE UserID = ?";
-        try( Connection connection = getConnection()) {
+        try (Connection connection = getConnection()) {
             System.out.println("[DEBUG] Starting delete for UserID: " + userId);
 
             if (connection == null || connection.isClosed()) {
@@ -205,7 +207,7 @@ public class UserDAO extends DBContext {
 
     // Test database connection
     public boolean testConnection() {
-        try ( Connection connection = getConnection()) {
+        try (Connection connection = getConnection()) {
             if (connection == null || connection.isClosed()) {
                 System.out.println("Database connection is null or closed!");
                 return false;
@@ -238,8 +240,8 @@ public class UserDAO extends DBContext {
         }
 
         String sql = "SELECT COUNT(*) FROM [User] WHERE UserID = ?";
-        try ( Connection connection = getConnection();
-            PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -260,8 +262,8 @@ public class UserDAO extends DBContext {
     // Verify if email exists
     public boolean emailExists(String email) {
         String sql = "SELECT 1 FROM [User] WHERE Email = ?";
-        try ( Connection connection = getConnection();
-            PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next(); // if at least one record found, email exists
@@ -280,8 +282,8 @@ public class UserDAO extends DBContext {
             return false;
 
         String sql = "UPDATE [User] SET Password = ? WHERE UserID = ?";
-        try ( Connection connection = getConnection();
-            PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(sql)) {
             String hashed = BCrypt.hashpw(newPassword, BCrypt.gensalt());
             ps.setString(1, hashed);
             ps.setInt(2, userId);
@@ -295,8 +297,8 @@ public class UserDAO extends DBContext {
     // Find UserID by name, email, or phone
     public Integer findUserIdByIdentifier(String identifier) {
         String sql = "SELECT UserID FROM [User] WHERE Name = ? OR Email = ? OR Phone = ?";
-        try ( Connection connection = getConnection();
-            PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, identifier);
             ps.setString(2, identifier);
             ps.setString(3, identifier);
@@ -328,14 +330,129 @@ public class UserDAO extends DBContext {
                 rs.getBoolean("IsActive"));
     }
 
+    public List<User> searchCustomersByPhone(String phone, int limit) {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT u.* FROM [User] u WHERE u.Role = 3 AND u.Phone LIKE ? AND u.IsActive = 1 ORDER BY u.Phone";
+
+        try (Connection con = getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, phone + "%");
+            if (limit > 0) {
+                ps.setMaxRows(limit);
+            }
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                User user = new User();
+                user.setUserID(rs.getInt("UserID"));
+                user.setName(rs.getString("Name"));
+                user.setPhone(rs.getString("Phone"));
+                user.setEmail(rs.getString("Email"));
+                user.setDateOfBirth(rs.getDate("DateOfBirth"));
+                user.setGender(rs.getString("Gender"));
+                users.add(user);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
+
+    public Customer getCustomerByUserId(int userId) {
+        String sql = """
+                    SELECT
+                        c.CustomerID, c.UserID, c.LoyaltyPoint, c.LastEarnedDate,
+                        u.Name, u.Email, u.Phone, u.DateOfBirth, u.Gender, u.IsActive
+                    FROM Customer c
+                    INNER JOIN [User] u ON c.UserID = u.UserID
+                    WHERE c.UserID = ? AND u.IsActive = 1
+                """;
+
+        try (Connection con = getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Customer customer = new Customer();
+                customer.setCustomerID(rs.getInt("CustomerID"));
+                customer.setUserID(rs.getInt("UserID"));
+                customer.setLoyaltyPoint(rs.getInt("LoyaltyPoint"));
+                customer.setLastEarnedDate(rs.getTimestamp("LastEarnedDate"));
+                customer.setName(rs.getString("Name"));
+                customer.setPhone(rs.getString("Phone"));
+                customer.setEmail(rs.getString("Email"));
+                customer.setDateOfBirth(rs.getDate("DateOfBirth"));
+                customer.setGender(rs.getString("Gender"));
+                return customer;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Customer getCustomerByCustomerId(int customerId) {
+        String sql = "SELECT c.*, u.Name, u.Phone, u.Email, u.DateOfBirth, u.Gender " +
+                "FROM Customer c " +
+                "JOIN [User] u ON c.UserID = u.UserID " +
+                "WHERE c.CustomerID = ?";
+
+        try (Connection con = getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, customerId);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Customer customer = new Customer();
+                customer.setCustomerID(rs.getInt("CustomerID"));
+                customer.setUserID(rs.getInt("UserID"));
+                customer.setLoyaltyPoint(rs.getInt("LoyaltyPoint"));
+                customer.setLastEarnedDate(rs.getTimestamp("LastEarnedDate"));
+                // Set user information
+                customer.setName(rs.getString("Name"));
+                customer.setPhone(rs.getString("Phone"));
+                customer.setEmail(rs.getString("Email"));
+                customer.setDateOfBirth(rs.getDate("DateOfBirth"));
+                customer.setGender(rs.getString("Gender"));
+                return customer;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean updateCustomerLoyaltyPoints(int customerId, int newPoints) {
+        newPoints = Math.max(0, newPoints);
+
+        String sql = "UPDATE Customer SET LoyaltyPoint = ?, LastEarnedDate = GETDATE() WHERE CustomerID = ?";
+
+        try (Connection con = getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, newPoints);
+            ps.setInt(2, customerId);
+
+            int result = ps.executeUpdate();
+            if (result > 0) {
+                System.out.println("✅ Updated loyalty points for customer " + customerId + ": " + newPoints);
+                return true;
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Error updating loyalty points for customer " + customerId + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     // Count users by role
     public int countUsersByRole(int roleInt) {
         if (roleInt < 0) {
             return countAllUsers();
         }
         String sql = "SELECT COUNT(*) AS cnt FROM [User] WHERE Role = ?";
-        try ( Connection connection = getConnection();
-            PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, roleInt);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -351,8 +468,8 @@ public class UserDAO extends DBContext {
     // Count all users
     public int countAllUsers() {
         String sql = "SELECT COUNT(*) AS cnt FROM [User]";
-        try ( Connection connection = getConnection();
-            PreparedStatement ps = connection.prepareStatement(sql);
+        try (Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt("cnt");

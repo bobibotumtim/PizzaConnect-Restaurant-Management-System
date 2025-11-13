@@ -152,10 +152,6 @@
                         <span>Subtotal:</span>
                         <span id="subtotalAmount" class="font-semibold">0đ</span>
                     </div>
-                    <div class="flex justify-between text-gray-600">
-                        <span>Tax (10%):</span>
-                        <span id="taxAmount" class="font-semibold">0đ</span>
-                    </div>
                     <div class="flex justify-between text-lg font-bold text-gray-800 pt-2 border-t">
                         <span>Total:</span>
                         <span id="totalAmount" class="text-orange-600">0đ</span>

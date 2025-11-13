@@ -8,3 +8,4 @@ target/
 .vscode/
 *.log
 *.tmp
+/Login_func_v1/Login/nbproject/private/
