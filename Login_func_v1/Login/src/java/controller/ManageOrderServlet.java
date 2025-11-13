@@ -156,6 +156,8 @@ public class ManageOrderServlet extends HttpServlet {
         try {
             int orderId = Integer.parseInt(request.getParameter("id"));
             OrderDAO orderDAO = new OrderDAO();
+            dao.ProductSizeDAO productSizeDAO = new dao.ProductSizeDAO();
+            dao.OrderDetailToppingDAO toppingDAO = new dao.OrderDetailToppingDAO();
             ProductDAO productDAO = new ProductDAO();
             
             Order order = orderDAO.getOrderById(orderId);
@@ -173,21 +175,66 @@ public class ManageOrderServlet extends HttpServlet {
             json.append("\"customerID\": ").append(order.getCustomerID()).append(",");
             json.append("\"tableID\": ").append(order.getTableID()).append(",");
             json.append("\"status\": ").append(order.getStatus()).append(",");
-            json.append("\"paymentStatus\": \"").append(order.getPaymentStatus()).append("\",");
+            json.append("\"paymentStatus\": \"").append(escapeJson(order.getPaymentStatus())).append("\",");
             json.append("\"totalPrice\": ").append(order.getTotalPrice()).append(",");
-            json.append("\"note\": \"").append(order.getNote() != null ? order.getNote().replace("\"", "\\\"") : "").append("\"");
+            json.append("\"note\": \"").append(escapeJson(order.getNote())).append("\"");
             json.append("}, \"details\": [");
             
             for (int i = 0; i < details.size(); i++) {
                 OrderDetail detail = details.get(i);
-                String productName = "";
-                //String productName = productDAO.getProductById(detail.getProductID()).getProductName();
+                
+                // Get product name and size from ProductSize
+                String productName = "Unknown";
+                String sizeName = "";
+                double basePrice = 0;
+                
+                if (detail.getProductSizeID() > 0) {
+                    models.ProductSize productSize = productSizeDAO.getProductSizeById(detail.getProductSizeID());
+                    if (productSize != null) {
+                        basePrice = productSize.getPrice();
+                        
+                        // Get size name from size code
+                        String sizeCode = productSize.getSizeCode();
+                        switch (sizeCode) {
+                            case "S": sizeName = "Small"; break;
+                            case "M": sizeName = "Medium"; break;
+                            case "L": sizeName = "Large"; break;
+                            case "F": sizeName = "Fixed"; break;
+                            default: sizeName = sizeCode; break;
+                        }
+                        
+                        // Get product name from Product table
+                        models.Product product = productDAO.getProductById(productSize.getProductId());
+                        if (product != null) {
+                            productName = product.getProductName();
+                        }
+                    }
+                }
+                
+                // Get toppings for this order detail
+                List<models.OrderDetailTopping> toppings = toppingDAO.getToppingsByOrderDetailID(detail.getOrderDetailID());
                 
                 if (i > 0) json.append(",");
                 json.append("{");
-                json.append("\"productName\": \"").append(productName).append("\",");
+                json.append("\"orderDetailID\": ").append(detail.getOrderDetailID()).append(",");
+                json.append("\"productName\": \"").append(escapeJson(productName)).append("\",");
+                json.append("\"sizeName\": \"").append(escapeJson(sizeName)).append("\",");
+                json.append("\"basePrice\": ").append(basePrice).append(",");
                 json.append("\"quantity\": ").append(detail.getQuantity()).append(",");
-                json.append("\"totalPrice\": ").append(detail.getTotalPrice());
+                json.append("\"totalPrice\": ").append(detail.getTotalPrice()).append(",");
+                
+                // Add toppings array
+                json.append("\"toppings\": [");
+                for (int j = 0; j < toppings.size(); j++) {
+                    models.OrderDetailTopping topping = toppings.get(j);
+                    if (j > 0) json.append(",");
+                    json.append("{");
+                    json.append("\"toppingName\": \"").append(escapeJson(topping.getToppingName())).append("\",");
+                    json.append("\"price\": ").append(topping.getToppingPrice());
+                    json.append("}");
+                }
+                json.append("]");
+                
                 json.append("}");
             }
             
@@ -196,8 +243,17 @@ public class ManageOrderServlet extends HttpServlet {
             
         } catch (Exception e) {
             e.printStackTrace();
-            response.getWriter().write("{\"success\": false, \"message\": \"" + e.getMessage() + "\"}");
+            response.getWriter().write("{\"success\": false, \"message\": \"" + escapeJson(e.getMessage()) + "\"}");
         }
+    }
+    
+    private String escapeJson(String str) {
+        if (str == null) return "";
+        return str.replace("\\", "\\\\")
+                 .replace("\"", "\\\"")
+                 .replace("\n", "\\n")
+                 .replace("\r", "\\r")
+                 .replace("\t", "\\t");
     }
 
     private void handleUpdateStatus(HttpServletRequest request, HttpServletResponse response, OrderDAO orderDAO)
