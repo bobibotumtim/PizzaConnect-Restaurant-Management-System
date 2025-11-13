@@ -295,6 +295,7 @@ public class BillServlet extends HttpServlet {
 
                 // Update order payment status and set order to Completed
                 OrderDAO orderDAO = new OrderDAO();
+<<<<<<< HEAD
                 boolean orderUpdated = orderDAO.updateOrderStatusAndPayment(orderId, 3, "Paid");
 
                 if (orderUpdated) {
@@ -330,6 +331,18 @@ public class BillServlet extends HttpServlet {
                     } else {
                         resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to update order status");
                     }
+=======
+                orderDAO.updatePaymentStatus(orderId, "Paid");
+                orderDAO.autoUpdateOrderStatusIfAllServed(orderId);
+
+                // Kiểm tra xem có nên hiển thị feedback prompt không
+                if (shouldShowFeedbackPrompt(orderId)) {
+                    // Redirect đến feedback prompt thay vì bill page
+                    resp.sendRedirect(req.getContextPath() + "/feedback-prompt?orderId=" + orderId);
+                } else {
+                    // Nếu đã có feedback, redirect về home
+                    resp.sendRedirect(req.getContextPath() + "/home?message=Payment processed successfully");
+>>>>>>> thong_copymainv06
                 }
             } else {
                 System.err.println("Failed to update payment for order: " + orderId);
@@ -351,6 +364,22 @@ public class BillServlet extends HttpServlet {
                 resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                         "Error processing payment: " + e.getMessage());
             }
+        }
+    }
+
+    /**
+     * Kiểm tra xem có nên hiển thị feedback prompt không
+     * @param orderId ID của order
+     * @return true nếu chưa có feedback, false nếu đã có
+     */
+    private boolean shouldShowFeedbackPrompt(int orderId) {
+        try {
+            CustomerFeedbackDAO feedbackDAO = new CustomerFeedbackDAO();
+            return !feedbackDAO.hasFeedbackForOrder(orderId);
+        } catch (Exception e) {
+            System.err.println("Error checking feedback for order " + orderId + ": " + e.getMessage());
+            // Nếu có lỗi, vẫn cho hiển thị feedback prompt
+            return true;
         }
     }
 
