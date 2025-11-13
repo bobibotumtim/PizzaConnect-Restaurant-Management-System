@@ -77,6 +77,16 @@ String userName = currentUser.getName(); %>
         </a>
 
         <a
+          href="${pageContext.request.contextPath}/inventorymonitor"
+          class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition"
+        >
+          <div class="min-w-[2.5rem] flex justify-center">
+            <i data-lucide="package" class="w-6 h-6"></i>
+          </div>
+          <span class="sidebar-text ml-3">Inventory Monitor</span>
+        </a>
+
+        <a
           href="${pageContext.request.contextPath}/sales-reports"
           class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition"
         >
@@ -87,13 +97,13 @@ String userName = currentUser.getName(); %>
         </a>
 
         <a
-          href="${pageContext.request.contextPath}/profile"
+          href="${pageContext.request.contextPath}/manager-users"
           class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition"
         >
           <div class="min-w-[2.5rem] flex justify-center">
-            <i data-lucide="user-circle" class="w-6 h-6"></i>
+            <i data-lucide="users" class="w-6 h-6"></i>
           </div>
-          <span class="sidebar-text ml-3">Edit Profile</span>
+          <span class="sidebar-text ml-3">User Management</span>
         </a>
 
         <a
@@ -213,6 +223,41 @@ String userName = currentUser.getName(); %>
             </div>
           </div>
 
+          <!-- Inventory Monitor Card -->
+          <div
+            class="dashboard-card bg-white rounded-2xl shadow-xl overflow-hidden"
+            onclick="window.location.href='${pageContext.request.contextPath}/inventory-monitor'"
+          >
+            <div class="p-8">
+              <div
+                class="icon-container w-20 h-20 rounded-2xl flex items-center justify-center mb-6 shadow-lg"
+              >
+                <i data-lucide="package" class="w-10 h-10 text-white"></i>
+              </div>
+              <div class="mb-2">
+                <span
+                  class="text-sm font-semibold text-orange-500 uppercase tracking-wide"
+                  >Inventory</span
+                >
+              </div>
+              <h3 class="text-2xl font-bold text-gray-800 mb-3">
+                Inventory Monitor
+              </h3>
+              <p class="text-gray-600 leading-relaxed">
+                Monitor inventory levels, track stock warnings, and manage
+                critical items that need attention.
+              </p>
+            </div>
+            <div
+              class="bg-gradient-to-r from-orange-50 to-orange-100 px-8 py-4 flex items-center justify-between"
+            >
+              <span class="text-sm font-medium text-orange-600"
+                >View Monitor</span
+              >
+              <i data-lucide="arrow-right" class="w-5 h-5 text-orange-600"></i>
+            </div>
+          </div>
+
           <!-- Customer Feedback Card -->
           <div
             class="dashboard-card bg-white rounded-2xl shadow-xl overflow-hidden"
@@ -257,7 +302,7 @@ String userName = currentUser.getName(); %>
           <div
             class="bg-white bg-opacity-20 backdrop-blur-lg rounded-xl p-6 text-center"
           >
-            <div class="text-3xl font-bold text-white mb-1">3</div>
+            <div class="text-3xl font-bold text-white mb-1">4</div>
             <div class="text-white text-opacity-80 text-sm">
               Available Features
             </div>
