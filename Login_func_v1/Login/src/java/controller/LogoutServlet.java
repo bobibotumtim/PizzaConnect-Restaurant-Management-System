@@ -18,13 +18,12 @@ public class LogoutServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
 
         if (session != null) {
-            // Xóa toàn bộ thông tin user trong session
-            session.removeAttribute("user");
+            // Xóa toàn bộ session
             session.invalidate();
         }
 
-        // Chuyển hướng về trang login hoặc trang chủ tùy bạn
-        response.sendRedirect("view/Home.jsp");
+        // Redirect về homepage servlet (không phải JSP trực tiếp)
+        response.sendRedirect(request.getContextPath() + "/home");
     }
 
     @Override

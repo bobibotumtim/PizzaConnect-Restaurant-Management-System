@@ -9,6 +9,10 @@
     Map<Product, List<ProductSize>> featuredProducts = 
         (Map<Product, List<ProductSize>>) request.getAttribute("featuredProducts");
     
+    // Check if user is logged in
+    User homeUser = (User) session.getAttribute("user");
+    boolean isLoggedIn = (homeUser != null);
+    
     // Format currency
     NumberFormat currencyFormat = NumberFormat.getInstance(new Locale("vi", "VN"));
 %>
@@ -77,17 +81,101 @@
             transform: translateY(-8px);
             box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
         }
+        
+        /* Public Header Styles */
+        .public-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: white;
+            border-bottom: 3px solid #f97316;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .public-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #f97316;
+            text-decoration: none;
+        }
+        
+        .public-logo:hover {
+            color: #ea580c;
+        }
+        
+        .public-nav {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+        
+        .public-nav a {
+            color: #374151;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color 0.2s;
+        }
+        
+        .public-nav a:hover {
+            color: #f97316;
+        }
+        
+        .public-login-btn {
+            background: #f97316;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        
+        .public-login-btn:hover {
+            background: #ea580c;
+            color: white;
+        }
+        
+        .public-content {
+            margin-top: 70px;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
-    <%@ include file="Sidebar.jsp" %>
-    <%@ include file="NavBar.jsp" %>
-    <%@ include file="ChatBotWidget.jsp" %>
+    <% if (isLoggedIn) { %>
+        <%@ include file="Sidebar.jsp" %>
+        <%@ include file="NavBar.jsp" %>
+        <%@ include file="ChatBotWidget.jsp" %>
+    <% } else { %>
+        <!-- Public Header -->
+        <div class="public-header">
+            <a href="<%= request.getContextPath() %>/home" class="public-logo">
+                <span>🍕</span>
+                <span>PizzaConnect</span>
+            </a>
+            <div class="public-nav">
+                <a href="<%= request.getContextPath() %>/home">Home</a>
+                <a href="<%= request.getContextPath() %>/customer-menu">Menu</a>
+                <a href="<%= request.getContextPath() %>/view/Login.jsp" class="public-login-btn">Login</a>
+            </div>
+        </div>
+    <% } %>
     
-    <div class="content-wrapper">
+    <div class="<%= isLoggedIn ? "content-wrapper" : "public-content" %>">
         <div class="max-w-7xl mx-auto px-6 py-8">
             
-            <!-- Hero Carousel -->
+            <!-- Hero Carousel (Only show for guests) -->
+            <% if (!isLoggedIn) { %>
             <div class="carousel mb-12">
                 <div class="carousel-inner" id="carouselInner">
                     <!-- Slide 1 -->
@@ -131,6 +219,7 @@
                     <div class="carousel-dot" onclick="goToSlide(2)"></div>
                 </div>
             </div>
+            <% } %>
             
             <!-- Featured Products -->
             <div id="products" class="mb-12">
@@ -205,16 +294,11 @@
 %>
                                 </div>
                             </div>
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <span class="text-xs text-gray-500">From</span>
-                                    <span class="text-2xl font-bold text-orange-600 block">
-                                        <%= currencyFormat.format(minPrice) %>₫
-                                    </span>
-                                </div>
-                                <button class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-all">
-                                    Order
-                                </button>
+                            <div class="text-center">
+                                <span class="text-xs text-gray-500 block mb-1">From</span>
+                                <span class="text-2xl font-bold text-orange-600">
+                                    <%= currencyFormat.format(minPrice) %>₫
+                                </span>
                             </div>
                         </div>
                     </div>

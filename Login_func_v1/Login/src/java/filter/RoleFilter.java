@@ -20,6 +20,12 @@ public class RoleFilter implements Filter {
         HttpSession session = req.getSession(false);
         User user = (session != null) ? (User) session.getAttribute("user") : null;
         
+        // Public pages - accessible by everyone (guest, customer, employee, admin)
+        if (isPublicPage(path)) {
+            chain.doFilter(request, response);
+            return;
+        }
+        
         // Admin-only pages (Role 1)
         if (isAdminOnlyPage(path)) {
             if (user == null || user.getRole() != 1) {
@@ -37,6 +43,24 @@ public class RoleFilter implements Filter {
         }
         
         chain.doFilter(request, response);
+    }
+    
+    private boolean isPublicPage(String path) {
+        // Public pages - accessible by everyone without authentication
+        return path.contains("/home") ||
+               path.contains("/customer-menu") ||
+               path.contains("/login") ||
+               path.contains("/Login") ||
+               path.contains("/forgot-password") ||
+               path.contains("/verifyCode") ||
+               path.contains("/view/Login") ||
+               path.contains("/view/Home") ||
+               path.endsWith(".css") ||
+               path.endsWith(".js") ||
+               path.endsWith(".jpg") ||
+               path.endsWith(".png") ||
+               path.endsWith(".gif") ||
+               path.endsWith(".ico");
     }
     
     private boolean isAdminOnlyPage(String path) {

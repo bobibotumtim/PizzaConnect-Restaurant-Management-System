@@ -137,7 +137,7 @@
         </div>
         <% } %>
         
-        <a href="<%= navbarContextPath %>/Login?action=logout" class="navbar-logout-btn">
+        <a href="<%= navbarContextPath %>/logout" class="navbar-logout-btn">
             <span>&#128682;</span>
             <span>Logout</span>
         </a>

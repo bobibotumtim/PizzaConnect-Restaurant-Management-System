@@ -9,6 +9,10 @@
     List<Category> categories = (List<Category>) request.getAttribute("categories");
     String selectedCategory = (String) request.getAttribute("selectedCategory");
     
+    // Check if user is logged in
+    User menuUser = (User) session.getAttribute("user");
+    boolean isMenuLoggedIn = (menuUser != null);
+    
     // Format currency
     NumberFormat currencyFormat = NumberFormat.getInstance(new Locale("vi", "VN"));
 %>
@@ -37,14 +41,97 @@
         .size-badge:hover {
             transform: scale(1.05);
         }
+        
+        /* Public Header Styles */
+        .public-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: white;
+            border-bottom: 3px solid #f97316;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .public-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #f97316;
+            text-decoration: none;
+        }
+        
+        .public-logo:hover {
+            color: #ea580c;
+        }
+        
+        .public-nav {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+        
+        .public-nav a {
+            color: #374151;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 16px;
+            transition: color 0.2s;
+        }
+        
+        .public-nav a:hover {
+            color: #f97316;
+        }
+        
+        .public-login-btn {
+            background: #f97316;
+            color: white;
+            padding: 10px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        
+        .public-login-btn:hover {
+            background: #ea580c;
+            color: white;
+        }
+        
+        .public-content {
+            margin-top: 70px;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
-    <%@ include file="Sidebar.jsp" %>
-    <%@ include file="NavBar.jsp" %>
-    <%@ include file="ChatBotWidget.jsp" %>
+    <% if (isMenuLoggedIn) { %>
+        <%@ include file="Sidebar.jsp" %>
+        <%@ include file="NavBar.jsp" %>
+        <%@ include file="ChatBotWidget.jsp" %>
+    <% } else { %>
+        <!-- Public Header -->
+        <div class="public-header">
+            <a href="<%= request.getContextPath() %>/home" class="public-logo">
+                <span>🍕</span>
+                <span>PizzaConnect</span>
+            </a>
+            <div class="public-nav">
+                <a href="<%= request.getContextPath() %>/home">Home</a>
+                <a href="<%= request.getContextPath() %>/customer-menu">Menu</a>
+                <a href="<%= request.getContextPath() %>/view/Login.jsp" class="public-login-btn">Login</a>
+            </div>
+        </div>
+    <% } %>
     
-    <div class="content-wrapper">
+    <div class="<%= isMenuLoggedIn ? "content-wrapper" : "public-content" %>">
         <div class="max-w-7xl mx-auto px-6 py-8">
             
             <!-- Header -->
