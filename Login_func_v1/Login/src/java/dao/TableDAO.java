@@ -378,6 +378,10 @@ public class TableDAO extends DBContext {
                 t.Capacity,
                 t.[Status] AS TableStatus,
                 t.IsActive,
+                t.IsLocked,
+                t.LockedReason,
+                t.LockedBy,
+                t.LockedAt,
                 COUNT(o.OrderID) AS ActiveOrderCount,
                 CASE 
                     WHEN t.[Status] = 'unavailable' THEN 'unavailable'
@@ -387,7 +391,7 @@ public class TableDAO extends DBContext {
             FROM [Table] t
             LEFT JOIN [Order] o ON t.TableID = o.TableID AND o.[Status] < 3
             WHERE t.IsActive = 1
-            GROUP BY t.TableID, t.TableNumber, t.Capacity, t.[Status], t.IsActive
+            GROUP BY t.TableID, t.TableNumber, t.Capacity, t.[Status], t.IsActive, t.IsLocked, t.LockedReason, t.LockedBy, t.LockedAt
             ORDER BY t.TableNumber
         """;
 
@@ -403,17 +407,139 @@ public class TableDAO extends DBContext {
                 // Use ActualStatus instead of TableStatus for display
                 table.setStatus(rs.getString("ActualStatus"));
                 table.setActive(rs.getBoolean("IsActive"));
+                table.setLocked(rs.getBoolean("IsLocked"));
+                table.setLockedReason(rs.getString("LockedReason"));
+                
+                Integer lockedBy = rs.getInt("LockedBy");
+                table.setLockedBy(rs.wasNull() ? null : lockedBy);
+                
+                Timestamp lockedAt = rs.getTimestamp("LockedAt");
+                table.setLockedAt(lockedAt);
+                
                 tables.add(table);
                 
                 // Debug log
                 LOGGER.info("Table " + table.getTableNumber() + 
                            " - DB Status: " + rs.getString("TableStatus") + 
                            " - Actual Status: " + rs.getString("ActualStatus") +
-                           " - Active Orders: " + rs.getInt("ActiveOrderCount"));
+                           " - Active Orders: " + rs.getInt("ActiveOrderCount") +
+                           " - Locked: " + table.isLocked());
             }
         } catch (SQLException e) {
             LOGGER.severe("Error fetching active tables with status: " + e.getMessage());
             e.printStackTrace();
+        }
+        return tables;
+    }
+
+    /**
+     * 🔒 Lock a table (for table merging)
+     * @param tableID ID of table to lock
+     * @param reason Reason for locking (e.g., "Ghép với bàn T01")
+     * @param employeeID ID of waiter who locked the table
+     * @return true if successful
+     */
+    public boolean lockTable(int tableID, String reason, int employeeID) {
+        String sql = "UPDATE [Table] SET IsLocked = 1, LockedReason = ?, LockedBy = ?, LockedAt = GETDATE() WHERE TableID = ?";
+        
+        try (Connection connection = getConnection();
+                PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, reason);
+            stmt.setInt(2, employeeID);
+            stmt.setInt(3, tableID);
+            
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                LOGGER.info("✅ Table locked: ID " + tableID + " by Employee " + employeeID + " - Reason: " + reason);
+                return true;
+            }
+            return false;
+        } catch (SQLException e) {
+            LOGGER.severe("❌ Error locking table: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * 🔓 Unlock a table
+     * @param tableID ID of table to unlock
+     * @return true if successful
+     */
+    public boolean unlockTable(int tableID) {
+        String sql = "UPDATE [Table] SET IsLocked = 0, LockedReason = NULL, LockedBy = NULL, LockedAt = NULL WHERE TableID = ?";
+        
+        try (Connection connection = getConnection();
+                PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, tableID);
+            
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                LOGGER.info("✅ Table unlocked: ID " + tableID);
+                return true;
+            }
+            return false;
+        } catch (SQLException e) {
+            LOGGER.severe("❌ Error unlocking table: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Check if a table is locked
+     * @param tableID ID of table to check
+     * @return true if locked
+     */
+    public boolean isTableLocked(int tableID) {
+        String sql = "SELECT IsLocked FROM [Table] WHERE TableID = ?";
+        
+        try (Connection connection = getConnection();
+                PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, tableID);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getBoolean("IsLocked");
+            }
+        } catch (SQLException e) {
+            LOGGER.severe("Error checking if table is locked: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
+     * Get all locked tables
+     * @return List of locked tables
+     */
+    public List<Table> getLockedTables() {
+        List<Table> tables = new ArrayList<>();
+        String sql = """
+            SELECT t.*, e.UserID, u.Name as LockedByName
+            FROM [Table] t
+            LEFT JOIN Employee e ON t.LockedBy = e.EmployeeID
+            LEFT JOIN [User] u ON e.UserID = u.UserID
+            WHERE t.IsLocked = 1 AND t.IsActive = 1
+            ORDER BY t.LockedAt DESC
+        """;
+
+        try (Connection connection = getConnection();
+                PreparedStatement stmt = connection.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Table table = new Table();
+                table.setTableID(rs.getInt("TableID"));
+                table.setTableNumber(rs.getString("TableNumber"));
+                table.setCapacity(rs.getInt("Capacity"));
+                table.setStatus(rs.getString("Status"));
+                table.setActive(rs.getBoolean("IsActive"));
+                table.setLocked(rs.getBoolean("IsLocked"));
+                table.setLockedReason(rs.getString("LockedReason"));
+                table.setLockedBy(rs.getInt("LockedBy"));
+                table.setLockedAt(rs.getTimestamp("LockedAt"));
+                tables.add(table);
+            }
+        } catch (SQLException e) {
+            LOGGER.severe("Error fetching locked tables: " + e.getMessage());
         }
         return tables;
     }

@@ -113,7 +113,13 @@ CREATE TABLE [Table] (
     TableNumber NVARCHAR(10) NOT NULL UNIQUE,
     Capacity INT NOT NULL CHECK (Capacity > 0),
     [Status] NVARCHAR(20) DEFAULT 'available' CHECK ([Status] IN ('available', 'unavailable')),
-    IsActive BIT DEFAULT 1
+    IsActive BIT DEFAULT 1,
+    -- 🔒 Table Lock Feature
+    IsLocked BIT NOT NULL DEFAULT 0,
+    LockedReason NVARCHAR(255) NULL,
+    LockedBy INT NULL,
+    LockedAt DATETIME NULL,
+    CONSTRAINT FK_Table_LockedBy FOREIGN KEY (LockedBy) REFERENCES Employee(EmployeeID)
 );
 GO
 
