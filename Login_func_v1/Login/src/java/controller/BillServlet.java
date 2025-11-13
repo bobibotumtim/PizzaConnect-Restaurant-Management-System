@@ -181,10 +181,17 @@ public class BillServlet extends HttpServlet {
             if (updated) {
                 // Update order payment status
                 OrderDAO orderDAO = new OrderDAO();
+                orderDAO.updatePaymentStatus(orderId, "Paid");
                 orderDAO.autoUpdateOrderStatusIfAllServed(orderId);
 
-                resp.sendRedirect(
-                        req.getContextPath() + "/bill?orderId=" + orderId + "&message=Payment processed successfully");
+                // Kiểm tra xem có nên hiển thị feedback prompt không
+                if (shouldShowFeedbackPrompt(orderId)) {
+                    // Redirect đến feedback prompt thay vì bill page
+                    resp.sendRedirect(req.getContextPath() + "/feedback-prompt?orderId=" + orderId);
+                } else {
+                    // Nếu đã có feedback, redirect về home
+                    resp.sendRedirect(req.getContextPath() + "/home?message=Payment processed successfully");
+                }
             } else {
                 resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to process payment");
             }
@@ -192,6 +199,22 @@ public class BillServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error processing payment");
+        }
+    }
+
+    /**
+     * Kiểm tra xem có nên hiển thị feedback prompt không
+     * @param orderId ID của order
+     * @return true nếu chưa có feedback, false nếu đã có
+     */
+    private boolean shouldShowFeedbackPrompt(int orderId) {
+        try {
+            CustomerFeedbackDAO feedbackDAO = new CustomerFeedbackDAO();
+            return !feedbackDAO.hasFeedbackForOrder(orderId);
+        } catch (Exception e) {
+            System.err.println("Error checking feedback for order " + orderId + ": " + e.getMessage());
+            // Nếu có lỗi, vẫn cho hiển thị feedback prompt
+            return true;
         }
     }
 

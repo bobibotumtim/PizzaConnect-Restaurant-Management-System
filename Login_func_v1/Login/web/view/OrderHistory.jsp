@@ -2,6 +2,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="models.Order" %>
 <%@ page import="models.User" %>
+<%@ page import="dao.CustomerFeedbackDAO" %>
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -247,6 +248,54 @@
                                     </div>
                                 <% } %>
                             </div>
+
+                            <!-- Feedback Section -->
+                            <% if (order.getStatus() == 3 && "Paid".equals(paymentStatus)) { 
+                                // Check if feedback exists for this order
+                                dao.CustomerFeedbackDAO feedbackDAO = new dao.CustomerFeedbackDAO();
+                                boolean hasFeedback = feedbackDAO.hasFeedbackForOrder(order.getOrderID());
+                                
+                                if (!hasFeedback) { %>
+                                    <div class="px-6 py-4 bg-gradient-to-r from-yellow-50 to-orange-50 border-t border-orange-100">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-3">
+                                                <div class="text-2xl">⭐</div>
+                                                <div>
+                                                    <div class="font-semibold text-gray-900">How was your experience?</div>
+                                                    <div class="text-sm text-gray-600">Share your feedback with us</div>
+                                                </div>
+                                            </div>
+                                            <a href="${pageContext.request.contextPath}/simple-feedback?orderId=<%= order.getOrderID() %>" 
+                                               class="inline-flex items-center gap-2 bg-orange-500 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-orange-600 transition-all shadow-md hover:shadow-lg">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                                </svg>
+                                                Provide Feedback
+                                            </a>
+                                        </div>
+                                    </div>
+                                <% } else { %>
+                                    <div class="px-6 py-4 bg-gradient-to-r from-green-50 to-emerald-50 border-t border-green-100">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-3">
+                                                <div class="text-2xl">✅</div>
+                                                <div>
+                                                    <div class="font-semibold text-green-900">Feedback Submitted</div>
+                                                    <div class="text-sm text-green-700">Thank you for your feedback!</div>
+                                                </div>
+                                            </div>
+                                            <a href="${pageContext.request.contextPath}/feedback-form?orderId=<%= order.getOrderID() %>" 
+                                               class="inline-flex items-center gap-2 bg-green-600 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-green-700 transition-all shadow-md">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                                View Feedback
+                                            </a>
+                                        </div>
+                                    </div>
+                                <% } %>
+                            <% } %>
                         </div>
                     <% } %>
                     <% } %>

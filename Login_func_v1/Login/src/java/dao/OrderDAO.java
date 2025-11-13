@@ -1338,4 +1338,202 @@ public class OrderDAO extends DBContext {
         System.out.println("✅ Loaded " + orders.size() + " orders for customer #" + customerId + " (page " + page + ")");
         return orders;
     }
+
+    // ===== FEEDBACK CONTEXT HELPER METHODS =====
+
+    /**
+     * Lấy thông tin order với customer details cho feedback context
+     * @param orderId ID của order
+     * @return Map chứa thông tin order và customer, hoặc null nếu không tìm thấy
+     */
+    public Map<String, Object> getOrderDetailsForFeedback(int orderId) {
+        String sql = """
+            SELECT 
+                o.OrderID, o.CustomerID, o.OrderDate, o.TotalPrice, o.Status, o.PaymentStatus,
+                c.CustomerID, u.UserID, u.Name as CustomerName, u.Email, u.Phone
+            FROM [Order] o
+            LEFT JOIN Customer c ON o.CustomerID = c.CustomerID
+            LEFT JOIN [User] u ON c.UserID = u.UserID
+            WHERE o.OrderID = ?
+        """;
+        
+        try (Connection con = useConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setInt(1, orderId);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Map<String, Object> orderInfo = new HashMap<>();
+                    
+                    // Order information
+                    orderInfo.put("orderId", rs.getInt("OrderID"));
+                    orderInfo.put("customerID", rs.getInt("CustomerID"));
+                    orderInfo.put("orderDate", rs.getTimestamp("OrderDate"));
+                    orderInfo.put("totalPrice", rs.getDouble("TotalPrice"));
+                    orderInfo.put("status", rs.getInt("Status"));
+                    orderInfo.put("paymentStatus", rs.getString("PaymentStatus"));
+                    
+                    // Customer information
+                    String customerName = rs.getString("CustomerName");
+                    if (customerName != null && !customerName.isEmpty()) {
+                        orderInfo.put("customerName", customerName);
+                        orderInfo.put("email", rs.getString("Email"));
+                        orderInfo.put("phone", rs.getString("Phone"));
+                        orderInfo.put("isGuest", false);
+                    } else {
+                        // Guest customer
+                        orderInfo.put("customerName", "Guest Customer");
+                        orderInfo.put("customerId", "GUEST_" + orderId);
+                        orderInfo.put("isGuest", true);
+                    }
+                    
+                    return orderInfo;
+                }
+            }
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error getting order details for feedback: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+
+    /**
+     * Lấy danh sách tên món ăn trong order (để hiển thị trong feedback form)
+     * @param orderId ID của order
+     * @return String chứa danh sách tên món, cách nhau bởi dấu phẩy
+     */
+    public String getOrderItemsSummary(int orderId) {
+        String sql = """
+            SELECT 
+                p.ProductName, 
+                ps.SizeName,
+                od.Quantity
+            FROM OrderDetail od
+            LEFT JOIN ProductSize ps ON od.ProductSizeID = ps.ProductSizeID
+            LEFT JOIN Product p ON ps.ProductID = p.ProductID
+            WHERE od.OrderID = ?
+            ORDER BY od.OrderDetailID
+        """;
+        
+        StringBuilder summary = new StringBuilder();
+        
+        try (Connection con = useConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setInt(1, orderId);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                boolean first = true;
+                while (rs.next()) {
+                    if (!first) {
+                        summary.append(", ");
+                    }
+                    
+                    String productName = rs.getString("ProductName");
+                    String sizeName = rs.getString("SizeName");
+                    int quantity = rs.getInt("Quantity");
+                    
+                    summary.append(quantity).append("x ");
+                    if (productName != null) {
+                        summary.append(productName);
+                    }
+                    if (sizeName != null && !sizeName.isEmpty()) {
+                        summary.append(" (").append(sizeName).append(")");
+                    }
+                    
+                    first = false;
+                }
+            }
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error getting order items summary: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return summary.length() > 0 ? summary.toString() : "No items";
+    }
+
+    /**
+     * Lấy thông tin customer từ order (hỗ trợ cả logged-in và guest customers)
+     * @param orderId ID của order
+     * @return Map chứa thông tin customer
+     */
+    public Map<String, Object> getCustomerInfoFromOrder(int orderId) {
+        String sql = """
+            SELECT 
+                o.CustomerID, o.OrderID,
+                c.CustomerID, u.UserID, u.Name, u.Email, u.Phone
+            FROM [Order] o
+            LEFT JOIN Customer c ON o.CustomerID = c.CustomerID
+            LEFT JOIN [User] u ON c.UserID = u.UserID
+            WHERE o.OrderID = ?
+        """;
+        
+        try (Connection con = useConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setInt(1, orderId);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Map<String, Object> customerInfo = new HashMap<>();
+                    
+                    String userName = rs.getString("Name");
+                    
+                    if (userName != null && !userName.isEmpty()) {
+                        // Logged-in customer
+                        customerInfo.put("customerId", String.valueOf(rs.getInt("CustomerID")));
+                        customerInfo.put("customerName", userName);
+                        customerInfo.put("email", rs.getString("Email"));
+                        customerInfo.put("phone", rs.getString("Phone"));
+                        customerInfo.put("isGuest", false);
+                    } else {
+                        // Guest customer
+                        customerInfo.put("customerId", "GUEST_" + orderId);
+                        customerInfo.put("customerName", "Guest Customer");
+                        customerInfo.put("isGuest", true);
+                    }
+                    
+                    return customerInfo;
+                }
+            }
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error getting customer info from order: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return null;
+    }
+
+    /**
+     * Kiểm tra xem order có tồn tại và đã thanh toán chưa
+     * @param orderId ID của order
+     * @return true nếu order tồn tại và đã thanh toán
+     */
+    public boolean isOrderPaid(int orderId) {
+        String sql = "SELECT PaymentStatus FROM [Order] WHERE OrderID = ?";
+        
+        try (Connection con = useConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setInt(1, orderId);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String paymentStatus = rs.getString("PaymentStatus");
+                    return "Paid".equalsIgnoreCase(paymentStatus);
+                }
+            }
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error checking order payment status: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return false;
+    }
 }

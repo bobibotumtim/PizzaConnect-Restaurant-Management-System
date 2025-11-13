@@ -175,8 +175,16 @@
                             </div>
                             
                             <!-- Comment -->
-                            <div class="mb-4">
-                                <p class="text-gray-700 text-sm">"<%= feedback.getComment() %>"</p>
+                            <div class="mb-4 bg-white p-3 rounded-lg border border-gray-200">
+                                <p class="text-xs text-gray-500 mb-1 font-semibold">Nhận xét:</p>
+                                <% 
+                                    String comment = feedback.getComment();
+                                    if (comment != null && !comment.trim().isEmpty() && !comment.equals("...")) {
+                                %>
+                                    <p class="text-gray-700 text-sm italic">"<%= comment %>"</p>
+                                <% } else { %>
+                                    <p class="text-gray-400 text-sm italic">Không có nhận xét</p>
+                                <% } %>
                             </div>
                             
                             <!-- Status -->
