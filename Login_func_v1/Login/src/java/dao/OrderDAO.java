@@ -24,8 +24,8 @@ public class OrderDAO extends DBContext {
         return super.getConnection();
     }
 
-    // 🟢 Create new order with details
-    public int createOrder(int customerID, int employeeID, int tableID, String note, List<OrderDetail> orderDetails) throws Exception {
+    public int createOrder(int customerID, int employeeID, int tableID, String note, List<OrderDetail> orderDetails)
+            throws Exception {
         int orderId = 0;
         Connection con = null;
 
@@ -35,10 +35,10 @@ public class OrderDAO extends DBContext {
 
             // 1️⃣ Create order
             String sqlOrder = """
-                INSERT INTO [Order] 
-                (CustomerID, EmployeeID, TableID, OrderDate, Status, PaymentStatus, TotalPrice, Note)
-                VALUES (?, ?, ?, GETDATE(), 0, 'Unpaid', 0, ?)
-            """;
+                        INSERT INTO [Order]
+                        (CustomerID, EmployeeID, TableID, OrderDate, Status, PaymentStatus, TotalPrice, Note)
+                        VALUES (?, ?, ?, GETDATE(), 0, 'Unpaid', 0, ?)
+                    """;
             try (PreparedStatement psOrder = con.prepareStatement(sqlOrder, Statement.RETURN_GENERATED_KEYS)) {
                 psOrder.setInt(1, customerID);
                 psOrder.setInt(2, employeeID);
@@ -47,7 +47,8 @@ public class OrderDAO extends DBContext {
                 psOrder.executeUpdate();
 
                 try (ResultSet rs = psOrder.getGeneratedKeys()) {
-                    if (rs.next()) orderId = rs.getInt(1);
+                    if (rs.next())
+                        orderId = rs.getInt(1);
                 }
             }
 
@@ -55,10 +56,10 @@ public class OrderDAO extends DBContext {
             if (orderDetails != null && !orderDetails.isEmpty()) {
                 double totalPrice = 0;
                 String sqlDetail = """
-                    INSERT INTO [OrderDetail] 
-                    (OrderID, ProductSizeID, Quantity, TotalPrice, SpecialInstructions, Status)
-                    VALUES (?, ?, ?, ?, ?, 'Waiting')
-                """;
+                            INSERT INTO [OrderDetail]
+                            (OrderID, ProductSizeID, Quantity, TotalPrice, SpecialInstructions, Status)
+                            VALUES (?, ?, ?, ?, ?, 'Waiting')
+                        """;
                 try (PreparedStatement psDetail = con.prepareStatement(sqlDetail)) {
                     for (OrderDetail d : orderDetails) {
                         psDetail.setInt(1, orderId);
@@ -81,7 +82,7 @@ public class OrderDAO extends DBContext {
                 }
             }
 
-            // 3️⃣ Update table status to occupied (lowercase for consistency)
+            // 3️⃣ Update table status to occupied
             if (tableID > 0) {
                 String sqlUpdateTable = "UPDATE [Table] SET Status = 'occupied' WHERE TableID = ?";
                 try (PreparedStatement psTable = con.prepareStatement(sqlUpdateTable)) {
@@ -99,12 +100,14 @@ public class OrderDAO extends DBContext {
             return orderId;
 
         } catch (Exception e) {
-            if (con != null) con.rollback();
+            if (con != null)
+                con.rollback();
             e.printStackTrace();
             throw e;
         } finally {
-            // ⚙️ Close connection only if not external connection
-            if (externalConn == null && con != null) con.close();
+            // Close connection only if not external connection
+            if (externalConn == null && con != null)
+                con.close();
         }
     }
 
@@ -954,18 +957,18 @@ public class OrderDAO extends DBContext {
      */
     public boolean addItemsToOrder(int orderId, List<OrderDetail> newItems) throws Exception {
         Connection con = null;
-        
+
         try {
             con = useConnection();
             con.setAutoCommit(false);
-            
+
             // Insert new order details
             String sqlDetail = """
-                INSERT INTO [OrderDetail] 
-                (OrderID, ProductSizeID, Quantity, TotalPrice, SpecialInstructions, Status)
-                VALUES (?, ?, ?, ?, ?, 'Waiting')
-            """;
-            
+                        INSERT INTO [OrderDetail]
+                        (OrderID, ProductSizeID, Quantity, TotalPrice, SpecialInstructions, Status)
+                        VALUES (?, ?, ?, ?, ?, 'Waiting')
+                    """;
+
             double additionalTotal = 0;
             try (PreparedStatement psDetail = con.prepareStatement(sqlDetail)) {
                 for (OrderDetail d : newItems) {
@@ -979,7 +982,7 @@ public class OrderDAO extends DBContext {
                 }
                 psDetail.executeBatch();
             }
-            
+
             // Update total price of order
             String sqlUpdate = "UPDATE [Order] SET TotalPrice = TotalPrice + ? WHERE OrderID = ?";
             try (PreparedStatement psUpdate = con.prepareStatement(sqlUpdate)) {
@@ -987,18 +990,20 @@ public class OrderDAO extends DBContext {
                 psUpdate.setInt(2, orderId);
                 psUpdate.executeUpdate();
             }
-            
+
             con.commit();
             System.out.println("✅ Added " + newItems.size() + " items to Order #" + orderId);
             return true;
-            
+
         } catch (Exception e) {
-            if (con != null) con.rollback();
+            if (con != null)
+                con.rollback();
             System.err.println("❌ Error adding items to order: " + e.getMessage());
             e.printStackTrace();
             throw e;
         } finally {
-            if (externalConn == null && con != null) con.close();
+            if (externalConn == null && con != null)
+                con.close();
         }
     }
 
@@ -1009,14 +1014,14 @@ public class OrderDAO extends DBContext {
         Order order = getOrderById(orderId);
         if (order != null) {
             List<OrderDetail> details = getOrderDetailsByOrderId(orderId);
-            
+
             // Load toppings for each order detail
             OrderDetailToppingDAO toppingDAO = new OrderDetailToppingDAO();
             for (OrderDetail detail : details) {
                 List<OrderDetailTopping> toppings = toppingDAO.getToppingsByOrderDetailID(detail.getOrderDetailID());
                 detail.setToppings(toppings);
             }
-            
+
             order.setDetails(details);
         }
         return order;

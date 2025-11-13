@@ -4,11 +4,14 @@
     Order order = (Order) request.getAttribute("order");
     Payment payment = (Payment) request.getAttribute("payment");
     Double subtotal = (Double) request.getAttribute("subtotal");
-    Double tax = (Double) request.getAttribute("tax");
+    Double discountAmount = (Double) request.getAttribute("discountAmount");
+    List<OrderDiscount> discounts = (List<OrderDiscount>) request.getAttribute("discounts");
     String currentDate = (String) request.getAttribute("currentDate");
     Boolean embedded = (Boolean) request.getAttribute("embedded");
     
     if (embedded == null) embedded = false;
+    if (discounts == null) discounts = new ArrayList<>();
+    if (discountAmount == null) discountAmount = 0.0;
     
     NumberFormat numberFormat = NumberFormat.getNumberInstance(new Locale("vi", "VN"));
 %>
@@ -204,16 +207,21 @@
 
             <div class="divider"></div>
 
-            <!-- Amount Calculation -->
+            <!-- Amount Calculation với Discount -->
             <div class="amount-section">
                 <div class="amount-line text-bold">
                     <span>Tạm tính:</span>
                     <span><%= numberFormat.format(subtotal) %></span>
                 </div>
-                <div class="amount-line">
-                    <span>Thuế (10%):</span>
-                    <span><%= numberFormat.format(tax) %></span>
-                </div>
+                
+                <!-- Hiển thị discount thay vì thuế -->
+                <% if (discountAmount > 0) { %>
+                    <div class="amount-line">
+                        <span>Giảm giá:</span>
+                        <span>-<%= numberFormat.format(discountAmount) %></span>
+                    </div>
+                <% } %>
+                
                 <div class="amount-line total-line">
                     <span>Tổng cộng:</span>
                     <span><%= numberFormat.format(order.getTotalPrice()) %></span>

@@ -166,10 +166,6 @@
                         <span>Discount (<span id="discountPercent">0</span>%):</span>
                         <span id="discountAmount" class="font-semibold">-0đ</span>
                     </div>
-                    <div class="flex justify-between text-gray-600">
-                        <span>Tax (10%):</span>
-                        <span id="taxAmount" class="font-semibold">-0đ</span>
-                    </div>
                     <div class="flex justify-between text-lg font-bold text-gray-800 pt-2 border-t">
                         <span>Total:</span>
                         <span id="totalAmount" class="text-orange-600">0đ</span>
@@ -859,12 +855,9 @@
             }, 0);
             const discount = parseFloat(document.getElementById('discountInput').value) || 0;
             const discountAmount = (subtotal * discount) / 100;
-            // Calculate tax
-            const tax = (subtotal - discountAmount) * 0.1;
-            const total = subtotal - discountAmount + tax;
+            const total = subtotal - discountAmount;
             
             document.getElementById('subtotalAmount').textContent = formatCurrency(subtotal) + 'đ';
-            document.getElementById('taxAmount').textContent = formatCurrency(tax) + 'đ';
             document.getElementById('totalAmount').textContent = formatCurrency(total) + 'đ';
             
             const discountRow = document.getElementById('discountRow');
@@ -928,8 +921,7 @@
             const discount = parseFloat(document.getElementById('discountInput').value) || 0;
             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             const discountAmount = (subtotal * discount) / 100;
-            const tax = (subtotal - discountAmount) * 0.1;
-            const total = subtotal - discountAmount + tax;
+            const total = subtotal - discountAmount;
             
             // Prepare order data
             const orderData = {

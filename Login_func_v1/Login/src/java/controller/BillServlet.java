@@ -5,6 +5,7 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import models.*;
 import dao.*;
 
@@ -57,6 +58,11 @@ public class BillServlet extends HttpServlet {
             PaymentDAO paymentDAO = new PaymentDAO();
             Payment payment = paymentDAO.getPaymentByOrderId(orderId);
 
+            // Get discount information
+            OrderDiscountDAO orderDiscountDAO = new OrderDiscountDAO();
+            List<OrderDiscount> discounts = orderDiscountDAO.getDiscountsByOrderId(orderId);
+            double totalDiscount = orderDiscountDAO.getTotalDiscountAmount(orderId);
+
             // If no payment exists, create new one with QR Code as default
             if (payment == null) {
                 payment = new Payment();
@@ -76,16 +82,23 @@ public class BillServlet extends HttpServlet {
                 paymentDAO.updatePayment(payment);
             }
 
-            // Calculate tax 10%
-            double tax = order.getTotalPrice() * 0.1;
+            // Calculate subtotal (tổng giá trị đơn hàng trước discount)
             double subtotal = order.getTotalPrice();
-            order.setTotalPrice(subtotal + tax);
+
+            // Apply discount (thay vì tính thuế)
+            double discountAmount = totalDiscount;
+            double finalAmount = Math.max(0, subtotal - discountAmount);
+
+            // Update order total price với discount đã áp dụng
+            order.setTotalPrice(finalAmount);
 
             // Set attributes for JSP
             req.setAttribute("order", order);
             req.setAttribute("payment", payment);
+            req.setAttribute("discounts", discounts);
             req.setAttribute("subtotal", subtotal);
-            req.setAttribute("tax", tax);
+            req.setAttribute("discountAmount", discountAmount);
+            req.setAttribute("totalDiscount", totalDiscount);
             req.setAttribute("currentDate", new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date()));
             req.setAttribute("embedded", "true".equals(embedded));
 
@@ -125,6 +138,8 @@ public class BillServlet extends HttpServlet {
         }
     }
 
+    // ... (giữ nguyên các method khác: doPost, processPayment, getQRCodeURL,
+    // generateQRCodeURL)
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
