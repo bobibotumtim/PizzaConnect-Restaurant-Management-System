@@ -261,7 +261,7 @@ public class OrderDetailDAO extends DBContext {
                 return Arrays.asList("Drink", "Dessert");
             case "SideDishes": 
                 // Side Dishes + Appetizer
-                return Arrays.asList("Side Dishes", "Appetizer");
+                return Arrays.asList("SideDish", "Appetizer");
             default: 
                 return null;
         }
