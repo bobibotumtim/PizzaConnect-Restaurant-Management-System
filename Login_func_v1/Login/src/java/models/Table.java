@@ -8,6 +8,10 @@ public class Table implements Serializable {
     private int capacity;
     private String status;
     private boolean isActive;
+    private boolean isLocked;
+    private String lockedReason;
+    private Integer lockedBy;
+    private java.sql.Timestamp lockedAt;
 
     public Table() {
     }
@@ -18,6 +22,19 @@ public class Table implements Serializable {
         this.capacity = capacity;
         this.status = status;
         this.isActive = isActive;
+    }
+    
+    public Table(int tableID, String tableNumber, int capacity, String status, boolean isActive, 
+                 boolean isLocked, String lockedReason, Integer lockedBy, java.sql.Timestamp lockedAt) {
+        this.tableID = tableID;
+        this.tableNumber = tableNumber;
+        this.capacity = capacity;
+        this.status = status;
+        this.isActive = isActive;
+        this.isLocked = isLocked;
+        this.lockedReason = lockedReason;
+        this.lockedBy = lockedBy;
+        this.lockedAt = lockedAt;
     }
 
     // Getters and Setters
@@ -59,5 +76,37 @@ public class Table implements Serializable {
 
     public void setActive(boolean active) {
         isActive = active;
+    }
+
+    public boolean isLocked() {
+        return isLocked;
+    }
+
+    public void setLocked(boolean locked) {
+        isLocked = locked;
+    }
+
+    public String getLockedReason() {
+        return lockedReason;
+    }
+
+    public void setLockedReason(String lockedReason) {
+        this.lockedReason = lockedReason;
+    }
+
+    public Integer getLockedBy() {
+        return lockedBy;
+    }
+
+    public void setLockedBy(Integer lockedBy) {
+        this.lockedBy = lockedBy;
+    }
+
+    public java.sql.Timestamp getLockedAt() {
+        return lockedAt;
+    }
+
+    public void setLockedAt(java.sql.Timestamp lockedAt) {
+        this.lockedAt = lockedAt;
     }
 }

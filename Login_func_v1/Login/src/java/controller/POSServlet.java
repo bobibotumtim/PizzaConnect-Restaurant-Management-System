@@ -178,7 +178,18 @@ public class POSServlet extends HttpServlet {
             TableDAO tableDAO = new TableDAO();
             
             // Get all active tables with status
-            List<models.Table> tables = tableDAO.getActiveTablesWithStatus();
+            List<models.Table> allTables = tableDAO.getActiveTablesWithStatus();
+            
+            // Filter out locked tables
+            List<models.Table> tables = new ArrayList<>();
+            int lockedCount = 0;
+            for (models.Table table : allTables) {
+                if (!table.isLocked()) {
+                    tables.add(table);
+                } else {
+                    lockedCount++;
+                }
+            }
             
             // Build JSON response
             StringBuilder json = new StringBuilder();
@@ -198,7 +209,7 @@ public class POSServlet extends HttpServlet {
             json.append("]}");
             resp.getWriter().write(json.toString());
             
-            System.out.println("✅ Tables API called - returned " + tables.size() + " tables");
+            System.out.println("✅ Tables API called - returned " + tables.size() + " tables (filtered out " + lockedCount + " locked tables)");
             
         } catch (Exception e) {
             e.printStackTrace();

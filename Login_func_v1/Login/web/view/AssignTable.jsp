@@ -319,13 +319,55 @@
                                         <span>Has active orders</span>
                                     </div>
                                 </c:if>
+                                
+                                <!-- Lock Status Display -->
+                                <c:if test="${table.locked}">
+                                    <div class="flex items-center gap-2 text-red-600 text-sm font-semibold">
+                                        <i class="fas fa-lock w-5"></i>
+                                        <span>LOCKED</span>
+                                    </div>
+                                </c:if>
                             </div>
                             
+                            <!-- Locked Reason -->
+                            <c:if test="${table.locked and not empty table.lockedReason}">
+                                <div class="mt-3 bg-red-50 border border-red-200 rounded-lg p-2 text-xs">
+                                    <div class="font-semibold text-red-700 mb-1">🔒 Lock Reason:</div>
+                                    <div class="text-red-600">${table.lockedReason}</div>
+                                </div>
+                            </c:if>
+                            
+                            <!-- Order Details Button (for occupied tables) -->
                             <c:if test="${table.status == 'occupied'}">
-                                <div class="mt-4 bg-orange-50 text-orange-700 p-3 rounded-lg text-center font-semibold text-sm">
+                                <div class="mt-4 bg-orange-50 text-orange-700 p-3 rounded-lg text-center font-semibold text-sm view-order-btn" 
+                                     data-table-id="${table.tableID}" data-table-number="${table.tableNumber}">
                                     <i class="fas fa-receipt"></i> View Order Details
                                 </div>
                             </c:if>
+                            
+                            <!-- Lock/Unlock Buttons -->
+                            <div class="mt-4" onclick="event.stopPropagation();">
+                                <c:choose>
+                                    <c:when test="${table.locked}">
+                                        <!-- Unlock Button -->
+                                        <form action="${pageContext.request.contextPath}/table-lock" method="POST" 
+                                              onsubmit="event.stopPropagation(); return confirm('Are you sure you want to unlock this table?');">
+                                            <input type="hidden" name="action" value="unlock">
+                                            <input type="hidden" name="tableId" value="${table.tableID}">
+                                            <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-semibold transition-all flex items-center justify-center gap-2">
+                                                <i class="fas fa-unlock"></i> Unlock Table
+                                            </button>
+                                        </form>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <!-- Lock Button -->
+                                        <button type="button" class="lock-table-btn w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
+                                                data-table-id="${table.tableID}" data-table-number="${table.tableNumber}">
+                                            <i class="fas fa-lock"></i> Lock Table
+                                        </button>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
                         </div>
                     </div>
                 </c:forEach>
@@ -399,29 +441,43 @@
             });
         });
         
-        // Table card click handler
+        // Table card click handler (only for available tables)
         document.querySelectorAll('.table-card').forEach(card => {
-            card.addEventListener('click', function() {
+            card.addEventListener('click', function(e) {
+                // Don't trigger if clicking on buttons or forms
+                if (e.target.closest('button') || e.target.closest('form') || e.target.closest('.view-order-btn')) {
+                    return;
+                }
+                
                 const status = this.dataset.status;
                 const tableId = this.dataset.tableId;
                 const tableNumber = this.dataset.tableNumber;
                 
                 console.log('Table clicked:', tableNumber, 'Status:', status, 'ID:', tableId);
                 
-                if (status === 'occupied') {
-                    // Show modal with orders
-                    document.getElementById('modalTableNumber').textContent = tableNumber;
-                    const modal = new bootstrap.Modal(document.getElementById('orderModal'));
-                    modal.show();
-                    
-                    // Load orders via AJAX
-                    loadTableOrders(tableId);
-                } else if (status === 'available') {
+                if (status === 'available') {
                     // Redirect to POS to create new order
                     if (confirm('This table is available. Do you want to create a new order?')) {
                         window.location.href = 'pos?tableId=' + tableId;
                     }
                 }
+            });
+        });
+        
+        // View Order Details button handler (for occupied tables)
+        document.querySelectorAll('.view-order-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const tableId = this.getAttribute('data-table-id');
+                const tableNumber = this.getAttribute('data-table-number');
+                
+                // Show modal with orders
+                document.getElementById('modalTableNumber').textContent = tableNumber;
+                const modal = new bootstrap.Modal(document.getElementById('orderModal'));
+                modal.show();
+                
+                // Load orders via AJAX
+                loadTableOrders(tableId);
             });
         });
         
@@ -505,5 +561,91 @@
         // Initialize stats on load
         updateStats();
     </script>
+    
+    <!-- Lock Table Modal -->
+    <div class="modal fade" id="lockModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content rounded-xl">
+                <div class="modal-header bg-red-500 text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-lock"></i> Lock Table - <span id="lockModalTableNumber"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="${pageContext.request.contextPath}/table-lock" method="POST">
+                    <div class="modal-body">
+                        <input type="hidden" name="action" value="lock">
+                        <input type="hidden" name="tableId" id="lockTableId">
+                        
+                        <div class="mb-3">
+                            <label class="form-label font-semibold">Reason for locking:</label>
+                            <textarea name="reason" class="form-control" rows="3" 
+                                      placeholder="E.g., Merged with table T01 for group of 6 people" required></textarea>
+                            <div class="form-text">Enter reason to help manage later</div>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Note:</strong> Locked tables cannot create new orders until unlocked.
+                        </div>
+                        
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
+                            <div class="font-semibold text-blue-800 mb-2">💡 Common Use Cases:</div>
+                            <ul class="text-blue-700 mb-0 ps-4">
+                                <li>Merging tables for large groups</li>
+                                <li>Table under maintenance</li>
+                                <li>Reserved for VIP customers</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-lock"></i> Lock Table
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Show lock modal
+        function showLockModal(tableId, tableNumber) {
+            document.getElementById('lockTableId').value = tableId;
+            document.getElementById('lockModalTableNumber').textContent = tableNumber;
+            new bootstrap.Modal(document.getElementById('lockModal')).show();
+        }
+        
+        // Handle lock button clicks
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.lock-table-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tableId = this.getAttribute('data-table-id');
+                    const tableNumber = this.getAttribute('data-table-number');
+                    showLockModal(tableId, tableNumber);
+                });
+            });
+        });
+    </script>
+    
+    <!-- Show success/error message -->
+    <c:if test="${not empty lockMessage}">
+        <script>
+            // Show alert
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-${lockSuccess ? "success" : "danger"} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
+            alertDiv.style.zIndex = '9999';
+            alertDiv.innerHTML = '${lockMessage}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+            document.body.appendChild(alertDiv);
+            
+            // Auto dismiss after 3 seconds
+            setTimeout(function() {
+                alertDiv.remove();
+            }, 3000);
+        </script>
+        <% session.removeAttribute("lockMessage"); %>
+        <% session.removeAttribute("lockSuccess"); %>
+    </c:if>
 </body>
 </html>
