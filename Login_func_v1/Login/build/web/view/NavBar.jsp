@@ -127,8 +127,10 @@
                     &#128104;&#8205;&#127859; Chef - <%= navbarEmployee.getSpecialization() %>
                 <% } else if (navbarIsWaiter) { %>
                     &#128084; Waiter
+                <% } else if (navbarUser.getRole() == 3) { %>
+                    &#128100; Customer
                 <% } else { %>
-                    Employee
+                    &#128101; Employee
                 <% } %>
             </div>
         </div>

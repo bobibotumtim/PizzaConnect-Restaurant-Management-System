@@ -81,14 +81,14 @@ public class OrderDAO extends DBContext {
                 }
             }
 
-            // 3️⃣ Update table status to Occupied
+            // 3️⃣ Update table status to occupied (lowercase for consistency)
             if (tableID > 0) {
-                String sqlUpdateTable = "UPDATE [Table] SET Status = 'Occupied' WHERE TableID = ?";
+                String sqlUpdateTable = "UPDATE [Table] SET Status = 'occupied' WHERE TableID = ?";
                 try (PreparedStatement psTable = con.prepareStatement(sqlUpdateTable)) {
                     psTable.setInt(1, tableID);
                     int rowsUpdated = psTable.executeUpdate();
                     if (rowsUpdated > 0) {
-                        System.out.println("✅ Table #" + tableID + " set to Occupied (Order #" + orderId + " created)");
+                        System.out.println("✅ Table #" + tableID + " set to occupied (Order #" + orderId + " created)");
                     } else {
                         System.err.println("⚠️ Failed to update table status for Table #" + tableID);
                     }
@@ -1022,11 +1022,67 @@ public class OrderDAO extends DBContext {
         return order;
     }
     
-    // 🟢 Auto-update Order status khi tất cả món đã served
+    /**
+     * 🟢 Auto-update Order status khi waiter serve món
+     * Logic:
+     * - Nếu có ít nhất 1 món Served → Order status = 2 (Dining)
+     * - Order chỉ chuyển sang Completed (3) khi click "Mark as Paid" trong ManageOrders
+     */
     public boolean autoUpdateOrderStatusIfAllServed(int orderId) {
-        OrderDetailDAO detailDAO = new OrderDetailDAO();
-        if (detailDAO.areAllItemsServed(orderId)) {
-            return updateOrderStatus(orderId, 1); // Status = 1 (Đã phục vụ xong)
+        String sql = """
+            SELECT 
+                COUNT(*) as TotalItems,
+                SUM(CASE WHEN Status = 'Served' THEN 1 ELSE 0 END) as ServedItems
+            FROM OrderDetail
+            WHERE OrderID = ? AND Status != 'Cancelled'
+        """;
+        
+        try (Connection con = useConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setInt(1, orderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int totalItems = rs.getInt("TotalItems");
+                    int servedItems = rs.getInt("ServedItems");
+                    
+                    System.out.println("🔍 DEBUG Order #" + orderId + " - Total: " + totalItems + ", Served: " + servedItems);
+                    
+                    // Lấy current order status
+                    Order order = getOrderById(orderId);
+                    if (order == null) {
+                        System.err.println("❌ Order #" + orderId + " not found!");
+                        return false;
+                    }
+                    
+                    int currentStatus = order.getStatus();
+                    int newStatus = currentStatus;
+                    
+                    System.out.println("🔍 DEBUG Order #" + orderId + " - Current Status: " + currentStatus);
+                    
+                    // Logic: Nếu có món đã serve → Dining (không tự động chuyển Completed)
+                    if (servedItems > 0) {
+                        // Có món đã serve → Dining
+                        newStatus = 2;
+                        System.out.println("🔍 DEBUG Order #" + orderId + " - Should be Dining (2) - Served: " + servedItems + "/" + totalItems);
+                    }
+                    
+                    // Chỉ update nếu status thay đổi và order đang ở Ready hoặc Dining
+                    // Không tự động chuyển sang Completed - cần click "Mark as Paid"
+                    if (newStatus != currentStatus && currentStatus >= 1 && currentStatus < 3) {
+                        boolean updated = updateOrderStatus(orderId, newStatus);
+                        if (updated) {
+                            System.out.println("✅ Auto-updated Order #" + orderId + " status: " + 
+                                             currentStatus + " → " + newStatus + 
+                                             " (Served: " + servedItems + "/" + totalItems + ")");
+                        }
+                        return updated;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Error auto-updating order status after serve: " + e.getMessage());
+            e.printStackTrace();
         }
         return false;
     }
@@ -1141,5 +1197,74 @@ public class OrderDAO extends DBContext {
             e.printStackTrace();
         }
         return 0;
+    }
+    
+    /**
+     * 🆕 Tự động cập nhật Order status dựa trên OrderDetail status
+     * Logic:
+     * - Nếu có OrderDetail nào status = 'Waiting' hoặc 'Preparing' → Order status = 0 (Waiting)
+     * - Nếu tất cả OrderDetail status = 'Ready' → Order status = 1 (Ready)
+     * - Không tự động chuyển sang Dining (2) - cần waiter click button "Serve"
+     * 
+     * @param orderId Order ID cần cập nhật
+     * @return true nếu cập nhật thành công
+     */
+    public boolean autoUpdateOrderStatusBasedOnDetails(int orderId) {
+        String sql = """
+            SELECT 
+                COUNT(*) as TotalItems,
+                SUM(CASE WHEN Status IN ('Waiting', 'Preparing') THEN 1 ELSE 0 END) as NotReadyItems,
+                SUM(CASE WHEN Status = 'Ready' THEN 1 ELSE 0 END) as ReadyItems
+            FROM OrderDetail
+            WHERE OrderID = ? AND Status != 'Cancelled'
+        """;
+        
+        try (Connection con = useConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            
+            ps.setInt(1, orderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int totalItems = rs.getInt("TotalItems");
+                    int notReadyItems = rs.getInt("NotReadyItems");
+                    int readyItems = rs.getInt("ReadyItems");
+                    
+                    // Lấy current order status
+                    Order order = getOrderById(orderId);
+                    if (order == null) return false;
+                    
+                    int currentStatus = order.getStatus();
+                    int newStatus = currentStatus;
+                    
+                    // Logic tự động cập nhật
+                    if (notReadyItems > 0) {
+                        // Có món đang chờ hoặc đang làm → Waiting
+                        newStatus = 0;
+                    } else if (readyItems == totalItems && totalItems > 0) {
+                        // Tất cả món đã Ready → Ready (chỉ khi đang ở Waiting)
+                        if (currentStatus == 0) {
+                            newStatus = 1;
+                        }
+                    }
+                    
+                    // Chỉ update nếu status thay đổi
+                    if (newStatus != currentStatus && currentStatus < 2) {
+                        // Chỉ auto-update khi order đang ở Waiting (0) hoặc Ready (1)
+                        // Không tự động thay đổi khi đã Dining (2), Completed (3), Cancelled (4)
+                        boolean updated = updateOrderStatus(orderId, newStatus);
+                        if (updated) {
+                            System.out.println("✅ Auto-updated Order #" + orderId + " status: " + 
+                                             currentStatus + " → " + newStatus + 
+                                             " (Not Ready: " + notReadyItems + ", Ready: " + readyItems + ")");
+                        }
+                        return updated;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Error auto-updating order status: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
     }
 }

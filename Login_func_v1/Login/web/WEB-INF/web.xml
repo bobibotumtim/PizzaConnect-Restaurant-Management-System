@@ -231,7 +231,7 @@
         <servlet-name>InventoryServlet</servlet-name>
         <url-pattern>/manageinventory</url-pattern>
     </servlet-mapping>
-    
+
     <servlet>
         <servlet-name>CustomerMenuServlet</servlet-name>
         <servlet-class>controller.CustomerMenuServlet</servlet-class>
@@ -239,6 +239,16 @@
     <servlet-mapping>
         <servlet-name>CustomerMenuServlet</servlet-name>
         <url-pattern>/customer-menu</url-pattern>
+    </servlet-mapping>
+
+    <!-- Customer Feedback Servlet -->
+    <servlet>
+        <servlet-name>CustomerFeedbackServlet</servlet-name>
+        <servlet-class>controller.CustomerFeedbackServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CustomerFeedbackServlet</servlet-name>
+        <url-pattern>/customer-feedback</url-pattern>
     </servlet-mapping>
 
     <!-- Bill Servlet -->

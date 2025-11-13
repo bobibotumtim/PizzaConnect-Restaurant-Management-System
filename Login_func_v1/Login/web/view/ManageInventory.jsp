@@ -164,34 +164,17 @@
                                     </c:choose>
                                 </td>
                                 <td>
-                                    <c:url var="editUrl" value="manageinventory">
-                                        <c:param name="action" value="edit"/>
-                                        <c:param name="id" value="${inv.inventoryID}"/>
-                                        <c:if test="${not empty searchName}">
-                                            <c:param name="searchName" value="${searchName}"/>
-                                        </c:if>
-                                        <c:if test="${statusFilter != 'all'}">
-                                            <c:param name="statusFilter" value="${statusFilter}"/>
-                                        </c:if>
-                                        <c:param name="page" value="${currentPage}"/>
-                                        <c:if test="${pageSize != 10}">
-                                            <c:param name="pageSize" value="${pageSize}"/>
-                                        </c:if>
-                                    </c:url>
-                                    <c:url var="toggleUrl" value="manageinventory">
-                                        <c:param name="action" value="toggle"/>
-                                        <c:param name="id" value="${inv.inventoryID}"/>
-                                        <c:if test="${not empty searchName}">
-                                            <c:param name="searchName" value="${searchName}"/>
-                                        </c:if>
-                                        <c:if test="${statusFilter != 'all'}">
-                                            <c:param name="statusFilter" value="${statusFilter}"/>
-                                        </c:if>
-                                        <c:param name="page" value="${currentPage}"/>
-                                        <c:if test="${pageSize != 10}">
-                                            <c:param name="pageSize" value="${pageSize}"/>
-                                        </c:if>
-                                    </c:url>
+                                    <%-- Build toggle URL --%>
+                                    <c:set var="toggleUrl" value="${pageContext.request.contextPath}/manageinventory?action=toggle&id=${inv.inventoryID}&page=${currentPage}"/>
+                                    <c:if test="${not empty searchName}">
+                                        <c:set var="toggleUrl" value="${toggleUrl}&searchName=${searchName}"/>
+                                    </c:if>
+                                    <c:if test="${statusFilter ne 'all'}">
+                                        <c:set var="toggleUrl" value="${toggleUrl}&statusFilter=${statusFilter}"/>
+                                    </c:if>
+                                    <c:if test="${pageSize ne 10}">
+                                        <c:set var="toggleUrl" value="${toggleUrl}&pageSize=${pageSize}"/>
+                                    </c:if>
                                     
                                     <button type="button" class="btn btn-sm btn-warning edit-btn" 
                                             data-id="${inv.inventoryID}" 
@@ -202,13 +185,15 @@
                                     </button>
                                     <c:choose>
                                         <c:when test="${inv.status == 'Active'}">
-                                            <a class="btn btn-sm btn-danger" href="${toggleUrl}" 
+                                            <a class="btn btn-sm btn-danger" 
+                                               href="${toggleUrl}" 
                                                onclick="return confirm('Are you sure you want to deactivate this item?');">
                                                 Deactivate
                                             </a>
                                         </c:when>
                                         <c:otherwise>
-                                            <a class="btn btn-sm btn-success" href="${toggleUrl}"
+                                            <a class="btn btn-sm btn-success" 
+                                               href="${toggleUrl}"
                                                onclick="return confirm('Are you sure you want to activate this item?');">
                                                 Activate
                                             </a>

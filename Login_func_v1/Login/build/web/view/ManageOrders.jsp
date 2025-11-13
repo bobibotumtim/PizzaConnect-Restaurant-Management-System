@@ -51,30 +51,31 @@
             text-transform: uppercase;
         }
 
-        .status-waiting {
-            background: #f59e0b;
-            color: white;
-        }
+                        /* Order Status Colors - New Workflow */
+                        .status-waiting {
+                            background: #f59e0b;  /* Orange - Chờ chef làm */
+                            color: white;
+                        }
 
-        .status-ready {
-            background: #3b82f6;
-            color: white;
-        }
+                        .status-ready {
+                            background: #3b82f6;  /* Blue - Chef làm xong */
+                            color: white;
+                        }
 
-        .status-dining {
-            background: #8b5cf6;
-            color: white;
-        }
+                        .status-dining {
+                            background: #8b5cf6;  /* Purple - Khách đang ăn */
+                            color: white;
+                        }
 
-        .status-completed {
-            background: #10b981;
-            color: white;
-        }
+                        .status-completed {
+                            background: #10b981;  /* Green - Đã thanh toán */
+                            color: white;
+                        }
 
-        .status-cancelled {
-            background: #ef4444;
-            color: white;
-        }
+                        .status-cancelled {
+                            background: #ef4444;  /* Red - Đã hủy */
+                            color: white;
+                        }
 
         .payment-paid {
             background: #d1fae5;
@@ -99,36 +100,45 @@
         Integer selectedStatus = (Integer) request.getAttribute("selectedStatus");
     %>
 
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-6 py-6">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-4xl shadow-lg">
-                        🍕
-                    </div>
-                    <div>
-                        <h1 class="text-3xl font-bold">PizzaConnect</h1>
-                        <p class="text-red-100">Restaurant Order Management System</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-4">
-                    <div class="text-right">
-                        <div class="font-semibold">
-                            <%= user != null ? user.getName() : "User" %>
-                        </div>
-                        <div class="text-sm text-red-100">
-                            <%= user != null && user.getRole() == 1 ? "Admin" : "Employee" %>
-                        </div>
-                    </div>
-                    <a href="Login?action=logout"
-                        class="bg-white text-red-500 px-4 py-2 rounded-lg font-semibold hover:bg-red-50 transition-all">
-                        Logout
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+                            <!-- Header -->
+                            <div class="bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg">
+                                <div class="max-w-7xl mx-auto px-6 py-6">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-4">
+                                            <div
+                                                class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-4xl shadow-lg">
+                                                🍕
+                                            </div>
+                                            <div>
+                                                <h1 class="text-3xl font-bold">PizzaConnect</h1>
+                                                <p class="text-red-100">Restaurant Order Management System</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-4">
+                                            <div class="text-right">
+                                                <div class="font-semibold">
+                                                    <%= user !=null ? user.getName() : "User" %>
+                                                </div>
+                                                <div class="text-sm text-red-100">
+                                                    <% if (user != null) {
+                                                        if (user.getRole() == 1) { %>
+                                                            Admin
+                                                        <% } else if (user.getRole() == 3) { %>
+                                                            Customer
+                                                        <% } else { %>
+                                                            Employee
+                                                        <% }
+                                                    } %>
+                                                </div>
+                                            </div>
+                                            <a href="Login?action=logout"
+                                                class="bg-white text-red-500 px-4 py-2 rounded-lg font-semibold hover:bg-red-50 transition-all">
+                                                Logout
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
     <div class="max-w-7xl mx-auto px-6 py-8">
         <!-- Alert Messages -->
@@ -174,90 +184,275 @@
             </div>
         <% } %>
 
-        <!-- Statistics -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
-                <div class="text-sm text-gray-600 mb-2">Total Orders</div>
-                <div class="text-3xl font-bold text-blue-600">
-                    <%= orders != null ? orders.size() : 0 %>
-                </div>
-            </div>
-            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
-                <div class="text-sm text-gray-600 mb-2">Completed</div>
-                <div class="text-3xl font-bold text-green-600">
-                    <% int completed = 0; 
-                       if (orders != null) { 
-                           for (Order order : orders) { 
-                               if (order.getStatus() == 3) completed++; 
-                           } 
-                       } 
-                    %>
-                    <%= completed %>
-                </div>
-            </div>
-            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-red-500">
-                <div class="text-sm text-gray-600 mb-2">Total Revenue</div>
-                <div class="text-3xl font-bold text-red-600">
-                    <% double totalRevenue = 0; 
-                       if (orders != null) { 
-                           for (Order order : orders) { 
-                               if (order.getStatus() == 3 && "Paid".equals(order.getPaymentStatus())) {
-                                   totalRevenue += order.getTotalPrice();
-                               }
-                           } 
-                       } 
-                    %>
-                    <%= String.format("%,.0f", totalRevenue) %>đ
-                </div>
-            </div>
-        </div>
+                                                <!-- Statistics -->
+                                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                                    <div
+                                                        class="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
+                                                        <div class="text-sm text-gray-600 mb-2">Total Orders</div>
+                                                        <div class="text-3xl font-bold text-blue-600">
+                                                            <%= orders !=null ? orders.size() : 0 %>
+                                                        </div>
+                                                    </div>
+                                                    <div
+                                                        class="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
+                                                        <div class="text-sm text-gray-600 mb-2">Completed</div>
+                                                        <div class="text-3xl font-bold text-green-600">
+                                                            <% int completed=0; if (orders !=null) { for (Order order :
+                                                                orders) { if (order.getStatus()==3) completed++; } } %>
+                                                                <%= completed %>
+                                                        </div>
+                                                    </div>
+                                                    <div
+                                                        class="bg-white rounded-xl shadow-md p-6 border-l-4 border-red-500">
+                                                        <div class="text-sm text-gray-600 mb-2">Total Revenue</div>
+                                                        <div class="text-3xl font-bold text-red-600">
+                                                            <% double totalRevenue=0; 
+                                                               if (orders !=null) { 
+                                                                   for (Order order : orders) { 
+                                                                       // Only count Completed orders (status = 3)
+                                                                       if (order.getStatus() == 3) {
+                                                                           totalRevenue += order.getTotalPrice();
+                                                                       }
+                                                                   } 
+                                                               } 
+                                                            %>
+                                                            <%= String.format("%,.0f", totalRevenue) %>đ
+                                                        </div>
+                                                    </div>
+                                                </div>
 
-        <!-- Filters & Actions -->
-        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
-            <div class="flex flex-wrap gap-4 items-center justify-between">
-                <div class="flex flex-wrap gap-4 items-center flex-1">
-                    <div class="flex-1 min-w-[250px]">
-                        <label for="statusFilter" class="block text-sm font-semibold text-gray-700 mb-2">
-                            Filter by Status
-                        </label>
-                        <select id="statusFilter" name="statusFilter" onchange="filterByStatus(this.value)"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
-                            <option value="">All Orders</option>
-                            <option value="0" <%= selectedStatus != null && selectedStatus == 0 ? "selected" : "" %>>Waiting</option>
-                            <option value="1" <%= selectedStatus != null && selectedStatus == 1 ? "selected" : "" %>>Ready</option>
-                            <option value="2" <%= selectedStatus != null && selectedStatus == 2 ? "selected" : "" %>>Dining</option>
-                            <option value="3" <%= selectedStatus != null && selectedStatus == 3 ? "selected" : "" %>>Completed</option>
-                            <option value="4" <%= selectedStatus != null && selectedStatus == 4 ? "selected" : "" %>>Cancelled</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="flex gap-2">
-                    <a href="${pageContext.request.contextPath}/waiter-monitor"
-                        class="bg-orange-500 text-white px-6 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-orange-600 transition-all shadow-md">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                        </svg>
-                        Waiter Monitor
-                    </a>
-                    <a href="${pageContext.request.contextPath}/pos"
-                        class="bg-green-500 text-white px-6 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-green-600 transition-all shadow-md">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        New Order
-                    </a>
-                    <a href="${pageContext.request.contextPath}/manage-orders"
-                        class="bg-blue-500 text-white px-6 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-blue-600 transition-all">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        Refresh
-                    </a>
-                </div>
-            </div>
-        </div>
+                                                <!-- Filters & Actions -->
+                                                <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+                                                    <div class="flex flex-wrap gap-4 items-center justify-between">
+                                                        <div class="flex flex-wrap gap-4 items-center flex-1">
+                                                            <div class="flex-1 min-w-[250px]">
+                                                                <label for="statusFilter"
+                                                                    class="block text-sm font-semibold text-gray-700 mb-2">
+                                                                    Filter by Status
+                                                                </label>
+                                                                <select id="statusFilter" name="statusFilter"
+                                                                    onchange="filterByStatus(this.value)"
+                                                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                                                                    <option value="">All Orders</option>
+                                                                    <option value="0" <%=selectedStatus !=null &&
+                                                                        selectedStatus==0 ? "selected" : "" %>>Waiting
+                                                                    </option>
+                                                                    <option value="1" <%=selectedStatus !=null &&
+                                                                        selectedStatus==1 ? "selected" : "" %>
+                                                                        >Ready</option>
+                                                                    <option value="2" <%=selectedStatus !=null &&
+                                                                        selectedStatus==2 ? "selected" : "" %>>Dining
+                                                                    </option>
+                                                                    <option value="3" <%=selectedStatus !=null &&
+                                                                        selectedStatus==3 ? "selected" : "" %>>Completed
+                                                                    </option>
+                                                                    <option value="4" <%=selectedStatus !=null &&
+                                                                        selectedStatus==4 ? "selected" : "" %>>Cancelled
+                                                                    </option>
+                                                                </select>
 
+                                                            </div>
+                                                        </div>
+                                                        <div class="flex gap-2">
+                                                            <a href="${pageContext.request.contextPath}/WaiterMonitor"
+                                                                class="bg-orange-500 text-white px-6 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-orange-600 transition-all shadow-md">
+                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                                    viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                                                                </svg>
+                                                                Waiter Monitor
+                                                            </a>
+                                                            <a href="${pageContext.request.contextPath}/pos"
+                                                                class="bg-green-500 text-white px-6 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-green-600 transition-all shadow-md">
+                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                                    viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        stroke-width="2" d="M12 4v16m8-8H4" />
+                                                                </svg>
+                                                                New Order
+                                                            </a>
+                                                            <a href="${pageContext.request.contextPath}/manage-orders"
+                                                                class="bg-blue-500 text-white px-6 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-blue-600 transition-all">
+                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                                    viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        stroke-width="2"
+                                                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                                </svg>
+                                                                Refresh
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Table -->
+                                                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                                                    <% if (orders==null || orders.isEmpty()) { %>
+                                                        <div class="text-center py-16">
+                                                            <div class="text-6xl mb-4">📦</div>
+                                                            <h3 class="text-xl font-semibold text-gray-700 mb-2">No
+                                                                Orders Found</h3>
+                                                            <p class="text-gray-500">There are no orders in the system
+                                                                yet.</p>
+                                                        </div>
+                                                        <% } else { %>
+                                                            <div class="overflow-visible">
+                                                                <table class="w-full table-fixed">
+                                                                    <thead
+                                                                        class="bg-gray-50 border-b-2 border-gray-200">
+                                                                        <tr>
+                                                                            <th
+                                                                                class="px-4 py-4 text-left text-sm font-semibold text-gray-700" style="width: 8%;">
+                                                                                Order ID</th>
+                                                                            <th
+                                                                                class="px-4 py-4 text-left text-sm font-semibold text-gray-700" style="width: 6%;">
+                                                                                Table</th>
+                                                                            <th
+                                                                                class="px-4 py-4 text-left text-sm font-semibold text-gray-700" style="width: 8%;">
+                                                                                Customer</th>
+                                                                            <th
+                                                                                class="px-4 py-4 text-left text-sm font-semibold text-gray-700" style="width: 12%;">
+                                                                                Date</th>
+                                                                            <th
+                                                                                class="px-4 py-4 text-left text-sm font-semibold text-gray-700" style="width: 10%;">
+                                                                                Total</th>
+                                                                            <th
+                                                                                class="px-4 py-4 text-left text-sm font-semibold text-gray-700" style="width: 10%;">
+                                                                                Status</th>
+                                                                            <th
+                                                                                class="px-4 py-4 text-left text-sm font-semibold text-gray-700" style="width: 8%;">
+                                                                                Payment</th>
+                                                                            <th
+                                                                                class="px-4 py-4 text-left text-sm font-semibold text-gray-700" style="width: 15%;">
+                                                                                Note</th>
+                                                                            <th
+                                                                                class="px-4 py-4 text-center text-sm font-semibold text-gray-700" style="width: 23%;">
+                                                                                Actions</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody class="divide-y divide-gray-200">
+                                                                        <% for (Order order : orders) { Integer
+                                                                            tableId=order.getTableID(); Integer
+                                                                            customerId=order.getCustomerID(); %>
+                                                                            <tr
+                                                                                class="hover:bg-gray-50 transition-colors">
+                                                                                <td class="px-4 py-4">
+                                                                                    <span
+                                                                                        class="font-semibold text-gray-900 text-sm">#
+                                                                                        <%= order.getOrderID() %>
+                                                                                    </span>
+                                                                                </td>
+                                                                                <td class="px-4 py-4 text-gray-700 text-sm">
+                                                                                    <%= tableId !=null && tableId !=0 ?
+                                                                                        tableId : "N/A" %>
+                                                                                </td>
+                                                                                <td class="px-4 py-4">
+                                                                                    <div
+                                                                                        class="font-medium text-gray-900 text-sm">
+                                                                                        <%= customerId !=null &&
+                                                                                            customerId !=0 ? customerId
+                                                                                            : "N/A" %>
+                                                                                    </div>
+                                                                                </td>
+                                                                                <td
+                                                                                    class="px-4 py-4 text-gray-700 text-xs">
+                                                                                    <%= order.getOrderDate() !=null ?
+                                                                                        order.getOrderDate().toString()
+                                                                                        : "N/A" %>
+                                                                                </td>
+
+                                                                                <td class="px-4 py-4">
+                                                                                    <span
+                                                                                        class="font-bold text-gray-900 text-sm">
+                                                                                        <%= String.format("%,.0f",
+                                                                                            order.getTotalPrice()) %>đ
+                                                                                    </span>
+                                                                                </td>
+                                                                                <td class="px-4 py-4">
+                                                                                    <% String statusClass="" ;
+                                                                                        switch(order.getStatus()) { 
+                                                                                        case 0: statusClass="status-waiting" ; break;   // Waiting
+                                                                                        case 1: statusClass="status-ready" ; break;      // Ready
+                                                                                        case 2: statusClass="status-dining" ; break;     // Dining
+                                                                                        case 3: statusClass="status-completed" ; break;  // Completed
+                                                                                        case 4: statusClass="status-cancelled" ; break;  // Cancelled
+                                                                                        } %>
+                                                                                        <span
+                                                                                            class="status-badge <%= statusClass %>" style="font-size: 0.65rem; padding: 4px 10px;">
+                                                                                            <%= order.getStatusText() %>
+                                                                                        </span>
+                                                                                </td>
+                                                                                <td class="px-4 py-4">
+                                                                                    <% String
+                                                                                        paymentClass="payment-unpaid" ;
+                                                                                        String
+                                                                                        paymentStatus=order.getPaymentStatus();
+                                                                                        if
+                                                                                        ("Paid".equals(paymentStatus))
+                                                                                        paymentClass="payment-paid" ; %>
+                                                                                        <span
+                                                                                            class="px-2 py-1 rounded-full text-xs font-semibold <%= paymentClass %>">
+                                                                                            <%= paymentStatus !=null ?
+                                                                                                paymentStatus : "Unpaid"
+                                                                                                %>
+                                                                                        </span>
+                                                                                </td>
+                                                                                <td
+                                                                                    class="px-4 py-4 text-gray-700 text-xs">
+                                                                                    <% String noteText=(order.getNote()
+                                                                                        !=null &&
+                                                                                        !order.getNote().isEmpty()) ?
+                                                                                        order.getNote() : "None" ; %>
+                                                                                        <div class="truncate"
+                                                                                            title="<%= noteText %>">
+                                                                                            <%= noteText %>
+                                                                                        </div>
+                                                                                </td>
+                                                                                    <td class="px-2 py-4">
+                                                                                        <div class="flex items-center justify-center gap-1 flex-wrap">
+                                                                                            <%
+                                                                                            // Get order status and payment status
+                                                                                            int status = order.getStatus();
+                                                                                            boolean isPaid = "Paid".equals(paymentStatus);
+                                                                                            
+                                                                                            // 1. VIEW BUTTON - Show for all orders
+                                                                                            %>
+                                                                                                <button
+                                                                                                    onclick="openViewOrderModal(<%= order.getOrderID() %>)"
+                                                                                                    class="px-2 py-1 text-white bg-gray-600 hover:bg-gray-700 rounded text-xs font-medium whitespace-nowrap"
+                                                                                                    title="View Details">
+                                                                                                    <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                                                                    </svg>
+                                                                                                    View
+                                                                                                </button>
+                                                                                                
+                                                                                                <!-- PRINT BILL BUTTON - Show for all orders except cancelled (4) -->
+                                                                                                <% if (status != 4) { %>
+                                                                                                    <a href="${pageContext.request.contextPath}/bill?orderId=<%= order.getOrderID() %>"
+                                                                                                    target="_blank"
+                                                                                                    class="px-2 py-1 text-white bg-purple-600 hover:bg-purple-700 rounded text-xs font-medium whitespace-nowrap inline-flex items-center gap-1"
+                                                                                                    title="Print Bill">
+                                                                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                                                                                                        </svg>
+                                                                                                        Bill
+                                                                                                    </a>
+                                                                                                <% } %>
+                                                                                                
+                                                                                                <!-- ADD BUTTON - Show for Waiting, Ready, Dining (not Completed or Cancelled) -->
+                                                                                                <% if (status >= 0 && status <= 2) { %>
+                                                                                                <a href="${pageContext.request.contextPath}/pos?orderId=<%= order.getOrderID() %>"
+                                                                                                    class="px-2 py-1 text-white bg-green-600 hover:bg-green-700 rounded text-xs font-medium whitespace-nowrap inline-flex items-center gap-1"
+                                                                                                    title="Add More Items">
+                                                                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                                                                                    </svg>
+                                                                                                    Add
+                                                                                                </a>
+                                                                                                <% } %>
         <!-- Table -->
         <div class="bg-white rounded-xl shadow-md overflow-hidden">
             <% if (orders == null || orders.isEmpty()) { %>
@@ -380,6 +575,103 @@
                                             </a>
                                             <% } %>
 
+                                                                                                <%
+                                                                                                // SERVE BUTTON - Show only for Ready status (1)
+                                                                                                if (status == 1) {
+                                                                                                %>
+                                                                                                    <form
+                                                                                                        style="display: inline;"
+                                                                                                        method="post"
+                                                                                                        onsubmit="return confirm('Đã đưa món cho khách?')">
+                                                                                                        <input
+                                                                                                            type="hidden"
+                                                                                                            name="action"
+                                                                                                            value="updateStatus">
+                                                                                                        <input
+                                                                                                            type="hidden"
+                                                                                                            name="orderId"
+                                                                                                            value="<%= order.getOrderID() %>">
+                                                                                                        <input
+                                                                                                            type="hidden"
+                                                                                                            name="status"
+                                                                                                            value="2">
+                                                                                                        <button
+                                                                                                            type="submit"
+                                                                                                            class="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 whitespace-nowrap">
+                                                                                                            Serve
+                                                                                                        </button>
+                                                                                                    </form>
+                                                                                                <% } %>
+
+                                                                                                <%
+                                                                                                // 4. PAID BUTTON - Show for Unpaid orders except Cancelled (4)
+                                                                                                if (!isPaid && status != 4) {
+                                                                                                %>
+                                                                                                    <form
+                                                                                                        style="display: inline;"
+                                                                                                        method="post"
+                                                                                                        onsubmit="return confirm('Mark this order as Paid?')">
+                                                                                                        <input
+                                                                                                            type="hidden"
+                                                                                                            name="action"
+                                                                                                            value="updatePayment"
+                                                                                                            aria-label="Action">
+                                                                                                        <input
+                                                                                                            type="hidden"
+                                                                                                            name="orderId"
+                                                                                                            value="<%= order.getOrderID() %>"
+                                                                                                            aria-label="Order ID">
+                                                                                                        <input
+                                                                                                            type="hidden"
+                                                                                                            name="paymentStatus"
+                                                                                                            value="Paid"
+                                                                                                            aria-label="Payment Status">
+                                                                                                        <button
+                                                                                                            type="submit"
+                                                                                                            class="px-2 py-1 bg-emerald-500 text-white text-xs rounded hover:bg-emerald-600 whitespace-nowrap">
+                                                                                                            Paid
+                                                                                                        </button>
+                                                                                                    </form>
+                                                                                                <% } %>
+
+                                                                                                <%
+                                                                                                // 5. CANCEL BUTTON - Show for Waiting, Ready, Dining only
+                                                                                                if (status == 0) {
+                                                                                                    // Waiting: Cancel without confirm
+                                                                                                %>
+                                                                                                    <form style="display: inline;" method="post">
+                                                                                                        <input type="hidden" name="action" value="updateStatus">
+                                                                                                        <input type="hidden" name="orderId" value="<%= order.getOrderID() %>">
+                                                                                                        <input type="hidden" name="status" value="4">
+                                                                                                        <button type="submit" class="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 whitespace-nowrap">
+                                                                                                            Cancel
+                                                                                                        </button>
+                                                                                                    </form>
+                                                                                                <% } else if (status == 1 || status == 2) {
+                                                                                                    // Ready or Dining: Cancel WITH confirm
+                                                                                                %>
+                                                                                                    <form style="display: inline;" method="post" 
+                                                                                                        onsubmit="return confirm('⚠️ Bạn chắc chắn muốn hủy đơn hàng này?')">
+                                                                                                        <input type="hidden" name="action" value="updateStatus">
+                                                                                                        <input type="hidden" name="orderId" value="<%= order.getOrderID() %>">
+                                                                                                        <input type="hidden" name="status" value="4">
+                                                                                                        <button type="submit" class="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 whitespace-nowrap">
+                                                                                                            Cancel
+                                                                                                        </button>
+                                                                                                    </form>
+                                                                                                <% }
+                                                                                                // Completed (3) and Cancelled (4): NO Cancel button
+                                                                                                %>
+                                                                                        </div>
+                                                                                    </td>
+                                                                                </td>
+                                                                            </tr>
+                                                                            <% } %>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                            <% } %>
+                                                </div>
                                             <%
                                             // CANCEL BUTTON - Pending: no confirm, Processing: need confirm
                                             if (status == 0) {

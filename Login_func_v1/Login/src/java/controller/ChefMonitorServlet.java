@@ -81,7 +81,32 @@ public class ChefMonitorServlet extends HttpServlet {
         boolean updated = false;
 
         if ("start".equals(action)) {
+            // Lấy thông tin OrderDetail trước khi cập nhật
+            String specialization = chef.getSpecialization();
+            String categoryName = orderDetailDAO.mapSpecializationToCategory(specialization);
+            List<OrderDetail> waitingList;
+            
+            if (categoryName != null) {
+                waitingList = orderDetailDAO.getOrderDetailsByStatusAndCategory("Waiting", categoryName);
+            } else {
+                waitingList = orderDetailDAO.getOrderDetailsByStatus("Waiting");
+            }
+            
+            OrderDetail targetOrderDetail = null;
+            for (OrderDetail od : waitingList) {
+                if (od.getOrderDetailID() == orderDetailId) {
+                    targetOrderDetail = od;
+                    break;
+                }
+            }
+            
             updated = orderDetailDAO.updateOrderDetailStatus(orderDetailId, "Preparing", chef.getEmployeeID());
+            
+            // 🆕 Tự động cập nhật Order status (có thể vẫn là Waiting nếu còn món khác chưa làm)
+            if (updated && targetOrderDetail != null) {
+                OrderDAO orderDAO = new OrderDAO();
+                orderDAO.autoUpdateOrderStatusBasedOnDetails(targetOrderDetail.getOrderID());
+            }
         } else if ("ready".equals(action)) {
             // Lấy thông tin OrderDetail để trừ nguyên liệu
             List<OrderDetail> orderDetails = orderDetailDAO.getOrderDetailsByStatus("Preparing");
@@ -114,6 +139,15 @@ public class ChefMonitorServlet extends HttpServlet {
                     if (!ingredientsDeducted) {
                         System.err.println("⚠️ Món đã được đánh dấu Ready nhưng có lỗi khi trừ nguyên liệu");
                         req.setAttribute("error", "⚠️ Món đã sẵn sàng nhưng có lỗi khi cập nhật kho!");
+                    }
+                    
+                    // 🆕 Tự động cập nhật Order status dựa trên OrderDetail
+                    int orderId = targetOrderDetail.getOrderID();
+                    OrderDAO orderDAO = new OrderDAO();
+                    boolean orderStatusUpdated = orderDAO.autoUpdateOrderStatusBasedOnDetails(orderId);
+                    
+                    if (orderStatusUpdated) {
+                        System.out.println("✅ Order #" + orderId + " status auto-updated after chef marked dish as Ready");
                     }
                 }
             } else {
