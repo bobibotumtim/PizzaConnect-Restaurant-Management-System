@@ -213,8 +213,22 @@ public class ManageOrderServlet extends HttpServlet {
             if (success) {
                 System.out.println("✅ Order status updated successfully");
                 
-                // Nếu Cancelled (4) → Set payment về Unpaid và trả bàn
+                // Nếu Cancelled (4) → Set payment về Unpaid, cancel tất cả OrderDetail, và trả bàn
                 if (status == 4) {
+                    // Update tất cả OrderDetail thành Cancelled
+                    dao.OrderDetailDAO orderDetailDAO = new dao.OrderDetailDAO();
+                    List<OrderDetail> details = orderDAO.getOrderDetailsByOrderId(orderId);
+                    int cancelledCount = 0;
+                    for (OrderDetail detail : details) {
+                        boolean detailCancelled = orderDetailDAO.updateOrderDetailStatus(
+                            detail.getOrderDetailID(), 
+                            "Cancelled", 
+                            0  // No employee ID for system cancellation
+                        );
+                        if (detailCancelled) cancelledCount++;
+                    }
+                    System.out.println("✅ Cancelled " + cancelledCount + "/" + details.size() + " OrderDetails for Order #" + orderId);
+                    
                     boolean paymentUpdated = orderDAO.updatePaymentStatus(orderId, "Unpaid");
                     if (paymentUpdated) {
                         System.out.println("✅ Payment status set to Unpaid (Order #" + orderId + " Cancelled)");
