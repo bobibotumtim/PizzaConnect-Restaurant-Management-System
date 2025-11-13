@@ -295,7 +295,6 @@ public class BillServlet extends HttpServlet {
 
                 // Update order payment status and set order to Completed
                 OrderDAO orderDAO = new OrderDAO();
-<<<<<<< HEAD
                 boolean orderUpdated = orderDAO.updateOrderStatusAndPayment(orderId, 3, "Paid");
 
                 if (orderUpdated) {
@@ -315,13 +314,23 @@ public class BillServlet extends HttpServlet {
                         }
                     }
 
-                    if (embedded) {
-                        resp.setContentType("text/html;charset=UTF-8");
-                        resp.getWriter().write("success:Payment processed successfully");
+                    // Kiểm tra xem có nên hiển thị feedback prompt không
+                    if (shouldShowFeedbackPrompt(orderId)) {
+                        // Redirect đến feedback prompt thay vì bill page
+                        if (embedded) {
+                            resp.setContentType("text/html;charset=UTF-8");
+                            resp.getWriter().write("success:redirect:/Login/feedback-prompt?orderId=" + orderId);
+                        } else {
+                            resp.sendRedirect(req.getContextPath() + "/feedback-prompt?orderId=" + orderId);
+                        }
                     } else {
-                        resp.sendRedirect(
-                                req.getContextPath() + "/bill?orderId=" + orderId
-                                        + "&message=Payment processed successfully");
+                        // Nếu đã có feedback, redirect về bill page
+                        if (embedded) {
+                            resp.setContentType("text/html;charset=UTF-8");
+                            resp.getWriter().write("success:Payment processed successfully");
+                        } else {
+                            resp.sendRedirect(req.getContextPath() + "/bill?orderId=" + orderId + "&message=Payment processed successfully");
+                        }
                     }
                 } else {
                     System.err.println("Failed to update order status for order: " + orderId);
@@ -331,18 +340,6 @@ public class BillServlet extends HttpServlet {
                     } else {
                         resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to update order status");
                     }
-=======
-                orderDAO.updatePaymentStatus(orderId, "Paid");
-                orderDAO.autoUpdateOrderStatusIfAllServed(orderId);
-
-                // Kiểm tra xem có nên hiển thị feedback prompt không
-                if (shouldShowFeedbackPrompt(orderId)) {
-                    // Redirect đến feedback prompt thay vì bill page
-                    resp.sendRedirect(req.getContextPath() + "/feedback-prompt?orderId=" + orderId);
-                } else {
-                    // Nếu đã có feedback, redirect về home
-                    resp.sendRedirect(req.getContextPath() + "/home?message=Payment processed successfully");
->>>>>>> thong_copymainv06
                 }
             } else {
                 System.err.println("Failed to update payment for order: " + orderId);

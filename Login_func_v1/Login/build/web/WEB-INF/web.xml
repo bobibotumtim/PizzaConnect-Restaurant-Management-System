@@ -330,6 +330,17 @@
         <url-pattern>/inventory-monitor</url-pattern>
     </servlet-mapping>
 
+<<<<<<< HEAD
+    <!-- Payment Servlet -->
+    <servlet>
+        <servlet-name>PaymentServlet</servlet-name>
+        <servlet-class>controller.PaymentServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>PaymentServlet</servlet-name>
+        <url-pattern>/payment</url-pattern>
+    </servlet-mapping>
+=======
     <!-- ===== POST-PAYMENT FEEDBACK SERVLETS ===== -->
     
     <!-- Feedback Prompt Servlet - Hiển thị trang prompt sau thanh toán -->
@@ -372,5 +383,6 @@
         <url-pattern>/feedback-confirmation</url-pattern>
     </servlet-mapping>
 
+>>>>>>> thong_copymainv06
 </web-app>
 
