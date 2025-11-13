@@ -386,7 +386,6 @@ int rowsAffected = ps.executeUpdate();
                     "COUNT(*) as total_feedback, " +
                     "AVG(CAST(rating AS FLOAT)) as avg_rating, " +
                     "COUNT(CASE WHEN rating >= 4 THEN 1 END) as positive_feedback, " +
-                    "COUNT(CASE WHEN has_response = 0 THEN 1 END) as pending_response, " +
                     "COUNT(CASE WHEN rating = 5 THEN 1 END) as rating_5_count, " +
                     "COUNT(CASE WHEN rating = 4 THEN 1 END) as rating_4_count, " +
                     "COUNT(CASE WHEN rating = 3 THEN 1 END) as rating_3_count, " +
@@ -402,8 +401,7 @@ int rowsAffected = ps.executeUpdate();
                 return new FeedbackStats(
                     rs.getInt("total_feedback"),
                     rs.getDouble("avg_rating"),
-rs.getInt("positive_feedback"),
-                    rs.getInt("pending_response"),
+                    rs.getInt("positive_feedback"),
                     rs.getInt("rating_5_count"),
                     rs.getInt("rating_4_count"),
                     rs.getInt("rating_3_count"),
@@ -417,7 +415,7 @@ rs.getInt("positive_feedback"),
         }
         
         // Return empty stats if error
-        return new FeedbackStats(0, 0.0, 0, 0, 0, 0, 0, 0, 0);
+        return new FeedbackStats(0, 0.0, 0, 0, 0, 0, 0, 0);
     }
 
     /**

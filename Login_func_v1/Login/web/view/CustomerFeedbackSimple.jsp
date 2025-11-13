@@ -130,10 +130,6 @@
                 <p class="text-3xl font-bold"><%= stats != null ? stats.getFormattedPositiveRate() : "0%" %></p>
             </div>
             
-            <div class="bg-orange-500 text-white rounded-xl p-6 shadow-lg">
-                <p class="text-sm opacity-80">Pending Response</p>
-                <p class="text-3xl font-bold"><%= stats != null ? stats.getPendingResponse() : 0 %></p>
-            </div>
         </div>
 
         <!-- Feedback List -->
@@ -187,18 +183,9 @@
                                 <% } %>
                             </div>
                             
-                            <!-- Status -->
+                            <!-- Date -->
                             <div class="flex items-center justify-between pt-4 border-t">
                                 <span class="text-xs text-gray-500"><%= feedback.getFeedbackDate() %></span>
-                                <% if (feedback.isHasResponse()) { %>
-                                    <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">
-                                        ✓ Responded
-                                    </span>
-                                <% } else { %>
-                                    <span class="text-xs px-2 py-1 bg-orange-100 text-orange-800 rounded-full">
-                                        ⏱ Pending
-                                    </span>
-                                <% } %>
                             </div>
                         </div>
                     <% } %>

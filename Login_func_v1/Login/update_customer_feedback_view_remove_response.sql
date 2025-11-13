@@ -1,12 +1,12 @@
--- Tạo VIEW customer_feedback từ bảng Feedback
--- VIEW này giúp map dữ liệu từ bảng Feedback sang format mà code hiện tại đang dùng
+-- Cập nhật VIEW customer_feedback - Xóa cột response và has_response
+-- Vì không có role nào sử dụng chức năng phản hồi feedback
 
 -- Drop view nếu đã tồn tại
 IF OBJECT_ID('customer_feedback', 'V') IS NOT NULL
     DROP VIEW customer_feedback;
 GO
 
--- Tạo VIEW đơn giản không JOIN (để tránh lỗi tên cột)
+-- Tạo lại VIEW không có cột response và has_response
 CREATE VIEW customer_feedback AS
 SELECT 
     FeedbackID as feedback_id,
@@ -28,4 +28,5 @@ GO
 SELECT TOP 5 * FROM customer_feedback ORDER BY feedback_date DESC;
 GO
 
-PRINT 'customer_feedback VIEW created successfully';
+PRINT 'customer_feedback VIEW updated successfully - removed response and has_response columns';
+
