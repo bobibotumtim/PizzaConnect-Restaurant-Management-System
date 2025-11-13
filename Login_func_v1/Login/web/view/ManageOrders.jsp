@@ -939,14 +939,17 @@
                                     fetch(ctx + '/manage-orders?action=getOrder&id=' + orderId)
                                         .then(res => res.json())
                                         .then(data => {
+                                            console.log('📦 Order data received:', data);
+                                            console.log('📦 Number of items:', data.details ? data.details.length : 0);
+                                            
                                             if (!data.success) {
                                                 alert("Could not load order data.");
                                                 return;
                                             }
 
                                             const o = data.order;
-                                            const statusText = ['Pending', 'Processing', 'Completed', 'Cancelled'][o.status];
-                                            const statusColor = ['orange', 'blue', 'green', 'red'][o.status];
+                                            const statusText = ['Waiting', 'Ready', 'Dining', 'Completed', 'Cancelled'][o.status];
+                                            const statusColor = ['orange', 'blue', 'purple', 'green', 'red'][o.status];
                                             
                                             document.getElementById("viewOrderID").textContent = '#' + o.orderID;
                                             document.getElementById("viewTable").textContent = 'Table ' + (o.tableID || 'N/A');
@@ -955,18 +958,88 @@
                                             document.getElementById("viewTotal").textContent = (o.totalPrice || 0).toLocaleString('vi-VN') + ' VND';
                                             document.getElementById("viewNote").textContent = o.note || 'No notes';
                                             
-                                            // Load order items
+                                            // Load order items with toppings and prices
                                             if (data.details && data.details.length > 0) {
-                                                let itemsHTML = '<div class="space-y-2">';
-                                                data.details.forEach(item => {
-                                                    itemsHTML += '<div class="flex justify-between py-2 border-b">';
-                                                    itemsHTML += '<div><span class="font-semibold">' + item.productName + '</span> x' + item.quantity + '</div>';
-                                                    itemsHTML += '<div class="text-gray-600">' + (item.totalPrice || 0).toLocaleString('vi-VN') + ' VND</div>';
+                                                console.log('🍕 Rendering ' + data.details.length + ' items');
+                                                
+                                                let itemsHTML = '<div class="space-y-3">';
+                                                let calculatedTotal = 0;
+                                                
+                                                data.details.forEach((item, index) => {
+                                                    console.log('Item ' + (index + 1) + ':', item);
+                                                    
+                                                    // Calculate topping total
+                                                    let toppingTotal = 0;
+                                                    if (item.toppings && item.toppings.length > 0) {
+                                                        toppingTotal = item.toppings.reduce((sum, t) => sum + t.price, 0);
+                                                    }
+                                                    
+                                                    const itemTotal = (item.basePrice + toppingTotal) * item.quantity;
+                                                    calculatedTotal += itemTotal;
+                                                    
+                                                    itemsHTML += '<div class="bg-gray-50 rounded-lg p-3 border border-gray-200">';
+                                                    
+                                                    // Product name and size
+                                                    itemsHTML += '<div class="flex justify-between items-start mb-2">';
+                                                    itemsHTML += '<div class="flex-1">';
+                                                    itemsHTML += '<div class="font-bold text-gray-800">' + item.productName + '</div>';
+                                                    if (item.sizeName) {
+                                                        itemsHTML += '<div class="text-sm text-gray-600">Size: ' + item.sizeName + '</div>';
+                                                    }
+                                                    itemsHTML += '</div>';
+                                                    itemsHTML += '<div class="text-right">';
+                                                    itemsHTML += '<div class="text-sm text-gray-600">x' + item.quantity + '</div>';
+                                                    itemsHTML += '</div>';
+                                                    itemsHTML += '</div>';
+                                                    
+                                                    // Base price
+                                                    itemsHTML += '<div class="text-sm text-gray-600 mb-1">';
+                                                    itemsHTML += '💰 Base: ' + item.basePrice.toLocaleString('vi-VN') + ' VND';
+                                                    itemsHTML += '</div>';
+                                                    
+                                                    // Toppings
+                                                    if (item.toppings && item.toppings.length > 0) {
+                                                        itemsHTML += '<div class="ml-3 mb-2">';
+                                                        item.toppings.forEach(topping => {
+                                                            itemsHTML += '<div class="text-sm text-orange-600">';
+                                                            itemsHTML += '🧀 ' + topping.toppingName + ': +' + topping.price.toLocaleString('vi-VN') + ' VND';
+                                                            itemsHTML += '</div>';
+                                                        });
+                                                        itemsHTML += '</div>';
+                                                    }
+                                                    
+                                                    // Item total
+                                                    itemsHTML += '<div class="text-right font-bold text-green-600 border-t pt-2">';
+                                                    itemsHTML += 'Total: ' + itemTotal.toLocaleString('vi-VN') + ' VND';
+                                                    itemsHTML += '</div>';
+                                                    
                                                     itemsHTML += '</div>';
                                                 });
+                                                
+                                                // Add summary
+                                                itemsHTML += '<div class="bg-blue-50 rounded-lg p-3 border-2 border-blue-300 mt-3">';
+                                                itemsHTML += '<div class="flex justify-between items-center">';
+                                                itemsHTML += '<div class="font-bold text-gray-700">Subtotal (' + data.details.length + ' items):</div>';
+                                                itemsHTML += '<div class="font-bold text-blue-600">' + calculatedTotal.toLocaleString('vi-VN') + ' VND</div>';
+                                                itemsHTML += '</div>';
+                                                itemsHTML += '<div class="flex justify-between items-center text-sm text-gray-600 mt-1">';
+                                                itemsHTML += '<div>Tax (10%):</div>';
+                                                itemsHTML += '<div>' + (calculatedTotal * 0.1).toLocaleString('vi-VN') + ' VND</div>';
+                                                itemsHTML += '</div>';
+                                                itemsHTML += '<div class="flex justify-between items-center font-bold text-lg text-green-600 mt-2 pt-2 border-t border-blue-300">';
+                                                itemsHTML += '<div>Grand Total:</div>';
+                                                itemsHTML += '<div>' + (calculatedTotal * 1.1).toLocaleString('vi-VN') + ' VND</div>';
+                                                itemsHTML += '</div>';
+                                                itemsHTML += '</div>';
+                                                
                                                 itemsHTML += '</div>';
                                                 document.getElementById("viewItems").innerHTML = itemsHTML;
+                                                
+                                                console.log('✅ Calculated total:', calculatedTotal);
+                                                console.log('✅ With tax (10%):', calculatedTotal * 1.1);
+                                                console.log('✅ Order total from DB:', o.totalPrice);
                                             } else {
+                                                console.log('⚠️ No items found');
                                                 document.getElementById("viewItems").innerHTML = '<p class="text-gray-500">No items</p>';
                                             }
 

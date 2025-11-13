@@ -778,11 +778,12 @@ public class POSServlet extends HttpServlet {
                     int quantity = extractItemQuantity(item);
                     double price = extractItemPrice(item);
                     String toppings = extractItemToppings(item);
+                    double toppingPrice = extractItemToppingPrice(item); // NEW: Extract topping price
                     
                     OrderDetail detail = new OrderDetail();
                     detail.setProductSizeID(productSizeId > 0 ? productSizeId : 1); // Use ProductSizeID
                     detail.setQuantity(quantity > 0 ? quantity : 1);
-                    detail.setTotalPrice(price * quantity);
+                    detail.setTotalPrice((price + toppingPrice) * quantity); // Include topping price
                     
                     String instructions = productName;
                     if (sizeName != null && !sizeName.isEmpty()) {
@@ -935,6 +936,39 @@ public class POSServlet extends HttpServlet {
             System.err.println("Error extracting item price: " + e.getMessage());
         }
         return 50000; // Default price
+    }
+    
+    private double extractItemToppingPrice(String item) {
+        try {
+            String toppingsPattern = "\"toppings\":[";
+            int toppingsIndex = item.indexOf(toppingsPattern);
+            if (toppingsIndex != -1) {
+                toppingsIndex += toppingsPattern.length();
+                int endIndex = item.indexOf("]", toppingsIndex);
+                if (endIndex != -1) {
+                    String toppingsStr = item.substring(toppingsIndex, endIndex);
+                    // Parse topping prices and sum them
+                    double totalToppingPrice = 0;
+                    String[] toppingItems = toppingsStr.split("\\},\\{");
+                    for (String topping : toppingItems) {
+                        String pricePattern = "\"price\":";
+                        int priceIdx = topping.indexOf(pricePattern);
+                        if (priceIdx != -1) {
+                            priceIdx += pricePattern.length();
+                            int priceEnd = topping.indexOf(",", priceIdx);
+                            if (priceEnd == -1) priceEnd = topping.indexOf("}", priceIdx);
+                            if (priceEnd == -1) priceEnd = topping.length();
+                            String priceStr = topping.substring(priceIdx, priceEnd).trim();
+                            totalToppingPrice += Double.parseDouble(priceStr);
+                        }
+                    }
+                    return totalToppingPrice;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error extracting topping price: " + e.getMessage());
+        }
+        return 0; // No toppings
     }
     
     private String extractItemToppings(String item) {
@@ -1380,22 +1414,31 @@ public class POSServlet extends HttpServlet {
                     String productName = extractItemName(itemJson);
                     String sizeName = extractItemSizeName(itemJson);
                     int quantity = extractItemQuantity(itemJson);
-                    double price = extractItemPrice(itemJson);
+                    double basePrice = extractItemPrice(itemJson);
+                    
+                    // Parse toppings for this item FIRST (to calculate total price)
+                    List<OrderDetailTopping> toppings = parseToppingsFromItem(itemJson);
+                    
+                    // Calculate topping total
+                    double toppingTotal = 0;
+                    for (OrderDetailTopping topping : toppings) {
+                        toppingTotal += topping.getToppingPrice();
+                    }
+                    
+                    // Calculate total price INCLUDING toppings
+                    double itemTotal = (basePrice + toppingTotal) * quantity;
                     
                     // Create OrderDetail
                     OrderDetail detail = new OrderDetail();
                     detail.setProductSizeID(productSizeId > 0 ? productSizeId : 1);
                     detail.setQuantity(quantity > 0 ? quantity : 1);
-                    detail.setTotalPrice(price * quantity);
+                    detail.setTotalPrice(itemTotal); // ✅ NOW includes toppings!
                     
                     String instructions = productName;
                     if (sizeName != null && !sizeName.isEmpty()) {
                         instructions += " (" + sizeName + ")";
                     }
                     detail.setSpecialInstructions(instructions);
-                    
-                    // Parse toppings for this item
-                    List<OrderDetailTopping> toppings = parseToppingsFromItem(itemJson);
                     
                     // Create CartItemWithToppings
                     CartItemWithToppings cartItem = new CartItemWithToppings(detail);
@@ -1405,6 +1448,9 @@ public class POSServlet extends HttpServlet {
                     
                     System.out.println("✅ Item " + (i+1) + " parsed: ProductSizeID=" + detail.getProductSizeID() + 
                                      ", Quantity=" + detail.getQuantity() + 
+                                     ", BasePrice=" + basePrice +
+                                     ", ToppingTotal=" + toppingTotal +
+                                     ", ItemTotal=" + itemTotal +
                                      ", Toppings=" + toppings.size());
                     
                 } catch (Exception itemEx) {
