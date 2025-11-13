@@ -9,6 +9,7 @@ import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,46 +37,26 @@ public class ManageProductServlet extends HttpServlet {
         // === 1. Đọc tham số lọc và phân trang ===
         String searchName = request.getParameter("searchName");
         String statusFilter = request.getParameter("statusFilter");
-        int currentPage = 1;
         int pageSize = 10; // Cố định số lượng item mỗi trang
 
-        String pageParam = request.getParameter("page");
-        if (pageParam != null) {
-            try {
-                currentPage = Integer.parseInt(pageParam);
-            } catch (NumberFormatException e) {
-                currentPage = 1;
-            }
-        }
-
-        // === 2. Lấy dữ liệu từ DAO (Đã lọc và phân trang) ===
-        
-        // Lấy tổng số sản phẩm (để tính tổng số trang)
-        int totalProducts = 0;
+        // === 2. Lấy TẤT CẢ sản phẩm phù hợp với searchName (chưa phân trang) ===
+        List<Product> allProducts = null;
         try {
-            totalProducts = productDAO.getBaseProductCount(searchName, statusFilter);
+            // Lấy tất cả sản phẩm (với limit lớn để lấy hết)
+            allProducts = productDAO.getBaseProductsPaginated(searchName, 1, 10000);
         } catch (SQLException e) {
             e.printStackTrace();
-        }
-        int totalPages = (int) Math.ceil((double) totalProducts / pageSize);
-        if (totalPages == 0) totalPages = 1;
-        if (currentPage > totalPages) currentPage = totalPages;
-        
-        // Lấy danh sách sản phẩm cho trang hiện tại
-        List<Product> products = null;
-        try {
-            products = productDAO.getBaseProductsPaginated(searchName, statusFilter, currentPage, pageSize);
-        } catch (SQLException e) {
-            e.printStackTrace();
+            allProducts = new ArrayList<>();
         }
         
-        // Lấy map số lượng của TẤT CẢ size (ProductID -> Qty)
+        // Lấy map số lượng của TẤT CẢ size (ProductSizeID -> Qty)
         Map<Integer, Double> sizeAvailabilityMap = productDAO.getProductSizeAvailabilityMap();
         
-        // Tạo map mới (ProductID -> Boolean) để JSP sử dụng
+        // === 3. Tính availability cho từng product và filter theo statusFilter ===
+        List<Product> filteredProducts = new ArrayList<>();
         Map<Integer, Boolean> productAvailabilityStatus = new HashMap<>();
 
-        for (Product p : products) {
+        for (Product p : allProducts) {
             boolean isProductAvailable = false; 
             List<ProductSize> sizelist = sizeDAO.getSizesByProductId(p.getProductId());
             if (sizelist != null) {
@@ -90,10 +71,41 @@ public class ManageProductServlet extends HttpServlet {
                 }
             }
             productAvailabilityStatus.put(p.getProductId(), isProductAvailable);
+            
+            // Filter theo statusFilter
+            if (statusFilter == null || statusFilter.isEmpty() || "all".equals(statusFilter)) {
+                filteredProducts.add(p);
+            } else if ("available".equals(statusFilter) && isProductAvailable) {
+                filteredProducts.add(p);
+            } else if ("unavailable".equals(statusFilter) && !isProductAvailable) {
+                filteredProducts.add(p);
+            }
         }
 
-        // === 3. Gửi dữ liệu sang JSP ===
-        request.setAttribute("products", products);
+        // === 4. Phân trang sau khi filter ===
+        int totalProducts = filteredProducts.size();
+        int totalPages = (int) Math.ceil((double) totalProducts / pageSize);
+        if (totalPages == 0) totalPages = 1;
+        
+        int currentPage = 1;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null) {
+            try {
+                currentPage = Integer.parseInt(pageParam);
+            } catch (NumberFormatException e) {
+                currentPage = 1;
+            }
+        }
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+        
+        // Lấy products cho trang hiện tại
+        int startIndex = (currentPage - 1) * pageSize;
+        int endIndex = Math.min(startIndex + pageSize, totalProducts);
+        List<Product> productsForPage = filteredProducts.subList(startIndex, endIndex);
+
+        // === 5. Gửi dữ liệu sang JSP ===
+        request.setAttribute("products", productsForPage);
         request.setAttribute("currentPage", currentPage);
         request.setAttribute("totalPages", totalPages);
         

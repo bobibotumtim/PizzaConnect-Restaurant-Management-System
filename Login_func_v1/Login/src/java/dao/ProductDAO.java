@@ -157,26 +157,20 @@ public class ProductDAO extends DBContext {
 
     /**
      * MỚI: Đếm tổng số sản phẩm (để phân trang)
+     * Chỉ filter theo searchName, không filter theo statusFilter vì status dựa trên inventory
      */
-    public int getBaseProductCount(String searchName, String statusFilter) throws SQLException {
+    public int getBaseProductCount(String searchName) throws SQLException {
         // Xây dựng câu SQL động
-        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Product p JOIN Category c ON p.CategoryID = c.CategoryID WHERE c.IsDeleted = 0");
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM Product p JOIN Category c ON p.CategoryID = c.CategoryID WHERE c.IsDeleted = 0 AND p.IsAvailable = 1");
         if (searchName != null && !searchName.isEmpty()) {
             sql.append(" AND p.ProductName LIKE ?");
-        }
-        if (statusFilter != null && !statusFilter.isEmpty() && !"all".equals(statusFilter)) {
-            sql.append(" AND p.IsAvailable = ?");
         }
 
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql.toString())) {
             
-            int paramIndex = 1;
             if (searchName != null && !searchName.isEmpty()) {
-                ps.setString(paramIndex++, "%" + searchName + "%");
-            }
-            if (statusFilter != null && !statusFilter.isEmpty() && !"all".equals(statusFilter)) {
-                ps.setBoolean(paramIndex++, "available".equals(statusFilter));
+                ps.setString(1, "%" + searchName + "%");
             }
 
             try (ResultSet rs = ps.executeQuery()) {
@@ -190,8 +184,10 @@ public class ProductDAO extends DBContext {
 
     /**
      * MỚI: Lấy sản phẩm cơ bản (đã phân trang và lọc)
+     * Chỉ filter theo searchName, không filter theo statusFilter vì status dựa trên inventory
+     * StatusFilter sẽ được xử lý ở servlet level sau khi tính availability
      */
-    public List<Product> getBaseProductsPaginated(String searchName, String statusFilter, int page, int pageSize) throws SQLException {
+    public List<Product> getBaseProductsPaginated(String searchName, int page, int pageSize) throws SQLException {
         List<Product> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder("""
             SELECT p.ProductID, p.ProductName, p.Description, c.CategoryName, p.ImageURL, p.IsAvailable
@@ -199,12 +195,9 @@ public class ProductDAO extends DBContext {
             WHERE c.IsDeleted = 0 AND p.IsAvailable = 1
         """);
 
-        // Thêm điều kiện lọc
+        // Thêm điều kiện lọc theo tên
         if (searchName != null && !searchName.isEmpty()) {
             sql.append(" AND p.ProductName LIKE ?");
-        }
-        if (statusFilter != null && !statusFilter.isEmpty() && !"all".equals(statusFilter)) {
-            sql.append(" AND p.IsAvailable = ?");
         }
 
         // Thêm phân trang (SQL Server)
@@ -217,16 +210,12 @@ public class ProductDAO extends DBContext {
             if (searchName != null && !searchName.isEmpty()) {
                 ps.setString(paramIndex++, "%" + searchName + "%");
             }
-            if (statusFilter != null && !statusFilter.isEmpty() && !"all".equals(statusFilter)) {
-                ps.setBoolean(paramIndex++, "available".equals(statusFilter));
-            }
             
             ps.setInt(paramIndex++, (page - 1) * pageSize);
             ps.setInt(paramIndex++, pageSize);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    // Dùng lại hàm mapResultSetToProduct của bạn
                     list.add(mapResultSetToProduct(rs)); 
                 }
             }

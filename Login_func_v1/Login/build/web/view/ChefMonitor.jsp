@@ -133,7 +133,6 @@
 
         .btn-start { background-color: #b0c4ff; }
         .btn-ready { background-color: #63f063; }
-        .btn-cancel { background-color: #ff6666; color: white; }
     </style>
 </head>
 
@@ -216,12 +215,6 @@
                 <input type="hidden" id="selectedIdReady" name="orderDetailId">
                 <button type="submit" class="btn-action btn-ready">Ready to serve</button>
             </form>
-
-            <form id="cancelForm" action="ChefMonitor" method="post" style="display:inline;">
-                <input type="hidden" name="action" value="cancel">
-                <input type="hidden" id="selectedIdCancel" name="orderDetailId">
-                <button type="submit" class="btn-action btn-cancel">Cancel dishes</button>
-            </form>
         </div>
 
         <!-- ==================== Ready Section ==================== -->
@@ -258,7 +251,6 @@
             const id = el.getAttribute('data-id');
             document.getElementById('selectedIdStart').value = id;
             document.getElementById('selectedIdReady').value = id;
-            document.getElementById('selectedIdCancel').value = id;
         }
     </script>
 

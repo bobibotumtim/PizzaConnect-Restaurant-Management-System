@@ -12,23 +12,7 @@
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/lucide@latest"></script>
 
-        <%-- CSS cho Sidebar (từ file cũ) --%>
-        <style>
-            .nav-btn {
-                width: 3rem;
-                height: 3rem;
-                border-radius: 0.75rem;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: all 0.2s;
-            }
-            .nav-btn:hover {
-                transform: translateY(-2px);
-            }
-        </style>
-
-        <%-- ✅ CSS cho Modal (từ file cũ) --%>
+        <%-- CSS cho Modal --%>
         <style>
             .modal {
                 display: none;
@@ -124,11 +108,19 @@
             .modal-content button[type="submit"]:hover {
                 background-color: #059669;
             }
+            
+            /* Content wrapper for sidebar layout */
+            .content-wrapper {
+                margin-left: 80px;
+                width: calc(100% - 80px);
+                height: 100vh;
+                overflow: hidden;
+            }
         </style>
     </head>
-    <body class="flex h-screen bg-gray-50">
+    <body class="bg-gray-50">
 
-        <%-- Lấy User (từ file cũ) --%>
+        <%-- Lấy User --%>
         <%
             User currentUser = (User) session.getAttribute("user");
             if (currentUser == null || currentUser.getRole() != 1) {
@@ -137,109 +129,8 @@
             }
         %>
 
-        <%-- ✅ Sidebar --%>
-        <%
-            String currentPath = request.getRequestURI();
-        %>
-        
-        <div class="w-20 bg-gray-800 flex flex-col items-center py-6 space-y-8">
-
-            <!-- Logo/Home -->
-            <a href="${pageContext.request.contextPath}/home"
-               class="nav-btn <%= currentPath.contains("/home") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-               title="Home">
-                <i data-lucide="home" class="w-6 h-6"></i>
-            </a>
-
-            <!-- Navigation -->
-            <div class="flex-1 flex flex-col space-y-6 mt-8">
-
-                <!-- Dashboard -->
-                <a href="${pageContext.request.contextPath}/dashboard"
-                   class="nav-btn <%= currentPath.contains("/dashboard") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                   title="Dashboard">
-                    <i data-lucide="grid" class="w-6 h-6"></i>
-                </a>
-
-                <!-- Orders -->
-                <a href="${pageContext.request.contextPath}/manage-orders"
-                   class="nav-btn <%= currentPath.contains("/orders") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                   title="Orders">
-                    <i data-lucide="file-text" class="w-6 h-6"></i>
-                </a>
-
-                <!-- Manage Products (Current Page) -->
-                <a href="${pageContext.request.contextPath}/manageproduct"
-                   class="nav-btn <%= currentPath.contains("/manageproduct") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                   title="Manage Products">
-                    <i data-lucide="utensils" class="w-6 h-6"></i>
-                </a>
-
-                <!-- POS -->
-                <a href="${pageContext.request.contextPath}/pos"
-                   class="nav-btn <%= currentPath.contains("/pos") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                   title="POS">
-                    <i data-lucide="shopping-cart" class="w-6 h-6"></i>
-                </a>
-
-                <!-- Manage Categories -->
-                <a href="${pageContext.request.contextPath}/managecategory"
-                   class="nav-btn <%= currentPath.contains("/managecategory") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                   title="Manage Categories">
-                    <i data-lucide="package" class="w-6 h-6"></i>
-                </a>
-
-                <!-- Manage Users (Admin) -->
-                <a href="${pageContext.request.contextPath}/admin"
-                   class="nav-btn <%= currentPath.contains("/admin") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                   title="Manage Users">
-                    <i data-lucide="users" class="w-6 h-6"></i>
-                </a>
-
-                <!-- Discount -->
-                <a href="${pageContext.request.contextPath}/discount"
-                   class="nav-btn <%= currentPath.contains("/discount") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                   title="Discount">
-                    <i data-lucide="percent" class="w-6 h-6"></i>
-                </a>
-
-                <!-- Tables -->
-                <a href="${pageContext.request.contextPath}/table"
-                   class="nav-btn <%= currentPath.contains("/table") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                   title="Tables">
-                    <i data-lucide="layout-grid" class="w-6 h-6"></i>
-                </a>
-
-                <!-- Inventory -->
-                <a href="${pageContext.request.contextPath}/inventory"
-                   class="nav-btn <%= currentPath.contains("/inventory") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                   title="Inventory">
-                    <i data-lucide="box" class="w-6 h-6"></i>
-                </a>
-
-                <!-- Profile -->
-                <a href="${pageContext.request.contextPath}/profile"
-                   class="nav-btn <%= currentPath.contains("/profile") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                   title="Profile">
-                    <i data-lucide="user" class="w-6 h-6"></i>
-                </a>
-
-                <!-- Settings -->
-                <a href="${pageContext.request.contextPath}/settings"
-                   class="nav-btn <%= currentPath.contains("/settings") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                   title="Settings">
-                    <i data-lucide="settings" class="w-6 h-6"></i>
-                </a>
-            </div>
-
-            <!-- Logout -->
-            <a href="${pageContext.request.contextPath}/logout"
-               class="nav-btn <%= currentPath.contains("/logout") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-               title="Logout">
-                <i data-lucide="log-out" class="w-6 h-6"></i>
-            </a>
-
-        </div>
+        <%-- Include Sidebar --%>
+        <%@ include file="Sidebar.jsp" %>
 
         <%-- ✅ Alert Message Box (Lấy từ file cũ) --%>
         <c:if test="${not empty sessionScope.message}">
@@ -260,7 +151,8 @@
         </c:if>
 
         <%-- Main Content --%>
-        <div class="flex-1 flex flex-col overflow-hidden">
+        <div class="content-wrapper">
+            <div class="flex-1 flex flex-col overflow-hidden">
             <div class="bg-white border-b px-6 py-4 flex justify-between items-center">
                 <div>
                     <h1 class="text-2xl font-bold text-gray-800">Manage Products</h1>
@@ -403,14 +295,17 @@
                     </div>
                 </div>
             </div>
+            </div>
         </div>
 
+        <%-- 1. Modal Thêm Product (ĐƠN GIẢN) --%>
         <%-- 1. Modal Thêm Product (ĐƠN GIẢN) --%>
         <div id="addProductModal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <h2>Add New Product</h2>
-                <form action="${pageContext.request.contextPath}/AddProductServlet" method="post">
+                <%-- ✅ THAY ĐỔI 1: Thêm enctype="multipart/form-data" --%>
+                <form action="${pageContext.request.contextPath}/AddProductServlet" method="post" enctype="multipart/form-data">
                     <div class="form-group">
                         <label>Product Name:</label>
                         <input type="text" name="productName" required>
@@ -423,16 +318,15 @@
                         <label for="addCategoryName">Category:</label>
                         <select name="categoryName" id="addCategoryName" required>
                             <option value="">-- Select a Category --</option>
-
-                            <%-- Lặp qua 'categoryList' đã được nạp bởi ManageProductServlet --%>
                             <c:forEach var="cat" items="${categoryList}">
                                 <option value="${cat.categoryName}">${cat.categoryName}</option>
                             </c:forEach>
                         </select>
                     </div>
+                    <%-- ✅ THAY ĐỔI 2: Thay input type="text" bằng type="file" --%>
                     <div class="form-group">
-                        <label>Image URL:</label>
-                        <input type="text" name="imageUrl">
+                        <label>Product Image (File):</label>
+                        <input type="file" name="productImage" accept="image/*">
                     </div>
                     <button type="submit">Save Product</button>
                 </form>
@@ -444,8 +338,11 @@
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <h2>Edit Product</h2>
-                <form action="${pageContext.request.contextPath}/EditProductServlet" method="post">
+                <%-- ✅ THAY ĐỔI 3: Thêm enctype="multipart/form-data" --%>
+                <form action="${pageContext.request.contextPath}/EditProductServlet" method="post" enctype="multipart/form-data">
                     <input type="hidden" name="productId" id="editProductId">
+                    <%-- Thêm input hidden để lưu URL ảnh cũ --%>
+                    <input type="hidden" name="existingImageUrl" id="existingImageUrl"> 
                     <div class="form-group">
                         <label>Product Name:</label>
                         <input type="text" name="productName" id="editProductName" required>
@@ -458,16 +355,16 @@
                         <label for="editCategoryName">Category:</label>
                         <select name="categoryName" id="editCategoryName" required>
                             <option value="">-- Select a Category --</option>
-
-                            <%-- Dùng chung 'categoryList' --%>
                             <c:forEach var="cat" items="${categoryList}">
                                 <option value="${cat.categoryName}">${cat.categoryName}</option>
                             </c:forEach>
                         </select>
                     </div>
+                    <%-- ✅ THAY ĐỔI 4: Thay input type="text" bằng type="file" --%>
                     <div class="form-group">
-                        <label>Image URL:</label>
-                        <input type="text" name="imageUrl" id="editImageUrl">
+                        <label>New Product Image (Optional):</label>
+                        <input type="file" name="newProductImage" id="editNewProductImage" accept="image/*">
+                        <p class="text-xs text-gray-500 mt-1">Leave blank to keep current image.</p>
                     </div>
                     <button type="submit">Update Product</button>
                 </form>
@@ -534,7 +431,20 @@
                         document.getElementById("editProductName").value = data.name;
                         document.getElementById("editDescription").value = data.desc;
                         document.getElementById("editCategoryName").value = data.category;
-                        document.getElementById("editImageUrl").value = data.image;
+                        
+                        // ✅ Dòng này đã được thay thế để lưu URL cũ vào input hidden mới
+                        const existingImageUrlInput = document.getElementById("existingImageUrl");
+                        if (existingImageUrlInput) {
+                            existingImageUrlInput.value = data.image;
+                        }
+                        
+                        // Reset input file để không gửi file cũ
+                        const editNewProductImageInput = document.getElementById("editNewProductImage");
+                        if (editNewProductImageInput) {
+                            editNewProductImageInput.value = ''; 
+                        }
+
+                        // Cuối cùng mới hiển thị modal
                         editProductModal.style.display = "block";
                     }
 

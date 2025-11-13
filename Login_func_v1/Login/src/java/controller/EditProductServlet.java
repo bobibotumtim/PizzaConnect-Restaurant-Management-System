@@ -10,8 +10,15 @@ import jakarta.servlet.annotation.*;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.nio.file.Paths; // Cần import này
 
+// ✅ THAY ĐỔI 1: Thêm annotation @MultipartConfig
 @WebServlet(name = "EditProductServlet", urlPatterns = {"/EditProductServlet"})
+@MultipartConfig(
+    fileSizeThreshold = 1024 * 1024 * 2, // 2MB
+    maxFileSize = 1024 * 1024 * 10,      // 10MB
+    maxRequestSize = 1024 * 1024 * 50    // 50MB
+)
 public class EditProductServlet extends HttpServlet {
 
     private ProductDAO productDAO = new ProductDAO();
@@ -27,7 +34,31 @@ public class EditProductServlet extends HttpServlet {
         String productName = request.getParameter("productName");
         String description = request.getParameter("description");
         String categoryName = request.getParameter("categoryName");
-        String imageUrl = request.getParameter("imageUrl");
+        String existingImageUrl = request.getParameter("existingImageUrl"); // Lấy URL ảnh cũ
+        
+        String imageUrl = existingImageUrl; // Mặc định giữ URL ảnh cũ
+
+        // ✅ THAY ĐỔI 2: Xử lý file tải lên mới
+        Part filePart = request.getPart("newProductImage"); // Tên input: newProductImage
+        
+        if (filePart != null && filePart.getSize() > 0) {
+            String fileName = Paths.get(filePart.getSubmittedFileName()).getFileName().toString();
+            String uploadPath = getServletContext().getRealPath("") + "images/products"; // Ví dụ: Lưu vào /images/products/
+            java.io.File uploadDir = new java.io.File(uploadPath);
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
+            
+            // Đảm bảo tên file là duy nhất, ví dụ thêm timestamp
+            String uniqueFileName = System.currentTimeMillis() + "_" + fileName;
+            filePart.write(uploadPath + java.io.File.separator + uniqueFileName);
+            
+            // Cập nhật imageUrl với đường dẫn tương đối mới
+            imageUrl = request.getContextPath() + "/images/products/" + uniqueFileName;
+        }
+        // Nếu filePart.getSize() == 0, imageUrl vẫn giữ giá trị existingImageUrl.
+
+
         boolean isAvailable = true;
 
         HttpSession session = request.getSession();
@@ -59,7 +90,7 @@ public class EditProductServlet extends HttpServlet {
         product.setProductName(productName);
         product.setDescription(description);
         product.setCategoryName(categoryName);
-        product.setImageUrl(imageUrl);
+        product.setImageUrl(imageUrl); // Sử dụng URL mới/cũ
         product.setAvailable(isAvailable);
 
         // 4. Cập nhật Product với Transaction
@@ -77,6 +108,7 @@ public class EditProductServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/manageproduct");
     }
     
+    // ... Giữ nguyên method updateBaseProduct ...
     private boolean updateBaseProduct(Product product) {
         Connection con = null;
         try {
