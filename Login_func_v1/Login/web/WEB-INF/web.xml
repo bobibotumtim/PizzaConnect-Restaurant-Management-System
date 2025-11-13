@@ -316,5 +316,19 @@
         <url-pattern>/test-inventory-monitor</url-pattern>
     </servlet-mapping>
 
+    <!-- Inventory Monitor Servlet -->
+    <servlet>
+        <servlet-name>InventoryMonitorServlet</servlet-name>
+        <servlet-class>controller.InventoryMonitorServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>InventoryMonitorServlet</servlet-name>
+        <url-pattern>/inventorymonitor</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>InventoryMonitorServlet</servlet-name>
+        <url-pattern>/inventory-monitor</url-pattern>
+    </servlet-mapping>
+
 </web-app>
 
