@@ -201,12 +201,9 @@ GO
 CREATE TABLE Payment (
     PaymentID INT IDENTITY(1,1) PRIMARY KEY,
     OrderID INT NOT NULL,
-    -- Chỉ 'Cash' và 'QR Code'
-    PaymentMethod NVARCHAR(50) NOT NULL CHECK (PaymentMethod IN ('Cash', 'QR Code')),
     Amount DECIMAL(10,2) NOT NULL,
     PaymentStatus NVARCHAR(50) DEFAULT 'Pending' CHECK (PaymentStatus IN ('Pending', 'Completed', 'Failed')),
     PaymentDate DATETIME DEFAULT GETDATE(),
-    TransactionID NVARCHAR(100) NULL,
     QRCodeURL NVARCHAR(500) NULL,
     FOREIGN KEY (OrderID) REFERENCES [Order](OrderID) ON DELETE CASCADE
 );
@@ -254,23 +251,6 @@ CREATE TABLE DeletionQueue (
     CONSTRAINT UK_DeletionQueue_Entity UNIQUE (EntityType, EntityID)
 );
 GO
-
--- Thêm bảng DiscountUpdateQueue
-CREATE TABLE DiscountUpdateQueue (
-    QueueID INT IDENTITY(1,1) PRIMARY KEY,
-    DiscountID INT NOT NULL,
-    Description NVARCHAR(255),
-    DiscountType NVARCHAR(50),
-    Value DECIMAL(10,2),
-    MaxDiscount DECIMAL(10,2),
-    MinOrderTotal DECIMAL(10,2),
-    StartDate DATE,
-    EndDate DATE,
-    ScheduledUpdate DATETIME NOT NULL DEFAULT DATEADD(DAY, 1, CAST(GETDATE() AS DATE)),
-    CONSTRAINT UK_DiscountUpdateQueue UNIQUE (DiscountID)
-);
-GO
-
 
 -- ===============================
 -- 💾 SAMPLE DATA
@@ -409,10 +389,10 @@ VALUES
 GO
 
 -- Payments (Thêm dữ liệu mẫu Payment)
-INSERT INTO Payment (OrderID, PaymentMethod, Amount, PaymentStatus, TransactionID)
+INSERT INTO Payment (OrderID, Amount, PaymentStatus)
 VALUES
-(3, 'Cash', 135000, 'Completed', NULL), -- PaymentID 1 cho Order 3
-(2, 'QR Code', 105000, 'Pending', 'TXN_QR_00002'); -- PaymentID 2 cho Order 2 
+(3, 135000, 'Completed'), -- PaymentID 1 cho Order 3
+(2, 105000, 'Pending'); -- PaymentID 2 cho Order 2 
 GO
 
 -- Feedback
@@ -548,26 +528,26 @@ VALUES
 GO
 
 -- Thêm Payments cho các orders đã hoàn thành
-INSERT INTO Payment (OrderID, PaymentMethod, Amount, PaymentStatus, TransactionID, PaymentDate)
+INSERT INTO Payment (OrderID, Amount, PaymentStatus, PaymentDate)
 VALUES
-(4, 'Cash', 145000, 'Completed', NULL, '2025-10-05 13:00:00'),
-(5, 'QR Code', 280000, 'Completed', 'TXN_QR_00005', '2025-10-08 19:20:00'),
-(6, 'Cash', 55000, 'Completed', NULL, '2025-10-12 14:45:00'),
-(7, 'QR Code', 320000, 'Completed', 'TXN_QR_00007', '2025-10-15 20:00:00'),
-(8, 'Cash', 160000, 'Completed', NULL, '2025-10-20 13:50:00'),
-(9, 'Cash', 240000, 'Completed', NULL, '2025-11-01 12:35:00'),
-(10, 'QR Code', 105000, 'Completed', 'TXN_QR_00010', '2025-11-05 16:00:00'),
-(11, 'Cash', 200000, 'Completed', NULL, '2025-11-08 18:35:00'),
-(12, 'QR Code', 360000, 'Completed', 'TXN_QR_00012', '2025-10-10 13:20:00'),
-(13, 'Cash', 170000, 'Completed', NULL, '2025-10-18 19:50:00'),
-(14, 'Cash', 75000, 'Completed', NULL, '2025-10-25 15:00:00'),
-(15, 'QR Code', 320000, 'Completed', 'TXN_QR_00015', '2025-11-02 13:35:00'),
-(16, 'Cash', 250000, 'Completed', NULL, '2025-11-07 18:20:00'),
-(17, 'Cash', 120000, 'Completed', NULL, '2025-10-07 12:00:00'),
-(18, 'QR Code', 80000, 'Completed', 'TXN_QR_00018', '2025-10-14 16:30:00'),
-(19, 'Cash', 200000, 'Completed', NULL, '2025-10-22 20:05:00'),
-(20, 'QR Code', 145000, 'Completed', 'TXN_QR_00020', '2025-11-03 12:50:00'),
-(21, 'Cash', 240000, 'Completed', NULL, '2025-11-09 19:05:00');
+(4, 145000, 'Completed', '2025-10-05 13:00:00'),
+(5, 280000, 'Completed', '2025-10-08 19:20:00'),
+(6, 55000, 'Completed', '2025-10-12 14:45:00'),
+(7, 320000, 'Completed', '2025-10-15 20:00:00'),
+(8, 160000, 'Completed', '2025-10-20 13:50:00'),
+(9, 240000, 'Completed', '2025-11-01 12:35:00'),
+(10, 105000, 'Completed', '2025-11-05 16:00:00'),
+(11, 200000, 'Completed', '2025-11-08 18:35:00'),
+(12, 360000, 'Completed', '2025-10-10 13:20:00'),
+(13, 170000, 'Completed', '2025-10-18 19:50:00'),
+(14, 75000, 'Completed', '2025-10-25 15:00:00'),
+(15, 320000, 'Completed', '2025-11-02 13:35:00'),
+(16, 250000, 'Completed', '2025-11-07 18:20:00'),
+(17, 120000, 'Completed', '2025-10-07 12:00:00'),
+(18, 80000, 'Completed', '2025-10-14 16:30:00'),
+(19, 200000, 'Completed', '2025-10-22 20:05:00'),
+(20, 145000, 'Completed', '2025-11-03 12:50:00'),
+(21, 240000, 'Completed', '2025-11-09 19:05:00');
 GO
 
 -- Thêm một số Feedback
@@ -676,43 +656,6 @@ END
 GO
 
 -- ===========================
-CREATE OR ALTER PROCEDURE ScheduleDiscountUpdate
-    @DiscountID INT,
-    @Description NVARCHAR(255),
-    @DiscountType NVARCHAR(50),
-    @Value DECIMAL(10,2),
-    @MaxDiscount DECIMAL(10,2),
-    @MinOrderTotal DECIMAL(10,2),
-    @StartDate DATE,
-    @EndDate DATE
-AS
-BEGIN
-    SET NOCOUNT ON;
-    
-    DECLARE @ScheduledTime DATETIME = DATEADD(DAY, 1, CAST(GETDATE() AS DATE));
-    
-    IF EXISTS (SELECT 1 FROM DiscountUpdateQueue WHERE DiscountID = @DiscountID)
-    BEGIN
-        UPDATE DiscountUpdateQueue 
-        SET Description = @Description,
-            DiscountType = @DiscountType,
-            Value = @Value,
-            MaxDiscount = @MaxDiscount,
-            MinOrderTotal = @MinOrderTotal,
-            StartDate = @StartDate,
-            EndDate = @EndDate,
-            ScheduledUpdate = @ScheduledTime
-        WHERE DiscountID = @DiscountID;
-    END
-    ELSE
-    BEGIN
-        INSERT INTO DiscountUpdateQueue (DiscountID, Description, DiscountType, Value, MaxDiscount, MinOrderTotal, StartDate, EndDate, ScheduledUpdate)
-        VALUES (@DiscountID, @Description, @DiscountType, @Value, @MaxDiscount, @MinOrderTotal, @StartDate, @EndDate, @ScheduledTime);
-    END
-END
-GO
-
--- ===========================
 CREATE OR ALTER PROCEDURE ProcessDeletionQueue
 AS
 BEGIN
@@ -770,62 +713,6 @@ END
 GO
 
 -- ===========================
-CREATE OR ALTER PROCEDURE ProcessDiscountUpdateQueue
-AS
-BEGIN
-    SET NOCOUNT ON;
-    
-    IF DB_NAME() != 'pizza_demo_DB_FinalModel_Combined'
-    BEGIN
-        PRINT 'This procedure is designed for pizza_demo_DB_FinalModel_Combined only. Current database: ' + DB_NAME();
-        RETURN;
-    END
-    
-    DECLARE @QueueID INT, @DiscountID INT, @Description NVARCHAR(255), @DiscountType NVARCHAR(50);
-    DECLARE @Value DECIMAL(10,2), @MaxDiscount DECIMAL(10,2), @MinOrderTotal DECIMAL(10,2);
-    DECLARE @StartDate DATE, @EndDate DATE;
-    DECLARE @ProcessedCount INT = 0;
-    
-    WHILE (1 = 1)
-    BEGIN
-        SELECT TOP 1 
-            @QueueID = QueueID, @DiscountID = DiscountID, @Description = Description, @DiscountType = DiscountType, 
-            @Value = Value, @MaxDiscount = MaxDiscount, @MinOrderTotal = MinOrderTotal, @StartDate = StartDate, @EndDate = EndDate
-        FROM DiscountUpdateQueue
-        WHERE ScheduledUpdate <= GETDATE()
-        ORDER BY ScheduledUpdate;
-        
-        IF @QueueID IS NULL
-            BREAK;
-        
-        BEGIN TRY
-            BEGIN TRANSACTION;
-            
-            UPDATE Discount 
-            SET Description = @Description, DiscountType = @DiscountType, Value = @Value, MaxDiscount = @MaxDiscount, 
-                MinOrderTotal = @MinOrderTotal, StartDate = @StartDate, EndDate = @EndDate
-            WHERE DiscountID = @DiscountID;
-            
-            DELETE FROM DiscountUpdateQueue WHERE QueueID = @QueueID;
-            SET @ProcessedCount = @ProcessedCount + 1;
-            
-            COMMIT TRANSACTION;
-        END TRY
-        BEGIN CATCH
-            ROLLBACK TRANSACTION;
-            PRINT 'Error processing Update QueueID ' + CAST(@QueueID AS NVARCHAR) + ': ' + ERROR_MESSAGE();
-            BREAK;
-        END CATCH
-        
-        SET @QueueID = NULL;
-        SET @DiscountID = NULL;
-    END
-    
-    PRINT 'Processed ' + CAST(@ProcessedCount AS NVARCHAR) + ' items from discount update queue.';
-END
-GO
-
--- ===========================
 -- SQL Server Agent Jobs (Cập nhật tên DB mới)
 -- ===========================
 USE msdb;
@@ -869,44 +756,3 @@ EXEC sp_attach_schedule
 EXEC sp_add_jobserver
     @job_name = N'ProcessDeletionQueue_pizza_demo_DB_FinalModel_Combined';
 GO
-
--- Xóa Job cũ nếu có
-IF EXISTS (SELECT job_id FROM msdb.dbo.sysjobs WHERE name = N'ProcessDiscountUpdateQueue_pizza_demo_DB_FinalModel_Combined')
-EXEC dbo.sp_delete_job @job_name = N'ProcessDiscountUpdateQueue_pizza_demo_DB_FinalModel_Combined', @delete_unused_schedule=1
-
--- Create job for discount update queue
-EXEC dbo.sp_add_job
-    @job_name = N'ProcessDiscountUpdateQueue_pizza_demo_DB_FinalModel_Combined',
-    @enabled = 1,
-    @description = N'Process scheduled discount updates daily at 00:05 - pizza_demo_DB_FinalModel_Combined only';
-
--- Add job step for discount update queue
-EXEC sp_add_jobstep
-    @job_name = N'ProcessDiscountUpdateQueue_pizza_demo_DB_FinalModel_Combined',
-    @step_name = N'ProcessDiscountUpdateQueue',
-    @subsystem = N'TSQL',
-    @command = N'EXEC ProcessDiscountUpdateQueue',
-    @database_name = N'pizza_demo_DB_FinalModel_Combined';
-
--- Add schedule (run daily at 00:05)
--- Check if schedule 'DailyMidnight5' exists before creating
-IF NOT EXISTS (SELECT name FROM msdb.dbo.sysschedules WHERE name = N'DailyMidnight5')
-BEGIN
-    EXEC sp_add_schedule
-        @schedule_name = N'DailyMidnight5',
-        @freq_type = 4, -- Daily
-        @freq_interval = 1,
-        @active_start_time = 000500; -- 00:05
-END
-
--- Attach schedule to the job
-EXEC sp_attach_schedule
-    @job_name = N'ProcessDiscountUpdateQueue_pizza_demo_DB_FinalModel_Combined',
-    @schedule_name = N'DailyMidnight5';
-
--- Add job to SQL Server Agent
-EXEC sp_add_jobserver
-    @job_name = N'ProcessDiscountUpdateQueue_pizza_demo_DB_FinalModel_Combined';
-GO
-
-
