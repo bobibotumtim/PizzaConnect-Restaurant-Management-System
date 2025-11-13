@@ -99,13 +99,19 @@
             <!-- Category Tabs -->
             <div class="flex border-b bg-gray-50">
                 <button onclick="selectCategory('PIZZA')" class="category-tab flex-1 py-4 px-4 text-sm font-semibold transition-all bg-white text-orange-600 border-b-2 border-orange-600" data-category="PIZZA">
-                    PIZZA
+                    🍕 PIZZA
+                </button>
+                <button onclick="selectCategory('APPETIZER')" class="category-tab flex-1 py-4 px-4 text-sm font-semibold transition-all text-gray-600 hover:bg-gray-100" data-category="APPETIZER">
+                    🥗 APPETIZER
                 </button>
                 <button onclick="selectCategory('BEVERAGES')" class="category-tab flex-1 py-4 px-4 text-sm font-semibold transition-all text-gray-600 hover:bg-gray-100" data-category="BEVERAGES">
-                    DRINKS
+                    🥤 DRINKS
                 </button>
                 <button onclick="selectCategory('SIDES')" class="category-tab flex-1 py-4 px-4 text-sm font-semibold transition-all text-gray-600 hover:bg-gray-100" data-category="SIDES">
-                    SIDE DISHES
+                    🍟 SIDES
+                </button>
+                <button onclick="selectCategory('DESSERT')" class="category-tab flex-1 py-4 px-4 text-sm font-semibold transition-all text-gray-600 hover:bg-gray-100" data-category="DESSERT">
+                    🍰 DESSERT
                 </button>
             </div>
 
@@ -507,9 +513,10 @@
             // Map UI categories to database categories
             const categoryMap = {
                 'PIZZA': 'Pizza',
+                'APPETIZER': 'Appetizer',
                 'BEVERAGES': 'Drink', 
-                'SIDES': 'Side Dishes',  // Changed from 'Topping' to 'Side Dishes'
-                'DESSERTS': 'Dessert'
+                'SIDES': 'SideDish',  // ✅ Fixed: Match database CategoryName (no space)
+                'DESSERT': 'Dessert'
             };
             
             selectedCategory = categoryMap[category] || category;
