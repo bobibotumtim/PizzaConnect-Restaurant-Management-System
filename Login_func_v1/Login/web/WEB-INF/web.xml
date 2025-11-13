@@ -276,5 +276,45 @@
         <url-pattern>/bill</url-pattern>
     </servlet-mapping>
 
+    <!-- Test Session Data Servlet -->
+    <servlet>
+        <servlet-name>TestSessionServlet</servlet-name>
+        <servlet-class>controller.TestSessionServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TestSessionServlet</servlet-name>
+        <url-pattern>/test-session</url-pattern>
+    </servlet-mapping>
+
+    <!-- Manager Dashboard Servlet -->
+    <servlet>
+        <servlet-name>ManagerDashboardServlet</servlet-name>
+        <servlet-class>controller.ManagerDashboardServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ManagerDashboardServlet</servlet-name>
+        <url-pattern>/manager-dashboard</url-pattern>
+    </servlet-mapping>
+
+    <!-- Manager User Management Servlet -->
+    <servlet>
+        <servlet-name>ManagerUserManagementServlet</servlet-name>
+        <servlet-class>controller.ManagerUserManagementServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ManagerUserManagementServlet</servlet-name>
+        <url-pattern>/manager-users</url-pattern>
+    </servlet-mapping>
+
+    <!-- Test Inventory Monitor Servlet -->
+    <servlet>
+        <servlet-name>TestInventoryMonitorServlet</servlet-name>
+        <servlet-class>controller.TestInventoryMonitorServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TestInventoryMonitorServlet</servlet-name>
+        <url-pattern>/test-inventory-monitor</url-pattern>
+    </servlet-mapping>
+
 </web-app>
 
