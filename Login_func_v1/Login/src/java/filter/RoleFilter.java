@@ -40,7 +40,8 @@ public class RoleFilter implements Filter {
     }
     
     private boolean isAdminOnlyPage(String path) {
-        // Admin-only: Manage users, products, discount, dashboard, inventory
+        // Admin-only: Manage users, products, discount, dashboard, inventory management
+        // Note: /inventorymonitor is for managers, not admin-only
         return path.contains("/admin") ||
                path.contains("/adduser") ||
                path.contains("/edituser") ||
@@ -50,7 +51,7 @@ public class RoleFilter implements Filter {
                path.contains("/DeleteProduct") ||
                path.contains("/discount") ||
                path.contains("/dashboard") ||
-               path.contains("/inventory");
+               (path.contains("/inventory") && !path.contains("/inventorymonitor"));
     }
     
     private boolean isWaiterOnlyPage(String path) {
