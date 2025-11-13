@@ -17,6 +17,7 @@
     else if (navbarCurrentPath.contains("/manage-orders")) pageTitle = "Manage Orders";
     else if (navbarCurrentPath.contains("/pos")) pageTitle = "POS";
     else if (navbarCurrentPath.contains("/chatbot")) pageTitle = "AI Assistant";
+    else if (navbarCurrentPath.contains("/order-history")) pageTitle = "Order History";
     else if (navbarCurrentPath.contains("/customer-menu")) pageTitle = "Menu";
     else if (navbarCurrentPath.contains("/home")) pageTitle = "Home";
     else if (navbarCurrentPath.contains("/menu")) pageTitle = "Menu";
