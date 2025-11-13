@@ -6,15 +6,114 @@
     <meta charset="UTF-8">
     <title>Manage Inventory</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        body { background: #f8f9fa; }
-        .sidebar { width: 220px; min-height: 100vh; background:#222831; color: #eee; }
-        .main { padding: 24px; }
-        .nav-btn { display:block; padding:12px 18px; color:#d1d5db; text-decoration:none; }
-        .nav-btn.active { background:#ff7f2a; color:#fff; border-radius:6px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #f5f6fa; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        /* Expandable Sidebar Styles */
+        .sidebar {
+            width: 5rem;
+            transition: width 0.3s ease;
+        }
+        .sidebar:hover {
+            width: 16rem;
+        }
+        .sidebar-text {
+            opacity: 0;
+            white-space: nowrap;
+            transition: opacity 0.3s ease;
+        }
+        .sidebar:hover .sidebar-text {
+            opacity: 1;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: 5rem;
+            padding: 30px;
+            min-height: 100vh;
+        }
+        
+        .page-header {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+        
+        .page-header h2 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .page-header small {
+            color: #7f8c8d;
+        }
+        
+        .btn-add {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        
+        .btn-add:hover {
+            background: #229954;
+        }
+        
         .pagination .page-item.active .page-link {
-            background-color: #fd7e14; border-color:#fd7e14; color:white;
+            background-color: #3498db; 
+            border-color: #3498db; 
+            color: white;
+        }
+        
+        /* Card Styling */
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        /* Table Styling */
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .table thead {
+            background: #34495e;
+            color: white;
+        }
+        
+        .table thead th {
+            border: none;
+            padding: 15px;
+            font-weight: 500;
+        }
+        
+        .table tbody tr {
+            transition: background 0.2s ease;
+        }
+        
+        .table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 500;
         }
         
         /* Modal Styling */
@@ -50,27 +149,88 @@
     </style>
 </head>
 <body>
-<div class="d-flex">
-    <!-- SIDEBAR -->
-    <div class="sidebar p-3">
-        <h4 class="text-white">Dashboard</h4>
-        <hr style="border-color:#333;">
-        <a class="nav-btn" href="${pageContext.request.contextPath}/dashboard">Dashboard</a>
-        <a class="nav-btn" href="${pageContext.request.contextPath}/manageproduct">Products</a>
-        <a class="nav-btn active" href="${pageContext.request.contextPath}/manageinventory">Inventory</a>
-        <a class="nav-btn" href="${pageContext.request.contextPath}/manage-orders">Orders</a>
-        <a class="nav-btn" href="${pageContext.request.contextPath}/manage-customers">Customers</a>
+    <!-- Expandable Sidebar -->
+    <div class="sidebar fixed left-0 top-0 h-full bg-gray-900 flex flex-col py-6 z-50 overflow-hidden">
+        <!-- Logo -->
+        <div class="flex items-center px-4 mb-8">
+            <div class="text-orange-500 text-3xl min-w-[3rem] flex justify-center">
+                <i data-lucide="pizza" class="w-10 h-10"></i>
+            </div>
+            <span class="sidebar-text ml-3 text-white text-xl font-bold">PizzaConnect</span>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 flex flex-col space-y-2 px-3">
+            <a href="${pageContext.request.contextPath}/dashboard" 
+               class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
+                <div class="min-w-[2.5rem] flex justify-center">
+                    <i data-lucide="home" class="w-6 h-6"></i>
+                </div>
+                <span class="sidebar-text ml-3">Dashboard</span>
+            </a>
+
+            <a href="${pageContext.request.contextPath}/manageproduct" 
+               class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
+                <div class="min-w-[2.5rem] flex justify-center">
+                    <i data-lucide="utensils" class="w-6 h-6"></i>
+                </div>
+                <span class="sidebar-text ml-3">Products</span>
+            </a>
+
+            <a href="${pageContext.request.contextPath}/manageinventory" 
+               class="flex items-center px-3 py-3 rounded-lg bg-orange-500 text-white">
+                <div class="min-w-[2.5rem] flex justify-center">
+                    <i data-lucide="box" class="w-6 h-6"></i>
+                </div>
+                <span class="sidebar-text ml-3">Inventory</span>
+            </a>
+
+            <a href="${pageContext.request.contextPath}/manage-orders" 
+               class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
+                <div class="min-w-[2.5rem] flex justify-center">
+                    <i data-lucide="shopping-cart" class="w-6 h-6"></i>
+                </div>
+                <span class="sidebar-text ml-3">Orders</span>
+            </a>
+
+            <a href="${pageContext.request.contextPath}/admin" 
+               class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
+                <div class="min-w-[2.5rem] flex justify-center">
+                    <i data-lucide="users" class="w-6 h-6"></i>
+                </div>
+                <span class="sidebar-text ml-3">Users</span>
+            </a>
+
+            <a href="${pageContext.request.contextPath}/sales-reports" 
+               class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
+                <div class="min-w-[2.5rem] flex justify-center">
+                    <i data-lucide="bar-chart-2" class="w-6 h-6"></i>
+                </div>
+                <span class="sidebar-text ml-3">Reports</span>
+            </a>
+        </nav>
+
+        <!-- Logout -->
+        <div class="px-3">
+            <a href="${pageContext.request.contextPath}/logout" 
+               class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-red-600 hover:text-white transition">
+                <div class="min-w-[2.5rem] flex justify-center">
+                    <i data-lucide="log-out" class="w-6 h-6"></i>
+                </div>
+                <span class="sidebar-text ml-3">Logout</span>
+            </a>
+        </div>
     </div>
 
-    <!-- MAIN CONTENT -->
-    <div class="main flex-fill">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="page-header d-flex justify-content-between align-items-center">
             <div>
-                <h2 class="text-primary">Manage Inventory</h2>
-                <small class="text-muted">PizzaConnect Restaurant Management System</small>
+                <h2>Manage Inventory</h2>
+                <small>PizzaConnect Restaurant Management System</small>
             </div>
             <div>
-                <button type="button" class="btn btn-success" onclick="openAddModal()">+ Add New Inventory</button>
+                <button type="button" class="btn-add" onclick="openAddModal()">+ Add Inventory</button>
             </div>
         </div>
 
@@ -555,6 +715,9 @@
                 openEditModal(id, name, quantity, unit);
             });
         });
+        
+        // Initialize Lucide icons
+        lucide.createIcons();
     });
 </script>
 
