@@ -29,17 +29,17 @@ public class ChefMonitorServlet extends HttpServlet {
 
         // Lấy specialization của chef
         String specialization = chef.getSpecialization();
-        String categoryName = orderDetailDAO.mapSpecializationToCategory(specialization);
+        List<String> categoryNames = orderDetailDAO.mapSpecializationToCategories(specialization);
         
         List<OrderDetail> waitingList;
         List<OrderDetail> preparingList;
         List<OrderDetail> readyList;
         
-        // Nếu chef có specialization, chỉ lấy món thuộc category đó
-        if (categoryName != null) {
-            waitingList = orderDetailDAO.getOrderDetailsByStatusAndCategory("Waiting", categoryName);
-            preparingList = orderDetailDAO.getOrderDetailsByStatusAndCategory("Preparing", categoryName);
-            readyList = orderDetailDAO.getOrderDetailsByStatusAndCategory("Ready", categoryName);
+        // Nếu chef có specialization, chỉ lấy món thuộc các category đó
+        if (categoryNames != null && !categoryNames.isEmpty()) {
+            waitingList = orderDetailDAO.getOrderDetailsByStatusAndCategories("Waiting", categoryNames);
+            preparingList = orderDetailDAO.getOrderDetailsByStatusAndCategories("Preparing", categoryNames);
+            readyList = orderDetailDAO.getOrderDetailsByStatusAndCategories("Ready", categoryNames);
         } else {
             // Nếu không có specialization, lấy tất cả (fallback)
             waitingList = orderDetailDAO.getOrderDetailsByStatus("Waiting");
@@ -83,11 +83,11 @@ public class ChefMonitorServlet extends HttpServlet {
         if ("start".equals(action)) {
             // Lấy thông tin OrderDetail trước khi cập nhật
             String specialization = chef.getSpecialization();
-            String categoryName = orderDetailDAO.mapSpecializationToCategory(specialization);
+            List<String> categoryNames = orderDetailDAO.mapSpecializationToCategories(specialization);
             List<OrderDetail> waitingList;
             
-            if (categoryName != null) {
-                waitingList = orderDetailDAO.getOrderDetailsByStatusAndCategory("Waiting", categoryName);
+            if (categoryNames != null && !categoryNames.isEmpty()) {
+                waitingList = orderDetailDAO.getOrderDetailsByStatusAndCategories("Waiting", categoryNames);
             } else {
                 waitingList = orderDetailDAO.getOrderDetailsByStatus("Waiting");
             }

@@ -83,9 +83,9 @@ public class Employee extends User {
             case "Pizza":
                 return "Chef Pizza";
             case "Drinks":
-                return "Chef Nước";
+                return "Chef Đồ Uống & Tráng Miệng";
             case "SideDishes":
-                return "Chef Side Dishes";
+                return "Chef Món Phụ & Khai Vị";
             default:
                 return specialization;
         }
