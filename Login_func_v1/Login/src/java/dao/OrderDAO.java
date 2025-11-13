@@ -71,12 +71,17 @@ public class OrderDAO extends DBContext {
                     }
                     psDetail.executeBatch();
 
-                    // Update total price
+                    // Calculate total with 10% tax
+                    double tax = totalPrice * 0.1;
+                    double totalWithTax = totalPrice + tax;
+                    
+                    // Update total price (including tax)
                     String sqlUpdate = "UPDATE [Order] SET TotalPrice = ? WHERE OrderID = ?";
                     try (PreparedStatement psUpdate = con.prepareStatement(sqlUpdate)) {
-                        psUpdate.setDouble(1, totalPrice);
+                        psUpdate.setDouble(1, totalWithTax);
                         psUpdate.setInt(2, orderId);
                         psUpdate.executeUpdate();
+                        System.out.println("💰 Order #" + orderId + " - Subtotal: " + totalPrice + ", Tax: " + tax + ", Total: " + totalWithTax);
                     }
                 }
             }
@@ -710,12 +715,17 @@ public class OrderDAO extends DBContext {
                     }
                     psDetail.executeBatch();
 
-                    // Cập nhật tổng tiền
+                    // Calculate total with 10% tax
+                    double tax = totalPrice * 0.1;
+                    double totalWithTax = totalPrice + tax;
+                    
+                    // Cập nhật tổng tiền (including tax)
                     String sqlUpdate = "UPDATE [Order] SET TotalPrice = ? WHERE OrderID = ?";
                     try (PreparedStatement psUpdate = con.prepareStatement(sqlUpdate)) {
-                        psUpdate.setDouble(1, totalPrice);
+                        psUpdate.setDouble(1, totalWithTax);
                         psUpdate.setInt(2, orderId);
                         psUpdate.executeUpdate();
+                        System.out.println("💰 Order #" + orderId + " - Subtotal: " + totalPrice + ", Tax: " + tax + ", Total: " + totalWithTax);
                     }
                 }
             }
@@ -923,8 +933,9 @@ public class OrderDAO extends DBContext {
     }
 
     /**
-     * Add items to existing order
+     * Add items to existing order and RECALCULATE total from scratch
      * Used when waiter adds more items to an order from POS
+     * ✅ FIX: Recalculate total from ALL OrderDetails instead of just adding
      */
     public boolean addItemsToOrder(int orderId, List<OrderDetail> newItems) throws Exception {
         Connection con = null;
@@ -933,14 +944,16 @@ public class OrderDAO extends DBContext {
             con = useConnection();
             con.setAutoCommit(false);
             
-            // Insert new order details
+            System.out.println("💰 Adding " + newItems.size() + " items to Order #" + orderId);
+            
+            // 1️⃣ Insert new order details
             String sqlDetail = """
                 INSERT INTO [OrderDetail] 
                 (OrderID, ProductSizeID, Quantity, TotalPrice, SpecialInstructions, Status)
                 VALUES (?, ?, ?, ?, ?, 'Waiting')
             """;
             
-            double additionalTotal = 0;
+            double newItemsTotal = 0;
             try (PreparedStatement psDetail = con.prepareStatement(sqlDetail)) {
                 for (OrderDetail d : newItems) {
                     psDetail.setInt(1, orderId);
@@ -949,17 +962,42 @@ public class OrderDAO extends DBContext {
                     psDetail.setDouble(4, d.getTotalPrice());
                     psDetail.setString(5, d.getSpecialInstructions());
                     psDetail.addBatch();
-                    additionalTotal += d.getTotalPrice();
+                    newItemsTotal += d.getTotalPrice();
                 }
                 psDetail.executeBatch();
+                System.out.println("✅ Inserted " + newItems.size() + " new items, subtotal: " + newItemsTotal);
             }
             
-            // Update total price of order
-            String sqlUpdate = "UPDATE [Order] SET TotalPrice = TotalPrice + ? WHERE OrderID = ?";
+            // 2️⃣ Recalculate total price from ALL order details (not just new ones)
+            String sqlCalculateTotal = """
+                SELECT ISNULL(SUM(TotalPrice), 0) as Subtotal 
+                FROM OrderDetail 
+                WHERE OrderID = ?
+            """;
+            
+            double subtotal = 0;
+            try (PreparedStatement psCalc = con.prepareStatement(sqlCalculateTotal)) {
+                psCalc.setInt(1, orderId);
+                try (ResultSet rs = psCalc.executeQuery()) {
+                    if (rs.next()) {
+                        subtotal = rs.getDouble("Subtotal");
+                    }
+                }
+            }
+            
+            // 3️⃣ Calculate total with 10% tax
+            double tax = subtotal * 0.1;
+            double totalWithTax = subtotal + tax;
+            
+            System.out.println("💰 Recalculated - Subtotal: " + subtotal + ", Tax: " + tax + ", Total: " + totalWithTax);
+            
+            // 4️⃣ Update Order.TotalPrice (SET, not ADD)
+            String sqlUpdate = "UPDATE [Order] SET TotalPrice = ? WHERE OrderID = ?";
             try (PreparedStatement psUpdate = con.prepareStatement(sqlUpdate)) {
-                psUpdate.setDouble(1, additionalTotal);
+                psUpdate.setDouble(1, totalWithTax);
                 psUpdate.setInt(2, orderId);
                 psUpdate.executeUpdate();
+                System.out.println("✅ Order #" + orderId + " TotalPrice updated to: " + totalWithTax);
             }
             
             con.commit();

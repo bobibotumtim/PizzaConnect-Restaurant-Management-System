@@ -119,15 +119,14 @@
 
         <!-- Right Panel - Cart -->
         <div class="w-96 bg-white border-l flex flex-col">
-            <!-- Customer Info -->
-            <div class="p-4 border-b bg-gray-50">
-                <div class="relative">
-                    <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            <!-- Cart Header -->
+            <div class="p-4 border-b bg-gradient-to-r from-orange-500 to-orange-600">
+                <h3 class="text-white font-bold text-lg flex items-center gap-2">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5-6m0 0h15M17 21a2 2 0 100-4 2 2 0 000 4zM9 21a2 2 0 100-4 2 2 0 000 4z"/>
                     </svg>
-                    <input type="text" id="customerName" placeholder="Customer name (optional)"
-                           class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-orange-500">
-                </div>
+                    Cart Items
+                </h3>
             </div>
 
             <!-- Cart Items -->
@@ -147,28 +146,15 @@
 
             <!-- Summary -->
             <div class="border-t bg-gray-50 p-4 space-y-3">
-                <!-- Discount -->
-                <div class="flex items-center gap-2">
-                    <svg class="text-gray-600" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 8h6m-5 0a3 3 0 110 6H9l3 3m-3-6h6m6 1a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    <input type="number" id="discountInput" placeholder="Discount %" min="0" max="100"
-                           class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
-                </div>
-
                 <!-- Totals -->
                 <div class="space-y-2 text-sm">
                     <div class="flex justify-between text-gray-600">
                         <span>Subtotal:</span>
                         <span id="subtotalAmount" class="font-semibold">0đ</span>
                     </div>
-                    <div id="discountRow" class="flex justify-between text-red-600 hidden">
-                        <span>Discount (<span id="discountPercent">0</span>%):</span>
-                        <span id="discountAmount" class="font-semibold">-0đ</span>
-                    </div>
                     <div class="flex justify-between text-gray-600">
                         <span>Tax (10%):</span>
-                        <span id="taxAmount" class="font-semibold">-0đ</span>
+                        <span id="taxAmount" class="font-semibold">0đ</span>
                     </div>
                     <div class="flex justify-between text-lg font-bold text-gray-800 pt-2 border-t">
                         <span>Total:</span>
@@ -280,7 +266,6 @@
 
         function setupEventListeners() {
             document.getElementById('searchInput').addEventListener('input', filterProducts);
-            document.getElementById('discountInput').addEventListener('input', updateTotals);
             document.getElementById('tableSearch').addEventListener('input', filterTables);
         }
 
@@ -768,9 +753,10 @@
                         '<div class="text-xs font-semibold mb-1">' + item.orderId + '</div>' +
                         
                         '<div class="flex justify-between items-start mb-2">' +
-                            '<div class="font-bold text-lg pr-6">' + 
-                                item.name + 
+                            '<div class="pr-6">' + 
+                                '<div class="font-bold text-lg">' + item.name + '</div>' +
                                 '<div class="text-sm font-normal">(' + item.sizeName + ')</div>' +
+                                '<div class="text-xs text-blue-200 mt-1">Base: ' + formatCurrency(parseFloat(item.price) || 0) + 'đ</div>' +
                             '</div>' +
                             '<div class="text-2xl font-bold">' + item.quantity + '</div>' +
                         '</div>' +
@@ -780,16 +766,27 @@
                                 ? (() => {
                                     // Handle both object array and string array
                                     if (typeof item.toppings[0] === 'object') {
-                                        const toppingNames = item.toppings.map(t => t.toppingName).join(', ');
-                                        const toppingTotal = item.toppings.reduce((sum, t) => sum + (t.price || 0), 0);
-                                        return '🍕 ' + toppingNames + 
-                                               '<div class="text-xs text-blue-200 mt-1">Toppings: +' + formatCurrency(toppingTotal) + '</div>';
+                                        // NEW ITEMS - Show detailed toppings with prices
+                                        const toppingList = item.toppings.map(t => 
+                                            '<div class="flex justify-between items-center text-xs text-blue-100 mb-1">' +
+                                                '<span>🧀 ' + t.toppingName + '</span>' +
+                                                '<span class="font-semibold">+' + formatCurrency(t.price) + 'đ</span>' +
+                                            '</div>'
+                                        ).join('');
+                                        return '<div class="bg-blue-600 bg-opacity-50 rounded p-2 mt-2">' +
+                                               '<div class="text-xs font-semibold text-blue-100 mb-1">Toppings:</div>' +
+                                               toppingList +
+                                               '</div>';
                                     } else {
-                                        // String array (from existing items)
-                                        return '<span class="text-blue-200 italic">' + item.toppings.join(', ') + '</span>';
+                                        // EXISTING ITEMS - Show topping names only (no prices)
+                                        const toppingText = item.toppings[0]; // e.g. "Hawaiian Pizza (Small)"
+                                        return '<div class="bg-blue-600 bg-opacity-30 rounded p-2 mt-2">' +
+                                               '<div class="text-xs font-semibold text-blue-100 mb-1">🧀 Toppings:</div>' +
+                                               '<div class="text-xs text-blue-100">' + toppingText + '</div>' +
+                                               '</div>';
                                     }
                                 })()
-                                : '<span class="text-blue-200 italic">(No toppings)</span>'
+                                : ''
                             ) +
                         '</div>' +
                         
@@ -857,24 +854,14 @@
                 const itemQty = parseInt(item.quantity) || 1;
                 return sum + ((itemPrice + toppingPrice) * itemQty);
             }, 0);
-            const discount = parseFloat(document.getElementById('discountInput').value) || 0;
-            const discountAmount = (subtotal * discount) / 100;
-            // Calculate tax
-            const tax = (subtotal - discountAmount) * 0.1;
-            const total = subtotal - discountAmount + tax;
+            
+            // Calculate tax (10%)
+            const tax = subtotal * 0.1;
+            const total = subtotal + tax;
             
             document.getElementById('subtotalAmount').textContent = formatCurrency(subtotal) + 'đ';
             document.getElementById('taxAmount').textContent = formatCurrency(tax) + 'đ';
             document.getElementById('totalAmount').textContent = formatCurrency(total) + 'đ';
-            
-            const discountRow = document.getElementById('discountRow');
-            if (discount > 0) {
-                discountRow.classList.remove('hidden');
-                document.getElementById('discountPercent').textContent = discount;
-                document.getElementById('discountAmount').textContent = '-' + formatCurrency(discountAmount) + 'đ';
-            } else {
-                discountRow.classList.add('hidden');
-            }
         }
 
         // Format currency
@@ -886,8 +873,6 @@
         function clearOrder() {
             cart = [];
             selectedTable = null;
-            document.getElementById('customerName').value = '';
-            document.getElementById('discountInput').value = '';
             orderCounter = 1;
             
             // Reset table selection UI
@@ -922,22 +907,31 @@
                 return;
             }
             
-            const customerName = document.getElementById('customerName').value.trim() || 'Walk-in Customer';
-            console.log('👤 Customer name:', customerName);
             console.log('🪑 Selected table ID:', selectedTable);
-            const discount = parseFloat(document.getElementById('discountInput').value) || 0;
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const discountAmount = (subtotal * discount) / 100;
-            const tax = (subtotal - discountAmount) * 0.1;
-            const total = subtotal - discountAmount + tax;
+            
+            // Calculate totals including toppings
+            const subtotal = cart.reduce((sum, item) => {
+                let toppingPrice = 0;
+                if (item.toppings && Array.isArray(item.toppings)) {
+                    toppingPrice = item.toppings.reduce((tSum, t) => {
+                        return tSum + (typeof t === 'object' && t.price ? t.price : 0);
+                    }, 0);
+                }
+                const itemPrice = parseFloat(item.price) || 0;
+                const itemQty = parseInt(item.quantity) || 1;
+                return sum + ((itemPrice + toppingPrice) * itemQty);
+            }, 0);
+            
+            const tax = subtotal * 0.1;
+            const total = subtotal + tax;
             
             // Prepare order data
             const orderData = {
-                customerName: customerName,
+                customerName: 'Walk-in Customer',
                 items: cart,
                 subtotal: subtotal,
-                discount: discount,
-                discountAmount: discountAmount,
+                discount: 0,
+                discountAmount: 0,
                 total: total,
                 timestamp: Date.now()
             };
@@ -1007,7 +1001,6 @@
                         alert('✅ Đơn hàng đã được tạo thành công!\n\n' +
                               'Order ID: #' + result.orderId + '\n' +
                               'Bàn: ' + tableName + '\n' +
-                              'Khách hàng: ' + customerName + '\n' +
                               'Tổng tiền: ' + formatCurrency(total) + 'đ');
                     }
                     
