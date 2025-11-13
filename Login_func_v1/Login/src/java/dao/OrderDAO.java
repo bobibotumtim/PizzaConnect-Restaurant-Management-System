@@ -1376,4 +1376,5 @@ public class OrderDAO extends DBContext {
         System.out.println("✅ Loaded " + orders.size() + " orders for customer #" + customerId + " (page " + page + ")");
         return orders;
     }
+    
 }

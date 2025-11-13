@@ -1465,4 +1465,9 @@ public class POSServlet extends HttpServlet {
         
         return cartItems;
     }
+    
+    /**
+     * Add items to existing order
+     */
+    
 }

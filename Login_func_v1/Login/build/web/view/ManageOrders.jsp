@@ -369,7 +369,8 @@
                                                 </a>
                                             <% } %>
                                             
-                                            <% if (status == 0 || status == 1) { %>
+                                            <!-- ADD BUTTON - Show for Waiting, Ready, Dining (not Completed or Cancelled) -->
+                                            <% if (status >= 0 && status <= 2) { %>
                                             <a href="${pageContext.request.contextPath}/pos?orderId=<%= order.getOrderID() %>"
                                                 class="px-2 py-1 text-white bg-green-600 hover:bg-green-700 rounded text-xs font-medium whitespace-nowrap inline-flex items-center gap-1"
                                                 title="Add More Items">
