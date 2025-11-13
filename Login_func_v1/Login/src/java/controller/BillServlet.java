@@ -74,7 +74,6 @@ public class BillServlet extends HttpServlet {
             if (customerNameParam != null && !customerNameParam.trim().isEmpty()) {
                 customerName = customerNameParam;
             } else if (order.getCustomerID() > 0) {
-                // Lấy customer name từ database nếu có customer ID
                 CustomerDAO customerDAO = new CustomerDAO();
                 Customer customer = customerDAO.getCustomerByUserID(order.getCustomerID());
                 if (customer != null && customer.getName() != null) {
@@ -88,7 +87,6 @@ public class BillServlet extends HttpServlet {
             double totalDiscount = 0;
             double finalAmount = order.getTotalPrice();
 
-            // Ưu tiên sử dụng discount từ parameters (nếu có)
             if (loyaltyDiscountParam != null && !loyaltyDiscountParam.isEmpty()) {
                 loyaltyDiscount = Double.parseDouble(loyaltyDiscountParam);
             }
@@ -110,6 +108,11 @@ public class BillServlet extends HttpServlet {
             List<OrderDiscount> discounts = orderDiscountDAO.getDiscountsByOrderId(orderId);
             double databaseDiscount = orderDiscountDAO.getTotalDiscountAmount(orderId);
 
+
+            // Use discount from table
+            if (databaseDiscount > 0) {
+                totalDiscount = databaseDiscount;
+                // Analysis discount from database to get loyaltyDiscount and
             // ƯU TIÊN: Sử dụng discount từ database nếu có
             if (databaseDiscount > 0) {
                 totalDiscount = databaseDiscount;
@@ -153,6 +156,7 @@ public class BillServlet extends HttpServlet {
             req.setAttribute("finalAmount", finalAmount);
             req.setAttribute("currentDate", new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date()));
             req.setAttribute("embedded", embedded);
+            req.setAttribute("customerName", customerName); // Add customer name
             req.setAttribute("customerName", customerName); // Thêm customer name
 
             // Add QR code URL as separate attribute
