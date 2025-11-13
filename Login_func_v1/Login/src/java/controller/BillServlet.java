@@ -74,6 +74,7 @@ public class BillServlet extends HttpServlet {
             if (customerNameParam != null && !customerNameParam.trim().isEmpty()) {
                 customerName = customerNameParam;
             } else if (order.getCustomerID() > 0) {
+                // Get customer name from database if there's a customer ID
                 CustomerDAO customerDAO = new CustomerDAO();
                 Customer customer = customerDAO.getCustomerByUserID(order.getCustomerID());
                 if (customer != null && customer.getName() != null) {
@@ -87,6 +88,7 @@ public class BillServlet extends HttpServlet {
             double totalDiscount = 0;
             double finalAmount = order.getTotalPrice();
 
+            // Use discount from parameters
             if (loyaltyDiscountParam != null && !loyaltyDiscountParam.isEmpty()) {
                 loyaltyDiscount = Double.parseDouble(loyaltyDiscountParam);
             }
@@ -108,15 +110,10 @@ public class BillServlet extends HttpServlet {
             List<OrderDiscount> discounts = orderDiscountDAO.getDiscountsByOrderId(orderId);
             double databaseDiscount = orderDiscountDAO.getTotalDiscountAmount(orderId);
 
-
             // Use discount from table
             if (databaseDiscount > 0) {
                 totalDiscount = databaseDiscount;
                 // Analysis discount from database to get loyaltyDiscount and
-            // ƯU TIÊN: Sử dụng discount từ database nếu có
-            if (databaseDiscount > 0) {
-                totalDiscount = databaseDiscount;
-                // Có thể cần phân tích discount từ database để có loyaltyDiscount và
                 // regularDiscount
             }
 
@@ -157,7 +154,6 @@ public class BillServlet extends HttpServlet {
             req.setAttribute("currentDate", new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date()));
             req.setAttribute("embedded", embedded);
             req.setAttribute("customerName", customerName); // Add customer name
-            req.setAttribute("customerName", customerName); // Thêm customer name
 
             // Add QR code URL as separate attribute
             String qrCodeUrl = generateQRCodeURL(finalAmount, orderId);
