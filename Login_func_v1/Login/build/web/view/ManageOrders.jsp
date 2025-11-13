@@ -430,16 +430,15 @@
                                                                                                     View
                                                                                                 </button>
                                                                                                 
-                                                                                                <!-- PRINT BILL BUTTON - Show for all orders except cancelled (4) -->
-                                                                                                <% if (status != 4) { %>
-                                                                                                    <a href="${pageContext.request.contextPath}/bill?orderId=<%= order.getOrderID() %>"
-                                                                                                    target="_blank"
+                                                                                                <!-- PAY BUTTON - Show for all orders except cancelled -->
+                                                                                                <% if (status != 4 && status != 3) { %>
+                                                                                                    <a href="${pageContext.request.contextPath}/payment?orderId=<%= order.getOrderID() %>"
                                                                                                     class="px-2 py-1 text-white bg-purple-600 hover:bg-purple-700 rounded text-xs font-medium whitespace-nowrap inline-flex items-center gap-1"
-                                                                                                    title="Print Bill">
+                                                                                                    title="Process Payment">
                                                                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                                                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
                                                                                                         </svg>
-                                                                                                        Bill
+                                                                                                        Pay
                                                                                                     </a>
                                                                                                 <% } %>
                                                                                                 
@@ -456,7 +455,7 @@
                                                                                                 <% } %>
 
                                                                                                 <%
-                                                                                                // SERVE BUTTON - Show only for Ready status (1)
+                                                                                                // 4 SERVE BUTTON - Show only for Ready status (1)
                                                                                                 if (status == 1) {
                                                                                                 %>
                                                                                                     <form
@@ -479,37 +478,6 @@
                                                                                                             type="submit"
                                                                                                             class="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 whitespace-nowrap">
                                                                                                             Serve
-                                                                                                        </button>
-                                                                                                    </form>
-                                                                                                <% } %>
-
-                                                                                                <%
-                                                                                                // 4. PAID BUTTON - Show for Unpaid orders except Cancelled (4)
-                                                                                                if (!isPaid && status != 4) {
-                                                                                                %>
-                                                                                                    <form
-                                                                                                        style="display: inline;"
-                                                                                                        method="post"
-                                                                                                        onsubmit="return confirm('Mark this order as Paid?')">
-                                                                                                        <input
-                                                                                                            type="hidden"
-                                                                                                            name="action"
-                                                                                                            value="updatePayment"
-                                                                                                            aria-label="Action">
-                                                                                                        <input
-                                                                                                            type="hidden"
-                                                                                                            name="orderId"
-                                                                                                            value="<%= order.getOrderID() %>"
-                                                                                                            aria-label="Order ID">
-                                                                                                        <input
-                                                                                                            type="hidden"
-                                                                                                            name="paymentStatus"
-                                                                                                            value="Paid"
-                                                                                                            aria-label="Payment Status">
-                                                                                                        <button
-                                                                                                            type="submit"
-                                                                                                            class="px-2 py-1 bg-emerald-500 text-white text-xs rounded hover:bg-emerald-600 whitespace-nowrap">
-                                                                                                            Paid
                                                                                                         </button>
                                                                                                     </form>
                                                                                                 <% } %>
