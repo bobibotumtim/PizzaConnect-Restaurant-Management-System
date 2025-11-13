@@ -63,7 +63,18 @@
         User user = currentUser != null ? currentUser : sessionUser;
         List<Order> orders = (List<Order>) request.getAttribute("orders");
         Integer totalOrders = (Integer) request.getAttribute("totalOrders");
+        Integer completedOrders = (Integer) request.getAttribute("completedOrders");
+        Double totalSpent = (Double) request.getAttribute("totalSpent");
+        Integer currentPage = (Integer) request.getAttribute("currentPage");
+        Integer totalPages = (Integer) request.getAttribute("totalPages");
+        Integer pageSize = (Integer) request.getAttribute("pageSize");
+        
         if (totalOrders == null) totalOrders = 0;
+        if (completedOrders == null) completedOrders = 0;
+        if (totalSpent == null) totalSpent = 0.0;
+        if (currentPage == null) currentPage = 1;
+        if (totalPages == null) totalPages = 1;
+        if (pageSize == null) pageSize = 5;
     %>
 
     <%@ include file="Sidebar.jsp" %>
@@ -105,43 +116,21 @@
                     <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
                         <div class="text-sm text-gray-600 mb-2">Completed</div>
                         <div class="text-3xl font-bold text-green-600">
-                            <% 
-                                int completed = 0;
-                                if (orders != null) {
-                                    for (Order order : orders) {
-                                        if (order.getStatus() == 3) completed++;
-                                    }
-                                }
-                            %>
-                            <%= completed %>
+                            <%= completedOrders %>
                         </div>
                     </div>
                     <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-red-500">
                         <div class="text-sm text-gray-600 mb-2">Total Spent</div>
                         <div class="text-3xl font-bold text-red-600">
-                            <% 
-                                double totalSpent = 0;
-                                if (orders != null) {
-                                    for (Order order : orders) {
-                                        if (order.getStatus() == 3) { // Only completed orders (status = 3)
-                                            totalSpent += order.getTotalPrice();
-                                        }
-                                    }
-                                }
-                            %>
                             <%= String.format("%,.0f", totalSpent) %>đ
                         </div>
                     </div>
                 </div>
 
-                <!-- Orders Table -->
-                <div class="bg-white rounded-xl shadow-md overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-200">
-                        <h2 class="text-xl font-bold text-gray-800">Your Orders</h2>
-                    </div>
-
+                <!-- Orders List -->
+                <div class="space-y-6">
                     <% if (orders == null || orders.isEmpty()) { %>
-                        <div class="p-12 text-center">
+                        <div class="bg-white rounded-xl shadow-md p-12 text-center">
                             <div class="text-6xl mb-4">📦</div>
                             <h3 class="text-xl font-semibold text-gray-700 mb-2">No Orders Yet</h3>
                             <p class="text-gray-500 mb-6">You haven't placed any orders yet.</p>
@@ -150,80 +139,183 @@
                                 Browse Menu
                             </a>
                         </div>
-                    <% } else { %>
-                        <div class="overflow-x-auto">
-                            <table class="w-full">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Order ID</th>
-                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Date</th>
-                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Table</th>
-                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Total</th>
-                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Status</th>
-                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Payment</th>
-                                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Note</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-200">
-                                    <% for (Order order : orders) { 
-                                        Integer tableId = order.getTableID();
-                                        String paymentStatus = order.getPaymentStatus();
-                                    %>
-                                        <tr class="hover:bg-gray-50 transition-colors">
-                                            <td class="px-6 py-4">
-                                                <span class="font-semibold text-gray-900">#<%= order.getOrderID() %></span>
-                                            </td>
-                                            <td class="px-6 py-4 text-gray-700 text-sm">
-                                                <%= order.getOrderDate() != null ? order.getOrderDate().toString() : "N/A" %>
-                                            </td>
-                                            <td class="px-6 py-4 text-gray-700">
-                                                <%= tableId != null && tableId != 0 ? "Table " + tableId : "N/A" %>
-                                            </td>
-                                            <td class="px-6 py-4">
-                                                <span class="font-bold text-gray-900">
-                                                    <%= String.format("%,.0f", order.getTotalPrice()) %>đ
-                                                </span>
-                                            </td>
-                                            <td class="px-6 py-4">
-                                                <% 
-                                                    String statusClass = "";
-                                                    switch(order.getStatus()) {
-                                                        case 0: statusClass = "status-waiting"; break;   // Waiting
-                                                        case 1: statusClass = "status-ready"; break;      // Ready
-                                                        case 2: statusClass = "status-dining"; break;     // Dining
-                                                        case 3: statusClass = "status-completed"; break;  // Completed
-                                                        case 4: statusClass = "status-cancelled"; break;  // Cancelled
-                                                    }
-                                                %>
+                    <% } else { 
+                        for (Order order : orders) { 
+                            Integer tableId = order.getTableID();
+                            String paymentStatus = order.getPaymentStatus();
+                            
+                            String statusClass = "";
+                            String statusIcon = "";
+                            switch(order.getStatus()) {
+                                case 0: 
+                                    statusClass = "status-waiting"; 
+                                    statusIcon = "⏳";
+                                    break;
+                                case 1: 
+                                    statusClass = "status-ready"; 
+                                    statusIcon = "✅";
+                                    break;
+                                case 2: 
+                                    statusClass = "status-dining"; 
+                                    statusIcon = "🍽️";
+                                    break;
+                                case 3: 
+                                    statusClass = "status-completed"; 
+                                    statusIcon = "✔️";
+                                    break;
+                                case 4: 
+                                    statusClass = "status-cancelled"; 
+                                    statusIcon = "❌";
+                                    break;
+                            }
+                            
+                            String paymentClass = "payment-unpaid";
+                            if ("Paid".equals(paymentStatus)) paymentClass = "payment-paid";
+                    %>
+                        <!-- Order Card -->
+                        <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                            <!-- Order Header -->
+                            <div class="bg-gradient-to-r from-orange-50 to-red-50 px-6 py-4 border-b border-orange-100">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-4">
+                                        <div class="text-3xl"><%= statusIcon %></div>
+                                        <div>
+                                            <div class="flex items-center gap-3">
+                                                <span class="text-lg font-bold text-gray-900">Order #<%= order.getOrderID() %></span>
                                                 <span class="status-badge <%= statusClass %>">
                                                     <%= order.getStatusText() %>
                                                 </span>
-                                            </td>
-                                            <td class="px-6 py-4">
-                                                <% 
-                                                    String paymentClass = "payment-unpaid";
-                                                    if ("Paid".equals(paymentStatus)) paymentClass = "payment-paid";
-                                                %>
                                                 <span class="px-3 py-1 rounded-full text-xs font-semibold <%= paymentClass %>">
                                                     <%= paymentStatus != null ? paymentStatus : "Unpaid" %>
                                                 </span>
-                                            </td>
-                                            <td class="px-6 py-4 text-gray-700 text-sm">
-                                                <% 
-                                                    String noteText = (order.getNote() != null && !order.getNote().isEmpty()) 
-                                                        ? order.getNote() : "None";
-                                                %>
-                                                <div class="truncate max-w-xs" title="<%= noteText %>">
-                                                    <%= noteText %>
+                                            </div>
+                                            <div class="text-sm text-gray-600 mt-1">
+                                                <%= order.getOrderDate() != null ? new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(order.getOrderDate()) : "N/A" %>
+                                                <% if (tableId != null && tableId != 0) { %>
+                                                    • Table <%= tableId %>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-2xl font-bold text-orange-600">
+                                            <%= String.format("%,.0f", order.getTotalPrice()) %>đ
+                                        </div>
+                                        <div class="text-xs text-gray-500">Total Amount</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Order Items -->
+                            <div class="px-6 py-4">
+                                <% if (order.getDetails() != null && !order.getDetails().isEmpty()) { %>
+                                    <div class="space-y-3">
+                                        <div class="text-sm font-semibold text-gray-700 mb-3">Order Items:</div>
+                                        <% for (models.OrderDetail detail : order.getDetails()) { %>
+                                            <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 font-bold">
+                                                        <%= detail.getQuantity() %>x
+                                                    </div>
+                                                    <div>
+                                                        <div class="font-medium text-gray-900">
+                                                            <%= detail.getProductName() != null ? detail.getProductName() : "Product #" + detail.getProductSizeID() %>
+                                                        </div>
+                                                        <% if (detail.getSpecialInstructions() != null && !detail.getSpecialInstructions().isEmpty()) { %>
+                                                            <div class="text-xs text-gray-500 italic">
+                                                                Note: <%= detail.getSpecialInstructions() %>
+                                                            </div>
+                                                        <% } %>
+                                                    </div>
                                                 </div>
-                                            </td>
-                                        </tr>
-                                    <% } %>
-                                </tbody>
-                            </table>
+                                                <div class="font-semibold text-gray-900">
+                                                    <%= String.format("%,.0f", detail.getTotalPrice()) %>đ
+                                                </div>
+                                            </div>
+                                        <% } %>
+                                    </div>
+                                <% } else { %>
+                                    <div class="text-sm text-gray-500 italic">No items found</div>
+                                <% } %>
+
+                                <% if (order.getNote() != null && !order.getNote().isEmpty()) { %>
+                                    <div class="mt-4 pt-4 border-t border-gray-200">
+                                        <div class="text-xs font-semibold text-gray-600 mb-1">Order Note:</div>
+                                        <div class="text-sm text-gray-700 bg-gray-50 rounded-lg p-3">
+                                            <%= order.getNote() %>
+                                        </div>
+                                    </div>
+                                <% } %>
+                            </div>
                         </div>
                     <% } %>
+                    <% } %>
                 </div>
+
+                <!-- Pagination -->
+                <% if (totalPages > 1) { %>
+                <div class="mt-8 flex items-center justify-center gap-2">
+                    <!-- Previous Button -->
+                    <% if (currentPage > 1) { %>
+                        <a href="?page=<%= currentPage - 1 %>" 
+                           class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                            ← Previous
+                        </a>
+                    <% } else { %>
+                        <span class="px-4 py-2 bg-gray-100 border border-gray-200 rounded-lg text-gray-400 cursor-not-allowed">
+                            ← Previous
+                        </span>
+                    <% } %>
+
+                    <!-- Page Numbers -->
+                    <div class="flex gap-2">
+                        <% 
+                            int startPage = Math.max(1, currentPage - 2);
+                            int endPage = Math.min(totalPages, currentPage + 2);
+                            
+                            if (startPage > 1) { %>
+                                <a href="?page=1" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">1</a>
+                                <% if (startPage > 2) { %>
+                                    <span class="px-4 py-2 text-gray-400">...</span>
+                                <% } %>
+                            <% }
+                            
+                            for (int i = startPage; i <= endPage; i++) { 
+                                if (i == currentPage) { %>
+                                    <span class="px-4 py-2 bg-orange-500 text-white rounded-lg font-semibold"><%= i %></span>
+                                <% } else { %>
+                                    <a href="?page=<%= i %>" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"><%= i %></a>
+                                <% } %>
+                            <% }
+                            
+                            if (endPage < totalPages) { 
+                                if (endPage < totalPages - 1) { %>
+                                    <span class="px-4 py-2 text-gray-400">...</span>
+                                <% } %>
+                                <a href="?page=<%= totalPages %>" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"><%= totalPages %></a>
+                            <% } %>
+                    </div>
+
+                    <!-- Next Button -->
+                    <% if (currentPage < totalPages) { %>
+                        <a href="?page=<%= currentPage + 1 %>" 
+                           class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                            Next →
+                        </a>
+                    <% } else { %>
+                        <span class="px-4 py-2 bg-gray-100 border border-gray-200 rounded-lg text-gray-400 cursor-not-allowed">
+                            Next →
+                        </span>
+                    <% } %>
+                </div>
+
+                <!-- Page Info -->
+                <div class="mt-4 text-center text-sm text-gray-600">
+                    Showing <%= Math.min((currentPage - 1) * pageSize + 1, totalOrders) %> 
+                    to <%= Math.min(currentPage * pageSize, totalOrders) %> 
+                    of <%= totalOrders %> orders
+                </div>
+                <% } %>
 
                 <!-- Back to Menu Button -->
                 <div class="mt-8 text-center">

@@ -176,38 +176,7 @@ public class OrderDAO extends DBContext {
         return list;
     }
 
-    // 🟢 Get orders by customer ID
-    public List<Order> getOrdersByCustomerId(int customerId) {
-        List<Order> list = new ArrayList<>();
-        String sql = "SELECT * FROM [Order] WHERE CustomerID = ? ORDER BY OrderDate DESC";
 
-        try (Connection con = useConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setInt(1, customerId);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Order o = new Order();
-                    o.setOrderID(rs.getInt("OrderID"));
-                    o.setCustomerID(rs.getInt("CustomerID"));
-                    o.setEmployeeID(rs.getInt("EmployeeID"));
-                    o.setTableID(rs.getInt("TableID"));
-                    o.setOrderDate(rs.getTimestamp("OrderDate"));
-                    o.setStatus(rs.getInt("Status"));
-                    o.setPaymentStatus(rs.getString("PaymentStatus"));
-                    o.setTotalPrice(rs.getDouble("TotalPrice"));
-                    o.setNote(rs.getString("Note"));
-                    list.add(o);
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        System.out.println("✅ Orders loaded for customer " + customerId + ": " + list.size());
-        return list;
-    }
 
     // 🟢 Get order by ID
     public Order getOrderById(int orderId) {
@@ -1271,5 +1240,102 @@ public class OrderDAO extends DBContext {
             e.printStackTrace();
         }
         return false;
+    }
+
+    // 🟢 Get all orders by customer ID (for Order History)
+    public List<Order> getOrdersByCustomerId(int customerId) {
+        List<Order> orders = new ArrayList<>();
+        String sql = """
+            SELECT o.*, t.TableNumber
+            FROM [Order] o
+            LEFT JOIN [Table] t ON o.TableID = t.TableID
+            WHERE o.CustomerID = ?
+            ORDER BY o.OrderDate DESC
+        """;
+
+        try (Connection con = useConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, customerId);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Order order = new Order();
+                    order.setOrderID(rs.getInt("OrderID"));
+                    order.setCustomerID(rs.getInt("CustomerID"));
+                    order.setEmployeeID(rs.getInt("EmployeeID"));
+                    order.setTableID(rs.getInt("TableID"));
+                    order.setOrderDate(rs.getTimestamp("OrderDate"));
+                    order.setStatus(rs.getInt("Status"));
+                    order.setPaymentStatus(rs.getString("PaymentStatus"));
+                    order.setTotalPrice(rs.getDouble("TotalPrice"));
+                    order.setNote(rs.getString("Note"));
+                    
+                    // Load OrderDetails for each order
+                    List<OrderDetail> details = getOrderDetailsByOrderId(order.getOrderID(), con);
+                    order.setDetails(details);
+                    
+                    orders.add(order);
+                }
+            }
+
+        } catch (Exception e) {
+            System.err.println("❌ Error getting orders by customer ID: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        System.out.println("✅ Loaded " + orders.size() + " orders for customer #" + customerId);
+        return orders;
+    }
+
+    // 🟢 Get orders by customer ID with pagination (for Order History)
+    public List<Order> getOrdersByCustomerIdWithPagination(int customerId, int page, int pageSize) {
+        List<Order> orders = new ArrayList<>();
+        int offset = (page - 1) * pageSize;
+        
+        String sql = """
+            SELECT o.*, t.TableNumber
+            FROM [Order] o
+            LEFT JOIN [Table] t ON o.TableID = t.TableID
+            WHERE o.CustomerID = ?
+            ORDER BY o.OrderDate DESC
+            OFFSET ? ROWS FETCH NEXT ? ROWS ONLY
+        """;
+
+        try (Connection con = useConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, customerId);
+            ps.setInt(2, offset);
+            ps.setInt(3, pageSize);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Order order = new Order();
+                    order.setOrderID(rs.getInt("OrderID"));
+                    order.setCustomerID(rs.getInt("CustomerID"));
+                    order.setEmployeeID(rs.getInt("EmployeeID"));
+                    order.setTableID(rs.getInt("TableID"));
+                    order.setOrderDate(rs.getTimestamp("OrderDate"));
+                    order.setStatus(rs.getInt("Status"));
+                    order.setPaymentStatus(rs.getString("PaymentStatus"));
+                    order.setTotalPrice(rs.getDouble("TotalPrice"));
+                    order.setNote(rs.getString("Note"));
+                    
+                    // Load OrderDetails for each order
+                    List<OrderDetail> details = getOrderDetailsByOrderId(order.getOrderID(), con);
+                    order.setDetails(details);
+                    
+                    orders.add(order);
+                }
+            }
+
+        } catch (Exception e) {
+            System.err.println("❌ Error getting paginated orders by customer ID: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        System.out.println("✅ Loaded " + orders.size() + " orders for customer #" + customerId + " (page " + page + ")");
+        return orders;
     }
 }
