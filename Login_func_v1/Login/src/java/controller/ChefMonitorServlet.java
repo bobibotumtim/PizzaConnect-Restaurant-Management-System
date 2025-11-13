@@ -155,8 +155,6 @@ public class ChefMonitorServlet extends HttpServlet {
                 doGet(req, resp);
                 return;
             }
-        } else if ("cancel".equals(action)) {
-            updated = orderDetailDAO.updateOrderDetailStatus(orderDetailId, "Cancelled", chef.getEmployeeID());
         }
 
         if (updated) {
