@@ -117,16 +117,21 @@ public class UserDAO extends DBContext {
         return list;
     }
 
-    // Update user password (expects plain text password, will hash it)
-    public boolean updatePassword(int userId, String newPassword) {
+    // Update user password 
+    public boolean updatePassword(int userId, String hashedPassword) {
         String sql = "UPDATE [User] SET Password = ? WHERE UserID = ?";
         try (Connection connection = getConnection();
                 PreparedStatement ps = connection.prepareStatement(sql)) {
-            String hashed = BCrypt.hashpw(newPassword, BCrypt.gensalt());
-            ps.setString(1, hashed);
+            ps.setString(1, hashedPassword);
             ps.setInt(2, userId);
-            return ps.executeUpdate() > 0;
+
+            int result = ps.executeUpdate();
+            if (result > 0) {
+                System.out.println("Password updated successfully for user ID: " + userId);
+                return true;
+            }
         } catch (SQLException e) {
+            System.err.println("Error updating password for user ID " + userId + ": " + e.getMessage());
             e.printStackTrace();
         }
         return false;
