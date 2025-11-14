@@ -73,12 +73,12 @@
                 <span class="sidebar-text ml-3">Sales Reports</span>
             </a>
 
-            <a href="${pageContext.request.contextPath}/manager-users"
+            <a href="${pageContext.request.contextPath}/profile"
                class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
                 <div class="min-w-[2.5rem] flex justify-center">
-                    <i data-lucide="users" class="w-6 h-6"></i>
+                    <i data-lucide="user-circle" class="w-6 h-6"></i>
                 </div>
-                <span class="sidebar-text ml-3">User Management</span>
+                <span class="sidebar-text ml-3">Edit Profile</span>
             </a>
 
             <a href="${pageContext.request.contextPath}/customer-feedback"
