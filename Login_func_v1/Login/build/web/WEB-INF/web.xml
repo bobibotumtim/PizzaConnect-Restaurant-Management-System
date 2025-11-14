@@ -329,15 +329,48 @@
         <servlet-name>InventoryMonitorServlet</servlet-name>
         <url-pattern>/inventory-monitor</url-pattern>
     </servlet-mapping>
+
+    <!-- ===== POST-PAYMENT FEEDBACK SERVLETS ===== -->
     
-    <!-- Payment Servlet -->
+    <!-- Feedback Prompt Servlet - Hiển thị trang prompt sau thanh toán -->
     <servlet>
-        <servlet-name>PaymentServlet</servlet-name>
-        <servlet-class>controller.PaymentServlet</servlet-class>
+        <servlet-name>FeedbackPromptServlet</servlet-name>
+        <servlet-class>controller.FeedbackPromptServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>PaymentServlet</servlet-name>
-        <url-pattern>/payment</url-pattern>
+        <servlet-name>FeedbackPromptServlet</servlet-name>
+        <url-pattern>/feedback-prompt</url-pattern>
     </servlet-mapping>
+
+    <!-- Post Payment Feedback Servlet - Xử lý submit feedback -->
+    <servlet>
+        <servlet-name>PostPaymentFeedbackServlet</servlet-name>
+        <servlet-class>controller.PostPaymentFeedbackServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>PostPaymentFeedbackServlet</servlet-name>
+        <url-pattern>/submit-feedback</url-pattern>
+    </servlet-mapping>
+
+    <!-- Feedback Form Servlet - Hiển thị form đánh giá -->
+    <servlet>
+        <servlet-name>FeedbackFormServlet</servlet-name>
+        <servlet-class>controller.FeedbackFormServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>FeedbackFormServlet</servlet-name>
+        <url-pattern>/feedback-form</url-pattern>
+    </servlet-mapping>
+
+    <!-- Feedback Confirmation Servlet - Hiển thị trang cảm ơn -->
+    <servlet>
+        <servlet-name>FeedbackConfirmationServlet</servlet-name>
+        <servlet-class>controller.FeedbackConfirmationServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>FeedbackConfirmationServlet</servlet-name>
+        <url-pattern>/feedback-confirmation</url-pattern>
+    </servlet-mapping>
+
 </web-app>
 
