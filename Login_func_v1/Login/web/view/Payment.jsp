@@ -4,6 +4,9 @@
 <%
     Order order = (Order) request.getAttribute("order");
     List<Discount> discounts = (List<Discount>) request.getAttribute("discounts");
+    Double tax = (Double) request.getAttribute("tax");
+    Double taxRate = (Double) request.getAttribute("taxRate");
+    Double totalWithTax = (Double) request.getAttribute("totalWithTax");
     Discount loyaltyDiscount = (Discount) request.getAttribute("loyaltyDiscount");
     Integer conversionRate = (Integer) request.getAttribute("conversionRate");
     Double currentDiscount = (Double) request.getAttribute("currentDiscount");
@@ -19,6 +22,9 @@
     if (customerSearchResults == null) customerSearchResults = new ArrayList<>();
     if (currentDiscount == null) currentDiscount = 0.0;
     if (discounts == null) discounts = new ArrayList<>();
+    if (tax == null) tax = 0.0;
+    if (taxRate == null) taxRate = 0.1;
+    if (totalWithTax == null) totalWithTax = order != null ? order.getTotalPrice() * 1.1 : 0;
     
     CustomerDAO customerDAO = new CustomerDAO();
     
@@ -343,7 +349,6 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
                                     </svg>
                                     <p class="mt-2">No discounts available for this order amount.</p>
-                                    <p class="text-sm">Minimum order total: <%= numberFormat.format(order.getTotalPrice()) %> VND</p>
                                 </div>
                             <% } else { %>
                                 <div class="space-y-2">
@@ -386,6 +391,10 @@
                                     <span>Original Total:</span>
                                     <span id="originalTotal"><%= numberFormat.format(order.getTotalPrice()) %> VND</span>
                                 </div>
+                                <div class="flex justify-between">
+                                    <span>Tax (10%):</span>
+                                    <span id="taxDisplay"><%= numberFormat.format(tax) %> VND</span>
+                                </div>
                                 <div class="flex justify-between text-green-600">
                                     <span>Loyalty Discount:</span>
                                     <span id="loyaltyDiscount">0 VND</span>
@@ -396,7 +405,7 @@
                                 </div>
                                 <div class="border-t pt-2 flex justify-between font-bold text-lg">
                                     <span>Final Amount:</span>
-                                    <span id="finalAmount" class="text-green-600"><%= numberFormat.format(order.getTotalPrice()) %> VND</span>
+                                    <span id="finalAmount" class="text-green-600"><%= numberFormat.format(totalWithTax) %> VND</span>
                                 </div>
                             </div>
 
@@ -488,6 +497,7 @@
     let regularDiscountAmount = 0;
     let conversionRate = <%= conversionRate %>;
     let originalTotal = <%= orderTotalPrice %>;
+    let taxRate = <%= taxRate %>;
     let currentOrderId = <%= orderId %>;
 
     // Create discounts array from JSP
@@ -562,14 +572,16 @@
         if (!selectedDiscount) return 0;
 
         let discount = 0;
+        const taxAmount = originalTotal * taxRate;
+        const totalWithTax = originalTotal + taxAmount;
         
         if (selectedDiscount.discountType === 'Percentage') {
-            discount = originalTotal * (selectedDiscount.value / 100);
+            discount = totalWithTax * (selectedDiscount.value / 100);
             if (selectedDiscount.maxDiscount > 0 && discount > selectedDiscount.maxDiscount) {
                 discount = selectedDiscount.maxDiscount;
             }
         } else if (selectedDiscount.discountType === 'Fixed') {
-            discount = Math.min(selectedDiscount.value, originalTotal); // Không vượt quá tổng tiền
+            discount = Math.min(selectedDiscount.value, totalWithTax); // Not exceed total + tax
         }
         
         return discount;
@@ -581,13 +593,15 @@
             return;
         }
         
+        const taxAmount = originalTotal * taxRate;
+        const totalWithTax = originalTotal + taxAmount;
         const maxDiscountFromPoints = (selectedCustomer.loyaltyPoints / conversionRate) * 1000;
         
         let pointsToUse;
-        if (maxDiscountFromPoints >= originalTotal) {
+        if (maxDiscountFromPoints >= totalWithTax) {
             pointsToUse = Math.min(
                 selectedCustomer.loyaltyPoints, 
-                Math.ceil((originalTotal / 1000) * conversionRate)
+                Math.ceil((totalWithTax / 1000) * conversionRate)
             );
         } else {
             pointsToUse = selectedCustomer.loyaltyPoints;
@@ -633,8 +647,12 @@
     }
 
     function updatePaymentSummary() {
-        const finalAmount = Math.max(0, originalTotal - loyaltyDiscountAmount - regularDiscountAmount);
+        const taxAmount = originalTotal * taxRate;
+        const totalWithTax = originalTotal + taxAmount;
+        const finalAmount = Math.max(0, totalWithTax - loyaltyDiscountAmount - regularDiscountAmount);
         
+        // Update display
+        document.getElementById('taxDisplay').textContent = formatCurrency(taxAmount);
         document.getElementById('loyaltyDiscount').textContent = formatCurrency(loyaltyDiscountAmount);
         document.getElementById('regularDiscount').textContent = formatCurrency(regularDiscountAmount);
         document.getElementById('finalAmount').textContent = formatCurrency(finalAmount);
@@ -642,7 +660,7 @@
 
     function updateConfirmButton() {
         const confirmBtn = document.getElementById('confirmPaymentBtn');
-        // Cho phép thanh toán ngay cả khi không có customer
+        // Allow payment even though there's no customer
         confirmBtn.disabled = false;
     }
 
@@ -651,15 +669,14 @@
     }
 
     function openPaymentModal() {
-        // Không cần kiểm tra selectedCustomer nữa
+        // Calculate current values
+        const currentTaxAmount = originalTotal * taxRate;
+        const currentLoyaltyDiscount = loyaltyDiscountAmount;
+        const currentRegularDiscount = regularDiscountAmount;
+        const totalDiscount = currentLoyaltyDiscount + currentRegularDiscount;
+        const finalAmount = Math.max(0, originalTotal + currentTaxAmount - totalDiscount);
         
-        // Calculate discount to pass to bill
-        const loyaltyDiscount = loyaltyDiscountAmount;
-        const regularDiscount = regularDiscountAmount;
-        const totalDiscount = loyaltyDiscount + regularDiscount;
-        const finalAmount = Math.max(0, originalTotal - totalDiscount);
-        
-        // Tạo customer name mặc định nếu không có customer
+        // Create customer info
         let customerName = "Khách vãng lai";
         let customerId = 0;
         
@@ -668,29 +685,30 @@
             customerId = selectedCustomer.customerId;
         }
         
-        // Create URL with discount parameters and customer name
+        // Create URL with ALL parameters including tax
         const billUrl = '${pageContext.request.contextPath}/bill?orderId=' + currentOrderId + 
                        '&embedded=true' +
-                       '&loyaltyDiscount=' + loyaltyDiscount +
-                       '&regularDiscount=' + regularDiscount +
+                       '&taxAmount=' + currentTaxAmount +
+                       '&taxRate=' + taxRate +
+                       '&loyaltyDiscount=' + currentLoyaltyDiscount +
+                       '&regularDiscount=' + currentRegularDiscount +
                        '&totalDiscount=' + totalDiscount +
                        '&finalAmount=' + finalAmount +
-                       '&customerName=' + encodeURIComponent(customerName);
+                       '&customerName=' + encodeURIComponent(customerName) +
+                       '&originalTotal=' + originalTotal +
+                       '&customerId=' + customerId;
         
         console.log('Loading bill from:', billUrl);
         
-        // Reset states
+        // Reset states and load bill
         document.getElementById('billLoading').classList.remove('hidden');
         document.getElementById('billError').classList.add('hidden');
         document.getElementById('billIframe').classList.add('hidden');
         
-        // Load bill in iframe
         const iframe = document.getElementById('billIframe');
         iframe.src = billUrl;
-        
         document.getElementById('paymentModal').classList.add('show');
         
-        // Set timeout for loading
         setTimeout(() => {
             if (iframe.classList.contains('hidden')) {
                 onBillError();
@@ -730,13 +748,16 @@
             return;
         }
         
-        // Set form values - customerId có thể là 0
+        // Calculate final values
+        const currentTaxAmount = originalTotal * taxRate;
+        const totalDiscount = loyaltyDiscountAmount + regularDiscountAmount;
+        const finalAmount = Math.max(0, originalTotal + currentTaxAmount - totalDiscount);
+        
+        // Set form values
         document.getElementById('formCustomerId').value = selectedCustomer ? selectedCustomer.customerId : 0;
         document.getElementById('formLoyaltyPointsUsed').value = selectedCustomer ? (document.getElementById('loyaltyPointsInput').value || 0) : 0;
         document.getElementById('formDiscountId').value = selectedDiscountId || 0;
         document.getElementById('formCustomerName').value = selectedCustomer ? selectedCustomer.name : 'Khách vãng lai';
-        
-        const finalAmount = originalTotal - loyaltyDiscountAmount - regularDiscountAmount;
         document.getElementById('formFinalAmount').value = finalAmount;
         
         document.getElementById('finalConfirmBtn').disabled = true;

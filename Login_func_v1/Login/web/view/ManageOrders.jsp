@@ -382,35 +382,6 @@
                                             <% } %>
 
                                             <%
-                                            // SERVE BUTTON - Show only for Ready status (1)
-                                                if (status == 1) {
-                                                %>
-                                                    <form
-                                                        style="display: inline;"
-                                                        method="post"
-                                                        onsubmit="return confirm('Đã đưa món cho khách?')">
-                                                        <input
-                                                            type="hidden"
-                                                            name="action"
-                                                            value="updateStatus">
-                                                        <input
-                                                            type="hidden"
-                                                            name="orderId"
-                                                            value="<%= order.getOrderID() %>">
-                                                        <input
-                                                            type="hidden"
-                                                            name="status"
-                                                            value="2">
-                                                        <button
-                                                            type="submit"
-                                                            class="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 whitespace-nowrap">
-                                                            Serve
-                                                        </button>
-                                                    </form>
-                                                <% } %>
-
-
-                                            <%
                                             // CANCEL BUTTON - Pending: no confirm, Processing: need confirm
                                             if (status == 0) {
                                                 // Pending: Cancel without confirm

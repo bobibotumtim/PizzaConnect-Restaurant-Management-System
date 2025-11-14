@@ -57,11 +57,19 @@ public class PaymentServlet extends HttpServlet {
                 return;
             }
 
+            // Calculate tax (10%)
+            double taxRate = 0.1;
+            double tax = order.getTotalPrice() * taxRate;
+            double totalWithTax = order.getTotalPrice() + tax;
+
             // Calculate current discount of order
             double currentDiscount = orderDiscountDAO.getTotalDiscountAmount(orderId);
 
             // Set discount amount for display in JSP
             request.setAttribute("currentDiscount", currentDiscount);
+            request.setAttribute("tax", tax);
+            request.setAttribute("taxRate", taxRate);
+            request.setAttribute("totalWithTax", totalWithTax);
 
             // Get all active discounts (excluding loyalty) and filter by min order total
             List<Discount> availableDiscounts = discountDAO.getDiscountsByStatus(true, 1, null, null, null, null);

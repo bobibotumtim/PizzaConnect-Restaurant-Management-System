@@ -5,6 +5,7 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import models.*;
 import dao.*;
 
@@ -17,67 +18,216 @@ public class BillServlet extends HttpServlet {
             throws ServletException, IOException {
 
         String orderIdParam = req.getParameter("orderId");
+        String embeddedParam = req.getParameter("embedded");
+        boolean embedded = "true".equals(embeddedParam);
+
+        // Get discount parameters from payment page
+        String loyaltyDiscountParam = req.getParameter("loyaltyDiscount");
+        String regularDiscountParam = req.getParameter("regularDiscount");
+        String totalDiscountParam = req.getParameter("totalDiscount");
+        String finalAmountParam = req.getParameter("finalAmount");
+        String customerNameParam = req.getParameter("customerName");
+        String taxAmountParam = req.getParameter("taxAmount");
+        String taxRateParam = req.getParameter("taxRate");
+        String originalTotalParam = req.getParameter("originalTotal");
+
+        System.out.println("Order ID: " + orderIdParam);
+        System.out.println("Embedded: " + embedded);
+        System.out.println("Loyalty Discount Param: " + loyaltyDiscountParam);
+        System.out.println("Regular Discount Param: " + regularDiscountParam);
+        System.out.println("Total Discount Param: " + totalDiscountParam);
+        System.out.println("Final Amount Param: " + finalAmountParam);
+        System.out.println("Customer Name Param: " + customerNameParam);
+        System.out.println("Tax Amount Param: " + taxAmountParam);
+        System.out.println("Tax Rate Param: " + taxRateParam);
+        System.out.println("Original Total Param: " + originalTotalParam);
+
         if (orderIdParam == null || orderIdParam.trim().isEmpty()) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Order ID is required");
-            return;
+            if (embedded) {
+                resp.setContentType("text/html;charset=UTF-8");
+                resp.getWriter().write("<div class='text-center py-8 text-red-600'>Order ID is required</div>");
+                return;
+            } else {
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Order ID is required");
+                return;
+            }
         }
 
         try {
             int orderId = Integer.parseInt(orderIdParam);
 
-            // Lấy thông tin order
+            // Get order information
             OrderDAO orderDAO = new OrderDAO();
             Order order = orderDAO.getOrderWithDetails(orderId);
 
             if (order == null) {
-                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Order not found");
-                return;
+                if (embedded) {
+                    resp.setContentType("text/html;charset=UTF-8");
+                    resp.getWriter().write("<div class='text-center py-8 text-red-600'>Order not found</div>");
+                    return;
+                } else {
+                    resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Order not found");
+                    return;
+                }
             }
 
-            // Lấy thông tin payment
+            // Get customer name
+            String customerName = "Khách vãng lai";
+            if (customerNameParam != null && !customerNameParam.trim().isEmpty()) {
+                customerName = customerNameParam;
+            } else if (order.getCustomerID() > 0) {
+                // Get customer name from database if there's a customer ID
+                CustomerDAO customerDAO = new CustomerDAO();
+                Customer customer = customerDAO.getCustomerByUserID(order.getCustomerID());
+                if (customer != null && customer.getName() != null) {
+                    customerName = customer.getName();
+                }
+            }
+
+            // Process tax information from parameters
+            double taxRate = 0.1; // Default 10%
+            double taxAmount = 0;
+            double originalTotal = order.getTotalPrice();
+
+            if (taxRateParam != null && !taxRateParam.isEmpty()) {
+                taxRate = Double.parseDouble(taxRateParam);
+            }
+            if (taxAmountParam != null && !taxAmountParam.isEmpty()) {
+                taxAmount = Double.parseDouble(taxAmountParam);
+            } else {
+                // Calculate tax if not provided
+                taxAmount = originalTotal * taxRate;
+            }
+            if (originalTotalParam != null && !originalTotalParam.isEmpty()) {
+                originalTotal = Double.parseDouble(originalTotalParam);
+            }
+
+            // Process discount information from parameters
+            double loyaltyDiscount = 0;
+            double regularDiscount = 0;
+            double totalDiscount = 0;
+            double finalAmount = originalTotal + taxAmount; // Default final amount with tax
+
+            // Use discount from parameters
+            if (loyaltyDiscountParam != null && !loyaltyDiscountParam.isEmpty()) {
+                loyaltyDiscount = Double.parseDouble(loyaltyDiscountParam);
+            }
+            if (regularDiscountParam != null && !regularDiscountParam.isEmpty()) {
+                regularDiscount = Double.parseDouble(regularDiscountParam);
+            }
+            if (totalDiscountParam != null && !totalDiscountParam.isEmpty()) {
+                totalDiscount = Double.parseDouble(totalDiscountParam);
+            } else {
+                totalDiscount = loyaltyDiscount + regularDiscount;
+            }
+            if (finalAmountParam != null && !finalAmountParam.isEmpty()) {
+                finalAmount = Double.parseDouble(finalAmountParam);
+            } else {
+                finalAmount = originalTotal + taxAmount - totalDiscount;
+            }
+
+            // Calculate subtotal (original total without tax)
+            double subtotal = originalTotal;
+
+            // Get discount information from database
+            OrderDiscountDAO orderDiscountDAO = new OrderDiscountDAO();
+            List<OrderDiscount> discounts = orderDiscountDAO.getDiscountsByOrderId(orderId);
+            double databaseDiscount = orderDiscountDAO.getTotalDiscountAmount(orderId);
+
+            // Use discount from table
+            if (databaseDiscount > 0) {
+                totalDiscount = databaseDiscount;
+                // Analysis discount from database to get loyaltyDiscount and regularDiscount
+                // You can add logic here to separate loyalty and regular discounts from
+                // database
+            }
+
+            // Get payment information
             PaymentDAO paymentDAO = new PaymentDAO();
             Payment payment = paymentDAO.getPaymentByOrderId(orderId);
 
-            // Nếu chưa có payment, tạo mới
+            // If no payment exists, create new one with final amount
             if (payment == null) {
                 payment = new Payment();
                 payment.setOrderID(orderId);
-                payment.setPaymentMethod("Cash");
-                payment.setAmount(order.getTotalPrice());
+                payment.setAmount(finalAmount);
                 payment.setPaymentStatus("Pending");
                 payment.setPaymentDate(new Date());
 
-                // Tạo QR code URL động
-                String qrUrl = generateQRCodeURL(order.getTotalPrice(), orderId);
+                String qrUrl = generateQRCodeURL(finalAmount, orderId);
                 payment.setQrCodeURL(qrUrl);
 
                 paymentDAO.createPayment(payment);
+            } else {
+                // Update payment amount với final amount đã discount
+                payment.setAmount(finalAmount);
+                String qrUrl = generateQRCodeURL(finalAmount, orderId);
+                payment.setQrCodeURL(qrUrl);
+                paymentDAO.updatePayment(payment);
             }
 
-            // Tính thuế 10%
-            double tax = order.getTotalPrice() * 0.1;
-            double subtotal = order.getTotalPrice();
-            order.setTotalPrice(subtotal + tax);
-
-            // Set attributes cho JSP
+            // Set attributes for JSP
             req.setAttribute("order", order);
             req.setAttribute("payment", payment);
+            req.setAttribute("discounts", discounts);
             req.setAttribute("subtotal", subtotal);
-            req.setAttribute("tax", tax);
+            req.setAttribute("originalTotal", originalTotal);
+            req.setAttribute("taxAmount", taxAmount);
+            req.setAttribute("taxRate", taxRate);
+            req.setAttribute("discountAmount", totalDiscount);
+            req.setAttribute("loyaltyDiscount", loyaltyDiscount);
+            req.setAttribute("regularDiscount", regularDiscount);
+            req.setAttribute("totalDiscount", totalDiscount);
+            req.setAttribute("finalAmount", finalAmount);
             req.setAttribute("currentDate", new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date()));
+            req.setAttribute("embedded", embedded);
+            req.setAttribute("customerName", customerName);
 
-            // Thêm QR code URL như một attribute riêng để sử dụng trong JavaScript
-            String qrCodeUrl = generateQRCodeURL(order.getTotalPrice(), orderId);
+            // Add QR code URL as separate attribute
+            String qrCodeUrl = generateQRCodeURL(finalAmount, orderId);
             req.setAttribute("qrCodeUrl", qrCodeUrl);
 
-            // Forward đến bill page
-            req.getRequestDispatcher(BILL_JSP_PATH).forward(req, resp);
+            System.out.println("Bill Data Prepared:");
+            System.out.println("   Customer Name: " + customerName);
+            System.out.println("   Original Total: " + originalTotal);
+            System.out.println("   Tax Amount: " + taxAmount);
+            System.out.println("   Tax Rate: " + (taxRate * 100) + "%");
+            System.out.println("   Subtotal: " + subtotal);
+            System.out.println("   Loyalty Discount: " + loyaltyDiscount);
+            System.out.println("   Regular Discount: " + regularDiscount);
+            System.out.println("   Total Discount: " + totalDiscount);
+            System.out.println("   Final Amount: " + finalAmount);
+            System.out.println("   Database Discount: " + databaseDiscount);
+
+            System.out.println("Forwarding to Bill.jsp");
+
+            // Forward to bill page
+            RequestDispatcher dispatcher = req.getRequestDispatcher(BILL_JSP_PATH);
+            if (dispatcher != null) {
+                dispatcher.forward(req, resp);
+            } else {
+                System.err.println("Bill.jsp not found");
+                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Bill template not found");
+            }
 
         } catch (NumberFormatException e) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid order ID");
+            e.printStackTrace();
+            if (embedded) {
+                resp.setContentType("text/html;charset=UTF-8");
+                resp.getWriter().write("<div class='text-center py-8 text-red-600'>Invalid order ID</div>");
+            } else {
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid order ID");
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error generating bill");
+            if (embedded) {
+                resp.setContentType("text/html;charset=UTF-8");
+                resp.getWriter().write("<div class='text-center py-8 text-red-600'>Error generating bill: "
+                        + e.getMessage() + "</div>");
+            } else {
+                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                        "Error generating bill: " + e.getMessage());
+            }
         }
     }
 
@@ -87,134 +237,147 @@ public class BillServlet extends HttpServlet {
 
         String action = req.getParameter("action");
         String orderIdParam = req.getParameter("orderId");
+        String embeddedParam = req.getParameter("embedded");
+        boolean embedded = "true".equals(embeddedParam);
+
+        System.out.println("Action: " + action);
+        System.out.println("Order ID: " + orderIdParam);
+        System.out.println("Embedded: " + embedded);
 
         if (orderIdParam == null || orderIdParam.trim().isEmpty()) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Order ID is required");
-            return;
+            if (embedded) {
+                resp.setContentType("text/html;charset=UTF-8");
+                resp.getWriter().write("error:Order ID is required");
+                return;
+            } else {
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Order ID is required");
+                return;
+            }
         }
 
         try {
             int orderId = Integer.parseInt(orderIdParam);
 
-            if ("updatePayment".equals(action)) {
-                updatePaymentMethod(req, resp, orderId);
-            } else if ("processPayment".equals(action)) {
-                processPayment(req, resp, orderId);
+            if ("processPayment".equals(action)) {
+                processPayment(req, resp, orderId, embedded);
             } else if ("getQRCode".equals(action)) {
-                // API endpoint để lấy QR code URL
                 getQRCodeURL(req, resp, orderId);
             } else {
-                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid action");
+                if (embedded) {
+                    resp.setContentType("text/html;charset=UTF-8");
+                    resp.getWriter().write("error:Invalid action");
+                } else {
+                    resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid action");
+                }
             }
 
         } catch (NumberFormatException e) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid order ID");
+            e.printStackTrace();
+            if (embedded) {
+                resp.setContentType("text/html;charset=UTF-8");
+                resp.getWriter().write("error:Invalid order ID");
+            } else {
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid order ID");
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error processing payment");
+            if (embedded) {
+                resp.setContentType("text/html;charset=UTF-8");
+                resp.getWriter().write("error:Error processing payment: " + e.getMessage());
+            } else {
+                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                        "Error processing payment: " + e.getMessage());
+            }
         }
     }
 
-    private void updatePaymentMethod(HttpServletRequest req, HttpServletResponse resp, int orderId)
+    private void processPayment(HttpServletRequest req, HttpServletResponse resp, int orderId, boolean embedded)
             throws ServletException, IOException {
 
-        String paymentMethod = req.getParameter("paymentMethod");
-
-        if (paymentMethod == null || paymentMethod.trim().isEmpty()) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Payment method is required");
-            return;
-        }
+        System.out.println("Processing payment for order: " + orderId);
 
         try {
             PaymentDAO paymentDAO = new PaymentDAO();
             Payment payment = paymentDAO.getPaymentByOrderId(orderId);
 
             if (payment == null) {
-                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Payment not found");
-                return;
-            }
-
-            payment.setPaymentMethod(paymentMethod);
-
-            if ("QR Code".equals(paymentMethod)) {
-                OrderDAO orderDAO = new OrderDAO();
-                Order order = orderDAO.getOrderWithDetails(orderId);
-                if (order != null) {
-                    double tax = order.getTotalPrice() * 0.1;
-                    double subtotal = order.getTotalPrice() - tax;
-                    String qrUrl = generateQRCodeURL(order.getTotalPrice(), orderId);
-                    payment.setQrCodeURL(qrUrl);
+                if (embedded) {
+                    resp.setContentType("text/html;charset=UTF-8");
+                    resp.getWriter().write("error:Payment not found");
+                    return;
+                } else {
+                    resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Payment not found");
+                    return;
                 }
             }
 
-            boolean updated = paymentDAO.updatePayment(payment);
-
-            if (updated) {
-                resp.sendRedirect(req.getContextPath() + "/bill?orderId=" + orderId);
-            } else {
-                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to update payment method");
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error updating payment method");
-        }
-    }
-
-    private void processPayment(HttpServletRequest req, HttpServletResponse resp, int orderId)
-            throws ServletException, IOException {
-
-        try {
-            PaymentDAO paymentDAO = new PaymentDAO();
-            Payment payment = paymentDAO.getPaymentByOrderId(orderId);
-
-            if (payment == null) {
-                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Payment not found");
-                return;
-            }
-
+            // Update payment status to Completed
             payment.setPaymentStatus("Completed");
             payment.setPaymentDate(new Date());
 
-            boolean updated = paymentDAO.updatePayment(payment);
+            boolean paymentUpdated = paymentDAO.updatePayment(payment);
 
-            if (updated) {
-                // Update order payment status
+            if (paymentUpdated) {
+                System.out.println("Payment updated successfully for order: " + orderId);
+
+                // Update order payment status and set order to Completed
                 OrderDAO orderDAO = new OrderDAO();
-                orderDAO.updatePaymentStatus(orderId, "Paid");
-                orderDAO.autoUpdateOrderStatusIfAllServed(orderId);
+                boolean orderUpdated = orderDAO.updateOrderStatusAndPayment(orderId, 3, "Paid");
 
-                // Kiểm tra xem có nên hiển thị feedback prompt không
-                if (shouldShowFeedbackPrompt(orderId)) {
-                    // Redirect đến feedback prompt thay vì bill page
-                    resp.sendRedirect(req.getContextPath() + "/feedback-prompt?orderId=" + orderId);
+                if (orderUpdated) {
+                    System.out.println("Order status and payment updated successfully for order: " + orderId);
+
+                    // Set table to Available if order has table
+                    Order order = orderDAO.getOrderById(orderId);
+                    if (order != null && order.getTableID() > 0) {
+                        dao.TableDAO tableDAO = new dao.TableDAO();
+                        boolean tableUpdated = tableDAO.updateTableStatus(order.getTableID(), "available");
+
+                        if (tableUpdated) {
+                            System.out.println("Table #" + order.getTableID() + " set to available (Order #" + orderId
+                                    + " Paid & Completed)");
+                        } else {
+                            System.err.println("Failed to update table status for Table #" + order.getTableID());
+                        }
+                    }
+
+                    if (embedded) {
+                        resp.setContentType("text/html;charset=UTF-8");
+                        resp.getWriter().write("success:Payment processed successfully");
+                    } else {
+                        resp.sendRedirect(
+                                req.getContextPath() + "/bill?orderId=" + orderId
+                                        + "&message=Payment processed successfully");
+                    }
                 } else {
-                    // Nếu đã có feedback, redirect về home
-                    resp.sendRedirect(req.getContextPath() + "/home?message=Payment processed successfully");
+                    System.err.println("Failed to update order status for order: " + orderId);
+                    if (embedded) {
+                        resp.setContentType("text/html;charset=UTF-8");
+                        resp.getWriter().write("error:Failed to update order status");
+                    } else {
+                        resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to update order status");
+                    }
                 }
             } else {
-                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to process payment");
+                System.err.println("Failed to update payment for order: " + orderId);
+                if (embedded) {
+                    resp.setContentType("text/html;charset=UTF-8");
+                    resp.getWriter().write("error:Failed to process payment");
+                } else {
+                    resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to process payment");
+                }
             }
 
         } catch (Exception e) {
+            System.err.println("Exception processing payment for order " + orderId + ": " + e.getMessage());
             e.printStackTrace();
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error processing payment");
-        }
-    }
-
-    /**
-     * Kiểm tra xem có nên hiển thị feedback prompt không
-     * @param orderId ID của order
-     * @return true nếu chưa có feedback, false nếu đã có
-     */
-    private boolean shouldShowFeedbackPrompt(int orderId) {
-        try {
-            CustomerFeedbackDAO feedbackDAO = new CustomerFeedbackDAO();
-            return !feedbackDAO.hasFeedbackForOrder(orderId);
-        } catch (Exception e) {
-            System.err.println("Error checking feedback for order " + orderId + ": " + e.getMessage());
-            // Nếu có lỗi, vẫn cho hiển thị feedback prompt
-            return true;
+            if (embedded) {
+                resp.setContentType("text/html;charset=UTF-8");
+                resp.getWriter().write("error:Error processing payment: " + e.getMessage());
+            } else {
+                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                        "Error processing payment: " + e.getMessage());
+            }
         }
     }
 
@@ -232,7 +395,7 @@ public class BillServlet extends HttpServlet {
 
             String qrUrl = generateQRCodeURL(order.getTotalPrice(), orderId);
 
-            // Trả về JSON response
+            // Return JSON response
             resp.setContentType("application/json");
             resp.setCharacterEncoding("UTF-8");
             resp.getWriter().write("{\"qrCodeUrl\": \"" + qrUrl + "\"}");
@@ -244,13 +407,13 @@ public class BillServlet extends HttpServlet {
     }
 
     private String generateQRCodeURL(double amount, int orderId) {
-        // Tạo QR code URL với thông tin động
-        String baseUrl = "https://img.vietqr.io/image/vietinbank-113366668888-compact2.jpg";
+        // Generate QR code URL with dynamic information
+        String baseUrl = "https://img.vietqr.io/image/BIDV-5106949427-compact2.jpg";
         String amountStr = String.format("%.0f", amount);
-        String addInfo = "Thanh toan order" + orderId;
+        String addInfo = "Thanh%20toan%20order%20" + orderId;
 
         return baseUrl + "?amount=" + amountStr +
                 "&addInfo=" + addInfo +
-                "&accountName=Pizza Store";
+                "&accountName=Pizza%20Store";
     }
 }
