@@ -229,11 +229,12 @@
         }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 ml-20">
     <!-- Include Sidebar -->
-    <jsp:include page="Sidebar.jsp" />
+    <%@ include file="Sidebar.jsp" %>
+    <%@ include file="NavBar.jsp" %>
     
-    <div class="content-wrapper">
+    <div class="content-wrapper mt-16">
         <div class="max-w-7xl mx-auto px-6 py-8">
             
             <!-- Header -->

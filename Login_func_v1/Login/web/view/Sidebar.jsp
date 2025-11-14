@@ -187,16 +187,16 @@
                 <span class="sidebar-text">Profile</span>
             </a>
             
-            <a href="<%= sidebarContextPath %>/settings" class="sidebar-item <%= sidebarCurrentPath.contains("/settings") ? "active" : "" %>">
-                <div class="sidebar-icon"><i data-lucide="settings"></i></div>
-                <span class="sidebar-text">Settings</span>
-            </a>
-            
         <% } else if (sidebarIsChef) { %>
             <!-- CHEF MENU -->
             <a href="<%= sidebarContextPath %>/ChefMonitor" class="sidebar-item <%= sidebarCurrentPath.contains("/ChefMonitor") ? "active" : "" %>">
                 <div class="sidebar-icon"><i data-lucide="cooking-pot"></i></div>
                 <span class="sidebar-text">Chef Monitor</span>
+            </a>
+
+            <a href="<%= sidebarContextPath %>/profile" class="sidebar-item <%= sidebarCurrentPath.contains("/profile") ? "active" : "" %>">
+                <div class="sidebar-icon"><i data-lucide="user"></i></div>
+                <span class="sidebar-text">Profile</span>
             </a>
             
         <% } else if (sidebarIsWaiter) { %>
@@ -219,6 +219,11 @@
             <a href="<%= sidebarContextPath %>/manage-orders" class="sidebar-item <%= sidebarCurrentPath.contains("/manage-orders") ? "active" : "" %>">
                 <div class="sidebar-icon"><i data-lucide="file-text"></i></div>
                 <span class="sidebar-text">Manage Orders</span>
+            </a>
+
+            <a href="<%= sidebarContextPath %>/profile" class="sidebar-item <%= sidebarCurrentPath.contains("/profile") ? "active" : "" %>">
+                <div class="sidebar-icon"><i data-lucide="user"></i></div>
+                <span class="sidebar-text">Profile</span>
             </a>
         <% } else { %>
             <!-- CUSTOMER MENU -->
@@ -244,15 +249,6 @@
                 <span class="sidebar-text">Profile</span>
             </a>
         <% } %>
-    </div>
-    
-    <!-- Logout at bottom -->
-    <div style="margin-top: auto;">
-        <div class="sidebar-divider"></div>
-        <a href="<%= sidebarContextPath %>/Login?action=logout" class="sidebar-item">
-            <div class="sidebar-icon"><i data-lucide="log-out"></i></div>
-            <span class="sidebar-text">Logout</span>
-        </a>
     </div>
 </div>
 
