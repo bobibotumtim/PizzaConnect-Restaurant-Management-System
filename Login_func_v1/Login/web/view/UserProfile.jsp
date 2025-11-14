@@ -11,13 +11,9 @@
     <style>
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .discount-expiring { border-left: 4px solid #f59e0b; background-color: #fffbeb; }
-        .scroll-container { max-height: 500px; overflow-y: auto; }
-        .order-status-0 { background-color: #fef3c7; color: #d97706; }
-        .order-status-1 { background-color: #dbeafe; color: #1d4ed8; }
-        .order-status-2 { background-color: #dcfce7; color: #16a34a; }
-        .order-status-3 { background-color: #dcfce7; color: #15803d; }
-        .order-status-4 { background-color: #fee2e2; color: #dc2626; }
+        .error-message { color: #dc2626; font-size: 0.875rem; margin-top: 0.25rem; }
+        .input-error { border-color: #dc2626; }
+        .success-message { color: #16a34a; font-size: 0.875rem; margin-top: 0.25rem; }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen ml-20">
@@ -33,6 +29,18 @@
                     <i data-lucide="user" class="w-10 h-10 text-white"></i>
                 </div>
                 <h1 class="text-2xl font-bold text-gray-800">${user.name}</h1>
+                
+                <!-- Display loyalty points for customers -->
+                <c:if test="${user.role == 3}">
+                    <div class="flex items-center justify-center mt-2 text-amber-600">
+                        <i data-lucide="coin" class="w-4 h-4 mr-1"></i>
+                        <span class="font-semibold">${loyaltyPoints} points</span>
+                        <c:if test="${not empty loyaltyValue}">
+                            <span class="text-sm text-gray-600 ml-2">(≈ <fmt:formatNumber value="${loyaltyValue}" type="currency" currencyCode="VND" />)</span>
+                        </c:if>
+                    </div>
+                </c:if>
+                
                 <c:choose>
                     <c:when test="${user.role == 1}"><p class="text-gray-600">Administrator</p></c:when>
                     <c:when test="${user.role == 2}"><p class="text-gray-600">${employeeRole}</p></c:when>
@@ -41,316 +49,390 @@
             </div>
 
             <nav class="space-y-2">
-                <button onclick="showTab('personal')" class="w-full text-left px-4 py-3 rounded-lg bg-orange-500 text-white flex items-center">
-                    <i data-lucide="user" class="w-5 h-5 mr-3"></i>Personal Information
+                <button onclick="showTab('personal')" class="w-full text-left px-4 py-3 rounded-lg ${empty activeTab or activeTab == 'personal' ? 'bg-orange-500 text-white' : 'text-gray-700 hover:bg-gray-100'}">
+                    Personal Information
                 </button>
-                <button onclick="showTab('password')" class="w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 flex items-center">
-                    <i data-lucide="lock" class="w-5 h-5 mr-3"></i>Password
+                <button onclick="showTab('password')" class="w-full text-left px-4 py-3 rounded-lg ${activeTab == 'password' ? 'bg-orange-500 text-white' : 'text-gray-700 hover:bg-gray-100'}">
+                    Password
                 </button>
-                
-                <c:if test="${user.role == 3}">
-                    <button onclick="showTab('loyalty')" class="w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 flex items-center">
-                        <i data-lucide="award" class="w-5 h-5 mr-3"></i>Loyalty & Vouchers
-                    </button>
-                    <button onclick="showTab('orders')" class="w-full text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 flex items-center">
-                        <i data-lucide="history" class="w-5 h-5 mr-3"></i>Order History
-                        <c:if test="${orderTotalOrders > 0}">
-                            <span class="ml-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">${orderTotalOrders}</span>
-                        </c:if>
-                    </button>
-                </c:if>
             </nav>
         </div>
 
         <!-- Main Content -->
         <div class="flex-1 p-8 mt-16">
             <!-- Personal Information Tab -->
-            <div id="personal" class="tab-content active">
+            <div id="personal" class="tab-content ${empty activeTab or activeTab == 'personal' ? 'active' : ''}">
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <h2 class="text-xl font-bold mb-6">Personal Information</h2>
                     
-                    <c:if test="${not empty message}">
-                        <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">${message}</div>
+                    <!-- Success Message -->
+                    <c:if test="${not empty successMessage}">
+                        <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+                            ${successMessage}
+                        </div>
                     </c:if>
                     
-                    <c:if test="${not empty error}">
-                        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">${error}</div>
+                    <!-- Error Message -->
+                    <c:if test="${not empty errorMessage}">
+                        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                            ${errorMessage}
+                        </div>
                     </c:if>
 
-                    <form action="profile" method="post" class="space-y-4">
+                    <form action="profile" method="post" id="personalForm" class="space-y-4">
+                        <input type="hidden" name="action" value="updateProfile">
+                        
                         <div class="grid grid-cols-2 gap-4">
-                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                                <input type="text" name="name" value="${user.name}" class="w-full p-2 border border-gray-300 rounded-lg" readonly></div>
-                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                <input type="email" name="email" value="${user.email}" class="w-full p-2 border border-gray-300 rounded-lg"></div>
-                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                                <input type="text" name="phone" value="${user.phone}" class="w-full p-2 border border-gray-300 rounded-lg"></div>
-                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-                                <select name="gender" class="w-full p-2 border border-gray-300 rounded-lg">
+                            <!-- Name Field -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                                <input type="text" name="name" value="${user.name}" 
+                                       class="w-full p-2 border border-gray-300 rounded-lg ${not empty fieldErrors.name ? 'input-error' : ''}" 
+                                       placeholder="Enter your full name (e.g., Nguyen Van A)"
+                                       required maxlength="100">
+                                <div id="nameError" class="error-message">
+                                    <c:if test="${not empty fieldErrors.name}">${fieldErrors.name}</c:if>
+                                </div>
+                            </div>
+                            
+                            <!-- Email Field -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                                <input type="email" name="email" value="${user.email}" 
+                                       class="w-full p-2 border border-gray-300 rounded-lg ${not empty fieldErrors.email ? 'input-error' : ''}" 
+                                       placeholder="example@gmail.com"
+                                       required maxlength="100">
+                                <div id="emailError" class="error-message">
+                                    <c:if test="${not empty fieldErrors.email}">${fieldErrors.email}</c:if>
+                                </div>
+                            </div>
+                            
+                            <!-- Phone Field -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                                <input type="text" name="phone" value="${user.phone}" 
+                                       class="w-full p-2 border border-gray-300 rounded-lg ${not empty fieldErrors.phone ? 'input-error' : ''}" 
+                                       placeholder="0912345678 (10 digits)"
+                                       required pattern="^0[1-9]\d{8}$" maxlength="10">
+                                <div id="phoneError" class="error-message">
+                                    <c:if test="${not empty fieldErrors.phone}">${fieldErrors.phone}</c:if>
+                                </div>
+                            </div>
+                            
+                            <!-- Gender Field -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Gender *</label>
+                                <select name="gender" class="w-full p-2 border border-gray-300 rounded-lg ${not empty fieldErrors.gender ? 'input-error' : ''}" required>
+                                    <option value="">Select your gender</option>
                                     <option value="Male" ${user.gender == 'Male' ? 'selected' : ''}>Male</option>
                                     <option value="Female" ${user.gender == 'Female' ? 'selected' : ''}>Female</option>
                                     <option value="Other" ${user.gender == 'Other' ? 'selected' : ''}>Other</option>
-                                </select></div>
+                                </select>
+                                <div id="genderError" class="error-message">
+                                    <c:if test="${not empty fieldErrors.gender}">${fieldErrors.gender}</c:if>
+                                </div>
+                            </div>
+                            
+                            <!-- Date of Birth Field -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                                <input type="date" name="dateOfBirth" 
+                                       value="<fmt:formatDate value='${user.dateOfBirth}' pattern='yyyy-MM-dd' />" 
+                                       class="w-full p-2 border border-gray-300 rounded-lg ${not empty fieldErrors.dateOfBirth ? 'input-error' : ''}"
+                                       max="<%= java.time.LocalDate.now().minusYears(13) %>">
+                                <div id="dobError" class="error-message">
+                                    <c:if test="${not empty fieldErrors.dateOfBirth}">${fieldErrors.dateOfBirth}</c:if>
+                                </div>
+                                <div class="text-sm text-gray-500 mt-1">Must be at least 13 years old</div>
+                            </div>
                         </div>
+                        
                         <div class="flex justify-end">
-                            <button type="submit" class="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600">Update Information</button>
+                            <button type="submit" class="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition duration-200">
+                                Update Information
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
 
             <!-- Password Tab -->
-            <div id="password" class="tab-content">
+            <div id="password" class="tab-content ${activeTab == 'password' ? 'active' : ''}">
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <h2 class="text-xl font-bold mb-6">Change Password</h2>
-                    <form action="profile" method="post" class="space-y-4">
+                    
+                    <!-- Password Success Message -->
+                    <c:if test="${not empty passwordSuccess}">
+                        <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+                            ${passwordSuccess}
+                        </div>
+                    </c:if>
+                    
+                    <!-- Password Error Message -->
+                    <c:if test="${not empty passwordError}">
+                        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                            ${passwordError}
+                        </div>
+                    </c:if>
+
+                    <form action="profile" method="post" id="passwordForm" class="space-y-4">
                         <input type="hidden" name="action" value="changePassword">
-                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
-                            <input type="password" name="oldPassword" class="w-full p-2 border border-gray-300 rounded-lg" required></div>
-                        <div><label class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-                            <input type="password" name="newPassword" class="w-full p-2 border border-gray-300 rounded-lg" required></div>
-                        <div><label class="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-                            <input type="password" name="confirmPassword" class="w-full p-2 border border-gray-300 rounded-lg" required></div>
+                        
+                        <!-- Current Password -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Current Password *</label>
+                            <input type="password" name="oldPassword" 
+                                   class="w-full p-2 border border-gray-300 rounded-lg ${not empty fieldErrors.oldPassword ? 'input-error' : ''}" 
+                                   placeholder="Enter your current password"
+                                   required minlength="8" maxlength="50">
+                            <div id="oldPasswordError" class="error-message">
+                                <c:if test="${not empty fieldErrors.oldPassword}">${fieldErrors.oldPassword}</c:if>
+                            </div>
+                        </div>
+                        
+                        <!-- New Password -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">New Password *</label>
+                            <input type="password" name="newPassword" 
+                                   class="w-full p-2 border border-gray-300 rounded-lg ${not empty fieldErrors.newPassword ? 'input-error' : ''}" 
+                                   placeholder="At least 8 characters with letters and numbers"
+                                   required minlength="8" maxlength="50"
+                                   pattern="^(?=.*[A-Za-z])(?=.*\d).{8,}$">
+                            <div id="newPasswordError" class="error-message">
+                                <c:if test="${not empty fieldErrors.newPassword}">${fieldErrors.newPassword}</c:if>
+                            </div>
+                            <div class="text-sm text-gray-500 mt-1">Must contain at least one letter and one number</div>
+                        </div>
+                        
+                        <!-- Confirm New Password -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Confirm New Password *</label>
+                            <input type="password" name="confirmPassword" 
+                                   class="w-full p-2 border border-gray-300 rounded-lg ${not empty fieldErrors.confirmPassword ? 'input-error' : ''}" 
+                                   placeholder="Re-enter your new password"
+                                   required minlength="8" maxlength="50">
+                            <div id="confirmPasswordError" class="error-message">
+                                <c:if test="${not empty fieldErrors.confirmPassword}">${fieldErrors.confirmPassword}</c:if>
+                            </div>
+                        </div>
+                        
                         <div class="flex justify-end">
-                            <button type="submit" class="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600">Change Password</button>
+                            <button type="submit" class="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition duration-200">
+                                Change Password
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
-
-            <!-- Loyalty & Vouchers Tab -->
-            <c:if test="${user.role == 3}">
-                <div id="loyalty" class="tab-content">
-                    <div class="bg-white rounded-lg shadow-md p-6">
-                        <h2 class="text-xl font-bold mb-6">Loyalty Points & Vouchers</h2>
-                        
-                        <!-- Loyalty Points -->
-                        <div class="mb-8 p-6 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg text-white">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <h3 class="text-lg font-semibold">Your Loyalty Points</h3>
-                                    <p class="text-3xl font-bold">${loyaltyPoints} points</p>
-                                    <p class="text-orange-100">≈ <fmt:formatNumber value="${loyaltyPoints * 1000}" type="currency" currencyCode="VND" /> value</p>
-                                </div>
-                                <i data-lucide="award" class="w-12 h-12"></i>
-                            </div>
-                        </div>
-
-                        <!-- Vouchers -->
-                        <div class="mb-8">
-                            <h3 class="text-lg font-semibold mb-4">Your Vouchers</h3>
-                            <c:choose>
-                                <c:when test="${not empty customerDiscounts}">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <c:forEach var="discount" items="${customerDiscounts}">
-                                            <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                                                <div class="flex justify-between items-start mb-2">
-                                                    <h4 class="font-semibold">${discount.description} x${discount.quantity}</h4>
-                                                    <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">${discount.discountType}</span>
-                                                </div>
-                                                <p class="text-sm text-gray-600 mb-2">
-                                                    <c:choose>
-                                                        <c:when test="${discount.discountType == 'Percentage'}">${discount.value}% off</c:when>
-                                                        <c:when test="${discount.discountType == 'Fixed'}"><fmt:formatNumber value="${discount.value}" type="currency" currencyCode="VND" /> off</c:when>
-                                                    </c:choose>
-                                                    <c:if test="${discount.minOrderTotal > 0}">on orders over <fmt:formatNumber value="${discount.minOrderTotal}" type="currency" currencyCode="VND" /></c:if>
-                                                </p>
-                                                <c:if test="${discount.expiryDate != null}">
-                                                    <p class="text-xs text-gray-500">Expires: <fmt:formatDate value="${discount.expiryDate}" pattern="MMM dd, yyyy" /></p>
-                                                </c:if>
-                                            </div>
-                                        </c:forEach>
-                                    </div>
-                                </c:when>
-                                <c:otherwise>
-                                    <p class="text-gray-500 text-center py-4">No vouchers available</p>
-                                </c:otherwise>
-                            </c:choose>
-                        </div>
-
-                        <!-- Available Discounts -->
-                        <div>
-                            <h3 class="text-lg font-semibold mb-4">Available Discounts</h3>
-                            <c:choose>
-                                <c:when test="${not empty activeDiscounts}">
-                                    <div class="grid grid-cols-1 gap-3">
-                                        <c:forEach var="discount" items="${activeDiscounts}">
-                                            <c:set var="now" value="<%= new java.util.Date() %>" />
-                                            <c:set var="sevenDaysFromNow" value="<%= new java.util.Date(new java.util.Date().getTime() + 7 * 24 * 60 * 60 * 1000) %>" />
-                                            
-                                            <div class="border rounded-lg p-4 ${discount.endDate != null && discount.endDate.time <= sevenDaysFromNow.time ? 'discount-expiring' : ''}">
-                                                <div class="flex justify-between items-start">
-                                                    <div>
-                                                        <h4 class="font-semibold">${discount.description}</h4>
-                                                        <p class="text-sm text-gray-600">
-                                                            <c:choose>
-                                                                <c:when test="${discount.discountType == 'Percentage'}">${discount.value}% off</c:when>
-                                                                <c:when test="${discount.discountType == 'Fixed'}"><fmt:formatNumber value="${discount.value}" type="currency" currencyCode="VND" /> off</c:when>
-                                                                <c:when test="${discount.discountType == 'Loyalty'}">${discount.value} points</c:when>
-                                                            </c:choose>
-                                                            <c:if test="${discount.minOrderTotal > 0}">• Min order: <fmt:formatNumber value="${discount.minOrderTotal}" type="currency" currencyCode="VND" /></c:if>
-                                                        </p>
-                                                    </div>
-                                                    <div class="text-right">
-                                                        <c:if test="${discount.endDate != null}">
-                                                            <p class="text-sm ${discount.endDate.time <= sevenDaysFromNow.time ? 'text-orange-600 font-semibold' : 'text-gray-500'}">
-                                                                Ends: <fmt:formatDate value="${discount.endDate}" pattern="MMM dd, yyyy" />
-                                                            </p>
-                                                        </c:if>
-                                                        <c:if test="${discount.endDate == null}"><p class="text-sm text-green-600">No expiry</p></c:if>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </c:forEach>
-                                    </div>
-                                </c:when>
-                                <c:otherwise>
-                                    <p class="text-gray-500 text-center py-4">No active discounts available</p>
-                                </c:otherwise>
-                            </c:choose>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Order History Tab -->
-                <div id="orders" class="tab-content">
-                    <div class="bg-white rounded-lg shadow-md p-6">
-                        <h2 class="text-xl font-bold mb-6">Order History</h2>
-                        
-                        <c:choose>
-                            <c:when test="${empty orders}">
-                                <div class="text-center py-8 text-gray-500">
-                                    <i data-lucide="shopping-cart" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
-                                    <p>No orders found.</p>
-                                </div>
-                            </c:when>
-                            <c:otherwise>
-                                <div class="text-sm text-gray-600 mb-4">Showing ${orders.size()} of ${orderTotalOrders} orders</div>
-
-                                <div class="scroll-container space-y-4">
-                                    <c:forEach var="order" items="${orders}">
-                                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                                            <div class="flex justify-between items-start mb-3">
-                                                <div>
-                                                    <h3 class="font-semibold">Order #${order.orderId}</h3>
-                                                    <p class="text-sm text-gray-600"><fmt:formatDate value="${order.orderDate}" pattern="MMM dd, yyyy HH:mm" /></p>
-                                                </div>
-                                                <div class="text-right">
-                                                    <p class="font-semibold text-lg"><fmt:formatNumber value="${order.totalPrice}" type="currency" currencyCode="VND" /></p>
-                                                    <div class="flex items-center gap-2 mt-1">
-                                                        <span class="px-2 py-1 text-xs rounded-full ${order.paymentStatus == 'Paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${order.paymentStatus}</span>
-                                                        <span class="px-2 py-1 text-xs rounded-full order-status-${order.status}">
-                                                            <c:choose>
-                                                                <c:when test="${order.status == 0}">Pending</c:when>
-                                                                <c:when test="${order.status == 1}">Preparing</c:when>
-                                                                <c:when test="${order.status == 2}">Served</c:when>
-                                                                <c:when test="${order.status == 3}">Completed</c:when>
-                                                                <c:when test="${order.status == 4}">Cancelled</c:when>
-                                                            </c:choose>
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="flex justify-between items-center text-sm text-gray-600">
-                                                <div>
-                                                    <c:if test="${order.tableNumber != null}">Table ${order.tableNumber} • </c:if>
-                                                    ${order.itemCount} items
-                                                </div>
-                                                
-                                                <c:if test="${order.paymentStatus == 'Paid' && order.status == 3}">
-                                                    <button onclick="openFeedbackModal(${order.orderId})" class="bg-orange-500 text-white px-3 py-1 rounded text-sm hover:bg-orange-600 flex items-center">
-                                                        <i data-lucide="star" class="w-3 h-3 mr-1"></i>Give Feedback
-                                                    </button>
-                                                </c:if>
-                                            </div>
-                                        </div>
-                                    </c:forEach>
-                                </div>
-
-                                <!-- Pagination -->
-                                <div class="text-center text-sm text-gray-600 mt-6">
-                                    Page ${orderCurrentPage} of ${orderTotalPages}
-                                    <div class="flex justify-center gap-2 mt-2">
-                                        <c:if test="${orderCurrentPage > 1}">
-                                            <button onclick="loadOrderPage(${orderCurrentPage - 1})" class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100">Previous</button>
-                                        </c:if>
-                                        <c:if test="${orderCurrentPage < orderTotalPages}">
-                                            <button onclick="loadOrderPage(${orderCurrentPage + 1})" class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100">Next</button>
-                                        </c:if>
-                                    </div>
-                                </div>
-                            </c:otherwise>
-                        </c:choose>
-                    </div>
-                </div>
-            </c:if>
         </div>
     </div>
 
     <script>
         lucide.createIcons();
 
-        function showTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.getElementById(tabName).classList.add('active');
+        // Initialize with correct tab based on server-side attribute
+        document.addEventListener('DOMContentLoaded', function() {
+            const activeTab = '${not empty activeTab ? activeTab : "personal"}';
+            showTab(activeTab, false);
             
+            // Clear form data on page load to prevent resubmission
+            if (window.history.replaceState) {
+                window.history.replaceState(null, null, window.location.href);
+            }
+        });
+
+        function showTab(tabName, updateEvent = true) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            const selectedTab = document.getElementById(tabName);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+            
+            // Update tab button styles
             document.querySelectorAll('nav button').forEach(btn => {
                 btn.classList.remove('bg-orange-500', 'text-white');
                 btn.classList.add('text-gray-700', 'hover:bg-gray-100');
             });
             
-            event.currentTarget.classList.add('bg-orange-500', 'text-white');
-            event.currentTarget.classList.remove('text-gray-700', 'hover:bg-gray-100');
+            // Highlight active tab button
+            const activeBtn = document.querySelector(`nav button[onclick="showTab('${tabName}')"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-orange-500', 'text-white');
+                activeBtn.classList.remove('text-gray-700', 'hover:bg-gray-100');
+            }
             
-            sessionStorage.setItem('activeTab', tabName);
-        }
-
-        window.addEventListener('load', () => {
-            const activeTab = sessionStorage.getItem('activeTab') || 'personal';
-            showTab(activeTab);
-        });
-
-        function loadOrderPage(page) {
-            sessionStorage.setItem('orderScrollData', JSON.stringify({
-                page: ${orderCurrentPage},
-                direction: page > ${orderCurrentPage} ? 'down' : 'up'
-            }));
-            window.location.href = `profile?orderPage=${page}`;
-        }
-
-        const scrollContainer = document.querySelector('.scroll-container');
-        if (scrollContainer) {
-            scrollContainer.addEventListener('scroll', () => {
-                const scrollTop = scrollContainer.scrollTop;
-                const scrollBottom = scrollContainer.clientHeight + scrollTop;
-
-                if (scrollBottom >= scrollContainer.scrollHeight - 50 && ${orderCurrentPage} < ${orderTotalPages}) {
-                    loadOrderPage(${orderCurrentPage} + 1);
-                }
-
-                if (scrollTop <= 0 && ${orderCurrentPage} > 1) {
-                    loadOrderPage(${orderCurrentPage} - 1);
-                }
-            });
-
-            const scrollData = sessionStorage.getItem('orderScrollData');
-            if (scrollData) {
-                const { page, direction } = JSON.parse(scrollData);
-                sessionStorage.removeItem('orderScrollData');
-
-                if (direction === 'down' && page + 1 === ${orderCurrentPage}) {
-                    scrollContainer.scrollTop = 10;
-                }
-                if (direction === 'up' && page - 1 === ${orderCurrentPage}) {
-                    scrollContainer.scrollTop = scrollContainer.scrollHeight - scrollContainer.clientHeight - 10;
-                }
+            // Store active tab in session storage only if triggered by user click
+            if (updateEvent) {
+                sessionStorage.setItem('activeTab', tabName);
             }
         }
 
-        function openFeedbackModal(orderId) {
-            alert('Feedback functionality for order #' + orderId + ' will be implemented here');
+        // Form validation for personal information
+        document.getElementById('personalForm')?.addEventListener('submit', function(e) {
+            clearErrors();
+            let isValid = validatePersonalForm();
+
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+
+        // Form validation for password change
+        document.getElementById('passwordForm')?.addEventListener('submit', function(e) {
+            clearErrors();
+            let isValid = validatePasswordForm();
+
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+
+        function validatePersonalForm() {
+            let isValid = true;
+
+            // Name validation
+            const name = document.querySelector('input[name="name"]');
+            if (!name.value.trim()) {
+                showError('nameError', 'Full name is required');
+                name.classList.add('input-error');
+                isValid = false;
+            } else if (name.value.trim().length < 2) {
+                showError('nameError', 'Name must be at least 2 characters long');
+                name.classList.add('input-error');
+                isValid = false;
+            }
+
+            // Email validation
+            const email = document.querySelector('input[name="email"]');
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!email.value.trim()) {
+                showError('emailError', 'Email address is required');
+                email.classList.add('input-error');
+                isValid = false;
+            } else if (!emailRegex.test(email.value)) {
+                showError('emailError', 'Please enter a valid email address (e.g., example@gmail.com)');
+                email.classList.add('input-error');
+                isValid = false;
+            }
+
+            // Phone validation
+            const phone = document.querySelector('input[name="phone"]');
+            const phoneRegex = /^0[1-9]\d{8}$/;
+            if (!phone.value.trim()) {
+                showError('phoneError', 'Phone number is required');
+                phone.classList.add('input-error');
+                isValid = false;
+            } else if (!phoneRegex.test(phone.value)) {
+                showError('phoneError', 'Please enter a valid 10-digit phone number starting with 0 (e.g., 0912345678)');
+                phone.classList.add('input-error');
+                isValid = false;
+            }
+
+            // Gender validation
+            const gender = document.querySelector('select[name="gender"]');
+            if (!gender.value) {
+                showError('genderError', 'Please select your gender');
+                gender.classList.add('input-error');
+                isValid = false;
+            }
+
+            // Date of Birth validation
+            const dob = document.querySelector('input[name="dateOfBirth"]');
+            if (dob.value) {
+                const birthDate = new Date(dob.value);
+                const today = new Date();
+                const minAgeDate = new Date();
+                minAgeDate.setFullYear(today.getFullYear() - 13);
+                
+                if (birthDate > minAgeDate) {
+                    showError('dobError', 'You must be at least 13 years old');
+                    dob.classList.add('input-error');
+                    isValid = false;
+                }
+            }
+
+            return isValid;
         }
+
+        function validatePasswordForm() {
+            let isValid = true;
+
+            const oldPassword = document.querySelector('input[name="oldPassword"]');
+            const newPassword = document.querySelector('input[name="newPassword"]');
+            const confirmPassword = document.querySelector('input[name="confirmPassword"]');
+
+            // Current password validation
+            if (!oldPassword.value.trim()) {
+                showError('oldPasswordError', 'Please enter your current password');
+                oldPassword.classList.add('input-error');
+                isValid = false;
+            } else if (oldPassword.value.length < 8) {
+                showError('oldPasswordError', 'Current password must be at least 8 characters');
+                oldPassword.classList.add('input-error');
+                isValid = false;
+            }
+
+            // New password validation
+            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+            if (!newPassword.value.trim()) {
+                showError('newPasswordError', 'Please enter a new password');
+                newPassword.classList.add('input-error');
+                isValid = false;
+            } else if (newPassword.value.length < 8) {
+                showError('newPasswordError', 'New password must be at least 8 characters long');
+                newPassword.classList.add('input-error');
+                isValid = false;
+            } else if (!passwordRegex.test(newPassword.value)) {
+                showError('newPasswordError', 'Password must contain at least one letter and one number');
+                newPassword.classList.add('input-error');
+                isValid = false;
+            }
+
+            // Confirm password validation
+            if (!confirmPassword.value.trim()) {
+                showError('confirmPasswordError', 'Please confirm your new password');
+                confirmPassword.classList.add('input-error');
+                isValid = false;
+            } else if (newPassword.value !== confirmPassword.value) {
+                showError('confirmPasswordError', 'New passwords do not match. Please enter the same password in both fields');
+                confirmPassword.classList.add('input-error');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = message;
+            }
+        }
+
+        function clearErrors() {
+            document.querySelectorAll('.error-message').forEach(el => {
+                el.textContent = '';
+            });
+            document.querySelectorAll('.input-error').forEach(el => {
+                el.classList.remove('input-error');
+            });
+        }
+
+        // Real-time validation and clear errors on input
+        document.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('input', function() {
+                this.classList.remove('input-error');
+                const errorElement = document.getElementById(this.name + 'Error');
+                if (errorElement) {
+                    errorElement.textContent = '';
+                }
+            });
+        });
     </script>
 </body>
 </html>

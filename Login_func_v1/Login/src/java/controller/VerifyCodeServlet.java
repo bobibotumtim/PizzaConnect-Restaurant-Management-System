@@ -6,25 +6,24 @@ import java.io.IOException;
 import dao.TokenDAO;
 import dao.UserDAO;
 import models.User;
+import org.mindrot.jbcrypt.BCrypt;
 
 public class VerifyCodeServlet extends HttpServlet {
 
-    // Forward path của JSP (relative với web content root)
     private static final String VERIFY_JSP = "/view/VerifyCode.jsp";
-    private static final String PROFILE_JSP = "/view/UserProfile.jsp";
     private static final String LOGIN_REDIRECT = "Login";
+    private static final String PROFILE_REDIRECT = "profile";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(LOGIN_REDIRECT); // nếu chưa login → redirect
+        if (session == null || session.getAttribute("verifyingUserId") == null) {
+            response.sendRedirect(LOGIN_REDIRECT);
             return;
         }
 
-        // forward tới VerifyCode.jsp
         request.getRequestDispatcher(VERIFY_JSP).forward(request, response);
     }
 
@@ -33,47 +32,59 @@ public class VerifyCodeServlet extends HttpServlet {
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
+        if (session == null || session.getAttribute("verifyingUserId") == null) {
             response.sendRedirect(LOGIN_REDIRECT);
             return;
         }
 
         String otp = request.getParameter("otp");
-        if (otp == null || otp.isEmpty()) {
+        if (otp == null || otp.trim().isEmpty()) {
             request.setAttribute("error", "Please enter the verification code!");
             request.getRequestDispatcher(VERIFY_JSP).forward(request, response);
             return;
         }
 
-        User user = (User) session.getAttribute("user");
-        // Lấy mật khẩu tạm được lưu khi gửi OTP
-        String pendingPassword = (String) session.getAttribute("pendingPassword");
+        Integer userId = (Integer) session.getAttribute("verifyingUserId");
 
-        if (pendingPassword == null) {
-            request.setAttribute("error", "No pending password change found!");
+        if (userId == null) {
+            request.setAttribute("error", "Session expired. Please try again.");
             request.getRequestDispatcher(VERIFY_JSP).forward(request, response);
             return;
         }
 
-        // Kiểm tra OTP
+        // Verify OTP
         TokenDAO tokenDAO = new TokenDAO();
-        boolean isValid = tokenDAO.verifyOTP(user.getUserID(), otp);
+        boolean isValid = tokenDAO.verifyOTP(userId, otp.trim());
 
         if (isValid) {
-            // Cập nhật mật khẩu mới (updatePassword will hash it)
-            UserDAO userDAO = new UserDAO();
-            boolean updated = userDAO.updatePassword(user.getUserID(), pendingPassword);
+            // Get new hashed password
+            String hashedNewPassword = tokenDAO.getHashedPasswordFromOTP(otp.trim());
 
-            if (updated) {
-                // Hash the password before storing in session
-                String hashedPassword = org.mindrot.jbcrypt.BCrypt.hashpw(pendingPassword, org.mindrot.jbcrypt.BCrypt.gensalt());
-                user.setPassword(hashedPassword);
-                session.setAttribute("user", user);
-                session.removeAttribute("pendingPassword");
-                request.setAttribute("message", "Password changed successfully!");
-                request.getRequestDispatcher(PROFILE_JSP).forward(request, response);
+            if (hashedNewPassword != null) {
+                // Update password
+                UserDAO userDAO = new UserDAO();
+                boolean updated = userDAO.updatePassword(userId, hashedNewPassword);
+
+                if (updated) {
+                    // Mark OTP as used
+                    tokenDAO.markOTPUsed(otp.trim());
+
+                    // Invalidate session to logout user
+                    if (session != null) {
+                        session.invalidate();
+                    }
+
+                    // Set success message and redirect to login
+                    HttpSession newSession = request.getSession(true);
+
+                    response.sendRedirect(LOGIN_REDIRECT);
+                    return;
+                } else {
+                    request.setAttribute("error", "Failed to update password. Please try again.");
+                    request.getRequestDispatcher(VERIFY_JSP).forward(request, response);
+                }
             } else {
-                request.setAttribute("error", "Failed to update password. Try again later.");
+                request.setAttribute("error", "Invalid or expired verification code!");
                 request.getRequestDispatcher(VERIFY_JSP).forward(request, response);
             }
         } else {
