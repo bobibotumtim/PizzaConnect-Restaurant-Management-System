@@ -9,19 +9,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        .nav-btn {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-        .nav-btn:hover {
-            transform: translateY(-2px);
-        }
-        
         .tab-btn {
             padding: 0.5rem 1rem;
             border-radius: 0.5rem;
@@ -47,81 +34,15 @@
         }
     </style>
 </head>
-<body class="flex h-screen bg-gray-50">
+<body class="flex h-screen bg-gray-50 ml-20">
     <!-- Sidebar Navigation -->
-    <%
-        String currentPath = request.getRequestURI();
-    %>
-    <div class="w-20 bg-gray-800 flex flex-col items-center py-6 space-y-8">
-        <a href="${pageContext.request.contextPath}/home"
-           class="nav-btn <%= currentPath.contains("/home") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-           title="Home">
-            <i data-lucide="home" class="w-6 h-6"></i>
-        </a>
-        <div class="flex-1 flex flex-col space-y-6 mt-8">
-            <a href="${pageContext.request.contextPath}/dashboard"
-                class="nav-btn <%= currentPath.contains("/dashboard") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                title="Dashboard">
-                <i data-lucide="grid" class="w-6 h-6"></i>
-            </a>
-            
-            <a href="${pageContext.request.contextPath}/orders"
-                class="nav-btn <%= currentPath.contains("/orders") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                title="Orders">
-                <i data-lucide="file-text" class="w-6 h-6"></i>
-            </a>
-
-            <a href="${pageContext.request.contextPath}/manageproduct"
-                class="nav-btn <%= currentPath.contains("/menu") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                title="Menu">
-                <i data-lucide="utensils" class="w-6 h-6"></i>
-            </a>
-
-            <a href="${pageContext.request.contextPath}/table" 
-            class="nav-btn <%= currentPath.contains("/table") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-            title="Table Booking">
-                <i data-lucide="rectangle-horizontal" class="w-6 h-6"></i>
-            </a>
-
-            <a href="${pageContext.request.contextPath}/discount"
-                class="nav-btn <%= currentPath.contains("/discount") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                title="Discount Programs">
-                <i data-lucide="percent" class="w-6 h-6"></i>
-            </a>
-
-            <a href="${pageContext.request.contextPath}/notifications"
-                class="nav-btn <%= currentPath.contains("/notifications") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                title="Notifications">
-                <i data-lucide="bell" class="w-6 h-6"></i>
-            </a>
-
-            <a href="${pageContext.request.contextPath}/admin"
-                class="nav-btn <%= currentPath.contains("/admin") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                title="Manage Users">
-                <i data-lucide="users" class="w-6 h-6"></i>
-            </a>
-        </div>
-        <a href="${pageContext.request.contextPath}/profile"
-            class="nav-btn <%= currentPath.contains("/profile") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-            title="Profile">
-            <i data-lucide="user" class="w-6 h-6"></i>
-        </a>
-        <a href="${pageContext.request.contextPath}/settings"
-            class="nav-btn <%= currentPath.contains("/settings") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-            title="Settings">
-            <i data-lucide="settings" class="w-6 h-6"></i>
-        </a>
-        <a href="${pageContext.request.contextPath}/logout"
-           class="nav-btn <%= currentPath.contains("/logout") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-           title="Logout">
-            <i data-lucide="log-out" class="w-6 h-6"></i>
-        </a>
-    </div>
+    <%@ include file="Sidebar.jsp" %>
+    <%@ include file="NavBar.jsp" %>
 
     <!-- Main Content Area -->
     <div class="flex-1 flex flex-col overflow-hidden min-w-0">
         <!-- Header Section with Search -->
-        <div class="bg-white border-b px-6 py-4 flex-shrink-0">
+        <div class="bg-white border-b px-6 py-4 flex-shrink-0 mt-16">
             <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
                 <div class="flex items-center space-x-4 flex-1">
                     <h1 class="text-2xl font-bold text-gray-800 whitespace-nowrap">Discount Management</h1>

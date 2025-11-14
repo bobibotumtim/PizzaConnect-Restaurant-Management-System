@@ -20,10 +20,14 @@
         .order-status-4 { background-color: #fee2e2; color: #dc2626; }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gray-50 min-h-screen ml-20">
+    <%-- Sidebar and Navbar --%>
+    <%@ include file="Sidebar.jsp" %>
+    <%@ include file="NavBar.jsp" %>
+
     <div class="flex">
-        <!-- Sidebar -->
-        <div class="w-64 bg-white shadow-lg min-h-screen p-6">
+        <!-- Tabbar -->
+        <div class="w-64 bg-white shadow-lg min-h-screen p-6 mt-16">
             <div class="text-center mb-8">
                 <div class="w-20 h-20 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
                     <i data-lucide="user" class="w-10 h-10 text-white"></i>
@@ -59,7 +63,7 @@
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 p-8">
+        <div class="flex-1 p-8 mt-16">
             <!-- Personal Information Tab -->
             <div id="personal" class="tab-content active">
                 <div class="bg-white rounded-lg shadow-md p-6">
