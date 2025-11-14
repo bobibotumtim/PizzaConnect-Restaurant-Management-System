@@ -8,89 +8,21 @@
     <title>Add New User - PizzaConnect</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        .nav-btn {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-        .nav-btn:hover {
-            transform: translateY(-2px);
-        }
-    </style>
 </head>
-<body class="flex h-screen bg-gray-50">
+<body class="bg-gray-50 min-h-screen ml-20">
+    <%-- Include Sidebar and NavBar --%>
+    <%@ include file="Sidebar.jsp" %>
+    <%@ include file="NavBar.jsp" %>
+
     <%
-        String currentPath = request.getRequestURI();
         User currentUser = (User) request.getAttribute("currentUser");
         String message = (String) request.getAttribute("message");
         String error = (String) request.getAttribute("error");
     %>
-    
-    <!-- Sidebar Navigation -->
-    <div class="w-20 bg-gray-800 flex flex-col items-center py-6 space-y-8 flex-shrink-0">
-        <a href="${pageContext.request.contextPath}/dashboard"
-           class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-            <i data-lucide="pizza" class="w-7 h-7 text-white"></i>
-        </a>
-        
-        <div class="flex-1 flex flex-col space-y-6 mt-8">
-            <a href="${pageContext.request.contextPath}/dashboard"
-               class="nav-btn text-gray-400 hover:bg-gray-700" title="Dashboard">
-                <i data-lucide="grid" class="w-6 h-6"></i>
-            </a>
-            
-            <a href="${pageContext.request.contextPath}/admin"
-               class="nav-btn bg-orange-500 text-white" title="Manage Users">
-                <i data-lucide="users" class="w-6 h-6"></i>
-            </a>
-            
-            <a href="${pageContext.request.contextPath}/manage-orders"
-               class="nav-btn text-gray-400 hover:bg-gray-700" title="Orders">
-                <i data-lucide="file-text" class="w-6 h-6"></i>
-            </a>
-            
-            <a href="${pageContext.request.contextPath}/manageproduct"
-               class="nav-btn text-gray-400 hover:bg-gray-700" title="Products">
-                <i data-lucide="box" class="w-6 h-6"></i>
-            </a>
-            
-            <a href="${pageContext.request.contextPath}/discount"
-               class="nav-btn text-gray-400 hover:bg-gray-700" title="Discounts">
-                <i data-lucide="percent" class="w-6 h-6"></i>
-            </a>
-        </div>
-        
-        <div class="flex flex-col items-center space-y-4">
-            <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
-                <i data-lucide="user" class="w-5 h-5 text-gray-200"></i>
-            </div>
-            <a href="${pageContext.request.contextPath}/logout"
-               class="nav-btn text-gray-400 hover:bg-red-500 hover:text-white" title="Logout">
-                <i data-lucide="log-out" class="w-6 h-6"></i>
-            </a>
-        </div>
-    </div>
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col overflow-hidden">
-        <!-- Header -->
-        <div class="bg-white border-b px-6 py-4 flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-800">Add New User</h1>
-                <p class="text-sm text-gray-500">PizzaConnect Restaurant Management System</p>
-            </div>
-            <div class="text-gray-600">
-                Welcome, <strong><%= currentUser != null ? currentUser.getName() : "Admin" %></strong>
-            </div>
-        </div>
-
-        <!-- Content -->
-        <div class="flex-1 p-6 overflow-auto">
+    <div class="content-wrapper">
+        <div class="p-6">
             <!-- Navigation Breadcrumb -->
             <div class="bg-gray-50 p-4 rounded-xl mb-6 flex items-center space-x-2">
                 <a href="admin" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center">

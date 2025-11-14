@@ -9,25 +9,13 @@
     <title>Edit User - PizzaConnect</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        .nav-btn {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-        .nav-btn:hover {
-            transform: translateY(-2px);
-        }
-    </style>
 </head>
-<body class="flex h-screen bg-gray-50">
+<body class="bg-gray-50 min-h-screen ml-20">
+    <%-- Include Sidebar and NavBar --%>
+    <%@ include file="Sidebar.jsp" %>
+    <%@ include file="NavBar.jsp" %>
 
     <%
-        String currentPath = request.getRequestURI();
         User currentUser = (User) request.getAttribute("currentUser");
         User editUser = (User) request.getAttribute("editUser");
         String message = (String) request.getAttribute("message");
@@ -39,89 +27,10 @@
             dobString = sdf.format(editUser.getDateOfBirth());
         }
     %>
-    
-    <!-- Sidebar Navigation -->
-    <div class="w-20 bg-gray-800 flex flex-col items-center py-6 space-y-8">
-        <a href="${pageContext.request.contextPath}/home"
-           class="nav-btn <%= currentPath.contains("/home") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-           title="Home">
-            <i data-lucide="home" class="w-6 h-6"></i>
-        </a>
-        <div class="flex-1 flex flex-col space-y-6 mt-8">
-            <a href="${pageContext.request.contextPath}/dashboard"
-                class="nav-btn <%= currentPath.contains("/dashboard") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                title="Dashboard">
-                <i data-lucide="grid" class="w-6 h-6"></i>
-            </a>
-            
-            <a href="${pageContext.request.contextPath}/orders"
-                class="nav-btn <%= currentPath.contains("/orders") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                title="Orders">
-                <i data-lucide="file-text" class="w-6 h-6"></i>
-            </a>
-
-            <a href="${pageContext.request.contextPath}/manageproduct"
-                class="nav-btn <%= currentPath.contains("/menu") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                title="Menu">
-                <i data-lucide="utensils" class="w-6 h-6"></i>
-            </a>
-
-            <a href="${pageContext.request.contextPath}/table" 
-            class="nav-btn <%= currentPath.contains("/table") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-            title="Table Booking">
-                <i data-lucide="rectangle-horizontal" class="w-6 h-6"></i>
-            </a>
-
-            <a href="${pageContext.request.contextPath}/discount"
-                class="nav-btn <%= currentPath.contains("/discount") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                title="Discount Programs">
-                <i data-lucide="percent" class="w-6 h-6"></i>
-            </a>
-
-            <a href="${pageContext.request.contextPath}/notifications"
-                class="nav-btn <%= currentPath.contains("/notifications") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                title="Notifications">
-                <i data-lucide="bell" class="w-6 h-6"></i>
-            </a>
-
-            <a href="${pageContext.request.contextPath}/admin"
-                class="nav-btn <%= currentPath.contains("/admin") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-                title="Manage Users">
-                <i data-lucide="users" class="w-6 h-6"></i>
-            </a>
-        </div>
-        <a href="${pageContext.request.contextPath}/profile"
-            class="nav-btn <%= currentPath.contains("/profile") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-            title="Profile">
-            <i data-lucide="user" class="w-6 h-6"></i>
-        </a>
-        <a href="${pageContext.request.contextPath}/settings"
-            class="nav-btn <%= currentPath.contains("/settings") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-            title="Settings">
-            <i data-lucide="settings" class="w-6 h-6"></i>
-        </a>
-        <a href="${pageContext.request.contextPath}/logout"
-           class="nav-btn <%= currentPath.contains("/logout") ? "bg-orange-500 text-white" : "text-gray-400 hover:bg-gray-700" %>"
-           title="Logout">
-            <i data-lucide="log-out" class="w-6 h-6"></i>
-        </a>
-    </div>
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col overflow-hidden">
-        <!-- Header -->
-        <div class="bg-white border-b px-6 py-4 flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-800">Edit User</h1>
-                <p class="text-sm text-gray-500">PizzaConnect Restaurant Management System</p>
-            </div>
-            <div class="text-gray-600">
-                Welcome, <strong><%= currentUser != null ? currentUser.getName() : "Admin" %></strong>
-            </div>
-        </div>
-
-        <!-- Content -->
-        <div class="flex-1 p-6 overflow-auto">
+    <div class="content-wrapper">
+        <div class="p-6">
             <!-- Navigation Breadcrumb -->
             <div class="bg-gray-50 p-4 rounded-xl mb-6 flex items-center space-x-2">
                 <a href="admin" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center">
@@ -234,13 +143,12 @@
                                 }
                             }
                         %>
-                        <div id="employeeRoleDiv" style="display: <%= editUser.getRole() == 2 ? "block" : "none" %>;">
+                        <div id="employeeRoleDiv" <% if (editUser.getRole() != 2) { %>style="display: none"<% } %>>
                             <label for="employeeRole" class="block text-sm font-medium text-gray-700 mb-2">Employee Role *</label>
                             <select id="employeeRole" name="employeeRole"
                                     class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
                                 <option value="">Select Employee Role</option>
                                 <option value="Manager" <%= "Manager".equals(currentEmployeeRole) ? "selected" : "" %>>Manager</option>
-                                <option value="Cashier" <%= "Cashier".equals(currentEmployeeRole) ? "selected" : "" %>>Cashier</option>
                                 <option value="Waiter" <%= "Waiter".equals(currentEmployeeRole) ? "selected" : "" %>>Waiter</option>
                                 <option value="Chef" <%= "Chef".equals(currentEmployeeRole) ? "selected" : "" %>>Chef</option>
                             </select>
