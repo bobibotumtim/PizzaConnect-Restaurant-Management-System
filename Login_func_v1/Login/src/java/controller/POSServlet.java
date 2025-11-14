@@ -68,6 +68,7 @@ public class POSServlet extends HttpServlet {
     
     /**
      * Handle API request for products data (moved from ProductAPIServlet)
+     * ✅ UPDATED: Now uses v_ProductSizeAvailable VIEW to check inventory
      */
     private void handleProductsAPI(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -79,8 +80,10 @@ public class POSServlet extends HttpServlet {
             ProductSizeDAO productSizeDAO = new ProductSizeDAO();
             CategoryDAO categoryDAO = new CategoryDAO();
             
-            // Lấy tất cả products
-            List<Product> products = productDAO.getAllBaseProducts();
+            // ✅ SỬA: Chỉ lấy products có AvailableQuantity > 0 (loại trừ Topping)
+            System.out.println("🔄 Loading available products for POS...");
+            List<Product> products = productDAO.getAvailableProductsForPOS();
+            System.out.println("✅ Loaded " + products.size() + " available products");
             
             // Tạo JSON response
             StringBuilder json = new StringBuilder();
@@ -102,8 +105,8 @@ public class POSServlet extends HttpServlet {
                     json.append(",");
                 }
                 
-                // Get sizes for this product
-                List<ProductSize> sizes = productSizeDAO.getSizesByProductId(product.getProductId());
+                // ✅ SỬA: Chỉ lấy sizes có AvailableQuantity > 0
+                List<ProductSize> sizes = productSizeDAO.getAvailableSizesByProductId(product.getProductId());
                 
                 json.append("{");
                 json.append("\"id\": ").append(product.getProductId()).append(",");
