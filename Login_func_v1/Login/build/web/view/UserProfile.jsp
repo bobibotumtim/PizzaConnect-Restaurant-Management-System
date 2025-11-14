@@ -28,7 +28,6 @@
                 <div class="w-20 h-20 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
                     <i data-lucide="user" class="w-10 h-10 text-white"></i>
                 </div>
-                <h1 class="text-2xl font-bold text-gray-800">${user.name}</h1>
                 
                 <!-- Display loyalty points for customers -->
                 <c:if test="${user.role == 3}">
@@ -40,12 +39,6 @@
                         </c:if>
                     </div>
                 </c:if>
-                
-                <c:choose>
-                    <c:when test="${user.role == 1}"><p class="text-gray-600">Administrator</p></c:when>
-                    <c:when test="${user.role == 2}"><p class="text-gray-600">${employeeRole}</p></c:when>
-                    <c:when test="${user.role == 3}"><p class="text-gray-600">Customer</p></c:when>
-                </c:choose>
             </div>
 
             <nav class="space-y-2">

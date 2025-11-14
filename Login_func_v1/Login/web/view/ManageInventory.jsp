@@ -148,82 +148,13 @@
         }
     </style>
 </head>
-<body>
-    <!-- Expandable Sidebar -->
-    <div class="sidebar fixed left-0 top-0 h-full bg-gray-900 flex flex-col py-6 z-50 overflow-hidden">
-        <!-- Logo -->
-        <div class="flex items-center px-4 mb-8">
-            <div class="text-orange-500 text-3xl min-w-[3rem] flex justify-center">
-                <i data-lucide="pizza" class="w-10 h-10"></i>
-            </div>
-            <span class="sidebar-text ml-3 text-white text-xl font-bold">PizzaConnect</span>
-        </div>
-
-        <!-- Navigation -->
-        <nav class="flex-1 flex flex-col space-y-2 px-3">
-            <a href="${pageContext.request.contextPath}/dashboard" 
-               class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
-                <div class="min-w-[2.5rem] flex justify-center">
-                    <i data-lucide="home" class="w-6 h-6"></i>
-                </div>
-                <span class="sidebar-text ml-3">Dashboard</span>
-            </a>
-
-            <a href="${pageContext.request.contextPath}/manageproduct" 
-               class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
-                <div class="min-w-[2.5rem] flex justify-center">
-                    <i data-lucide="utensils" class="w-6 h-6"></i>
-                </div>
-                <span class="sidebar-text ml-3">Products</span>
-            </a>
-
-            <a href="${pageContext.request.contextPath}/manageinventory" 
-               class="flex items-center px-3 py-3 rounded-lg bg-orange-500 text-white">
-                <div class="min-w-[2.5rem] flex justify-center">
-                    <i data-lucide="box" class="w-6 h-6"></i>
-                </div>
-                <span class="sidebar-text ml-3">Inventory</span>
-            </a>
-
-            <a href="${pageContext.request.contextPath}/manage-orders" 
-               class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
-                <div class="min-w-[2.5rem] flex justify-center">
-                    <i data-lucide="shopping-cart" class="w-6 h-6"></i>
-                </div>
-                <span class="sidebar-text ml-3">Orders</span>
-            </a>
-
-            <a href="${pageContext.request.contextPath}/admin" 
-               class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
-                <div class="min-w-[2.5rem] flex justify-center">
-                    <i data-lucide="users" class="w-6 h-6"></i>
-                </div>
-                <span class="sidebar-text ml-3">Users</span>
-            </a>
-
-            <a href="${pageContext.request.contextPath}/sales-reports" 
-               class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
-                <div class="min-w-[2.5rem] flex justify-center">
-                    <i data-lucide="bar-chart-2" class="w-6 h-6"></i>
-                </div>
-                <span class="sidebar-text ml-3">Reports</span>
-            </a>
-        </nav>
-
-        <!-- Logout -->
-        <div class="px-3">
-            <a href="${pageContext.request.contextPath}/logout" 
-               class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-red-600 hover:text-white transition">
-                <div class="min-w-[2.5rem] flex justify-center">
-                    <i data-lucide="log-out" class="w-6 h-6"></i>
-                </div>
-                <span class="sidebar-text ml-3">Logout</span>
-            </a>
-        </div>
-    </div>
+<body class="ml-20">
+    
+    <%@ include file="Sidebar.jsp" %>
+    <%@ include file="NavBar.jsp" %>
 
     <!-- Main Content -->
-    <div class="main-content">
+    <div class="main-content mt-16">
         <div class="page-header d-flex justify-content-between align-items-center">
             <div>
                 <h2>Manage Inventory</h2>
