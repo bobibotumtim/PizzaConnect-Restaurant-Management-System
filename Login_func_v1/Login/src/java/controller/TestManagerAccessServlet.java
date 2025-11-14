@@ -67,7 +67,6 @@ public class TestManagerAccessServlet extends HttpServlet {
             out.println("<h2>✅ Employee Details:</h2>");
             out.println("<p><strong>Employee ID:</strong> " + employee.getEmployeeID() + "</p>");
             out.println("<p><strong>Job Role:</strong> " + employee.getJobRole() + "</p>");
-            out.println("<p><strong>Specialization:</strong> " + (employee.getSpecialization() != null ? employee.getSpecialization() : "None") + "</p>");
             out.println("</div>");
             
             // Check authorization

@@ -108,14 +108,6 @@
             .modal-content button[type="submit"]:hover {
                 background-color: #059669;
             }
-            
-            /* Content wrapper for sidebar layout */
-            .content-wrapper {
-                margin-left: 80px;
-                width: calc(100% - 80px);
-                height: 100vh;
-                overflow: hidden;
-            }
         </style>
     </head>
     <body class="bg-gray-50">
@@ -131,6 +123,7 @@
 
         <%-- Include Sidebar --%>
         <%@ include file="Sidebar.jsp" %>
+        <%@ include file="NavBar.jsp" %>
 
         <%-- ✅ Alert Message Box (Lấy từ file cũ) --%>
         <c:if test="${not empty sessionScope.message}">

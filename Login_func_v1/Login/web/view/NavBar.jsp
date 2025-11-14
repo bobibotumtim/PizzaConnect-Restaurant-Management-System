@@ -125,7 +125,7 @@
                 <% if (navbarIsAdmin) { %>
                     &#128081; Admin
                 <% } else if (navbarIsChef && navbarEmployee != null) { %>
-                    &#128104;&#8205;&#127859; Chef - <%= navbarEmployee.getSpecialization() %>
+                    &#128104;&#8205;&#127859; Chef
                 <% } else if (navbarIsWaiter) { %>
                     &#128084; Waiter
                 <% } else if (navbarUser.getRole() == 3) { %>

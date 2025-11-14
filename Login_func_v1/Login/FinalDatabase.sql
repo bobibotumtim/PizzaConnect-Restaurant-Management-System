@@ -31,10 +31,7 @@ GO
 CREATE TABLE Employee (
     EmployeeID INT IDENTITY(1,1) PRIMARY KEY,
     UserID INT NOT NULL UNIQUE,
-    -- Loại bỏ vai trò 'Cashier'
     Role NVARCHAR(50) NOT NULL CHECK (Role IN ('Manager', 'Waiter', 'Chef')),
-    -- Thêm các Specialization mới cho Chef
-    Specialization NVARCHAR(50) NULL CHECK (Specialization IN ('Pizza', 'Drinks', 'SideDishes', 'General', NULL)),
     FOREIGN KEY (UserID) REFERENCES [User](UserID)
 );
 GO
@@ -270,14 +267,12 @@ VALUES
 ('Manager Z', '$2a$10$wA1.VHtxxp1i0a.SY2SFO.f45v.G/syMrruqnfJHGIEYCjiFTUSgW', 2, 'manager01@pizzastore.com', '0909000009', '1985-04-25', 'Male', 1); -- UserID 9 (Manager)
 GO
 
--- Employees (Loại bỏ Cashier, thêm các loại Chef và Manager)
-INSERT INTO Employee (UserID, Role, Specialization)
+-- Employees
+INSERT INTO Employee (UserID, Role)
 VALUES 
-(9, 'Manager', NULL), -- EmployeeID 1
-(2, 'Waiter', NULL), -- EmployeeID 2
-(3, 'Chef', 'Pizza'), -- EmployeeID 3
-(7, 'Chef', 'Drinks'), -- EmployeeID 4
-(8, 'Chef', 'SideDishes'); -- EmployeeID 5
+(9, 'Manager'), -- EmployeeID 1
+(2, 'Waiter'), -- EmployeeID 2
+(3, 'Chef'); -- EmployeeID 3
 GO
 
 -- Customers

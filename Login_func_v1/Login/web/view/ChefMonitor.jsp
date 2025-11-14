@@ -144,17 +144,29 @@
         <div class="top-bar">
             <div>
                 <h2 class="fw-bold d-inline">Chef Dashboard</h2>
-                <c:if test="${not empty chefSpecialization}">
-                    <span class="badge bg-primary ms-3" style="font-size: 16px; padding: 8px 15px;">
-                        ${chefSpecialization}
-                    </span>
-                </c:if>
             </div>
             <div>
                 <button onclick="location.reload()" class="btn btn-primary">🔄 Refresh</button>
                 <c:if test="${not empty error}">
                     <span class="text-danger ms-3">${error}</span>
                 </c:if>
+            </div>
+        </div>
+        
+        <!-- Category Filter -->
+        <div class="mb-4 p-3" style="background-color: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <label class="fw-bold me-3">🍽️ Lọc theo danh mục:</label>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn ${selectedCategory == 'All' ? 'btn-primary' : 'btn-outline-primary'}" 
+                        onclick="filterByCategory('All')">
+                    Tất cả
+                </button>
+                <c:forEach var="cat" items="${categories}">
+                    <button type="button" class="btn ${selectedCategory == cat ? 'btn-primary' : 'btn-outline-primary'}" 
+                            onclick="filterByCategory('${cat}')">
+                        ${cat}
+                    </button>
+                </c:forEach>
             </div>
         </div>
 
@@ -184,6 +196,7 @@
             <form id="startForm" action="ChefMonitor" method="post">
                 <input type="hidden" name="action" value="start">
                 <input type="hidden" id="selectedIdStart" name="orderDetailId">
+                <input type="hidden" name="category" value="${selectedCategory}">
                 <button type="submit" class="btn-action btn-start">▼ Start cooking ▼</button>
             </form>
         </div>
@@ -213,6 +226,7 @@
             <form id="readyForm" action="ChefMonitor" method="post" style="display:inline;">
                 <input type="hidden" name="action" value="ready">
                 <input type="hidden" id="selectedIdReady" name="orderDetailId">
+                <input type="hidden" name="category" value="${selectedCategory}">
                 <button type="submit" class="btn-action btn-ready">Ready to serve</button>
             </form>
         </div>
@@ -251,6 +265,16 @@
             const id = el.getAttribute('data-id');
             document.getElementById('selectedIdStart').value = id;
             document.getElementById('selectedIdReady').value = id;
+        }
+        
+        function filterByCategory(category) {
+            const url = new URL(window.location.href);
+            if (category === 'All') {
+                url.searchParams.delete('category');
+            } else {
+                url.searchParams.set('category', category);
+            }
+            window.location.href = url.toString();
         }
     </script>
 
