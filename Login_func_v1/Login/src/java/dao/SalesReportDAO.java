@@ -1,13 +1,13 @@
 package dao;
 
-import models.SalesReportData;
-import models.TopProduct;
-import models.DailyRevenue;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import models.DailyRevenue;
+import models.SalesReportData;
+import models.TopProduct;
 
 public class SalesReportDAO extends DBContext {
     
@@ -18,7 +18,7 @@ public class SalesReportDAO extends DBContext {
      */
     public double getTotalRevenue(String dateFrom, String dateTo, String branch) {
         String sql = "SELECT ISNULL(SUM(TotalPrice), 0) as TotalRevenue FROM [Order] " +
-                    "WHERE OrderDate >= ? AND OrderDate <= ? AND Status = 2"; // Status 2 = Completed
+                    "WHERE OrderDate >= ? AND OrderDate <= ? AND Status = 3"; // Status 3 = Completed (Paid)
         
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -41,7 +41,7 @@ public class SalesReportDAO extends DBContext {
      */
     public int getTotalOrders(String dateFrom, String dateTo, String branch) {
         String sql = "SELECT COUNT(*) as TotalOrders FROM [Order] " +
-                    "WHERE OrderDate >= ? AND OrderDate <= ? AND Status = 2";
+                    "WHERE OrderDate >= ? AND OrderDate <= ? AND Status = 3";
         
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -64,7 +64,7 @@ public class SalesReportDAO extends DBContext {
      */
     public int getTotalCustomers(String dateFrom, String dateTo, String branch) {
         String sql = "SELECT COUNT(DISTINCT CustomerID) as TotalCustomers FROM [Order] " +
-                    "WHERE OrderDate >= ? AND OrderDate <= ? AND Status = 2";
+                    "WHERE OrderDate >= ? AND OrderDate <= ? AND Status = 3";
         
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -94,7 +94,7 @@ public class SalesReportDAO extends DBContext {
                     "JOIN ProductSize ps ON od.ProductSizeID = ps.ProductSizeID " +
                     "JOIN Product p ON ps.ProductID = p.ProductID " +
                     "JOIN [Order] o ON od.OrderID = o.OrderID " +
-                    "WHERE o.OrderDate >= ? AND o.OrderDate <= ? AND o.Status = 2 " +
+                    "WHERE o.OrderDate >= ? AND o.OrderDate <= ? AND o.Status = 3 " +
                     "GROUP BY p.ProductID, p.ProductName " +
                     "ORDER BY TotalRevenue DESC";
         
@@ -129,7 +129,7 @@ public class SalesReportDAO extends DBContext {
                     "SUM(TotalPrice) as DailyRevenue, " +
                     "COUNT(*) as OrderCount " +
                     "FROM [Order] " +
-                    "WHERE OrderDate >= ? AND OrderDate <= ? AND Status = 2 " +
+                    "WHERE OrderDate >= ? AND OrderDate <= ? AND Status = 3 " +
                     "GROUP BY CONVERT(DATE, OrderDate) " +
                     "ORDER BY CONVERT(DATE, OrderDate)";
         
@@ -160,12 +160,12 @@ public class SalesReportDAO extends DBContext {
     public double getRevenueGrowth(String dateFrom, String dateTo, String branch) {
         // Tính số ngày trong khoảng thời gian hiện tại
         String currentPeriodSql = "SELECT ISNULL(SUM(TotalPrice), 0) as CurrentRevenue FROM [Order] " +
-                                 "WHERE OrderDate >= ? AND OrderDate <= ? AND Status = 2";
+                                 "WHERE OrderDate >= ? AND OrderDate <= ? AND Status = 3";
         
         // Tính doanh thu kỳ trước (cùng số ngày)
         String previousPeriodSql = "SELECT ISNULL(SUM(TotalPrice), 0) as PreviousRevenue FROM [Order] " +
                                   "WHERE OrderDate >= DATEADD(DAY, -DATEDIFF(DAY, ?, ?), ?) " +
-                                  "AND OrderDate < ? AND Status = 2";
+                                  "AND OrderDate < ? AND Status = 3";
         
         try (Connection conn = getConnection()) {
             double currentRevenue = 0;
