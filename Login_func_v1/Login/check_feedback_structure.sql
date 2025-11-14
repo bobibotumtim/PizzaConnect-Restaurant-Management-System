@@ -1,8 +1,0 @@
--- Kiểm tra cấu trúc bảng Feedback hiện tại
-SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, CHARACTER_MAXIMUM_LENGTH
-FROM INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_NAME = 'Feedback'
-ORDER BY ORDINAL_POSITION;
-
--- Kiểm tra dữ liệu hiện có
-SELECT TOP 5 * FROM Feedback ORDER BY FeedbackDate DESC;

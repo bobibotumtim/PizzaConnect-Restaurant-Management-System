@@ -147,4 +147,22 @@ public class CategoryDAO extends DBContext {
         }
         return false;
     }
+    
+    // Get all category names excluding a specific category (for Chef filter)
+    public List<String> getAllCategoryNamesExcluding(String excludedCategory) {
+        List<String> list = new ArrayList<>();
+        String sql = "SELECT CategoryName FROM Category WHERE IsDeleted = 0 AND CategoryName != ? ORDER BY CategoryName";
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, excludedCategory);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(rs.getString("CategoryName"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 }

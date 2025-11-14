@@ -4,6 +4,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import models.*;
 import dao.*;
@@ -27,30 +28,34 @@ public class ChefMonitorServlet extends HttpServlet {
             return;
         }
 
-        // Lấy specialization của chef
-        String specialization = chef.getSpecialization();
-        List<String> categoryNames = orderDetailDAO.mapSpecializationToCategories(specialization);
+        // Lấy category filter từ request (nếu có)
+        String categoryFilter = req.getParameter("category");
         
         List<OrderDetail> waitingList;
         List<OrderDetail> preparingList;
         List<OrderDetail> readyList;
         
-        // Nếu chef có specialization, chỉ lấy món thuộc các category đó
-        if (categoryNames != null && !categoryNames.isEmpty()) {
-            waitingList = orderDetailDAO.getOrderDetailsByStatusAndCategories("Waiting", categoryNames);
-            preparingList = orderDetailDAO.getOrderDetailsByStatusAndCategories("Preparing", categoryNames);
-            readyList = orderDetailDAO.getOrderDetailsByStatusAndCategories("Ready", categoryNames);
+        // Nếu có filter category, lọc theo category đó
+        if (categoryFilter != null && !categoryFilter.isEmpty() && !categoryFilter.equals("All")) {
+            waitingList = orderDetailDAO.getOrderDetailsByStatusAndCategories("Waiting", Arrays.asList(categoryFilter));
+            preparingList = orderDetailDAO.getOrderDetailsByStatusAndCategories("Preparing", Arrays.asList(categoryFilter));
+            readyList = orderDetailDAO.getOrderDetailsByStatusAndCategories("Ready", Arrays.asList(categoryFilter));
         } else {
-            // Nếu không có specialization, lấy tất cả (fallback)
-            waitingList = orderDetailDAO.getOrderDetailsByStatus("Waiting");
-            preparingList = orderDetailDAO.getOrderDetailsByStatus("Preparing");
-            readyList = orderDetailDAO.getOrderDetailsByStatus("Ready");
+            // Lấy tất cả món (trừ Topping)
+            waitingList = orderDetailDAO.getOrderDetailsByStatusExcludingCategory("Waiting", "Topping");
+            preparingList = orderDetailDAO.getOrderDetailsByStatusExcludingCategory("Preparing", "Topping");
+            readyList = orderDetailDAO.getOrderDetailsByStatusExcludingCategory("Ready", "Topping");
         }
 
+        // Lấy danh sách categories để hiển thị filter (trừ Topping)
+        CategoryDAO categoryDAO = new CategoryDAO();
+        List<String> categories = categoryDAO.getAllCategoryNamesExcluding("Topping");
+        
         req.setAttribute("waitingList", waitingList);
         req.setAttribute("preparingList", preparingList);
         req.setAttribute("readyList", readyList);
-        req.setAttribute("chefSpecialization", chef.getSpecializationDisplay());
+        req.setAttribute("categories", categories);
+        req.setAttribute("selectedCategory", categoryFilter != null ? categoryFilter : "All");
 
         req.getRequestDispatcher("view/ChefMonitor.jsp").forward(req, resp);
     }
@@ -82,15 +87,7 @@ public class ChefMonitorServlet extends HttpServlet {
 
         if ("start".equals(action)) {
             // Lấy thông tin OrderDetail trước khi cập nhật
-            String specialization = chef.getSpecialization();
-            List<String> categoryNames = orderDetailDAO.mapSpecializationToCategories(specialization);
-            List<OrderDetail> waitingList;
-            
-            if (categoryNames != null && !categoryNames.isEmpty()) {
-                waitingList = orderDetailDAO.getOrderDetailsByStatusAndCategories("Waiting", categoryNames);
-            } else {
-                waitingList = orderDetailDAO.getOrderDetailsByStatus("Waiting");
-            }
+            List<OrderDetail> waitingList = orderDetailDAO.getOrderDetailsByStatusExcludingCategory("Waiting", "Topping");
             
             OrderDetail targetOrderDetail = null;
             for (OrderDetail od : waitingList) {
@@ -102,7 +99,7 @@ public class ChefMonitorServlet extends HttpServlet {
             
             updated = orderDetailDAO.updateOrderDetailStatus(orderDetailId, "Preparing", chef.getEmployeeID());
             
-            // 🆕 Tự động cập nhật Order status (có thể vẫn là Waiting nếu còn món khác chưa làm)
+            // Tự động cập nhật Order status
             if (updated && targetOrderDetail != null) {
                 OrderDAO orderDAO = new OrderDAO();
                 orderDAO.autoUpdateOrderStatusBasedOnDetails(targetOrderDetail.getOrderID());
@@ -158,7 +155,13 @@ public class ChefMonitorServlet extends HttpServlet {
         }
 
         if (updated) {
-            resp.sendRedirect("ChefMonitor");
+            // Giữ lại category filter khi redirect
+            String categoryFilter = req.getParameter("category");
+            if (categoryFilter != null && !categoryFilter.isEmpty() && !categoryFilter.equals("All")) {
+                resp.sendRedirect("ChefMonitor?category=" + categoryFilter);
+            } else {
+                resp.sendRedirect("ChefMonitor");
+            }
         } else {
             req.setAttribute("error", "Không thể cập nhật trạng thái món ăn!");
             doGet(req, resp);

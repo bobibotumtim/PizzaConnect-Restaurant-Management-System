@@ -186,7 +186,7 @@ public class OrderDetailDAO extends DBContext {
         }
     }
     
-    // Lấy OrderDetail theo status VÀ nhiều categories (for Chef specialization)
+    // Lấy OrderDetail theo status VÀ nhiều categories (for Chef filter)
     public List<OrderDetail> getOrderDetailsByStatusAndCategories(String status, List<String> categoryNames) {
         List<OrderDetail> list = new ArrayList<>();
         if (categoryNames == null || categoryNames.isEmpty()) {
@@ -244,33 +244,55 @@ public class OrderDetailDAO extends DBContext {
         return list;
     }
     
-    // Lấy OrderDetail theo status VÀ category (for Chef specialization) - Deprecated, dùng getOrderDetailsByStatusAndCategories
-    @Deprecated
-    public List<OrderDetail> getOrderDetailsByStatusAndCategory(String status, String categoryName) {
-        return getOrderDetailsByStatusAndCategories(status, Arrays.asList(categoryName));
-    }
+
     
-    // Map specialization to category names (có thể trả về nhiều categories)
-    public List<String> mapSpecializationToCategories(String specialization) {
-        if (specialization == null) return null;
-        switch (specialization) {
-            case "Pizza": 
-                return Arrays.asList("Pizza");
-            case "Drinks": 
-                // Drinks + Dessert
-                return Arrays.asList("Drink", "Dessert");
-            case "SideDishes": 
-                // Side Dishes + Appetizer
-                return Arrays.asList("SideDish", "Appetizer");
-            default: 
-                return null;
+    // Lấy OrderDetail theo status và loại trừ một category (ví dụ: loại trừ Topping)
+    public List<OrderDetail> getOrderDetailsByStatusExcludingCategory(String status, String excludedCategory) {
+        List<OrderDetail> list = new ArrayList<>();
+        String sql = """
+            SELECT od.*, p.ProductName, ps.SizeName, ps.SizeCode, o.TableID, c.CategoryName
+            FROM OrderDetail od
+            LEFT JOIN ProductSize ps ON od.ProductSizeID = ps.ProductSizeID
+            LEFT JOIN Product p ON ps.ProductID = p.ProductID
+            LEFT JOIN Category c ON p.CategoryID = c.CategoryID
+            LEFT JOIN [Order] o ON od.OrderID = o.OrderID
+            WHERE od.Status = ? AND (c.CategoryName IS NULL OR c.CategoryName != ?)
+            ORDER BY od.OrderDetailID
+        """;
+        
+        OrderDetailToppingDAO toppingDAO = new OrderDetailToppingDAO();
+        
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setString(2, excludedCategory);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                OrderDetail d = new OrderDetail();
+                d.setOrderDetailID(rs.getInt("OrderDetailID"));
+                d.setOrderID(rs.getInt("OrderID"));
+                d.setProductSizeID(rs.getInt("ProductSizeID"));
+                d.setQuantity(rs.getInt("Quantity"));
+                d.setTotalPrice(rs.getDouble("TotalPrice"));
+                d.setSpecialInstructions(rs.getString("SpecialInstructions"));
+                d.setEmployeeID(rs.getInt("EmployeeID"));
+                d.setStatus(rs.getString("Status"));
+                d.setStartTime(rs.getTimestamp("StartTime"));
+                d.setEndTime(rs.getTimestamp("EndTime"));
+                
+                // Thông tin bổ sung
+                d.setProductName(rs.getString("ProductName"));
+                d.setSizeName(rs.getString("SizeName"));
+                d.setSizeCode(rs.getString("SizeCode"));
+                
+                // Load toppings
+                d.setToppings(toppingDAO.getToppingsByOrderDetailID(d.getOrderDetailID()));
+                
+                list.add(d);
+            }
+        } catch (Exception e) { 
+            e.printStackTrace(); 
         }
-    }
-    
-    // Map specialization to category name - Deprecated, dùng mapSpecializationToCategories
-    @Deprecated
-    public String mapSpecializationToCategory(String specialization) {
-        List<String> categories = mapSpecializationToCategories(specialization);
-        return (categories != null && !categories.isEmpty()) ? categories.get(0) : null;
+        return list;
     }
 }
