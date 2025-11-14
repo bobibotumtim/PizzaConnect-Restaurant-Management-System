@@ -16,22 +16,22 @@ public class FeedbackStats {
     public FeedbackStats() {
     }
 
-    // Main constructor
-    public FeedbackStats(int totalFeedback, double averageRating, int positiveFeedback, int pendingResponse) {
+    // Main constructor (pendingResponse removed)
+    public FeedbackStats(int totalFeedback, double averageRating, int positiveFeedback) {
         this.totalFeedback = totalFeedback;
         this.averageRating = averageRating;
         this.positiveFeedback = positiveFeedback;
-        this.pendingResponse = pendingResponse;
+        this.pendingResponse = 0; // Always 0, kept for backward compatibility
         this.positiveRate = totalFeedback > 0 ? (double) positiveFeedback / totalFeedback * 100 : 0;
     }
 
-    // Full constructor with rating breakdown
-    public FeedbackStats(int totalFeedback, double averageRating, int positiveFeedback, int pendingResponse,
+    // Full constructor with rating breakdown (pendingResponse removed)
+    public FeedbackStats(int totalFeedback, double averageRating, int positiveFeedback,
                         int rating5Count, int rating4Count, int rating3Count, int rating2Count, int rating1Count) {
         this.totalFeedback = totalFeedback;
         this.averageRating = averageRating;
         this.positiveFeedback = positiveFeedback;
-        this.pendingResponse = pendingResponse;
+        this.pendingResponse = 0; // Always 0, kept for backward compatibility
         this.positiveRate = totalFeedback > 0 ? (double) positiveFeedback / totalFeedback * 100 : 0;
         this.rating5Count = rating5Count;
         this.rating4Count = rating4Count;
