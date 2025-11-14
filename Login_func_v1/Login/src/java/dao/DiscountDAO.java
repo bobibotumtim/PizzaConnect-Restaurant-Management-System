@@ -151,6 +151,36 @@ public class DiscountDAO extends DBContext {
     }
 
     /**
+     * Retrieves the active loyalty discount (there can be only one active loyalty
+     * discount at a time)
+     * 
+     * @return the active loyalty discount or null if not found
+     */
+    public Discount getLoyaltyDiscount() {
+        autoUpdateDiscountStatus();
+
+        String sql = "SELECT TOP 1 * FROM Discount WHERE DiscountType = 'Loyalty' AND IsActive = 1 ORDER BY DiscountID DESC";
+
+        try (Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                Discount discount = extractDiscountFromResultSet(rs);
+                LOGGER.info("Found active loyalty discount: ID " + discount.getDiscountId());
+                return discount;
+            } else {
+                LOGGER.info("No active loyalty discount found");
+                return null;
+            }
+
+        } catch (SQLException e) {
+            LOGGER.severe("Error fetching loyalty discount: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Adds a new discount to the database
      * 
      * @param discount the discount object to add
