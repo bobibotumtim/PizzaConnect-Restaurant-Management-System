@@ -45,51 +45,8 @@ public class CustomerFeedbackServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        
-        // Check authentication
-        User currentUser = (User) request.getSession().getAttribute("user");
-        if (currentUser == null || (currentUser.getRole() != 1 && currentUser.getRole() != 2)) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
-        
-        String action = request.getParameter("action");
-        
-        if ("respond".equals(action)) {
-            handleRespondToFeedback(request, response);
-        } else {
-            // Default: redirect to GET
-            doGet(request, response);
-        }
-    }
-    
-    private void handleRespondToFeedback(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        try {
-            String idParam = request.getParameter("id");
-            String responseText = request.getParameter("response");
-            
-            if (idParam != null && responseText != null && !responseText.trim().isEmpty()) {
-                int feedbackId = Integer.parseInt(idParam);
-                User currentUser = (User) request.getSession().getAttribute("user");
-                
-                boolean success = feedbackDAO.addResponse(feedbackId, responseText.trim(), currentUser.getUserID());
-                
-                if (success) {
-                    request.setAttribute("message", "Phản hồi đã được thêm thành công!");
-                } else {
-                    request.setAttribute("error", "Không thể thêm phản hồi. Vui lòng thử lại.");
-                }
-            }
-            
-            // Redirect back to list
-            doGet(request, response);
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("error", "Có lỗi xảy ra khi xử lý phản hồi.");
-            doGet(request, response);
-        }
+        // Redirect to GET
+        doGet(request, response);
     }
 }
 
