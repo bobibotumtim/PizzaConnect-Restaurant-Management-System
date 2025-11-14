@@ -4,6 +4,9 @@
     Order order = (Order) request.getAttribute("order");
     Payment payment = (Payment) request.getAttribute("payment");
     Double subtotal = (Double) request.getAttribute("subtotal");
+    Double originalTotal = (Double) request.getAttribute("originalTotal");
+    Double taxAmount = (Double) request.getAttribute("taxAmount");
+    Double taxRate = (Double) request.getAttribute("taxRate");
     Double discountAmount = (Double) request.getAttribute("discountAmount");
     Double loyaltyDiscount = (Double) request.getAttribute("loyaltyDiscount");
     Double regularDiscount = (Double) request.getAttribute("regularDiscount");
@@ -21,7 +24,10 @@
     if (regularDiscount == null) regularDiscount = 0.0;
     if (totalDiscount == null) totalDiscount = 0.0;
     if (finalAmount == null) finalAmount = order != null ? order.getTotalPrice() : 0.0;
-    if (subtotal == null) subtotal = finalAmount + totalDiscount;
+    if (subtotal == null) subtotal = order != null ? order.getTotalPrice() : 0.0;
+    if (originalTotal == null) originalTotal = subtotal;
+    if (taxAmount == null) taxAmount = 0.0;
+    if (taxRate == null) taxRate = 0.1;
     if (customerName == null) {
         customerName = order != null && order.getCustomerName() != null ? order.getCustomerName() : "Khách vãng lai";
     }
@@ -252,12 +258,20 @@
 
             <div class="divider"></div>
 
-            <!-- Amount Calculation with Discount Breakdown -->
+            <!-- Amount Calculation with Tax and Discount Breakdown -->
             <div class="amount-section">
-                <div class="amount-line text-bold">
+                <div class="amount-line">
                     <span>Tạm tính:</span>
-                    <span><%= numberFormat.format(subtotal) %></span>
+                    <span><%= numberFormat.format(originalTotal) %></span>
                 </div>
+                
+                <!-- Display tax -->
+                <% if (taxAmount > 0) { %>
+                <div class="amount-line">
+                    <span>Thuế VAT (<%= (int)(taxRate * 100) %>%):</span>
+                    <span>+<%= numberFormat.format(taxAmount) %></span>
+                </div>
+                <% } %>
                 
                 <!-- Display discount details -->
                 <% if (totalDiscount > 0) { %>
@@ -329,12 +343,13 @@
 
 <%!
     private String generateQRCodeURL(double amount, int orderId) {
-        String baseUrl = "https://img.vietqr.io/image/vietinbank-113366668888-compact2.jpg";
+        // Generate QR code URL with dynamic information
+        String baseUrl = "https://img.vietqr.io/image/BIDV-5106949427-compact2.jpg";
         String amountStr = String.format("%.0f", amount);
-        String addInfo = "Thanh toan order " + orderId;
-        
-        return baseUrl + "?amount=" + amountStr + 
-               "&addInfo=" + addInfo + 
-               "&accountName=Pizza Store";
+        String addInfo = "Thanh%20toan%20order%20" + orderId;
+
+        return baseUrl + "?amount=" + amountStr +
+                "&addInfo=" + addInfo +
+                "&accountName=Pizza%20Store";
     }
 %>

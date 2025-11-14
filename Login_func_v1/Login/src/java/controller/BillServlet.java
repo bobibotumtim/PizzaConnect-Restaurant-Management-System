@@ -17,10 +17,6 @@ public class BillServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        System.out.println("╔════════════════════════════════════════╗");
-        System.out.println("║         BillServlet.doGet()           ║");
-        System.out.println("╚════════════════════════════════════════╝");
-
         String orderIdParam = req.getParameter("orderId");
         String embeddedParam = req.getParameter("embedded");
         boolean embedded = "true".equals(embeddedParam);
@@ -31,6 +27,9 @@ public class BillServlet extends HttpServlet {
         String totalDiscountParam = req.getParameter("totalDiscount");
         String finalAmountParam = req.getParameter("finalAmount");
         String customerNameParam = req.getParameter("customerName");
+        String taxAmountParam = req.getParameter("taxAmount");
+        String taxRateParam = req.getParameter("taxRate");
+        String originalTotalParam = req.getParameter("originalTotal");
 
         System.out.println("Order ID: " + orderIdParam);
         System.out.println("Embedded: " + embedded);
@@ -39,6 +38,9 @@ public class BillServlet extends HttpServlet {
         System.out.println("Total Discount Param: " + totalDiscountParam);
         System.out.println("Final Amount Param: " + finalAmountParam);
         System.out.println("Customer Name Param: " + customerNameParam);
+        System.out.println("Tax Amount Param: " + taxAmountParam);
+        System.out.println("Tax Rate Param: " + taxRateParam);
+        System.out.println("Original Total Param: " + originalTotalParam);
 
         if (orderIdParam == null || orderIdParam.trim().isEmpty()) {
             if (embedded) {
@@ -82,11 +84,29 @@ public class BillServlet extends HttpServlet {
                 }
             }
 
+            // Process tax information from parameters
+            double taxRate = 0.1; // Default 10%
+            double taxAmount = 0;
+            double originalTotal = order.getTotalPrice();
+
+            if (taxRateParam != null && !taxRateParam.isEmpty()) {
+                taxRate = Double.parseDouble(taxRateParam);
+            }
+            if (taxAmountParam != null && !taxAmountParam.isEmpty()) {
+                taxAmount = Double.parseDouble(taxAmountParam);
+            } else {
+                // Calculate tax if not provided
+                taxAmount = originalTotal * taxRate;
+            }
+            if (originalTotalParam != null && !originalTotalParam.isEmpty()) {
+                originalTotal = Double.parseDouble(originalTotalParam);
+            }
+
             // Process discount information from parameters
             double loyaltyDiscount = 0;
             double regularDiscount = 0;
             double totalDiscount = 0;
-            double finalAmount = order.getTotalPrice();
+            double finalAmount = originalTotal + taxAmount; // Default final amount with tax
 
             // Use discount from parameters
             if (loyaltyDiscountParam != null && !loyaltyDiscountParam.isEmpty()) {
@@ -97,13 +117,17 @@ public class BillServlet extends HttpServlet {
             }
             if (totalDiscountParam != null && !totalDiscountParam.isEmpty()) {
                 totalDiscount = Double.parseDouble(totalDiscountParam);
+            } else {
+                totalDiscount = loyaltyDiscount + regularDiscount;
             }
             if (finalAmountParam != null && !finalAmountParam.isEmpty()) {
                 finalAmount = Double.parseDouble(finalAmountParam);
+            } else {
+                finalAmount = originalTotal + taxAmount - totalDiscount;
             }
 
-            // Calculate subtotal
-            double subtotal = finalAmount + totalDiscount;
+            // Calculate subtotal (original total without tax)
+            double subtotal = originalTotal;
 
             // Get discount information from database
             OrderDiscountDAO orderDiscountDAO = new OrderDiscountDAO();
@@ -113,8 +137,9 @@ public class BillServlet extends HttpServlet {
             // Use discount from table
             if (databaseDiscount > 0) {
                 totalDiscount = databaseDiscount;
-                // Analysis discount from database to get loyaltyDiscount and
-                // regularDiscount
+                // Analysis discount from database to get loyaltyDiscount and regularDiscount
+                // You can add logic here to separate loyalty and regular discounts from
+                // database
             }
 
             // Get payment information
@@ -146,6 +171,9 @@ public class BillServlet extends HttpServlet {
             req.setAttribute("payment", payment);
             req.setAttribute("discounts", discounts);
             req.setAttribute("subtotal", subtotal);
+            req.setAttribute("originalTotal", originalTotal);
+            req.setAttribute("taxAmount", taxAmount);
+            req.setAttribute("taxRate", taxRate);
             req.setAttribute("discountAmount", totalDiscount);
             req.setAttribute("loyaltyDiscount", loyaltyDiscount);
             req.setAttribute("regularDiscount", regularDiscount);
@@ -153,7 +181,7 @@ public class BillServlet extends HttpServlet {
             req.setAttribute("finalAmount", finalAmount);
             req.setAttribute("currentDate", new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date()));
             req.setAttribute("embedded", embedded);
-            req.setAttribute("customerName", customerName); // Add customer name
+            req.setAttribute("customerName", customerName);
 
             // Add QR code URL as separate attribute
             String qrCodeUrl = generateQRCodeURL(finalAmount, orderId);
@@ -161,6 +189,9 @@ public class BillServlet extends HttpServlet {
 
             System.out.println("Bill Data Prepared:");
             System.out.println("   Customer Name: " + customerName);
+            System.out.println("   Original Total: " + originalTotal);
+            System.out.println("   Tax Amount: " + taxAmount);
+            System.out.println("   Tax Rate: " + (taxRate * 100) + "%");
             System.out.println("   Subtotal: " + subtotal);
             System.out.println("   Loyalty Discount: " + loyaltyDiscount);
             System.out.println("   Regular Discount: " + regularDiscount);
@@ -203,10 +234,6 @@ public class BillServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-
-        System.out.println("╔════════════════════════════════════════╗");
-        System.out.println("║         BillServlet.doPost()          ║");
-        System.out.println("╚════════════════════════════════════════╝");
 
         String action = req.getParameter("action");
         String orderIdParam = req.getParameter("orderId");
@@ -267,7 +294,7 @@ public class BillServlet extends HttpServlet {
     private void processPayment(HttpServletRequest req, HttpServletResponse resp, int orderId, boolean embedded)
             throws ServletException, IOException {
 
-        System.out.println("💰 Processing payment for order: " + orderId);
+        System.out.println("Processing payment for order: " + orderId);
 
         try {
             PaymentDAO paymentDAO = new PaymentDAO();
@@ -381,12 +408,12 @@ public class BillServlet extends HttpServlet {
 
     private String generateQRCodeURL(double amount, int orderId) {
         // Generate QR code URL with dynamic information
-        String baseUrl = "https://img.vietqr.io/image/vietinbank-113366668888-compact2.jpg";
+        String baseUrl = "https://img.vietqr.io/image/BIDV-5106949427-compact2.jpg";
         String amountStr = String.format("%.0f", amount);
-        String addInfo = "Thanh toán order " + orderId;
+        String addInfo = "Thanh%20toan%20order%20" + orderId;
 
         return baseUrl + "?amount=" + amountStr +
                 "&addInfo=" + addInfo +
-                "&accountName=Pizza Store";
+                "&accountName=Pizza%20Store";
     }
 }
