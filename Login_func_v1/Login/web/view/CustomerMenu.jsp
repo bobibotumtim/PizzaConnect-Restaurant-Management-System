@@ -233,7 +233,7 @@
                             </div>
                             
                             <!-- Price Range -->
-                            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                            <div class="pt-4 border-t border-gray-200 text-center">
                                 <% 
                                     // Calculate min/max price without Stream API
                                     double minPrice = Double.MAX_VALUE;
@@ -246,14 +246,11 @@
                                     if (maxPrice == Double.MIN_VALUE) maxPrice = 0;
                                 %>
                                 <div>
-                                    <span class="text-sm text-gray-500">From</span>
+                                    <span class="text-sm text-gray-500 block mb-1">From</span>
                                     <span class="text-2xl font-bold text-orange-600">
                                         <%= currencyFormat.format(minPrice) %>₫
                                     </span>
                                 </div>
-                                <button class="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition-all font-semibold">
-                                    Order
-                                </button>
                             </div>
                         </div>
                     </div>

@@ -25,7 +25,28 @@ public class CustomerMenuServlet extends HttpServlet {
             List<Product> allProducts = productDAO.getAllBaseProducts();
             
             // Get all categories for filter
-            List<Category> categories = categoryDAO.getAllCategories();
+            List<Category> allCategories = categoryDAO.getAllCategories();
+            
+            // Remove duplicates and sort (Pizza first)
+            Set<String> seenNames = new LinkedHashSet<>();
+            List<Category> categories = new ArrayList<>();
+            
+            // First add Pizza if exists
+            for (Category cat : allCategories) {
+                if (cat.getCategoryName().equalsIgnoreCase("Pizza") && !seenNames.contains(cat.getCategoryName())) {
+                    categories.add(cat);
+                    seenNames.add(cat.getCategoryName());
+                    break;
+                }
+            }
+            
+            // Then add others (no duplicates)
+            for (Category cat : allCategories) {
+                if (!seenNames.contains(cat.getCategoryName())) {
+                    categories.add(cat);
+                    seenNames.add(cat.getCategoryName());
+                }
+            }
             
             // Create a map to store products with their sizes
             Map<Product, List<ProductSize>> productsWithSizes = new LinkedHashMap<>();
@@ -45,18 +66,35 @@ public class CustomerMenuServlet extends HttpServlet {
                 }
             }
             
-            // Group products by category
+            // Group products by category (Pizza first)
             Map<String, Map<Product, List<ProductSize>>> productsByCategory = new LinkedHashMap<>();
             
+            // First add Pizza category
             for (Map.Entry<Product, List<ProductSize>> entry : productsWithSizes.entrySet()) {
                 Product product = entry.getKey();
                 List<ProductSize> sizes = entry.getValue();
                 String category = product.getCategoryName();
                 
-                if (!productsByCategory.containsKey(category)) {
-                    productsByCategory.put(category, new LinkedHashMap<>());
+                if (category.equalsIgnoreCase("Pizza")) {
+                    if (!productsByCategory.containsKey(category)) {
+                        productsByCategory.put(category, new LinkedHashMap<>());
+                    }
+                    productsByCategory.get(category).put(product, sizes);
                 }
-                productsByCategory.get(category).put(product, sizes);
+            }
+            
+            // Then add other categories
+            for (Map.Entry<Product, List<ProductSize>> entry : productsWithSizes.entrySet()) {
+                Product product = entry.getKey();
+                List<ProductSize> sizes = entry.getValue();
+                String category = product.getCategoryName();
+                
+                if (!category.equalsIgnoreCase("Pizza")) {
+                    if (!productsByCategory.containsKey(category)) {
+                        productsByCategory.put(category, new LinkedHashMap<>());
+                    }
+                    productsByCategory.get(category).put(product, sizes);
+                }
             }
             
             // Send to JSP
