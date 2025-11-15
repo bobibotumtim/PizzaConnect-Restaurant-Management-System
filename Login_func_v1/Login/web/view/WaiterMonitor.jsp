@@ -27,11 +27,11 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex overflow-hidden">
+<body class="bg-gray-50 h-screen flex overflow-hidden">
     <!-- Sidebar -->
     <jsp:include page="Sidebar.jsp" />
     
-    <div class="flex flex-col flex-1 overflow-auto" style="margin-left: 80px;">
+    <div class="flex flex-col flex-1 overflow-y-auto" style="margin-left: 80px;">
         <!-- Top Navigation Bar -->
         <div class="bg-white shadow-md border-b px-6 py-3 flex items-center justify-between">
             <div class="flex items-center gap-4">
