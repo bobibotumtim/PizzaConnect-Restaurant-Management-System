@@ -1134,9 +1134,25 @@ public class POSServlet extends HttpServlet {
             
             // Add items to order
             OrderDAO orderDAO = new OrderDAO();
-            boolean success = orderDAO.addItemsToOrder(orderId, newItems);
+            List<Integer> newOrderDetailIds = orderDAO.addItemsToOrder(orderId, newItems);
             
-            if (success) {
+            if (newOrderDetailIds != null && !newOrderDetailIds.isEmpty()) {
+                System.out.println("✅ Added " + newOrderDetailIds.size() + " items to Order #" + orderId);
+                
+                // Save toppings for new items
+                System.out.println("🍕 Saving toppings for new items...");
+                for (int i = 0; i < Math.min(newOrderDetailIds.size(), allCartItems.size()); i++) {
+                    int orderDetailId = newOrderDetailIds.get(i);
+                    CartItemWithToppings cartItem = allCartItems.get(i);
+                    
+                    if (cartItem.getToppings() != null && !cartItem.getToppings().isEmpty()) {
+                        System.out.println("  💾 Saving " + cartItem.getToppings().size() + 
+                                         " toppings for OrderDetailID=" + orderDetailId);
+                        saveToppingsForOrderDetail(orderDetailId, cartItem.getToppings());
+                    }
+                }
+                System.out.println("✅ Toppings saved successfully!");
+                
                 System.out.println("✅✅✅ SUCCESS! Added items to Order #" + orderId + " ✅✅✅");
                 return true;
             } else {

@@ -933,14 +933,15 @@ public class OrderDAO extends DBContext {
      * Add items to existing order
      * Used when waiter adds more items to an order from POS
      */
-    public boolean addItemsToOrder(int orderId, List<OrderDetail> newItems) throws Exception {
+    public List<Integer> addItemsToOrder(int orderId, List<OrderDetail> newItems) throws Exception {
         Connection con = null;
+        List<Integer> newOrderDetailIds = new ArrayList<>();
         
         try {
             con = useConnection();
             con.setAutoCommit(false);
             
-            // Insert new order details
+            // Insert new order details and get generated IDs
             String sqlDetail = """
                 INSERT INTO [OrderDetail] 
                 (OrderID, ProductSizeID, Quantity, TotalPrice, SpecialInstructions, Status)
@@ -948,30 +949,42 @@ public class OrderDAO extends DBContext {
             """;
             
             double additionalTotal = 0;
-            try (PreparedStatement psDetail = con.prepareStatement(sqlDetail)) {
+            try (PreparedStatement psDetail = con.prepareStatement(sqlDetail, Statement.RETURN_GENERATED_KEYS)) {
                 for (OrderDetail d : newItems) {
                     psDetail.setInt(1, orderId);
                     psDetail.setInt(2, d.getProductSizeID());
                     psDetail.setInt(3, d.getQuantity());
                     psDetail.setDouble(4, d.getTotalPrice());
                     psDetail.setString(5, d.getSpecialInstructions());
-                    psDetail.addBatch();
+                    psDetail.executeUpdate();
+                    
+                    // Get generated OrderDetailID
+                    try (ResultSet rs = psDetail.getGeneratedKeys()) {
+                        if (rs.next()) {
+                            int newDetailId = rs.getInt(1);
+                            newOrderDetailIds.add(newDetailId);
+                            System.out.println("  ✅ Created OrderDetail #" + newDetailId);
+                        }
+                    }
+                    
                     additionalTotal += d.getTotalPrice();
                 }
-                psDetail.executeBatch();
             }
             
-            // Update total price of order
+            // Update total price of order (including 10% tax for new items)
+            double additionalWithTax = additionalTotal * 1.1;
+            System.out.println("🧮 [Add Items] Additional total: " + additionalTotal + " → with tax: " + additionalWithTax);
             String sqlUpdate = "UPDATE [Order] SET TotalPrice = TotalPrice + ? WHERE OrderID = ?";
             try (PreparedStatement psUpdate = con.prepareStatement(sqlUpdate)) {
-                psUpdate.setDouble(1, additionalTotal);
+                psUpdate.setDouble(1, additionalWithTax);
                 psUpdate.setInt(2, orderId);
-                psUpdate.executeUpdate();
+                int updated = psUpdate.executeUpdate();
+                System.out.println("✅ [Add Items] Order #" + orderId + " total updated (added: " + additionalWithTax + ", rows affected: " + updated + ")");
             }
             
             con.commit();
             System.out.println("✅ Added " + newItems.size() + " items to Order #" + orderId);
-            return true;
+            return newOrderDetailIds;
             
         } catch (Exception e) {
             if (con != null) con.rollback();
