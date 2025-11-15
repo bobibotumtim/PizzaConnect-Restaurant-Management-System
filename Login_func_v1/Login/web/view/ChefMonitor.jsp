@@ -151,16 +151,42 @@
     <%@ include file="Sidebar.jsp" %>
     <%@ include file="NavBar.jsp" %>
     
+    <!-- Alert Messages -->
+    <c:if test="${not empty error}">
+        <div id="alertBox" class="fixed top-20 right-5 bg-red-500 text-white px-6 py-4 rounded-lg shadow-xl transition-opacity duration-500" style="z-index: 9999;">
+            <div class="flex items-center gap-2">
+                <span class="text-lg font-semibold">${error}</span>
+            </div>
+        </div>
+        <script>
+            // Fade out alert after 3 seconds
+            setTimeout(() => {
+                const box = document.getElementById("alertBox");
+                if (box) {
+                    box.style.opacity = "0";
+                    setTimeout(() => box.remove(), 500);
+                }
+            }, 3000);
+            
+            // Reload page after 5 seconds to clear error and resume normal operation
+            setTimeout(() => {
+                // Redirect to clean URL without error
+                const url = new URL(window.location.href);
+                const category = url.searchParams.get('category');
+                if (category && category !== 'All') {
+                    window.location.href = 'ChefMonitor?category=' + category;
+                } else {
+                    window.location.href = 'ChefMonitor';
+                }
+            }, 5000);
+        </script>
+    </c:if>
+    
     <div class="content-wrapper">
         <div class="top-bar">
-            <div>
-                <h2 class="fw-bold d-inline">Chef Dashboard</h2>
-            </div>
+            <div></div>
             <div>
                 <button onclick="location.reload()" class="btn btn-primary">🔄 Refresh</button>
-                <c:if test="${not empty error}">
-                    <span class="text-danger ms-3">${error}</span>
-                </c:if>
             </div>
         </div>
         
@@ -296,10 +322,12 @@
             window.location.href = url.toString();
         }
         
-        // Auto-refresh every 10 seconds
+        // Auto-refresh every 10 seconds - KHÔNG refresh khi có error
+        <c:if test="${empty error}">
         setTimeout(function() {
             location.reload();
         }, 10000);
+        </c:if>
     </script>
 
 </body>

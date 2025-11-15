@@ -42,13 +42,6 @@ public class EditProductSizeServlet extends HttpServlet {
             int productSizeId = Integer.parseInt(request.getParameter("productSizeId"));
             String sizeCode = request.getParameter("sizeCode");
             double price = Double.parseDouble(request.getParameter("price"));
-            
-            // Lấy productId để validate (có thể từ hidden field hoặc query từ DB)
-            String productIdStr = request.getParameter("productId");
-            int productId = 0;
-            if (productIdStr != null && !productIdStr.isEmpty()) {
-                productId = Integer.parseInt(productIdStr);
-            }
 
             // 2. Validate - kiểm tra size tồn tại
             ProductSize existing = productSizeDAO.getProductSizeById(productSizeId);
@@ -59,16 +52,17 @@ public class EditProductSizeServlet extends HttpServlet {
                 return;
             }
             
-            // Kiểm tra size trùng (trừ chính nó)
-            try {
+            // Lấy productId từ ProductSize hiện tại
+            int productId = existing.getProductId();
+            
+            // Kiểm tra size trùng (trừ chính nó) - chỉ kiểm tra nếu sizeCode thay đổi
+            if (!sizeCode.equals(existing.getSizeCode())) {
                 if (productSizeDAO.isSizeExistsForProduct(productId, sizeCode, productSizeId)) {
-                    session.setAttribute("message", "Size already exists for this product");
+                    session.setAttribute("message", "Size '" + sizeCode + "' is already exit in the product");
                     session.setAttribute("messageType", "error");
                     response.sendRedirect(request.getContextPath() + "/manageproduct");
                     return;
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
             
             if (price < 0) {

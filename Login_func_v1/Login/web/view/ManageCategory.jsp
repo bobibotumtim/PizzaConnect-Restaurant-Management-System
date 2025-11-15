@@ -29,8 +29,10 @@
 
 <!-- Alert Messages -->
 <c:if test="${not empty sessionScope.message}">
-    <div id="alertBox" class="fixed top-5 right-5 ${sessionScope.messageType == 'error' ? 'bg-red-500' : 'bg-green-500'} text-white px-4 py-3 rounded-lg shadow-lg transition-opacity duration-500 z-[1001]">
-        ${sessionScope.message}
+    <div id="alertBox" class="fixed top-20 right-5 ${sessionScope.messageType == 'error' ? 'bg-red-500' : 'bg-green-500'} text-white px-6 py-4 rounded-lg shadow-xl transition-opacity duration-500" style="z-index: 9999;">
+        <div class="flex items-center gap-2">
+            <span class="text-lg font-semibold">${sessionScope.message}</span>
+        </div>
     </div>
     <script>
         setTimeout(() => {
@@ -184,8 +186,8 @@
 
 <!-- Alert -->
 <c:if test="${param.message != null}">
-    <div id="alertBox"
-         class="fixed top-5 right-5 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg">
+    <div id="alertBoxParam"
+         class="fixed top-20 right-5 bg-green-500 text-white px-6 py-4 rounded-lg shadow-xl" style="z-index: 9999;">
         <c:choose>
             <c:when test="${param.message == 'added'}">Category added successfully!</c:when>
             <c:when test="${param.message == 'updated'}">Category updated successfully!</c:when>
@@ -193,7 +195,14 @@
         </c:choose>
     </div>
     <script>
-        setTimeout(() => document.getElementById('alertBox').style.display = 'none', 3000);
+        setTimeout(() => {
+            const box = document.getElementById('alertBoxParam');
+            if (box) {
+                box.style.opacity = '0';
+                box.style.transition = 'opacity 0.5s';
+                setTimeout(() => box.remove(), 500);
+            }
+        }, 3000);
     </script>
 </c:if>
 
