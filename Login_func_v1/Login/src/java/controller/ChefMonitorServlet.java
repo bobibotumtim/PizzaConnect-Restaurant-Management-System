@@ -6,15 +6,17 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import models.*;
 import dao.*;
-import service.InventoryDeductionService;
 
 @WebServlet("/ChefMonitor")
 public class ChefMonitorServlet extends HttpServlet {
 
     private OrderDetailDAO orderDetailDAO = new OrderDetailDAO();
-    private InventoryDeductionService inventoryService = new InventoryDeductionService();
+    private InventoryDAO inventoryDAO = new InventoryDAO();
+    private ProductIngredientDAO productIngredientDAO = new ProductIngredientDAO();
+    private OrderDetailToppingDAO orderDetailToppingDAO = new OrderDetailToppingDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -151,7 +153,7 @@ public class ChefMonitorServlet extends HttpServlet {
             
             if (targetOrderDetail != null) {
                 // Kiểm tra xem có đủ nguyên liệu không
-                boolean hasEnoughIngredients = inventoryService.checkIngredientsAvailability(targetOrderDetail);
+                boolean hasEnoughIngredients = checkIngredientsAvailability(targetOrderDetail);
                 
                 if (!hasEnoughIngredients) {
                     req.setAttribute("error", "⚠️ Không đủ nguyên liệu để hoàn thành món này!");
@@ -164,7 +166,7 @@ public class ChefMonitorServlet extends HttpServlet {
                 
                 if (updated) {
                     // Trừ nguyên liệu sau khi cập nhật trạng thái thành công
-                    boolean ingredientsDeducted = inventoryService.deductIngredientsForOrderDetail(targetOrderDetail);
+                    boolean ingredientsDeducted = deductIngredientsForOrderDetail(targetOrderDetail);
                     
                     if (!ingredientsDeducted) {
                         System.err.println("⚠️ Món đã được đánh dấu Ready nhưng có lỗi khi trừ nguyên liệu");
@@ -198,6 +200,137 @@ public class ChefMonitorServlet extends HttpServlet {
         } else {
             req.setAttribute("error", "Không thể cập nhật trạng thái món ăn!");
             doGet(req, resp);
+        }
+    }
+    
+    /**
+     * Trừ nguyên liệu cho một OrderDetail khi chef hoàn thành món
+     */
+    private boolean deductIngredientsForOrderDetail(OrderDetail orderDetail) {
+        try {
+            // 1. Trừ nguyên liệu cho sản phẩm chính
+            boolean productDeducted = deductProductIngredients(
+                orderDetail.getProductSizeID(), 
+                orderDetail.getQuantity()
+            );
+            
+            if (!productDeducted) {
+                System.err.println("❌ Không thể trừ nguyên liệu cho sản phẩm: " + orderDetail.getProductName());
+                return false;
+            }
+            
+            // 2. Trừ nguyên liệu cho toppings (nếu có)
+            List<OrderDetailTopping> toppings = orderDetailToppingDAO.getToppingsByOrderDetailID(
+                orderDetail.getOrderDetailID()
+            );
+            
+            if (toppings != null && !toppings.isEmpty()) {
+                for (OrderDetailTopping topping : toppings) {
+                    boolean toppingDeducted = deductProductIngredients(
+                        topping.getToppingID(),
+                        orderDetail.getQuantity()
+                    );
+                    
+                    if (!toppingDeducted) {
+                        System.err.println("⚠️ Không thể trừ nguyên liệu cho topping: " + topping.getToppingName());
+                    }
+                }
+            }
+            
+            return true;
+            
+        } catch (Exception e) {
+            System.err.println("❌ Lỗi khi trừ nguyên liệu: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
+     * Trừ nguyên liệu cho một ProductSize
+     */
+    private boolean deductProductIngredients(int productSizeId, int quantity) {
+        // Lấy danh sách nguyên liệu cần trừ
+        Map<Integer, Double> ingredientsToDeduct = productIngredientDAO.getIngredientsToDeduct(
+            productSizeId, 
+            quantity
+        );
+        
+        if (ingredientsToDeduct.isEmpty()) {
+            return true; // Không có nguyên liệu thì coi như thành công
+        }
+        
+        // Kiểm tra xem có đủ nguyên liệu không
+        for (Map.Entry<Integer, Double> entry : ingredientsToDeduct.entrySet()) {
+            int inventoryId = entry.getKey();
+            double quantityNeeded = entry.getValue();
+            
+            if (!inventoryDAO.hasEnoughInventory(inventoryId, quantityNeeded)) {
+                String itemName = inventoryDAO.getItemNameById(inventoryId);
+                System.err.println("❌ Không đủ nguyên liệu: " + itemName + " (cần: " + quantityNeeded + ")");
+                return false;
+            }
+        }
+        
+        // Trừ nguyên liệu
+        for (Map.Entry<Integer, Double> entry : ingredientsToDeduct.entrySet()) {
+            int inventoryId = entry.getKey();
+            double quantityNeeded = entry.getValue();
+            
+            boolean deducted = inventoryDAO.deductInventory(inventoryId, quantityNeeded);
+            if (!deducted) {
+                String itemName = inventoryDAO.getItemNameById(inventoryId);
+                System.err.println("❌ Không thể trừ nguyên liệu: " + itemName);
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Kiểm tra xem có đủ nguyên liệu để làm món không
+     */
+    private boolean checkIngredientsAvailability(OrderDetail orderDetail) {
+        try {
+            // 1. Kiểm tra nguyên liệu cho sản phẩm chính
+            Map<Integer, Double> productIngredients = productIngredientDAO.getIngredientsToDeduct(
+                orderDetail.getProductSizeID(), 
+                orderDetail.getQuantity()
+            );
+            
+            for (Map.Entry<Integer, Double> entry : productIngredients.entrySet()) {
+                if (!inventoryDAO.hasEnoughInventory(entry.getKey(), entry.getValue())) {
+                    return false;
+                }
+            }
+            
+            // 2. Kiểm tra nguyên liệu cho toppings
+            List<OrderDetailTopping> toppings = orderDetailToppingDAO.getToppingsByOrderDetailID(
+                orderDetail.getOrderDetailID()
+            );
+            
+            if (toppings != null && !toppings.isEmpty()) {
+                for (OrderDetailTopping topping : toppings) {
+                    Map<Integer, Double> toppingIngredients = productIngredientDAO.getIngredientsToDeduct(
+                        topping.getToppingID(), 
+                        orderDetail.getQuantity()
+                    );
+                    
+                    for (Map.Entry<Integer, Double> entry : toppingIngredients.entrySet()) {
+                        if (!inventoryDAO.hasEnoughInventory(entry.getKey(), entry.getValue())) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            
+            return true;
+            
+        } catch (Exception e) {
+            System.err.println("❌ Lỗi khi kiểm tra nguyên liệu: " + e.getMessage());
+            e.printStackTrace();
+            return false;
         }
     }
 }
