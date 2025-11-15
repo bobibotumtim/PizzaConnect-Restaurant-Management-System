@@ -541,8 +541,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <span class="close" onclick="closeFeedbackModal()">&times;</span>
-                <h2 style="margin: 0; font-size: 24px;">⭐ Đánh giá trải nghiệm</h2>
-                <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px;">Đơn hàng #<span id="modalOrderId"></span></p>
+                <h2 style="margin: 0; font-size: 24px;">⭐ Rate Your Experience</h2>
+                <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px;">Order #<span id="modalOrderId"></span></p>
             </div>
             <div class="modal-body">
                 <div id="feedbackMessage" style="display: none;"></div>
@@ -552,7 +552,7 @@
                     <input type="hidden" name="productId" value="1" />
                     <input type="hidden" id="rating" name="rating" value="" />
 
-                    <div class="rating-label" id="ratingLabel">Chọn số sao đánh giá</div>
+                    <div class="rating-label" id="ratingLabel">Select your rating</div>
                     
                     <div class="stars" id="stars">
                         <span class="star" data-rating="1">★</span>
@@ -565,11 +565,11 @@
                     <textarea
                         class="feedback-textarea"
                         name="comment"
-                        placeholder="Chia sẻ trải nghiệm của bạn về món ăn, dịch vụ... (tùy chọn)"
+                        placeholder="Share your experience about the food, service... (optional)"
                     ></textarea>
 
                     <button type="submit" class="submit-btn" id="submitBtn">
-                        <span id="submitBtnText">Gửi đánh giá</span>
+                        <span id="submitBtnText">Submit Rating</span>
                     </button>
                 </form>
             </div>
@@ -622,14 +622,14 @@
         function resetFeedbackForm(orderIdToKeep) {
             selectedRating = 0;
             document.getElementById('rating').value = '';
-            document.getElementById('ratingLabel').textContent = 'Chọn số sao đánh giá';
+            document.getElementById('ratingLabel').textContent = 'Select your rating';
             document.querySelectorAll('.star').forEach(star => {
                 star.classList.remove('selected');
             });
             document.querySelector('textarea[name="comment"]').value = '';
             document.getElementById('feedbackMessage').style.display = 'none';
             document.getElementById('submitBtn').disabled = false;
-            document.getElementById('submitBtnText').textContent = 'Gửi đánh giá';
+            document.getElementById('submitBtnText').textContent = 'Submit Rating';
             
             // Keep orderId if provided
             if (orderIdToKeep) {
@@ -654,11 +654,11 @@
         let selectedRating = 0;
 
         const ratingTexts = {
-            1: '⭐ Rất kém',
-            2: '⭐⭐ Kém',
-            3: '⭐⭐⭐ Trung bình',
-            4: '⭐⭐⭐⭐ Tốt',
-            5: '⭐⭐⭐⭐⭐ Xuất sắc'
+            1: '⭐ Very Poor',
+            2: '⭐⭐ Poor',
+            3: '⭐⭐⭐ Average',
+            4: '⭐⭐⭐⭐ Good',
+            5: '⭐⭐⭐⭐⭐ Excellent'
         };
 
         stars.forEach(star => {
@@ -704,7 +704,7 @@
             e.preventDefault();
 
             if (!selectedRating) {
-                showMessage('Vui lòng chọn số sao đánh giá!', 'error');
+                showMessage('Please select a rating!', 'error');
                 return;
             }
 
@@ -716,7 +716,7 @@
             
             // Validate orderId before submit
             if (!orderIdValue || orderIdValue === '' || orderIdValue === 'undefined' || orderIdValue.trim() === '') {
-                showMessage('Lỗi: Không tìm thấy Order ID. Vui lòng thử lại.', 'error');
+                showMessage('Error: Order ID not found. Please try again.', 'error');
                 console.error('OrderID is empty. Current:', currentOrderId, 'Form value:', document.getElementById('feedbackOrderId').value);
                 return;
             }
@@ -727,7 +727,7 @@
             const submitBtn = document.getElementById('submitBtn');
             const submitBtnText = document.getElementById('submitBtnText');
             submitBtn.disabled = true;
-            submitBtnText.textContent = 'Đang gửi...';
+            submitBtnText.textContent = 'Submitting...';
 
             const formData = new FormData(this);
             
@@ -740,10 +740,10 @@
             // Verify orderId in FormData
             const formOrderId = formData.get('orderId');
             if (!formOrderId || formOrderId.trim() === '') {
-                showMessage('Lỗi: Order ID không được gửi kèm. Vui lòng thử lại.', 'error');
+                showMessage('Error: Order ID not included. Please try again.', 'error');
                 console.error('OrderID missing in FormData');
                 submitBtn.disabled = false;
-                submitBtnText.textContent = 'Gửi đánh giá';
+                submitBtnText.textContent = 'Submit Rating';
                 return;
             }
 
@@ -779,20 +779,20 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    showMessage('✓ Cảm ơn bạn đã đánh giá! Trang sẽ tự động tải lại...', 'success');
+                    showMessage('✓ Thank you for your feedback! Page will reload...', 'success');
                     
                     setTimeout(() => {
                         window.location.reload();
                     }, 2000);
                 } else {
-                    showMessage('Lỗi: ' + result.message, 'error');
+                    showMessage('Error: ' + result.message, 'error');
                     submitBtn.disabled = false;
-                    submitBtnText.textContent = 'Gửi đánh giá';
+                    submitBtnText.textContent = 'Submit Rating';
                 }
             } catch (error) {
-                showMessage('Lỗi kết nối: ' + error.message, 'error');
+                showMessage('Connection error: ' + error.message, 'error');
                 submitBtn.disabled = false;
-                submitBtnText.textContent = 'Gửi đánh giá';
+                submitBtnText.textContent = 'Submit Rating';
             }
         });
 
