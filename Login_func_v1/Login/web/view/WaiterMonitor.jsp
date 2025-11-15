@@ -26,16 +26,34 @@
         }
     </style>
 </head>
-<body class="bg-gray-50">
-    <%@ include file="Sidebar.jsp" %>
+<body class="bg-gray-50 min-h-screen">
+    <!-- ✅ Removed Sidebar - Fullscreen layout -->
     
-    <div class="content-wrapper">
+    <!-- Top Navigation Bar -->
+    <div class="bg-white shadow-md border-b px-6 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <div class="text-2xl font-bold text-orange-600">🔔 Waiter Monitor</div>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="pos" class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
+                🍕 POS
+            </a>
+            <a href="manage-orders" class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
+                📋 Orders
+            </a>
+            <a href="waiter-dashboard" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 shadow-sm hover:shadow-md transition-all duration-200">
+                🏠 Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <div class="w-full">
         <div class="max-w-7xl mx-auto px-6 py-8">
             
-            <!-- Header -->
+            <!-- Header - ✅ Chuẩn hóa gradient -->
             <div class="mb-8">
                 <div class="flex items-center gap-4 mb-4">
-                    <div class="w-14 h-14 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center">
+                    <div class="w-14 h-14 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-sm">
                         <i class="fas fa-bell text-white text-2xl"></i>
                     </div>
                     <div>
@@ -55,8 +73,8 @@
                 </div>
             </c:if>
 
-            <!-- Ready Section -->
-            <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+            <!-- Ready Section - ✅ Chuẩn hóa shadow và padding -->
+            <div class="bg-white rounded-xl shadow-sm p-4 mb-8">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
                         <span class="relative">
@@ -84,7 +102,7 @@
                     <c:otherwise>
                         <div class="space-y-4">
                             <c:forEach var="item" items="${readyList}">
-                                <div class="dish-card pulse-animation bg-orange-50 border-l-4 border-orange-500 rounded-lg p-4">
+                                <div class="dish-card pulse-animation bg-orange-50 border-l-4 border-orange-600 rounded-lg p-4 shadow-sm hover:shadow-md transition-all duration-200">
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
                                         <div class="md:col-span-2">
                                             <h3 class="text-xl font-bold text-gray-800 mb-2">
@@ -114,7 +132,7 @@
                                                 <input type="hidden" name="action" value="served">
                                                 <input type="hidden" name="orderDetailId" value="${item.orderDetailID}">
                                                 <input type="hidden" name="orderId" value="${item.orderID}">
-                                                <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-3 rounded-lg transition-all transform hover:scale-105">
+                                                <button type="submit" class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold px-6 py-3 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
                                                     <i class="fas fa-check"></i> Mark as Served
                                                 </button>
                                             </form>
@@ -127,8 +145,8 @@
                 </c:choose>
             </div>
 
-            <!-- Served Section -->
-            <div class="bg-white rounded-xl shadow-md p-6">
+            <!-- Served Section - ✅ Chuẩn hóa shadow và padding -->
+            <div class="bg-white rounded-xl shadow-sm p-4">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-3">
                         <i class="fas fa-check-circle text-green-500"></i>
