@@ -1,6 +1,8 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ taglib
-uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%@ taglib
-uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %> <%@ page
+import="models.User" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/core"
+prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<% User currentUser = (User) session.getAttribute("user"); String userName =
+(currentUser != null) ? currentUser.getName() : "User"; %>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -95,9 +97,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
     >
       <!-- Logo -->
       <div class="flex items-center px-4 mb-8">
-        <div class="text-orange-500 text-3xl min-w-[3rem] flex justify-center">
-          <i data-lucide="pizza" class="w-10 h-10"></i>
-        </div>
+        <div class="text-3xl min-w-[3rem] flex justify-center">🍕</div>
         <span class="sidebar-text ml-3 text-white text-xl font-bold"
           >PizzaConnect</span
         >
@@ -145,60 +145,31 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
           <span class="sidebar-text ml-3">Customer Feedback</span>
         </a>
       </nav>
+    </div>
 
-      <!-- Logout -->
-      <div class="px-3">
+    <!-- Top Navigation Bar -->
+    <div
+      class="fixed top-0 left-20 right-0 bg-white shadow-md border-b px-6 py-3 flex items-center justify-between z-40"
+    >
+      <div class="text-2xl font-bold text-orange-600">🍕 PizzaConnect</div>
+      <div class="flex items-center gap-3">
+        <div class="text-right">
+          <div class="font-semibold text-gray-800"><%= userName %></div>
+          <div class="text-xs text-gray-500">Manager</div>
+        </div>
         <a
           href="${pageContext.request.contextPath}/logout"
-          class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-red-600 hover:text-white transition"
+          class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2"
         >
-          <div class="min-w-[2.5rem] flex justify-center">
-            <i data-lucide="log-out" class="w-6 h-6"></i>
-          </div>
-          <span class="sidebar-text ml-3">Logout</span>
+          <i data-lucide="log-out" class="w-4 h-4"></i>
+          Logout
         </a>
       </div>
     </div>
 
-    <!-- Mobile Navigation Toggle -->
-    <div class="md:hidden fixed top-4 left-4 z-50">
-      <button
-        id="mobile-menu-toggle"
-        class="p-2 bg-orange-500 text-white rounded-lg shadow-lg hover:bg-orange-600 transition-colors"
-      >
-        <i data-lucide="menu" class="w-6 h-6"></i>
-      </button>
-    </div>
-
     <!-- Main Content -->
-    <div class="flex-1 gradient-bg p-6 overflow-y-auto">
+    <div class="flex-1 gradient-bg p-6 overflow-y-auto mt-16">
       <div class="max-w-7xl mx-auto">
-        <!-- Breadcrumb -->
-        <nav class="flex mb-4" aria-label="Breadcrumb">
-          <ol class="inline-flex items-center space-x-1 md:space-x-3">
-            <li class="inline-flex items-center">
-              <a
-                href="${pageContext.request.contextPath}/dashboard"
-                class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-orange-600"
-              >
-                <i data-lucide="home" class="w-4 h-4 mr-2"></i>
-                Dashboard
-              </a>
-            </li>
-            <li>
-              <div class="flex items-center">
-                <i
-                  data-lucide="chevron-right"
-                  class="w-4 h-4 text-gray-400"
-                ></i>
-                <span class="ml-1 text-sm font-medium text-orange-600 md:ml-2"
-                  >Báo Cáo Bán Hàng</span
-                >
-              </div>
-            </li>
-          </ol>
-        </nav>
-
         <!-- Header -->
         <div class="mb-8">
           <div class="flex items-center gap-3 mb-2">
@@ -343,14 +314,6 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
             <div class="card-gradient-blue rounded-xl shadow-lg p-6 text-white">
               <div class="flex items-center justify-between mb-2">
                 <i data-lucide="dollar-sign" class="w-8 h-8 opacity-80"></i>
-                <span
-                  class="text-sm font-medium bg-white bg-opacity-20 px-3 py-1 rounded-full"
-                >
-                  <fmt:formatNumber
-                    value="${reportData.growthRate}"
-                    pattern="+#.#;-#.#"
-                  />%
-                </span>
               </div>
               <h3 class="text-2xl font-bold mb-1">
                 <fmt:formatNumber
@@ -368,10 +331,6 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
             >
               <div class="flex items-center justify-between mb-2">
                 <i data-lucide="shopping-cart" class="w-8 h-8 opacity-80"></i>
-                <span
-                  class="text-sm font-medium bg-white bg-opacity-20 px-3 py-1 rounded-full"
-                  >+8.3%</span
-                >
               </div>
               <h3 class="text-2xl font-bold mb-1">${reportData.totalOrders}</h3>
               <p class="text-green-100 text-sm">Tổng Đơn Hàng</p>
@@ -382,10 +341,6 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
             >
               <div class="flex items-center justify-between mb-2">
                 <i data-lucide="users" class="w-8 h-8 opacity-80"></i>
-                <span
-                  class="text-sm font-medium bg-white bg-opacity-20 px-3 py-1 rounded-full"
-                  >+15.2%</span
-                >
               </div>
               <h3 class="text-2xl font-bold mb-1">
                 ${reportData.totalCustomers}
@@ -398,10 +353,6 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
             >
               <div class="flex items-center justify-between mb-2">
                 <i data-lucide="trending-up" class="w-8 h-8 opacity-80"></i>
-                <span
-                  class="text-sm font-medium bg-white bg-opacity-20 px-3 py-1 rounded-full"
-                  >+5.7%</span
-                >
               </div>
               <h3 class="text-2xl font-bold mb-1">
                 <fmt:formatNumber
@@ -480,7 +431,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
               </div>
             </div>
 
-            <!-- Daily Revenue Comparison -->
+            <!-- Daily Revenue Table -->
             <div
               class="bg-white rounded-xl shadow-lg p-6 border border-orange-100"
             >
@@ -491,7 +442,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
                   data-lucide="trending-up"
                   class="w-5 h-5 text-orange-500"
                 ></i>
-                Doanh Thu Theo Thời Gian
+                Doanh Thu Theo Ngày
               </h2>
 
               <c:choose>
@@ -507,19 +458,19 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
                             Ngày
                           </th>
                           <th
-                            class="text-right py-3 px-4 font-semibold text-blue-600"
-                          >
-                            Kỳ Trước
-                          </th>
-                          <th
                             class="text-right py-3 px-4 font-semibold text-orange-600"
                           >
-                            Kỳ Này
+                            Doanh Thu
                           </th>
                           <th
-                            class="text-center py-3 px-4 font-semibold text-gray-700"
+                            class="text-center py-3 px-4 font-semibold text-blue-600"
                           >
-                            So Sánh
+                            Số Đơn
+                          </th>
+                          <th
+                            class="text-right py-3 px-4 font-semibold text-green-600"
+                          >
+                            Trung Bình/Đơn
                           </th>
                         </tr>
                       </thead>
@@ -536,32 +487,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
                               ${daily.date}
                             </td>
 
-                            <!-- Previous Period Revenue -->
-                            <td class="py-3 px-4 text-right text-sm">
-                              <c:choose>
-                                <c:when
-                                  test="${not empty reportData.previousPeriodDailyRevenue && status.index < reportData.previousPeriodDailyRevenue.size()}"
-                                >
-                                  <span class="text-blue-600 font-semibold">
-                                    <fmt:formatNumber
-                                      value="${reportData.previousPeriodDailyRevenue[status.index].revenue}"
-                                      type="number"
-                                      groupingUsed="true"
-                                    />₫
-                                  </span>
-                                  <br />
-                                  <span class="text-xs text-gray-500"
-                                    >${reportData.previousPeriodDailyRevenue[status.index].orders}
-                                    đơn</span
-                                  >
-                                </c:when>
-                                <c:otherwise>
-                                  <span class="text-gray-400">-</span>
-                                </c:otherwise>
-                              </c:choose>
-                            </td>
-
-                            <!-- Current Period Revenue -->
+                            <!-- Revenue -->
                             <td class="py-3 px-4 text-right text-sm">
                               <span class="text-orange-600 font-semibold">
                                 <fmt:formatNumber
@@ -570,68 +496,29 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
                                   groupingUsed="true"
                                 />₫
                               </span>
-                              <br />
-                              <span class="text-xs text-gray-500"
-                                >${daily.orders} đơn</span
-                              >
                             </td>
 
-                            <!-- Comparison -->
+                            <!-- Orders -->
                             <td class="py-3 px-4 text-center text-sm">
+                              <span
+                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700"
+                              >
+                                ${daily.orders} đơn
+                              </span>
+                            </td>
+
+                            <!-- Average per order -->
+                            <td class="py-3 px-4 text-right text-sm">
                               <c:choose>
-                                <c:when
-                                  test="${not empty reportData.previousPeriodDailyRevenue && status.index < reportData.previousPeriodDailyRevenue.size()}"
-                                >
-                                  <c:set
-                                    var="prevRev"
-                                    value="${reportData.previousPeriodDailyRevenue[status.index].revenue}"
-                                  />
-                                  <c:set
-                                    var="currRev"
-                                    value="${daily.revenue}"
-                                  />
-                                  <c:choose>
-                                    <c:when test="${prevRev > 0}">
-                                      <c:set
-                                        var="change"
-                                        value="${((currRev - prevRev) / prevRev) * 100}"
-                                      />
-                                      <c:choose>
-                                        <c:when test="${change > 0}">
-                                          <span
-                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700"
-                                          >
-                                            ↑
-                                            <fmt:formatNumber
-                                              value="${change}"
-                                              maxFractionDigits="1"
-                                            />%
-                                          </span>
-                                        </c:when>
-                                        <c:when test="${change < 0}">
-                                          <span
-                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700"
-                                          >
-                                            ↓
-                                            <fmt:formatNumber
-                                              value="${-change}"
-                                              maxFractionDigits="1"
-                                            />%
-                                          </span>
-                                        </c:when>
-                                        <c:otherwise>
-                                          <span
-                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700"
-                                          >
-                                            = 0%
-                                          </span>
-                                        </c:otherwise>
-                                      </c:choose>
-                                    </c:when>
-                                    <c:otherwise>
-                                      <span class="text-gray-400">-</span>
-                                    </c:otherwise>
-                                  </c:choose>
+                                <c:when test="${daily.orders > 0}">
+                                  <span class="text-green-600 font-semibold">
+                                    <fmt:formatNumber
+                                      value="${daily.revenue / daily.orders}"
+                                      type="number"
+                                      groupingUsed="true"
+                                      maxFractionDigits="0"
+                                    />₫
+                                  </span>
                                 </c:when>
                                 <c:otherwise>
                                   <span class="text-gray-400">-</span>
@@ -686,7 +573,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
           </h2>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
             <button
-              onclick="quickReport('today')"
+              onclick="setQuickReport('today')"
               class="flex flex-col items-center gap-2 p-4 border-2 border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-all group"
             >
               <i
@@ -700,7 +587,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
               </span>
             </button>
             <button
-              onclick="quickReport('week')"
+              onclick="setQuickReport('week')"
               class="flex flex-col items-center gap-2 p-4 border-2 border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-all group"
             >
               <i
@@ -714,7 +601,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
               </span>
             </button>
             <button
-              onclick="quickReport('month')"
+              onclick="setQuickReport('month')"
               class="flex flex-col items-center gap-2 p-4 border-2 border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-all group"
             >
               <i
@@ -728,7 +615,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
               </span>
             </button>
             <button
-              onclick="quickReport('compare')"
+              onclick="setQuickReport('quarter')"
               class="flex flex-col items-center gap-2 p-4 border-2 border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-all group"
             >
               <i
@@ -738,7 +625,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
               <span
                 class="text-sm font-medium text-gray-700 group-hover:text-orange-600 text-center"
               >
-                So sánh kỳ trước
+                Báo cáo quý này
               </span>
             </button>
           </div>
@@ -799,44 +686,209 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
         }, 5000);
       }
 
-      function quickReport(type) {
-        const today = new Date();
-        let dateFrom, dateTo;
-
-        switch (type) {
-          case "today":
-            // Today only
-            dateFrom = dateTo = today.toISOString().split("T")[0];
-            break;
-          case "week":
-            // Last 7 days
-            const weekAgo = new Date(today.getTime() - 6 * 24 * 60 * 60 * 1000);
-            dateFrom = weekAgo.toISOString().split("T")[0];
-            dateTo = today.toISOString().split("T")[0];
-            break;
-          case "month":
-            // Last 30 days
-            const monthAgo = new Date(
-              today.getTime() - 29 * 24 * 60 * 60 * 1000
-            );
-            dateFrom = monthAgo.toISOString().split("T")[0];
-            dateTo = today.toISOString().split("T")[0];
-            break;
-          case "compare":
-            // Last 14 days (for comparison)
-            const twoWeeksAgo = new Date(
-              today.getTime() - 13 * 24 * 60 * 60 * 1000
-            );
-            dateFrom = twoWeeksAgo.toISOString().split("T")[0];
-            dateTo = today.toISOString().split("T")[0];
-            break;
+      // Helper function to format date as YYYY-MM-DD
+      function formatDate(date) {
+        try {
+          if (!date) {
+            console.error('formatDate: date is null or undefined');
+            return null;
+          }
+          
+          // Ensure it's a Date object
+          let dateObj = date instanceof Date ? date : new Date(date);
+          
+          // Check if date is valid
+          if (isNaN(dateObj.getTime())) {
+            console.error('formatDate: Invalid date object:', date);
+            return null;
+          }
+          
+          // Use toISOString and extract date part (YYYY-MM-DD)
+          // Adjust for timezone offset
+          const year = dateObj.getFullYear();
+          const month = dateObj.getMonth() + 1;
+          const day = dateObj.getDate();
+          
+          // Format as YYYY-MM-DD
+          const formatted = year + '-' + 
+                           String(month).padStart(2, '0') + '-' + 
+                           String(day).padStart(2, '0');
+          
+          console.log('formatDate:', date, '->', formatted);
+          return formatted;
+        } catch (error) {
+          console.error('formatDate error:', error, 'for date:', date);
+          return null;
         }
-
-        // Update form and submit
-        document.querySelector('input[name="dateFrom"]').value = dateFrom;
-        document.querySelector('input[name="dateTo"]').value = dateTo;
-        document.querySelector("form").submit();
       }
+
+      // Set quick report dates based on actual calendar periods
+      function setQuickReport(type) {
+        try {
+          console.log('setQuickReport called with type:', type);
+          
+          if (!type) {
+            console.error('setQuickReport: type parameter is missing');
+            alert('Lỗi: Không xác định được loại báo cáo');
+            return;
+          }
+          
+          const today = new Date();
+          console.log('Today date object:', today);
+          console.log('Today is valid:', !isNaN(today.getTime()));
+          
+          let dateFrom, dateTo;
+
+          switch (type) {
+            case "today":
+              // Today only
+              dateFrom = formatDate(today);
+              dateTo = formatDate(today);
+              console.log('Today report:', dateFrom, 'to', dateTo);
+              if (!dateFrom || !dateTo) {
+                throw new Error('Không thể tính toán ngày hôm nay');
+              }
+              break;
+
+            case "week":
+              // This week: Monday to Sunday
+              const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+              const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // If Sunday, go back 6 days
+              const monday = new Date(today);
+              monday.setDate(today.getDate() - daysToMonday);
+              monday.setHours(0, 0, 0, 0);
+
+              const sunday = new Date(monday);
+              sunday.setDate(monday.getDate() + 6);
+              sunday.setHours(23, 59, 59, 999);
+
+              dateFrom = formatDate(monday);
+              dateTo = formatDate(sunday);
+              console.log('Week report:', dateFrom, 'to', dateTo);
+              if (!dateFrom || !dateTo) {
+                throw new Error('Không thể tính toán ngày tuần này');
+              }
+              break;
+
+            case "month":
+              // This month: First day to last day
+              const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+              firstDay.setHours(0, 0, 0, 0);
+              const lastDay = new Date(
+                today.getFullYear(),
+                today.getMonth() + 1,
+                0
+              );
+              lastDay.setHours(23, 59, 59, 999);
+
+              dateFrom = formatDate(firstDay);
+              dateTo = formatDate(lastDay);
+              console.log('Month report:', dateFrom, 'to', dateTo);
+              if (!dateFrom || !dateTo) {
+                throw new Error('Không thể tính toán ngày tháng này');
+              }
+              break;
+
+            case "quarter":
+              // This quarter: Q1 (Jan-Mar), Q2 (Apr-Jun), Q3 (Jul-Sep), Q4 (Oct-Dec)
+              const currentMonth = today.getMonth(); // 0-11
+              const quarterStartMonth = Math.floor(currentMonth / 3) * 3;
+
+              const quarterStart = new Date(
+                today.getFullYear(),
+                quarterStartMonth,
+                1
+              );
+              quarterStart.setHours(0, 0, 0, 0);
+              const quarterEnd = new Date(
+                today.getFullYear(),
+                quarterStartMonth + 3,
+                0
+              );
+              quarterEnd.setHours(23, 59, 59, 999);
+
+              dateFrom = formatDate(quarterStart);
+              dateTo = formatDate(quarterEnd);
+              console.log('Quarter report:', dateFrom, 'to', dateTo);
+              if (!dateFrom || !dateTo) {
+                throw new Error('Không thể tính toán ngày quý này');
+              }
+              break;
+              
+            default:
+              console.error('setQuickReport: Unknown type:', type);
+              alert('Lỗi: Loại báo cáo không hợp lệ');
+              return;
+          }
+
+          // Update form fields immediately
+          const dateFromInput = document.querySelector('input[name="dateFrom"]');
+          const dateToInput = document.querySelector('input[name="dateTo"]');
+          const form = document.getElementById("reportForm");
+          
+          console.log('Looking for elements:', {
+            dateFromInput: !!dateFromInput,
+            dateToInput: !!dateToInput,
+            form: !!form
+          });
+          
+          if (!dateFromInput || !dateToInput) {
+            console.error('Could not find date input fields');
+            alert('Lỗi: Không tìm thấy các trường ngày tháng');
+            return;
+          }
+          
+          if (!form) {
+            console.error('Could not find form');
+            alert('Lỗi: Không tìm thấy form');
+            return;
+          }
+          
+          // Validate dates before proceeding
+          if (!dateFrom || !dateTo || dateFrom === 'undefined' || dateTo === 'undefined' || dateFrom === 'null' || dateTo === 'null') {
+            console.error('Invalid dates calculated:', { dateFrom, dateTo });
+            alert('Lỗi: Không thể tính toán ngày tháng. Vui lòng thử lại.');
+            return;
+          }
+          
+          console.log('Calculated dates - dateFrom:', dateFrom, 'dateTo:', dateTo);
+          
+          // Update the date input fields (for visual feedback)
+          dateFromInput.value = dateFrom;
+          dateToInput.value = dateTo;
+          console.log('Updated form fields - dateFrom:', dateFrom, 'dateTo:', dateTo);
+          
+          // Instead of submitting form, redirect directly with GET request
+          // Build a clean URL from scratch to avoid any existing invalid parameters
+          const basePath = window.location.pathname;
+          const redirectUrl = basePath + '?action=generate&dateFrom=' + encodeURIComponent(dateFrom) + '&dateTo=' + encodeURIComponent(dateTo);
+          
+          console.log('Redirecting to:', redirectUrl);
+          console.log('Date values being sent:', {
+            dateFrom: dateFrom,
+            dateTo: dateTo,
+            dateFromType: typeof dateFrom,
+            dateToType: typeof dateTo
+          });
+          
+          // Double check before redirect
+          if (!dateFrom || !dateTo || dateFrom === '--' || dateTo === '--' || dateFrom === 'null' || dateTo === 'null') {
+            console.error('ABORTING: Invalid dates detected before redirect:', { dateFrom, dateTo });
+            alert('Lỗi: Không thể tính toán ngày tháng. Vui lòng thử lại.');
+            return;
+          }
+          
+          window.location.href = redirectUrl;
+          
+        } catch (error) {
+          console.error('Error in setQuickReport:', error);
+          alert('Lỗi khi tạo báo cáo: ' + error.message);
+        }
+      }
+      
+      // Make sure function is available globally
+      window.setQuickReport = setQuickReport;
+      window.formatDate = formatDate;
 
       // Calculate progress bar widths
       document.addEventListener("DOMContentLoaded", function () {
@@ -846,6 +898,23 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
           const total = parseFloat(bar.getAttribute("data-total")) || 0;
           const percentage = total > 0 ? (revenue / total) * 100 : 0;
           bar.style.width = percentage + "%";
+        });
+        
+        // Verify setQuickReport function is available
+        if (typeof setQuickReport === 'function') {
+          console.log('setQuickReport function is available');
+        } else {
+          console.error('setQuickReport function is NOT available!');
+        }
+        
+        // Test if form and inputs exist
+        const form = document.getElementById("reportForm");
+        const dateFromInput = document.querySelector('input[name="dateFrom"]');
+        const dateToInput = document.querySelector('input[name="dateTo"]');
+        console.log('DOM elements check:', {
+          form: !!form,
+          dateFromInput: !!dateFromInput,
+          dateToInput: !!dateToInput
         });
       });
 

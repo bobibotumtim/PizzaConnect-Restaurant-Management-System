@@ -24,6 +24,12 @@ public class WaiterDashboardServlet extends HttpServlet {
             return;
         }
         
+        // Chặn Manager - redirect về Manager Dashboard
+        if (employee != null && "Manager".equalsIgnoreCase(employee.getJobRole())) {
+            response.sendRedirect("manager-dashboard");
+            return;
+        }
+        
         // Kiểm tra nếu là Chef thì redirect về ChefMonitor
         if (employee != null && employee.isChef()) {
             response.sendRedirect("ChefMonitor");

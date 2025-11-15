@@ -73,11 +73,11 @@ public class CustomerFeedbackDAO extends DBContext {
         
         // Add search term filter
         if (searchTerm != null && !searchTerm.trim().isEmpty()) {
-            sql.append(" AND (customer_name LIKE ? OR comment LIKE ? OR pizza_ordered LIKE ?)");
+            sql.append(" AND (customer_name LIKE ? OR comment LIKE ? OR product_feedbacked LIKE ?)");
             String searchPattern = "%" + searchTerm.trim() + "%";
             parameters.add(searchPattern);
             parameters.add(searchPattern);
-parameters.add(searchPattern);
+            parameters.add(searchPattern);
         }
         
         // Add rating filter
@@ -135,7 +135,7 @@ parameters.add(searchPattern);
         
         // Add search term filter
         if (searchTerm != null && !searchTerm.trim().isEmpty()) {
-            sql.append(" AND (customer_name LIKE ? OR comment LIKE ? OR pizza_ordered LIKE ?)");
+            sql.append(" AND (customer_name LIKE ? OR comment LIKE ? OR product_feedbacked LIKE ?)");
             String searchPattern = "%" + searchTerm.trim() + "%";
             parameters.add(searchPattern);
             parameters.add(searchPattern);

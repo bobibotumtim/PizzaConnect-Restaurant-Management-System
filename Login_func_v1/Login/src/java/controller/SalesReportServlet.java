@@ -51,11 +51,23 @@ public class SalesReportServlet extends HttpServlet {
         // Set defaults if parameters are null
         if (branch == null) branch = "all";
         
-        // Set default date range (last 7 days)
+        // Set default date range (this week: Monday to Sunday)
+        // Also handle invalid values like "--"
         LocalDate today = LocalDate.now();
-        if (dateFrom == null || dateTo == null || dateFrom.isEmpty() || dateTo.isEmpty()) {
-            dateFrom = today.minusDays(6).toString(); // Last 7 days
-            dateTo = today.toString();
+        if (dateFrom == null || dateTo == null || dateFrom.isEmpty() || dateTo.isEmpty() 
+            || "--".equals(dateFrom) || "--".equals(dateTo) || "null".equals(dateFrom) || "null".equals(dateTo)
+            || "undefined".equals(dateFrom) || "undefined".equals(dateTo)) {
+            // Calculate Monday of current week
+            java.time.DayOfWeek dayOfWeek = today.getDayOfWeek();
+            int daysToMonday = dayOfWeek.getValue() - 1; // Monday = 1, so subtract 1
+            LocalDate monday = today.minusDays(daysToMonday);
+            
+            // Calculate Sunday of current week
+            LocalDate sunday = monday.plusDays(6);
+            
+            dateFrom = monday.toString();
+            dateTo = sunday.toString();
+            System.out.println("Using default date range: " + dateFrom + " to " + dateTo);
         }
         
         try {
@@ -79,12 +91,19 @@ public class SalesReportServlet extends HttpServlet {
             SalesReportData reportData = null;
             if ("generate".equals(action)) {
                 try {
+                    System.out.println("Loading report data for dateFrom: " + dateFrom + ", dateTo: " + dateTo + ", branch: " + branch);
                     reportData = salesReportDAO.getSalesReportData(dateFrom, dateTo, branch);
                     if (reportData != null) {
+                        System.out.println("Report data loaded successfully - Total Revenue: " + reportData.getTotalRevenue() + 
+                                         ", Total Orders: " + reportData.getTotalOrders());
                         request.setAttribute("message", "Báo cáo đã được tạo thành công!");
+                    } else {
+                        System.out.println("Report data is null");
+                        reportData = new SalesReportData(); // Create empty report data
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
+                    System.err.println("Error loading report data: " + e.getMessage());
                     request.setAttribute("error", "Lỗi khi lấy dữ liệu từ database: " + e.getMessage());
                     // Set empty report data to avoid null pointer exceptions
                     reportData = new SalesReportData();
@@ -134,11 +153,20 @@ public class SalesReportServlet extends HttpServlet {
             String dateTo = request.getParameter("dateTo");
             String branch = request.getParameter("branch");
             
-            StringBuilder redirectUrl = new StringBuilder("sales-reports?action=generate");
-            if (dateFrom != null && !dateFrom.isEmpty()) redirectUrl.append("&dateFrom=").append(dateFrom);
-            if (dateTo != null && !dateTo.isEmpty()) redirectUrl.append("&dateTo=").append(dateTo);
-            if (branch != null) redirectUrl.append("&branch=").append(branch);
+            System.out.println("POST request received - dateFrom: " + dateFrom + ", dateTo: " + dateTo + ", branch: " + branch);
             
+            StringBuilder redirectUrl = new StringBuilder(request.getContextPath() + "/sales-reports?action=generate");
+            if (dateFrom != null && !dateFrom.isEmpty()) {
+                redirectUrl.append("&dateFrom=").append(java.net.URLEncoder.encode(dateFrom, "UTF-8"));
+            }
+            if (dateTo != null && !dateTo.isEmpty()) {
+                redirectUrl.append("&dateTo=").append(java.net.URLEncoder.encode(dateTo, "UTF-8"));
+            }
+            if (branch != null) {
+                redirectUrl.append("&branch=").append(branch);
+            }
+            
+            System.out.println("Redirecting to: " + redirectUrl.toString());
             response.sendRedirect(redirectUrl.toString());
             
         } else if ("export".equals(action)) {
@@ -165,8 +193,24 @@ public class SalesReportServlet extends HttpServlet {
         
         // Set defaults if parameters are null
         if (format == null) format = "pdf";
-        if (dateFrom == null) dateFrom = LocalDate.now().minusDays(7).toString();
-        if (dateTo == null) dateTo = LocalDate.now().toString();
+        
+        // Set default date range (this week: Monday to Sunday)
+        LocalDate today = LocalDate.now();
+        if (dateFrom == null || dateFrom.isEmpty()) {
+            // Calculate Monday of current week
+            java.time.DayOfWeek dayOfWeek = today.getDayOfWeek();
+            int daysToMonday = dayOfWeek.getValue() - 1; // Monday = 1, so subtract 1
+            LocalDate monday = today.minusDays(daysToMonday);
+            dateFrom = monday.toString();
+        }
+        if (dateTo == null || dateTo.isEmpty()) {
+            // Calculate Sunday of current week
+            java.time.DayOfWeek dayOfWeek = today.getDayOfWeek();
+            int daysToMonday = dayOfWeek.getValue() - 1;
+            LocalDate monday = today.minusDays(daysToMonday);
+            LocalDate sunday = monday.plusDays(6);
+            dateTo = sunday.toString();
+        }
         
         // Debug logging
         System.out.println("Export request - Format: " + format + ", DateFrom: " + dateFrom + ", DateTo: " + dateTo + ", Branch: " + branch);

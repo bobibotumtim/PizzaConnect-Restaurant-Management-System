@@ -61,9 +61,7 @@ String userName = currentUser.getName(); %>
     >
       <!-- Logo -->
       <div class="flex items-center px-4 mb-8">
-        <div class="text-orange-500 text-3xl min-w-[3rem] flex justify-center">
-          <i data-lucide="pizza" class="w-10 h-10"></i>
-        </div>
+        <div class="text-3xl min-w-[3rem] flex justify-center">🍕</div>
         <span class="sidebar-text ml-3 text-white text-xl font-bold"
           >PizzaConnect</span
         >
@@ -121,23 +119,30 @@ String userName = currentUser.getName(); %>
           <span class="sidebar-text ml-3">Customer Feedback</span>
         </a>
       </nav>
+    </div>
 
-      <!-- Logout -->
-      <div class="px-3">
+    <!-- Top Navigation Bar -->
+    <div
+      class="fixed top-0 left-20 right-0 bg-white shadow-md border-b px-6 py-3 flex items-center justify-between z-40"
+    >
+      <div class="text-2xl font-bold text-orange-600">🍕 PizzaConnect</div>
+      <div class="flex items-center gap-3">
+        <div class="text-right">
+          <div class="font-semibold text-gray-800"><%= userName %></div>
+          <div class="text-xs text-gray-500">Manager</div>
+        </div>
         <a
           href="${pageContext.request.contextPath}/logout"
-          class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-red-600 hover:text-white transition"
+          class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2"
         >
-          <div class="min-w-[2.5rem] flex justify-center">
-            <i data-lucide="log-out" class="w-6 h-6"></i>
-          </div>
-          <span class="sidebar-text ml-3">Logout</span>
+          <i data-lucide="log-out" class="w-4 h-4"></i>
+          Logout
         </a>
       </div>
     </div>
 
     <!-- Main Content -->
-    <div class="ml-20 min-h-screen flex items-center justify-center p-8">
+    <div class="ml-20 mt-16 min-h-screen flex items-center justify-center p-8">
       <div class="max-w-6xl w-full">
         <!-- Welcome Header -->
         <div class="text-center mb-12">

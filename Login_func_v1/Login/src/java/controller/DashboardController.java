@@ -13,6 +13,35 @@ public class DashboardController extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
+        // Check authentication - Only Admin allowed
+        HttpSession session = req.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            resp.sendRedirect("Login");
+            return;
+        }
+
+        User currentUser = (User) session.getAttribute("user");
+        Employee employee = (Employee) session.getAttribute("employee");
+        
+        // Only Admin (role 1) can access Admin Dashboard
+        if (currentUser.getRole() != 1) {
+            // Redirect Manager to Manager Dashboard
+            if (currentUser.getRole() == 2 && employee != null && "Manager".equalsIgnoreCase(employee.getJobRole())) {
+                resp.sendRedirect("manager-dashboard");
+                return;
+            }
+            // Redirect other employees to their dashboard
+            else if (currentUser.getRole() == 2) {
+                resp.sendRedirect("waiter-dashboard");
+                return;
+            }
+            // Redirect customers to home
+            else {
+                resp.sendRedirect("home");
+                return;
+            }
+        }
+
         OrderDAO orderDAO = new OrderDAO();
         
         // Get filter parameter (default: today)
