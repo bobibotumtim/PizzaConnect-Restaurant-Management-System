@@ -229,12 +229,24 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 ml-20">
-    <!-- Include Sidebar -->
-    <%@ include file="Sidebar.jsp" %>
-    <%@ include file="NavBar.jsp" %>
+<body class="bg-gray-50">
+    <!-- Top Navigation Bar -->
+    <div class="bg-white shadow-md border-b px-6 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <div class="text-2xl font-bold text-orange-600">🍕 PizzaConnect</div>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="text-right">
+                <div class="font-semibold text-gray-800">${sessionScope.user.name}</div>
+                <div class="text-xs text-gray-500">${sessionScope.user.role == 1 ? "Admin" : "Waiter"}</div>
+            </div>
+            <a href="waiter-dashboard" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 shadow-sm hover:shadow-md transition-all duration-200">
+                🏠 Dashboard
+            </a>
+        </div>
+    </div>
     
-    <div class="content-wrapper mt-16">
+    <div class="content-wrapper">
         <div class="max-w-7xl mx-auto px-6 py-8">
             
             <!-- Header -->

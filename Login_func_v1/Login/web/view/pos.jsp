@@ -42,11 +42,11 @@
         }
     %>
 
-    <!-- Header -->
-    <div class="bg-white shadow-sm border-b px-6 py-3 flex items-center justify-between">
+    <!-- Header - ✅ Màu cam đồng nhất -->
+    <div class="bg-white shadow-md border-b px-6 py-3 flex items-center justify-between">
         <div class="flex items-center gap-4">
             <div class="text-2xl font-bold text-orange-600">🍕 PIZZA POS</div>
-            <div id="selectedTableDisplay" class="px-4 py-2 bg-purple-100 text-purple-800 rounded-lg font-semibold">
+            <div id="selectedTableDisplay" class="px-4 py-2 bg-orange-100 text-orange-800 rounded-lg font-semibold">
                 No table selected
             </div>
             <div class="relative">
@@ -54,35 +54,37 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
                 <input type="text" id="searchInput" placeholder="Search items..." 
-                       class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-80 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                       class="pl-10 pr-4 py-2 border border-orange-300 rounded-lg w-80 focus:outline-none focus:ring-2 focus:ring-orange-500">
             </div>
         </div>
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3">
             <div class="text-right">
-                <div class="font-semibold"><%= user.getName() %></div>
-                <div class="text-sm text-gray-600"><%= user.getRole() == 1 ? "Admin" : "Employee" %></div>
+                <div class="font-semibold text-gray-800"><%= user.getName() %></div>
+                <div class="text-xs text-gray-500"><%= user.getRole() == 1 ? "Admin" : "Employee" %></div>
             </div>
-            <a href="WaiterMonitor" class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-all flex items-center gap-2">
+            <a href="WaiterMonitor" class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-all flex items-center gap-2 shadow-sm">
                 🔔 Waiter
             </a>
-            <a href="manage-orders" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all">
+            <a href="manage-orders" class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-all shadow-sm">
                 📋 Orders
             </a>
-            <a href="Login?action=logout" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all">
-                Logout
+            <a href="waiter-dashboard" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 shadow-sm hover:shadow-md transition-all duration-200">
+                🏠 Dashboard
             </a>
         </div>
     </div>
 
     <div class="flex flex-1 overflow-hidden">
         <!-- LEFT PANEL - Table Selection -->
-        <div class="w-64 bg-white border-r flex flex-col">
-            <div class="p-4 border-b bg-purple-600 text-white">
-                <h3 class="font-bold text-lg">Table Management</h3>
+        <div class="w-64 bg-white border-r shadow-sm flex flex-col">
+            <!-- Header - Đồng nhất với Cart -->
+            <div class="p-4 border-b bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+                <h3 class="font-bold text-lg mb-2">Table Management</h3>
                 <input type="text" id="tableSearch" placeholder="Search table..." 
-                       class="mt-2 w-full px-3 py-2 rounded-lg text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-purple-300">
+                       class="w-full px-3 py-2 rounded-lg text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 border-0 shadow-sm">
             </div>
             
+            <!-- Table Grid - Consistent padding -->
             <div class="flex-1 overflow-y-auto p-3">
                 <div id="tableGrid" class="grid grid-cols-2 gap-2">
                     <!-- Tables will be loaded here -->
@@ -96,23 +98,12 @@
 
         <!-- MIDDLE PANEL - Products -->
         <div class="flex-1 flex flex-col bg-white">
-            <!-- Category Tabs -->
-            <div class="flex border-b bg-gray-50">
-                <button onclick="selectCategory('PIZZA')" class="category-tab flex-1 py-4 px-4 text-sm font-semibold transition-all bg-white text-orange-600 border-b-2 border-orange-600" data-category="PIZZA">
-                    🍕 PIZZA
-                </button>
-                <button onclick="selectCategory('APPETIZER')" class="category-tab flex-1 py-4 px-4 text-sm font-semibold transition-all text-gray-600 hover:bg-gray-100" data-category="APPETIZER">
-                    🥗 APPETIZER
-                </button>
-                <button onclick="selectCategory('BEVERAGES')" class="category-tab flex-1 py-4 px-4 text-sm font-semibold transition-all text-gray-600 hover:bg-gray-100" data-category="BEVERAGES">
-                    🥤 DRINKS
-                </button>
-                <button onclick="selectCategory('SIDES')" class="category-tab flex-1 py-4 px-4 text-sm font-semibold transition-all text-gray-600 hover:bg-gray-100" data-category="SIDES">
-                    🍟 SIDES
-                </button>
-                <button onclick="selectCategory('DESSERT')" class="category-tab flex-1 py-4 px-4 text-sm font-semibold transition-all text-gray-600 hover:bg-gray-100" data-category="DESSERT">
-                    🍰 DESSERT
-                </button>
+            <!-- Category Tabs - Flush edges, no extra padding -->
+            <div id="categoryTabs" class="flex border-b bg-orange-50">
+                <!-- Categories will be loaded here dynamically -->
+                <div class="flex-1 text-center py-4 text-orange-400 text-sm">
+                    <div class="animate-pulse">Loading categories...</div>
+                </div>
             </div>
 
             <!-- Product Grid -->
@@ -124,10 +115,10 @@
         </div>
 
         <!-- Right Panel - Cart -->
-        <div class="w-96 bg-white border-l flex flex-col">
-            <!-- Cart Header -->
-            <div class="p-4 border-b bg-gradient-to-r from-orange-500 to-orange-600">
-                <h3 class="text-white font-bold text-lg flex items-center gap-2">
+        <div class="w-96 bg-white border-l shadow-sm flex flex-col">
+            <!-- Cart Header - Đồng nhất với Table -->
+            <div class="p-4 border-b bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+                <h3 class="font-bold text-lg flex items-center gap-2">
                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5-6m0 0h15M17 21a2 2 0 100-4 2 2 0 000 4zM9 21a2 2 0 100-4 2 2 0 000 4z"/>
                     </svg>
@@ -135,7 +126,7 @@
                 </h3>
             </div>
 
-            <!-- Cart Items -->
+            <!-- Cart Items - Consistent padding -->
             <div class="flex-1 overflow-y-auto p-4">
                 <div id="cartContainer">
                     <div id="emptyCart" class="flex flex-col items-center justify-center h-full text-gray-400">
@@ -150,7 +141,7 @@
                 </div>
             </div>
 
-            <!-- Summary -->
+            <!-- Summary - Consistent styling -->
             <div class="border-t bg-gray-50 p-4 space-y-3">
                 <!-- Totals -->
                 <div class="space-y-2 text-sm">
@@ -171,14 +162,14 @@
                 <!-- Action Buttons -->
                 <div class="grid grid-cols-2 gap-2 pt-2">
                     <button onclick="clearOrder()" id="clearBtn" disabled
-                            class="py-3 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                            class="py-3 px-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-lg transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                         </svg>
                         Clear
                     </button>
                     <button onclick="completeOrder()" id="orderBtn" disabled
-                            class="py-3 px-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg">
+                            class="py-3 px-4 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                         </svg>
@@ -240,7 +231,8 @@
         let products = {};
         let toppings = [];
         let tables = [];
-        let selectedCategory = 'Pizza'; // Updated to match database categories
+        let categories = []; // ✅ MỚI: Store categories from database
+        let selectedCategory = null; // ✅ SỬA: Will be set after loading categories
         let selectedProduct = null;
         let selectedSize = null;
         let selectedToppings = [];
@@ -264,15 +256,91 @@
                 await loadTables();
             }
             
+            // ✅ MỚI: Load categories first
+            await loadCategories();
             await loadSampleProducts();
             loadSampleToppings();
             setupEventListeners();
-            selectCategory('PIZZA'); // This will set selectedCategory and display products
+            
+            // ✅ SỬA: Select first category after loading
+            if (categories.length > 0) {
+                selectCategory(categories[0].categoryName);
+            }
         });
 
         function setupEventListeners() {
             document.getElementById('searchInput').addEventListener('input', filterProducts);
             document.getElementById('tableSearch').addEventListener('input', filterTables);
+        }
+
+        // ✅ MỚI: Load categories from database
+        async function loadCategories() {
+            try {
+                console.log('🔄 Loading categories from database...');
+                const response = await fetch('pos?action=getCategories');
+                const data = await response.json();
+                
+                if (data.success) {
+                    categories = data.categories;
+                    console.log('✅ Categories loaded:', categories);
+                    displayCategoryTabs(categories);
+                } else {
+                    console.error('❌ Failed to load categories:', data.message);
+                    showCategoryError();
+                }
+            } catch (error) {
+                console.error('❌ Error loading categories:', error);
+                showCategoryError();
+            }
+        }
+
+        // ✅ CHUẨN: Display category tabs với CSS professional
+        function displayCategoryTabs(categoriesToDisplay) {
+            const tabsContainer = document.getElementById('categoryTabs');
+            
+            if (!categoriesToDisplay || categoriesToDisplay.length === 0) {
+                tabsContainer.innerHTML = '<div class="flex-1 text-center py-4 text-orange-400 text-sm animate-pulse">No categories available</div>';
+                return;
+            }
+            
+            // Icon mapping for categories
+            const categoryIcons = {
+                'Pizza': '🍕',
+                'Appetizer': '🥗',
+                'Drink': '🥤',
+                'Beverages': '🥤',
+                'SideDish': '🍟',
+                'Side Dishes': '🍟',
+                'Sides': '🍟',
+                'Dessert': '🍰'
+            };
+            
+            tabsContainer.innerHTML = categoriesToDisplay.map((category, index) => {
+                const icon = categoryIcons[category.categoryName] || '🍽️';
+                const isFirst = index === 0;
+                // ✅ CHUẨN: border-b-4 (dày hơn), shadow-md (rõ hơn)
+                const activeClass = isFirst ? 
+                    'bg-white text-orange-600 border-b-4 border-orange-600 shadow-md' : 
+                    'text-gray-600 hover:bg-orange-50 hover:text-orange-600 hover:shadow-sm';
+                
+                return '<button onclick="selectCategory(\'' + category.categoryName + '\')" ' +
+                       'class="category-tab flex-1 py-4 px-4 text-sm font-semibold transition-all duration-200 ' + activeClass + '" ' +
+                       'data-category="' + category.categoryName + '">' +
+                       '<div class="flex flex-col items-center gap-1">' +
+                       '<span class="text-2xl">' + icon + '</span>' +
+                       '<span>' + category.categoryName.toUpperCase() + '</span>' +
+                       '</div>' +
+                       '</button>';
+            }).join('');
+        }
+
+        // ✅ MỚI: Show category error
+        function showCategoryError() {
+            const tabsContainer = document.getElementById('categoryTabs');
+            tabsContainer.innerHTML = '<div class="flex-1 text-center py-4 text-red-400 text-sm">' +
+                                     '⚠️ Error loading categories' +
+                                     '<button onclick="loadCategories()" class="ml-2 px-3 py-1 bg-orange-500 text-white rounded-lg text-xs hover:bg-orange-600">Retry</button>' +
+                                     '</div>';
         }
 
         // Load tables from database
@@ -336,7 +404,7 @@
             displayTables(filteredTables);
         }
 
-        // Select table
+        // Select table - ✅ Màu cam đồng nhất
         function selectTable(tableId) {
             const table = tables.find(t => t.tableID === tableId);
             if (!table || table.status !== 'available') {
@@ -346,19 +414,19 @@
             
             selectedTable = tableId;
             
-            // Update UI - highlight selected table
+            // Update UI - highlight selected table với màu cam
             document.querySelectorAll('.table-btn').forEach(btn => {
                 if (btn.dataset.tableId == tableId) {
-                    btn.classList.add('ring-4', 'ring-purple-500');
+                    btn.classList.add('ring-4', 'ring-orange-500');
                 } else {
-                    btn.classList.remove('ring-4', 'ring-purple-500');
+                    btn.classList.remove('ring-4', 'ring-orange-500');
                 }
             });
             
-            // Update header display
+            // Update header display với màu cam
             document.getElementById('selectedTableDisplay').textContent = 'Table ' + table.tableNumber;
-            document.getElementById('selectedTableDisplay').classList.remove('bg-purple-100', 'text-purple-800');
-            document.getElementById('selectedTableDisplay').classList.add('bg-purple-600', 'text-white');
+            document.getElementById('selectedTableDisplay').classList.remove('bg-orange-100', 'text-orange-800');
+            document.getElementById('selectedTableDisplay').classList.add('bg-orange-600', 'text-white', 'shadow-sm');
             
             console.log('✅ Selected table:', table.tableNumber, '(ID:', tableId + ')');
         }
@@ -369,8 +437,27 @@
             grid.innerHTML = '<div class="text-center text-red-400 col-span-2 py-8">' +
                             '<div class="text-3xl mb-2">⚠️</div>' +
                             '<div class="text-sm">Error loading tables</div>' +
-                            '<button onclick="loadTables()" class="mt-2 px-3 py-1 bg-red-500 text-white rounded text-xs">Retry</button>' +
+                            '<button onclick="loadTables()" class="mt-2 px-3 py-1 bg-orange-500 text-white rounded-lg text-xs hover:bg-orange-600">Retry</button>' +
                             '</div>';
+        }
+
+        // ✅ SỬA: Select category (không dùng categoryMap cố định) - Màu cam đồng nhất
+        function selectCategory(category) {
+            // Sử dụng category name trực tiếp từ database
+            selectedCategory = category;
+            
+            console.log('📂 Selected category:', selectedCategory);
+            
+            // ✅ CHUẨN: Update tab styles với border-b-4 và shadow-md
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                if (tab.dataset.category === category) {
+                    tab.className = 'category-tab flex-1 py-4 px-4 text-sm font-semibold transition-all duration-200 bg-white text-orange-600 border-b-4 border-orange-600 shadow-md';
+                } else {
+                    tab.className = 'category-tab flex-1 py-4 px-4 text-sm font-semibold transition-all duration-200 text-gray-600 hover:bg-orange-50 hover:text-orange-600 hover:shadow-sm';
+                }
+            });
+            
+            displayProducts();
         }
 
         // Load existing order for editing

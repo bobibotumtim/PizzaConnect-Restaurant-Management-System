@@ -165,4 +165,41 @@ public class CategoryDAO extends DBContext {
         }
         return list;
     }
+
+    /**
+     * ✅ MỚI: Lấy categories có products available cho POS
+     * Chỉ lấy categories có ít nhất 1 product với AvailableQuantity > 0
+     * Loại trừ category "Topping"
+     */
+    public List<Category> getAvailableCategoriesForPOS() {
+        List<Category> list = new ArrayList<>();
+        
+        // ✅ FALLBACK: Nếu VIEW chưa có, dùng query đơn giản
+        String sql = """
+            SELECT DISTINCT 
+                c.CategoryID,
+                c.CategoryName,
+                c.Description
+            FROM Category c
+            JOIN Product p ON c.CategoryID = p.CategoryID
+            WHERE c.CategoryName != 'Topping'
+              AND c.IsDeleted = 0
+              AND p.IsAvailable = 1
+            ORDER BY c.CategoryName
+        """;
+        
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            
+            while (rs.next()) {
+                list.add(mapResultSetToCategory(rs));
+            }
+            System.out.println("✅ CategoryDAO.getAvailableCategoriesForPOS() returned " + list.size() + " categories");
+        } catch (Exception e) {
+            System.err.println("❌ Error in getAvailableCategoriesForPOS: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return list;
+    }
 }
