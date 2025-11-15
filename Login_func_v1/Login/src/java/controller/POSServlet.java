@@ -48,6 +48,10 @@ public class POSServlet extends HttpServlet {
             // Return JSON data for toppings
             handleToppingsAPI(req, resp);
             return;
+        } else if ("getCategories".equals(action)) {
+            // ✅ MỚI: Return JSON data for categories
+            handleCategoriesAPI(req, resp);
+            return;
         }
         
         // Check if editing existing order
@@ -64,6 +68,47 @@ public class POSServlet extends HttpServlet {
         
         // Forward to POS page
         req.getRequestDispatcher("/view/pos.jsp").forward(req, resp);
+    }
+    
+    /**
+     * ✅ MỚI: Handle API request for categories data
+     * Lấy tất cả categories có products available (loại trừ Topping)
+     */
+    private void handleCategoriesAPI(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        
+        resp.setContentType("application/json; charset=UTF-8");
+        
+        try {
+            CategoryDAO categoryDAO = new CategoryDAO();
+            
+            // Lấy tất cả categories có products available
+            List<models.Category> categories = categoryDAO.getAvailableCategoriesForPOS();
+            
+            // Build JSON response
+            StringBuilder json = new StringBuilder();
+            json.append("{\"success\": true, \"categories\": [");
+            
+            for (int i = 0; i < categories.size(); i++) {
+                models.Category category = categories.get(i);
+                if (i > 0) json.append(",");
+                json.append("{");
+                json.append("\"categoryID\": ").append(category.getCategoryId()).append(",");
+                json.append("\"categoryName\": \"").append(escapeJson(category.getCategoryName())).append("\",");
+                json.append("\"description\": \"").append(escapeJson(category.getDescription())).append("\"");
+                json.append("}");
+            }
+            
+            json.append("]}");
+            resp.getWriter().write(json.toString());
+            
+            System.out.println("✅ Categories API called - returned " + categories.size() + " categories");
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.getWriter().write("{\"success\": false, \"message\": \"" + escapeJson(e.getMessage()) + "\"}");
+        }
     }
     
     /**
