@@ -358,7 +358,7 @@
                     <button type="submit"
                             class="px-4 py-2 bg-orange-500 text-white hover:bg-orange-600 rounded-lg transition-colors flex items-center">
                         <i data-lucide="save" class="w-4 h-4 mr-2"></i>
-                        Update Table
+                        Save Changes
                     </button>
                 </div>
             </form>

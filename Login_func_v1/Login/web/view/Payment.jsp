@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="models.*, java.util.*, java.text.*" %>
 <%@ page import="dao.CustomerDAO" %>
+<%@ page import="dao.ProductSizeDAO" %>
 <%
     Order order = (Order) request.getAttribute("order");
     List<Discount> discounts = (List<Discount>) request.getAttribute("discounts");
@@ -33,6 +34,23 @@
     // Create JavaScript variables from JSP
     double orderTotalPrice = order != null ? order.getTotalPrice() : 0;
     int orderId = order != null ? order.getOrderID() : 0;
+
+    ProductSizeDAO productSizeDAO = new ProductSizeDAO();
+    
+    // Create map to save base price of each product size
+    Map<Integer, Double> originalPriceMap = new HashMap<>();
+    if (order != null) {
+        for (OrderDetail item : order.getDetails()) {
+            try {
+                ProductSize productSize = productSizeDAO.getProductSizeById(item.getProductSizeID());
+                if (productSize != null) {
+                    originalPriceMap.put(item.getProductSizeID(), productSize.getPrice());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -152,13 +170,13 @@
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-1">Order ID</label>
                                     <div class="px-4 py-2 bg-gray-100 rounded-lg text-gray-800 font-mono">
-                                        #<%= order.getOrderID() %>
+                                        <%= order.getOrderID() %>
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Table</label>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Table ID</label>
                                     <div class="px-4 py-2 bg-gray-100 rounded-lg text-gray-800">
-                                        <%= order.getTableID() > 0 ? "Table " + order.getTableID() : "Takeaway" %>
+                                        <%= order.getTableID() > 0 ? order.getTableID() : "Takeaway" %>
                                     </div>
                                 </div>
                             </div>
@@ -168,7 +186,12 @@
                         <div class="flex-1 scrollable-section">
                             <label class="block text-sm font-semibold text-gray-700 mb-3">Order Items</label>
                             <div class="space-y-3">
-                                <% for (OrderDetail item : order.getDetails()) { %>
+                                <% for (OrderDetail item : order.getDetails()) { 
+                                    // Get base price from map
+                                    Double originalUnitPrice = originalPriceMap.get(item.getProductSizeID());
+                                    if (originalUnitPrice == null) originalUnitPrice = 0.0;
+                                    Double originalItemPrice = originalUnitPrice * item.getQuantity();
+                                %>
                                 <div class="border border-gray-200 rounded-lg p-4">
                                     <div class="flex justify-between items-start mb-2">
                                         <div>
@@ -178,10 +201,13 @@
                                             <% } %>
                                         </div>
                                         <div class="text-right">
+                                            <!-- Display item base price by product size price * item quantity -->
                                             <div class="font-bold text-gray-900">
-                                                <%= numberFormat.format(item.getTotalPrice()) %> VND
+                                                <%= numberFormat.format(originalItemPrice) %> VND
                                             </div>
-                                            <div class="text-sm text-gray-600">Qty: <%= item.getQuantity() %></div>
+                                            <div class="text-sm text-gray-600">
+                                                × <%= item.getQuantity() %>
+                                            </div>
                                         </div>
                                     </div>
                                     
@@ -192,12 +218,22 @@
                                             <% for (OrderDetailTopping topping : item.getToppings()) { %>
                                             <div class="flex justify-between text-sm">
                                                 <span class="text-gray-600">+ <%= topping.getToppingName() %></span>
-                                                <span class="text-gray-600"><%= numberFormat.format(topping.getToppingPrice()) %> VND</span>
+                                                <span class="text-gray-600"><%= numberFormat.format(topping.getToppingPrice() * item.getQuantity()) %> VND</span>
                                             </div>
                                             <% } %>
                                         </div>
                                     </div>
                                     <% } %>
+                                    
+                                    <!-- Display item total price (include topping) -->
+                                    <div class="mt-2 pt-2 border-t text-sm">
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-600">Item total:</span>
+                                            <span class="font-semibold text-gray-800">
+                                                <%= numberFormat.format(item.getTotalPrice()) %> VND
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                                 <% } %>
                             </div>
@@ -309,7 +345,7 @@
                                     </button>
                                     <button onclick="useAllLoyaltyPoints()" 
                                             class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all">
-                                        Use All
+                                        Apply All
                                     </button>
                                 </div>
                                 <div id="loyaltyError" class="text-red-600 text-sm mt-1 hidden"></div>
@@ -412,7 +448,7 @@
                             <button id="confirmPaymentBtn" 
                                     onclick="openPaymentModal()"
                                     class="w-full mt-4 px-6 py-3 bg-green-500 text-white rounded-lg font-semibold hover:bg-green-600 transition-all">
-                                Confirm Payment
+                                Process Payment
                             </button>
                         </div>
                     </div>

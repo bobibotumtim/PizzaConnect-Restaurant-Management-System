@@ -62,7 +62,7 @@
                     Personal Information
                 </button>
                 <button onclick="showTab('password')" class="w-full text-left px-4 py-3 rounded-lg ${activeTab == 'password' ? 'bg-orange-500 text-white' : 'text-gray-700 hover:bg-gray-100'}">
-                    Password
+                    Change Password
                 </button>
             </nav>
         </div>
@@ -158,7 +158,7 @@
                         
                         <div class="flex justify-end">
                             <button type="submit" class="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition duration-200">
-                                Update Information
+                                Save
                             </button>
                         </div>
                     </form>
@@ -227,7 +227,7 @@
                         
                         <div class="flex justify-end">
                             <button type="submit" class="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition duration-200">
-                                Change Password
+                                Save
                             </button>
                         </div>
                     </form>
