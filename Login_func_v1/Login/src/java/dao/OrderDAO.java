@@ -33,14 +33,14 @@ public class OrderDAO extends DBContext {
             con = useConnection();
             con.setAutoCommit(false);
 
-            // 1️⃣ Create order
+            // 1️⃣ Create order (CustomerID = NULL for walk-in customers)
             String sqlOrder = """
                 INSERT INTO [Order] 
                 (CustomerID, EmployeeID, TableID, OrderDate, Status, PaymentStatus, TotalPrice, Note)
                 VALUES (?, ?, ?, GETDATE(), 0, 'Unpaid', 0, ?)
             """;
             try (PreparedStatement psOrder = con.prepareStatement(sqlOrder, Statement.RETURN_GENERATED_KEYS)) {
-                psOrder.setInt(1, customerID);
+                psOrder.setNull(1, java.sql.Types.INTEGER);  // CustomerID = NULL (will be updated at payment if customer has account)
                 psOrder.setInt(2, employeeID);
                 psOrder.setInt(3, tableID);
                 psOrder.setString(4, note);
@@ -637,43 +637,8 @@ public class OrderDAO extends DBContext {
             con = useConnection();
             con.setAutoCommit(false);
 
-            // 1️⃣ Lấy customer ID đầu tiên có sẵn trong bảng Customer
-            int customerID = 1;
-            String getCustomerIdSql = "SELECT TOP 1 CustomerID FROM Customer ORDER BY CustomerID";
-            try (PreparedStatement psCustomer = con.prepareStatement(getCustomerIdSql);
-                 ResultSet rsCustomer = psCustomer.executeQuery()) {
-                if (rsCustomer.next()) {
-                    customerID = rsCustomer.getInt(1);
-                    System.out.println("✅ Using existing CustomerID: " + customerID);
-                } else {
-                    // Nếu không có customer nào, tạo một customer mới với User đầu tiên
-                    System.out.println("⚠️ No customers found, creating default customer");
-                    
-                    // Lấy UserID đầu tiên từ bảng User
-                    String getUserSql = "SELECT TOP 1 UserID FROM [User] WHERE Role = 0 ORDER BY UserID";
-                    int userID = 1;
-                    try (PreparedStatement psUser = con.prepareStatement(getUserSql);
-                         ResultSet rsUser = psUser.executeQuery()) {
-                        if (rsUser.next()) {
-                            userID = rsUser.getInt(1);
-                        }
-                    }
-                    
-                    // Tạo customer mới
-                    String insertCustomerSql = "INSERT INTO Customer (UserID, LoyaltyPoint) VALUES (?, 0)";
-                    try (PreparedStatement psInsert = con.prepareStatement(insertCustomerSql, Statement.RETURN_GENERATED_KEYS)) {
-                        psInsert.setInt(1, userID);
-                        psInsert.executeUpdate();
-                        
-                        try (ResultSet rsNew = psInsert.getGeneratedKeys()) {
-                            if (rsNew.next()) {
-                                customerID = rsNew.getInt(1);
-                                System.out.println("✅ Created new CustomerID: " + customerID);
-                            }
-                        }
-                    }
-                }
-            }
+            // 1️⃣ CustomerID = NULL for walk-in customers (will be updated at payment)
+            System.out.println("✅ Creating order with CustomerID = NULL (walk-in customer)");
 
             // 2️⃣ Tạo đơn hàng
             String sqlOrder = """
@@ -682,7 +647,7 @@ public class OrderDAO extends DBContext {
                 VALUES (?, ?, ?, GETDATE(), 0, 'Unpaid', 0, ?)
             """;
             try (PreparedStatement psOrder = con.prepareStatement(sqlOrder, Statement.RETURN_GENERATED_KEYS)) {
-                psOrder.setInt(1, customerID);
+                psOrder.setNull(1, java.sql.Types.INTEGER);  // CustomerID = NULL
                 psOrder.setInt(2, employeeID);
                 psOrder.setInt(3, tableID);
                 psOrder.setString(4, note);

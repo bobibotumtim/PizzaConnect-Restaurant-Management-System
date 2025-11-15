@@ -284,8 +284,8 @@
                                                 View
                                             </button>
                                             
-                                            <!-- PAY BUTTON - Show for all orders except cancelled -->
-                                            <% if (status !=4) { %>
+                                            <!-- PAY BUTTON - Show only when Dining (status = 2) -->
+                                            <% if (status == 2) { %>
                                                 <a href="${pageContext.request.contextPath}/payment?orderId=<%= order.getOrderID() %>"
                                                 class="px-2 py-1 text-white bg-purple-600 hover:bg-purple-700 rounded text-xs font-medium whitespace-nowrap inline-flex items-center gap-1"
                                                 title="Process Payment">
