@@ -35,7 +35,7 @@
         <!-- Top Navigation Bar -->
         <div class="bg-white shadow-md border-b px-6 py-3 flex items-center justify-between">
             <div class="flex items-center gap-4">
-                <div class="text-2xl font-bold text-orange-600">🔔 Waiter Monitor</div>
+                <div class="text-2xl font-bold text-orange-600">Waiter Monitor</div>
             </div>
             <div class="flex items-center gap-3">
                 <%
@@ -56,19 +56,6 @@
         <div class="w-full">
         <div class="max-w-7xl mx-auto px-6 py-8">
             
-            <!-- Header - ✅ Chuẩn hóa gradient -->
-            <div class="mb-8">
-                <div class="flex items-center gap-4 mb-4">
-                    <div class="w-14 h-14 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-sm">
-                        <i class="fas fa-bell text-white text-2xl"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-4xl font-bold text-gray-800">Dish Monitor</h1>
-                        <p class="text-gray-600">Track ready dishes and serve customers</p>
-                    </div>
-                </div>
-            </div>
-
             <!-- Error Message -->
             <c:if test="${not empty error}">
                 <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg">
