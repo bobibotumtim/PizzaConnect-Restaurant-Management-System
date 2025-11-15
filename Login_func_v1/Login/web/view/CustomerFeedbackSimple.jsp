@@ -145,7 +145,7 @@
         <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">
                 <i data-lucide="search" class="inline-block w-5 h-5 mr-2 text-orange-500"></i>
-                Tìm kiếm & Lọc
+                Search & Filter
             </h3>
             
             <form method="GET" action="${pageContext.request.contextPath}/customer-feedback" class="space-y-4">
@@ -154,14 +154,14 @@
                     <div>
                         <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
                             <i data-lucide="user" class="inline-block w-4 h-4 mr-1"></i>
-                            Tìm theo tên khách hàng
+                            Search by customer name
                         </label>
                         <input 
                             type="text" 
                             id="search" 
                             name="search" 
                             value="<%= request.getAttribute("searchTerm") != null ? request.getAttribute("searchTerm") : "" %>"
-                            placeholder="Nhập tên khách hàng..."
+                            placeholder="Enter customer name..."
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         />
                     </div>
@@ -170,7 +170,7 @@
                     <div>
                         <label for="rating" class="block text-sm font-medium text-gray-700 mb-2">
                             <i data-lucide="star" class="inline-block w-4 h-4 mr-1"></i>
-                            Lọc theo đánh giá
+                            Filter by rating
                         </label>
                         <select 
                             id="rating" 
@@ -178,22 +178,22 @@
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                         >
                             <option value="all" <%= "all".equals(request.getAttribute("ratingFilter")) || request.getAttribute("ratingFilter") == null ? "selected" : "" %>>
-                                Tất cả đánh giá
+                                All ratings
                             </option>
                             <option value="5" <%= "5".equals(request.getAttribute("ratingFilter")) ? "selected" : "" %>>
-                                ★★★★★ (5 sao - Xuất sắc)
+                                ★★★★★ (5 stars - Excellent)
                             </option>
                             <option value="4" <%= "4".equals(request.getAttribute("ratingFilter")) ? "selected" : "" %>>
-                                ★★★★☆ (4 sao - Tốt)
+                                ★★★★☆ (4 stars - Good)
                             </option>
                             <option value="3" <%= "3".equals(request.getAttribute("ratingFilter")) ? "selected" : "" %>>
-                                ★★★☆☆ (3 sao - Trung bình)
+                                ★★★☆☆ (3 stars - Average)
                             </option>
                             <option value="2" <%= "2".equals(request.getAttribute("ratingFilter")) ? "selected" : "" %>>
-                                ★★☆☆☆ (2 sao - Kém)
+                                ★★☆☆☆ (2 stars - Poor)
                             </option>
                             <option value="1" <%= "1".equals(request.getAttribute("ratingFilter")) ? "selected" : "" %>>
-                                ★☆☆☆☆ (1 sao - Rất kém)
+                                ★☆☆☆☆ (1 star - Very Poor)
                             </option>
                         </select>
                     </div>
@@ -206,14 +206,14 @@
                         class="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition flex items-center gap-2"
                     >
                         <i data-lucide="search" class="w-4 h-4"></i>
-                        Tìm kiếm
+                        Search
                     </button>
                     <a 
                         href="${pageContext.request.contextPath}/customer-feedback"
                         class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition flex items-center gap-2"
                     >
                         <i data-lucide="x" class="w-4 h-4"></i>
-                        Xóa bộ lọc
+                        Clear filters
                     </a>
                 </div>
                 
@@ -227,17 +227,17 @@
                     if (hasFilters) {
                 %>
                     <div class="flex flex-wrap gap-2 pt-2 border-t">
-                        <span class="text-sm text-gray-600">Bộ lọc đang áp dụng:</span>
+                        <span class="text-sm text-gray-600">Active filters:</span>
                         <% if (searchTerm != null && !searchTerm.trim().isEmpty()) { %>
                             <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm flex items-center gap-1">
                                 <i data-lucide="user" class="w-3 h-3"></i>
-                                Tên: <%= searchTerm %>
+                                Name: <%= searchTerm %>
                             </span>
                         <% } %>
                         <% if (ratingFilter != null && !"all".equals(ratingFilter) && !ratingFilter.isEmpty()) { %>
                             <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm flex items-center gap-1">
                                 <i data-lucide="star" class="w-3 h-3"></i>
-                                <%= ratingFilter %> sao
+                                <%= ratingFilter %> stars
                             </span>
                         <% } %>
                     </div>
@@ -285,14 +285,14 @@
                             
                             <!-- Comment -->
                             <div class="mb-4 bg-white p-3 rounded-lg border border-gray-200">
-                                <p class="text-xs text-gray-500 mb-1 font-semibold">Nhận xét:</p>
+                                <p class="text-xs text-gray-500 mb-1 font-semibold">Comment:</p>
                                 <% 
                                     String comment = feedback.getComment();
                                     if (comment != null && !comment.trim().isEmpty() && !comment.equals("...")) {
                                 %>
                                     <p class="text-gray-700 text-sm italic">"<%= comment %>"</p>
                                 <% } else { %>
-                                    <p class="text-gray-400 text-sm italic">Không có nhận xét</p>
+                                    <p class="text-gray-400 text-sm italic">No comment</p>
                                 <% } %>
                             </div>
                             

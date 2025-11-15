@@ -8,7 +8,7 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Báo Cáo Bán Hàng - PizzaConnect</title>
+    <title>Sales Report - PizzaConnect</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -189,9 +189,9 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
               <i data-lucide="file-text" class="w-8 h-8 text-white"></i>
             </div>
             <div>
-              <h1 class="text-3xl font-bold text-gray-800">Báo Cáo Bán Hàng</h1>
+              <h1 class="text-3xl font-bold text-gray-800">Sales Report</h1>
               <p class="text-gray-600">
-                Tạo và phân tích báo cáo doanh thu Pizza Store
+                Generate and analyze Pizza Store revenue reports
               </p>
             </div>
           </div>
@@ -202,14 +202,14 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
           <div
             class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6"
           >
-            <strong>Lỗi:</strong> ${error}
+            <strong>Error:</strong> ${error}
           </div>
         </c:if>
         <c:if test="${not empty message}">
           <div
             class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6"
           >
-            <strong>Thành công:</strong> ${message}
+            <strong>Success:</strong> ${message}
           </div>
         </c:if>
 
@@ -221,7 +221,7 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
             class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2"
           >
             <i data-lucide="calendar" class="w-5 h-5 text-orange-500"></i>
-            Cấu Hình Báo Cáo
+            Report Configuration
           </h2>
 
           <form
@@ -242,7 +242,7 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
               <!-- Date From -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Từ Ngày</label
+                  >From Date</label
                 >
                 <input
                   type="date"
@@ -256,7 +256,7 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
               <!-- Date To -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Đến Ngày</label
+                  >To Date</label
                 >
                 <input
                   type="date"
@@ -271,9 +271,7 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
             <!-- Export Format & Actions -->
             <div class="mt-6 flex flex-wrap items-center gap-4">
               <div class="flex items-center gap-2">
-                <span class="text-sm font-medium text-gray-700"
-                  >Định dạng:</span
-                >
+                <span class="text-sm font-medium text-gray-700">Format:</span>
                 <div class="flex gap-2">
                   <button
                     type="button"
@@ -300,7 +298,7 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
                   class="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg font-medium hover:from-orange-600 hover:to-red-600 transition-all shadow-md hover:shadow-lg"
                 >
                   <i data-lucide="file-text" class="w-4 h-4"></i>
-                  Tạo Báo Cáo
+                  Generate Report
                 </button>
                 <button
                   type="button"
@@ -308,7 +306,7 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
                   class="flex items-center gap-2 px-6 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-all shadow-md hover:shadow-lg"
                 >
                   <i data-lucide="download" class="w-4 h-4"></i>
-                  Xuất Dữ Liệu
+                  Export Data
                 </button>
               </div>
             </div>
@@ -333,7 +331,7 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
                 />
                 ₫
               </h3>
-              <p class="text-blue-100 text-sm">Tổng Doanh Thu</p>
+              <p class="text-blue-100 text-sm">Total Revenue</p>
             </div>
 
             <div
@@ -343,7 +341,7 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
                 <i data-lucide="shopping-cart" class="w-8 h-8 opacity-80"></i>
               </div>
               <h3 class="text-2xl font-bold mb-1">${reportData.totalOrders}</h3>
-              <p class="text-green-100 text-sm">Tổng Đơn Hàng</p>
+              <p class="text-green-100 text-sm">Total Orders</p>
             </div>
 
             <div
@@ -355,7 +353,7 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
               <h3 class="text-2xl font-bold mb-1">
                 ${reportData.totalCustomers}
               </h3>
-              <p class="text-purple-100 text-sm">Khách Hàng</p>
+              <p class="text-purple-100 text-sm">Customers</p>
             </div>
 
             <div
@@ -372,7 +370,7 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
                 />
                 ₫
               </h3>
-              <p class="text-orange-100 text-sm">Giá Trị Trung Bình</p>
+              <p class="text-orange-100 text-sm">Average Order Value</p>
             </div>
           </div>
 
@@ -386,7 +384,7 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
                 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2"
               >
                 <i data-lucide="pie-chart" class="w-5 h-5 text-orange-500"></i>
-                Top 5 Sản Phẩm Bán Chạy
+                Top 5 Best-Selling Products
               </h2>
 
               <div class="space-y-3">
@@ -410,7 +408,7 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
                             ${product.productName}
                           </p>
                           <p class="text-sm text-gray-500">
-                            ${product.quantity} pizza đã bán
+                            ${product.quantity} pizzas sold
                           </p>
                         </div>
                         <div class="text-right">
@@ -432,9 +430,7 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
                         data-lucide="inbox"
                         class="w-12 h-12 mx-auto mb-4 text-gray-300"
                       ></i>
-                      <p>
-                        Không có dữ liệu sản phẩm trong khoảng thời gian này
-                      </p>
+                      <p>No product data available for this period</p>
                     </div>
                   </c:otherwise>
                 </c:choose>
@@ -452,7 +448,7 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
                   data-lucide="trending-up"
                   class="w-5 h-5 text-orange-500"
                 ></i>
-                Doanh Thu Theo Ngày
+                Daily Revenue
               </h2>
 
               <c:choose>
@@ -465,22 +461,22 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
                           <th
                             class="text-left py-3 px-4 font-semibold text-gray-700"
                           >
-                            Ngày
+                            Date
                           </th>
                           <th
                             class="text-right py-3 px-4 font-semibold text-orange-600"
                           >
-                            Doanh Thu
+                            Revenue
                           </th>
                           <th
                             class="text-center py-3 px-4 font-semibold text-blue-600"
                           >
-                            Số Đơn
+                            Orders
                           </th>
                           <th
                             class="text-right py-3 px-4 font-semibold text-green-600"
                           >
-                            Trung Bình/Đơn
+                            Avg/Order
                           </th>
                         </tr>
                       </thead>
@@ -513,7 +509,7 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
                               <span
                                 class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700"
                               >
-                                ${daily.orders} đơn
+                                ${daily.orders} orders
                               </span>
                             </td>
 
@@ -547,7 +543,7 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
                       data-lucide="calendar"
                       class="w-12 h-12 mx-auto mb-4 text-gray-300"
                     ></i>
-                    <p>Không có dữ liệu doanh thu trong khoảng thời gian này</p>
+                    <p>No revenue data available for this period</p>
                   </div>
                 </c:otherwise>
               </c:choose>
@@ -565,11 +561,11 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
               class="w-12 h-12 text-blue-500 mx-auto mb-4"
             ></i>
             <h3 class="text-lg font-semibold text-blue-800 mb-2">
-              Chưa có dữ liệu báo cáo
+              No report data yet
             </h3>
             <p class="text-blue-600 mb-4">
-              Vui lòng chọn khoảng thời gian và nhấn "Tạo Báo Cáo" để xem dữ
-              liệu.
+              Please select a date range and click "Generate Report" to view
+              data.
             </p>
           </div>
         </c:if>
@@ -579,7 +575,7 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
           class="mt-6 bg-white rounded-xl shadow-lg p-6 border border-orange-100"
         >
           <h2 class="text-xl font-semibold text-gray-800 mb-4">
-            Báo Cáo Nhanh
+            Quick Reports
           </h2>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
             <button
@@ -593,7 +589,7 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
               <span
                 class="text-sm font-medium text-gray-700 group-hover:text-orange-600 text-center"
               >
-                Báo cáo hôm nay
+                Today's report
               </span>
             </button>
             <button
@@ -607,7 +603,7 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
               <span
                 class="text-sm font-medium text-gray-700 group-hover:text-orange-600 text-center"
               >
-                Báo cáo tuần này
+                This week's report
               </span>
             </button>
             <button
@@ -621,7 +617,7 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
               <span
                 class="text-sm font-medium text-gray-700 group-hover:text-orange-600 text-center"
               >
-                Báo cáo tháng này
+                This month's report
               </span>
             </button>
             <button
@@ -635,7 +631,7 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
               <span
                 class="text-sm font-medium text-gray-700 group-hover:text-orange-600 text-center"
               >
-                Báo cáo quý này
+                This quarter's report
               </span>
             </button>
           </div>
