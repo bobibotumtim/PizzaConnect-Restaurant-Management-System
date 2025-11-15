@@ -43,52 +43,11 @@
             }
         }
 
-        .status-badge {
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-waiting {
-            background: #f59e0b;
-            color: white;
-        }
-
-        .status-ready {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .status-dining {
-            background: #8b5cf6;
-            color: white;
-        }
-
-        .status-completed {
-            background: #10b981;
-            color: white;
-        }
-
-        .status-cancelled {
-            background: #ef4444;
-            color: white;
-        }
-
-        .payment-paid {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .payment-unpaid {
-            background: #fee2e2;
-            color: #991b1b;
-        }
+        /* ✅ Removed inline styles - using Tailwind classes instead */
     </style>
 </head>
 
-<body class="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+<body class="min-h-screen bg-gray-50">
     <% 
         User currentUser = (User) request.getAttribute("currentUser"); 
         User sessionUser = (User) session.getAttribute("user"); 
@@ -99,34 +58,29 @@
         Integer selectedStatus = (Integer) request.getAttribute("selectedStatus");
     %>
 
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-6 py-6">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-4xl shadow-lg">
-                        🍕
-                    </div>
-                    <div>
-                        <h1 class="text-3xl font-bold">PizzaConnect</h1>
-                        <p class="text-red-100">Restaurant Order Management System</p>
-                    </div>
+    <!-- Top Navigation Bar - ✅ Đồng nhất với POS và WaiterMonitor -->
+    <div class="bg-white shadow-md border-b px-6 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <div class="text-2xl font-bold text-orange-600">🍕 Manage Orders</div>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="text-right mr-3">
+                <div class="font-semibold text-gray-800">
+                    <%= user != null ? user.getName() : "User" %>
                 </div>
-                <div class="flex items-center gap-4">
-                    <div class="text-right">
-                        <div class="font-semibold">
-                            <%= user != null ? user.getName() : "User" %>
-                        </div>
-                        <div class="text-sm text-red-100">
-                            <%= user != null && user.getRole() == 1 ? "Admin" : "Employee" %>
-                        </div>
-                    </div>
-                    <a href="Login?action=logout"
-                        class="bg-white text-red-500 px-4 py-2 rounded-lg font-semibold hover:bg-red-50 transition-all">
-                        Logout
-                    </a>
+                <div class="text-xs text-gray-500">
+                    <%= user != null && user.getRole() == 1 ? "Admin" : "Employee" %>
                 </div>
             </div>
+            <a href="pos" class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
+                New Order
+            </a>
+            <a href="WaiterMonitor" class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
+                Waiter
+            </a>
+            <a href="waiter-dashboard" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 shadow-sm hover:shadow-md transition-all duration-200">
+                Dashboard
+            </a>
         </div>
     </div>
 
@@ -175,14 +129,14 @@
         <% } %>
 
         <!-- Statistics -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500">
                 <div class="text-sm text-gray-600 mb-2">Total Orders</div>
                 <div class="text-3xl font-bold text-blue-600">
                     <%= orders != null ? orders.size() : 0 %>
                 </div>
             </div>
-            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
+            <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-green-500">
                 <div class="text-sm text-gray-600 mb-2">Completed</div>
                 <div class="text-3xl font-bold text-green-600">
                     <% int completed = 0; 
@@ -195,31 +149,13 @@
                     <%= completed %>
                 </div>
             </div>
-            <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-red-500">
-                <div class="text-sm text-gray-600 mb-2">Total Revenue</div>
-                <div class="text-3xl font-bold text-red-600">
-                    <% double totalRevenue = 0; 
-                       if (orders != null) { 
-                           for (Order order : orders) { 
-                               if (order.getStatus() == 3 && "Paid".equals(order.getPaymentStatus())) {
-                                   totalRevenue += order.getTotalPrice();
-                               }
-                           } 
-                       } 
-                    %>
-                    <%= String.format("%,.0f", totalRevenue) %>đ
-                </div>
-            </div>
         </div>
 
         <!-- Filters & Actions -->
-        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <div class="bg-white rounded-xl shadow-sm p-4 mb-8">
             <div class="flex flex-wrap gap-4 items-center justify-between">
                 <div class="flex flex-wrap gap-4 items-center flex-1">
                     <div class="flex-1 min-w-[250px]">
-                        <label for="statusFilter" class="block text-sm font-semibold text-gray-700 mb-2">
-                            Filter by Status
-                        </label>
                         <select id="statusFilter" name="statusFilter" onchange="filterByStatus(this.value)"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
                             <option value="">All Orders</option>
@@ -232,22 +168,8 @@
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <a href="${pageContext.request.contextPath}/waiter-monitor"
-                        class="bg-orange-500 text-white px-6 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-orange-600 transition-all shadow-md">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                        </svg>
-                        Waiter Monitor
-                    </a>
-                    <a href="${pageContext.request.contextPath}/pos"
-                        class="bg-green-500 text-white px-6 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-green-600 transition-all shadow-md">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        New Order
-                    </a>
                     <a href="${pageContext.request.contextPath}/manage-orders"
-                        class="bg-blue-500 text-white px-6 py-2 rounded-lg font-semibold flex items-center gap-2 hover:bg-blue-600 transition-all">
+                        class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-2 rounded-lg font-semibold flex items-center gap-2 shadow-sm hover:shadow-md transition-all duration-200">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -259,7 +181,7 @@
         </div>
 
         <!-- Table -->
-        <div class="bg-white rounded-xl shadow-md overflow-hidden">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
             <% if (orders == null || orders.isEmpty()) { %>
                 <div class="text-center py-16">
                     <div class="text-6xl mb-4">📦</div>
@@ -309,26 +231,31 @@
                                     </td>
                                     <td class="px-4 py-4">
                                         <% 
-                                            String statusClass = "";
+                                            String statusBg = "";
+                                            String statusText = "";
                                             switch(order.getStatus()) { 
-                                                case 0: statusClass = "status-waiting"; break;
-                                                case 1: statusClass = "status-ready"; break;
-                                                case 2: statusClass = "status-dining"; break;
-                                                case 3: statusClass = "status-completed"; break;
-                                                case 4: statusClass = "status-cancelled"; break;
+                                                case 0: statusBg = "bg-yellow-100"; statusText = "text-yellow-800"; break;
+                                                case 1: statusBg = "bg-blue-100"; statusText = "text-blue-800"; break;
+                                                case 2: statusBg = "bg-purple-100"; statusText = "text-purple-800"; break;
+                                                case 3: statusBg = "bg-green-100"; statusText = "text-green-800"; break;
+                                                case 4: statusBg = "bg-red-100"; statusText = "text-red-800"; break;
                                             } 
                                         %>
-                                        <span class="status-badge <%= statusClass %>" style="font-size: 0.65rem; padding: 4px 10px;">
+                                        <span class="px-3 py-1 rounded-full text-xs font-semibold <%= statusBg %> <%= statusText %>">
                                             <%= order.getStatusText() %>
                                         </span>
                                     </td>
                                     <td class="px-4 py-4">
                                         <% 
-                                            String paymentClass = "payment-unpaid";
+                                            String paymentBg = "bg-orange-100";
+                                            String paymentText = "text-orange-800";
                                             String paymentStatus = order.getPaymentStatus();
-                                            if ("Paid".equals(paymentStatus)) paymentClass = "payment-paid";
+                                            if ("Paid".equals(paymentStatus)) {
+                                                paymentBg = "bg-green-100";
+                                                paymentText = "text-green-800";
+                                            }
                                         %>
-                                        <span class="px-2 py-1 rounded-full text-xs font-semibold <%= paymentClass %>">
+                                        <span class="px-3 py-1 rounded-full text-xs font-semibold <%= paymentBg %> <%= paymentText %>">
                                             <%= paymentStatus != null ? paymentStatus : "Unpaid" %>
                                         </span>
                                     </td>
@@ -431,7 +358,7 @@
             
             if (totalPages > 1) {
         %>
-        <div class="bg-white rounded-xl shadow-md p-6 mt-6">
+        <div class="bg-white rounded-xl shadow-sm p-4 mt-6">
             <div class="flex items-center justify-between">
                 <div class="text-sm text-gray-600">
                     Showing page <%= currentPage %> / <%= totalPages %> (Total <%= totalOrders %> orders)
@@ -451,11 +378,11 @@
                         if (currentPage > 1) {
                     %>
                         <a href="<%= baseUrl %><%= statusParam %>&page=<%= currentPage - 1 %>" 
-                           class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all">
+                           class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 shadow-sm hover:shadow-md transition-all duration-200">
                             ← Previous
                         </a>
                     <% } else { %>
-                        <span class="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed">
+                        <span class="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed shadow-sm">
                             ← Previous
                         </span>
                     <% } %>
@@ -469,7 +396,7 @@
                         if (startPage > 1) {
                     %>
                         <a href="<%= baseUrl %><%= statusParam %>&page=1" 
-                           class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all">
+                           class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 shadow-sm hover:shadow-md transition-all duration-200">
                             1
                         </a>
                         <% if (startPage > 2) { %>
@@ -482,12 +409,12 @@
                         for (int i = startPage; i <= endPage; i++) {
                             if (i == currentPage) {
                     %>
-                        <span class="px-4 py-2 bg-blue-500 text-white rounded-lg font-semibold">
+                        <span class="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-semibold shadow-sm">
                             <%= i %>
                         </span>
                     <% } else { %>
                         <a href="<%= baseUrl %><%= statusParam %>&page=<%= i %>" 
-                           class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all">
+                           class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 shadow-sm hover:shadow-md transition-all duration-200">
                             <%= i %>
                         </a>
                     <% 
@@ -503,7 +430,7 @@
                             <span class="px-4 py-2 text-gray-500">...</span>
                     <%  } %>
                         <a href="<%= baseUrl %><%= statusParam %>&page=<%= totalPages %>" 
-                           class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all">
+                           class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 shadow-sm hover:shadow-md transition-all duration-200">
                             <%= totalPages %>
                         </a>
                     <% } %>
@@ -513,11 +440,11 @@
                         if (currentPage < totalPages) {
                     %>
                         <a href="<%= baseUrl %><%= statusParam %>&page=<%= currentPage + 1 %>" 
-                           class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all">
+                           class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 shadow-sm hover:shadow-md transition-all duration-200">
                             Next →
                         </a>
                     <% } else { %>
-                        <span class="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed">
+                        <span class="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed shadow-sm">
                             Next →
                         </span>
                     <% } %>
@@ -563,18 +490,13 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Total Price</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Total Price (Tax Included)</label>
                         <div id="viewTotal" class="px-4 py-2 bg-gray-100 rounded-lg text-green-600 font-bold text-lg"></div>
                     </div>
 
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Order Items</label>
-                        <div id="viewItems" class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 max-h-48 overflow-y-auto"></div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Note</label>
-                        <div id="viewNote" class="px-4 py-2 bg-gray-100 rounded-lg text-gray-600 italic min-h-[60px]"></div>
+                        <div id="viewItems" class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 max-h-64 overflow-y-auto"></div>
                     </div>
                 </div>
 
@@ -666,13 +588,13 @@
         const modal = document.getElementById("editOrderModal");
         
         const url = ctx + '/manage-orders?action=getOrder&id=' + orderId;
-        console.log('📦 Fetching order details from:', url);
+        console.log('Fetching order details from:', url);
         
         fetch(url)
             .then(res => res.json())
             .then(data => {
-                console.log('📦 Order data received:', data);
-                console.log('📦 Number of items:', data.details ? data.details.length : 0);
+                console.log('Order data received:', data);
+                console.log('Number of items:', data.details ? data.details.length : 0);
                 
                 if (!data.success) {
                     alert("Could not load order data.");
@@ -688,11 +610,10 @@
                 document.getElementById("viewStatus").innerHTML = '<span class="px-3 py-1 rounded-full text-white bg-' + statusColor + '-500">' + statusText + '</span>';
                 document.getElementById("viewPayment").innerHTML = '<span class="px-3 py-1 rounded-full text-white bg-' + (o.paymentStatus === 'Paid' ? 'green' : 'orange') + '-500">' + (o.paymentStatus || 'Unpaid') + '</span>';
                 document.getElementById("viewTotal").textContent = (o.totalPrice || 0).toLocaleString('vi-VN') + ' VND';
-                document.getElementById("viewNote").textContent = o.note || 'No notes';
                 
                 // Load order items with toppings and prices
                 if (data.details && data.details.length > 0) {
-                    console.log('🍕 Rendering ' + data.details.length + ' items');
+                    console.log('Rendering ' + data.details.length + ' items');
                     
                     let itemsHTML = '<div class="space-y-3">';
                     let calculatedTotal = 0;
@@ -726,7 +647,7 @@
                         
                         // Base price
                         itemsHTML += '<div class="text-sm text-gray-600 mb-1">';
-                        itemsHTML += '💰 Base: ' + item.basePrice.toLocaleString('vi-VN') + ' VND';
+                        itemsHTML += 'Base: ' + item.basePrice.toLocaleString('vi-VN') + ' VND';
                         itemsHTML += '</div>';
                         
                         // Toppings
@@ -734,7 +655,7 @@
                             itemsHTML += '<div class="ml-3 mb-2">';
                             item.toppings.forEach(topping => {
                                 itemsHTML += '<div class="text-sm text-orange-600">';
-                                itemsHTML += '🧀 ' + topping.toppingName + ': +' + topping.price.toLocaleString('vi-VN') + ' VND';
+                                itemsHTML += topping.toppingName + ': +' + topping.price.toLocaleString('vi-VN') + ' VND';
                                 itemsHTML += '</div>';
                             });
                             itemsHTML += '</div>';
@@ -747,22 +668,6 @@
                         
                         itemsHTML += '</div>';
                     });
-                    
-                    // Add summary
-                    itemsHTML += '<div class="bg-blue-50 rounded-lg p-3 border-2 border-blue-300 mt-3">';
-                    itemsHTML += '<div class="flex justify-between items-center">';
-                    itemsHTML += '<div class="font-bold text-gray-700">Subtotal (' + data.details.length + ' items):</div>';
-                    itemsHTML += '<div class="font-bold text-blue-600">' + calculatedTotal.toLocaleString('vi-VN') + ' VND</div>';
-                    itemsHTML += '</div>';
-                    itemsHTML += '<div class="flex justify-between items-center text-sm text-gray-600 mt-1">';
-                    itemsHTML += '<div>Tax (10%):</div>';
-                    itemsHTML += '<div>' + (calculatedTotal * 0.1).toLocaleString('vi-VN') + ' VND</div>';
-                    itemsHTML += '</div>';
-                    itemsHTML += '<div class="flex justify-between items-center font-bold text-lg text-green-600 mt-2 pt-2 border-t border-blue-300">';
-                    itemsHTML += '<div>Grand Total:</div>';
-                    itemsHTML += '<div>' + (calculatedTotal * 1.1).toLocaleString('vi-VN') + ' VND</div>';
-                    itemsHTML += '</div>';
-                    itemsHTML += '</div>';
                     
                     itemsHTML += '</div>';
                     document.getElementById("viewItems").innerHTML = itemsHTML;

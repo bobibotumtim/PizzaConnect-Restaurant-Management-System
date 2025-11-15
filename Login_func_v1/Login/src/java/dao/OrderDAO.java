@@ -71,12 +71,15 @@ public class OrderDAO extends DBContext {
                     }
                     psDetail.executeBatch();
 
-                    // Update total price
+                    // Update total price (including 10% tax)
+                    double totalWithTax = totalPrice * 1.1;
+                    System.out.println("🧮 Calculating total: " + totalPrice + " → with tax: " + totalWithTax);
                     String sqlUpdate = "UPDATE [Order] SET TotalPrice = ? WHERE OrderID = ?";
                     try (PreparedStatement psUpdate = con.prepareStatement(sqlUpdate)) {
-                        psUpdate.setDouble(1, totalPrice);
+                        psUpdate.setDouble(1, totalWithTax);
                         psUpdate.setInt(2, orderId);
-                        psUpdate.executeUpdate();
+                        int updated = psUpdate.executeUpdate();
+                        System.out.println("✅ Order #" + orderId + " total updated to: " + totalWithTax + " (rows affected: " + updated + ")");
                     }
                 }
             }
@@ -710,11 +713,15 @@ public class OrderDAO extends DBContext {
                     }
                     psDetail.executeBatch();
 
-                    // Cập nhật tổng tiền
+                    // Cập nhật tổng tiền (including 10% tax)
+                    double totalWithTax = totalPrice * 1.1;
+                    System.out.println("🧮 [Alternative] Calculating total: " + totalPrice + " → with tax: " + totalWithTax);
                     String sqlUpdate = "UPDATE [Order] SET TotalPrice = ? WHERE OrderID = ?";
                     try (PreparedStatement psUpdate = con.prepareStatement(sqlUpdate)) {
-                        psUpdate.setDouble(1, totalPrice);
+                        psUpdate.setDouble(1, totalWithTax);
                         psUpdate.setInt(2, orderId);
+                        int updated = psUpdate.executeUpdate();
+                        System.out.println("✅ [Alternative] Order #" + orderId + " total updated to: " + totalWithTax + " (rows affected: " + updated + ")");
                         psUpdate.executeUpdate();
                     }
                 }
