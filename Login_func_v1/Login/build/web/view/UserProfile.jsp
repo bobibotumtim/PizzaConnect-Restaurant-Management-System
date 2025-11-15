@@ -20,24 +20,28 @@
         .success-message { color: #16a34a; font-size: 0.875rem; margin-top: 0.25rem; }
     </style>
 </head>
-<body class="min-h-screen">
-    <!-- Top Navigation Bar -->
-    <div class="bg-white shadow-md border-b px-6 py-3 flex items-center justify-between">
-        <div class="flex items-center gap-4">
-            <div class="text-2xl font-bold text-orange-600">🍕 PizzaConnect</div>
-        </div>
-        <div class="flex items-center gap-3">
-            <div class="text-right">
-                <div class="font-semibold text-gray-800">${user.name}</div>
-                <div class="text-xs text-gray-500">${user.role == 1 ? "Admin" : user.role == 2 ? "Waiter" : "Customer"}</div>
+<body class="min-h-screen flex overflow-hidden">
+    <!-- Sidebar -->
+    <jsp:include page="Sidebar.jsp" />
+    
+    <div class="flex flex-col flex-1 overflow-auto" style="margin-left: 80px;">
+        <!-- Top Navigation Bar -->
+        <div class="bg-white shadow-md border-b px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="text-2xl font-bold text-orange-600">🍕 PizzaConnect</div>
             </div>
-            <a href="waiter-dashboard" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 shadow-sm hover:shadow-md transition-all duration-200">
-                🏠 Dashboard
-            </a>
+            <div class="flex items-center gap-3">
+                <div class="text-right">
+                    <div class="font-semibold text-gray-800">${user.name}</div>
+                    <div class="text-xs text-gray-500">${user.role == 1 ? "Admin" : user.role == 2 ? "Waiter" : "Customer"}</div>
+                </div>
+                <a href="logout" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 shadow-sm hover:shadow-md transition-all duration-200">
+                    🚪 Logout
+                </a>
+            </div>
         </div>
-    </div>
 
-    <div class="flex">
+        <div class="flex">
         <!-- Tabbar -->
         <div class="w-64 bg-white shadow-lg min-h-screen p-6">
             <div class="text-center mb-8">
@@ -443,5 +447,7 @@
             });
         });
     </script>
+        </div> <!-- Close flex wrapper -->
+    </div> <!-- Close flex-1 wrapper -->
 </body>
 </html>

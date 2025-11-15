@@ -30,24 +30,28 @@
         }
     </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Top Navigation Bar -->
-    <div class="bg-white shadow-md border-b px-6 py-3 flex items-center justify-between">
-        <div class="flex items-center gap-4">
-            <div class="text-2xl font-bold text-orange-600">🍕 PizzaConnect</div>
-        </div>
-        <div class="flex items-center gap-3">
-            <div class="text-right">
-                <div class="font-semibold text-gray-800"><%= employee != null ? employee.getName() : user.getName() %></div>
-                <div class="text-xs text-gray-500"><%= user.getRole() == 1 ? "Admin" : "Waiter" %></div>
-            </div>
-            <a href="Login?action=logout" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 shadow-sm hover:shadow-md transition-all duration-200">
-                Logout
-            </a>
-        </div>
-    </div>
+<body class="bg-gray-50 flex overflow-hidden">
+    <!-- Sidebar -->
+    <jsp:include page="Sidebar.jsp" />
     
-    <div class="content-wrapper">
+    <div class="flex flex-col flex-1 overflow-auto" style="margin-left: 80px;">
+        <!-- Top Navigation Bar -->
+        <div class="bg-white shadow-md border-b px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="text-2xl font-bold text-orange-600">🍕 PizzaConnect</div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="text-right">
+                    <div class="font-semibold text-gray-800"><%= employee != null ? employee.getName() : user.getName() %></div>
+                    <div class="text-xs text-gray-500"><%= user.getRole() == 1 ? "Admin" : "Waiter" %></div>
+                </div>
+                <a href="logout" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 shadow-sm hover:shadow-md transition-all duration-200">
+                    🚪 Logout
+                </a>
+            </div>
+        </div>
+        
+        <div class="content-wrapper">
         <div class="max-w-7xl mx-auto px-6 py-8">
             
             <!-- Welcome Section -->
@@ -142,5 +146,7 @@
             }
         });
     </script>
+        </div> <!-- Close content-wrapper -->
+    </div> <!-- Close flex-1 wrapper -->
 </body>
 </html>
