@@ -31,8 +31,21 @@
     
     NumberFormat numberFormat = NumberFormat.getNumberInstance(new Locale("vi", "VN"));
     
+    
+    // Calculate original total from items (base price + toppings)
+    Double calculatedOriginalTotal = 0.0;
+    if (order != null) {
+        for (OrderDetail item : order.getDetails()) {
+            calculatedOriginalTotal += item.getTotalPrice();
+        }
+    }
+    
+    // Use calculated total instead of order total price
+    Double originalTotalValue = calculatedOriginalTotal;
+    if (originalTotalValue == null) originalTotalValue = 0.0;
+
     // Create JavaScript variables from JSP
-    double orderTotalPrice = order != null ? order.getTotalPrice() : 0;
+    double orderTotalPrice = originalTotalValue;
     int orderId = order != null ? order.getOrderID() : 0;
 
     ProductSizeDAO productSizeDAO = new ProductSizeDAO();
@@ -243,7 +256,7 @@
                         <div class="border-t pt-4 mt-4">
                             <div class="flex justify-between items-center text-lg font-bold">
                                 <span>Total Amount:</span>
-                                <span class="text-green-600"><%= numberFormat.format(order.getTotalPrice()) %> VND</span>
+                                <span class="text-green-600"><%= numberFormat.format(originalTotalValue) %> VND</span>
                             </div>
                         </div>
                     </div>
@@ -425,7 +438,7 @@
                             <div class="space-y-2">
                                 <div class="flex justify-between">
                                     <span>Original Total:</span>
-                                    <span id="originalTotal"><%= numberFormat.format(order.getTotalPrice()) %> VND</span>
+                                    <span id="originalTotal"><%= numberFormat.format(originalTotalValue) %> VND</span>
                                 </div>
                                 <div class="flex justify-between">
                                     <span>Tax (10%):</span>
@@ -532,7 +545,7 @@
     let loyaltyDiscountAmount = 0;
     let regularDiscountAmount = 0;
     let conversionRate = <%= conversionRate %>;
-    let originalTotal = <%= orderTotalPrice %>;
+    let originalTotal = <%= originalTotalValue %>;
     let taxRate = <%= taxRate %>;
     let currentOrderId = <%= orderId %>;
 
