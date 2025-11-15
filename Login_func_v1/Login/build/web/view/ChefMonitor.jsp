@@ -42,6 +42,17 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-count {
+            background: rgba(255,255,255,0.3);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
         }
         
         .section-waiting {
@@ -155,15 +166,14 @@
         
         <!-- Category Filter -->
         <div class="mb-4 p-3" style="background-color: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-            <label class="fw-bold me-3">🍽️ Lọc theo danh mục:</label>
-            <div class="btn-group" role="group">
+            <div class="d-flex flex-wrap gap-2">
                 <button type="button" class="btn ${selectedCategory == 'All' ? 'btn-primary' : 'btn-outline-primary'}" 
-                        onclick="filterByCategory('All')">
+                        onclick="filterByCategory('All')" style="min-width: 100px;">
                     Tất cả
                 </button>
                 <c:forEach var="cat" items="${categories}">
                     <button type="button" class="btn ${selectedCategory == cat ? 'btn-primary' : 'btn-outline-primary'}" 
-                            onclick="filterByCategory('${cat}')">
+                            onclick="filterByCategory('${cat}')" style="min-width: 100px;">
                         ${cat}
                     </button>
                 </c:forEach>
@@ -172,7 +182,10 @@
 
     <!-- ==================== Waiting Section ==================== -->
     <div>
-        <div class="section-title section-waiting">⏳ Waiting Dishes</div>
+        <div class="section-title section-waiting">
+            <span>⏳ Waiting Dishes</span>
+            <span class="section-count">${waitingList.size()} món</span>
+        </div>
         <div id="waiting" class="dish-container">
             <c:forEach var="dish" items="${waitingList}">
                 <div class="dish-card waiting" onclick="selectDish(this)" data-id="${dish.orderDetailID}">
@@ -202,7 +215,10 @@
         </div>
 
         <!-- ==================== Preparing Section ==================== -->
-        <div class="section-title section-preparing">🔥 Preparing Dishes</div>
+        <div class="section-title section-preparing">
+            <span>🔥 Preparing Dishes</span>
+            <span class="section-count">${preparingList.size()} món</span>
+        </div>
         <div id="ongoing" class="dish-container">
             <c:forEach var="dish" items="${preparingList}">
                 <div class="dish-card ongoing" onclick="selectDish(this)" data-id="${dish.orderDetailID}">
@@ -232,7 +248,10 @@
         </div>
 
         <!-- ==================== Ready Section ==================== -->
-        <div class="section-title section-ready">✅ Ready Dishes (Waiter will serve)</div>
+        <div class="section-title section-ready">
+            <span>✅ Ready Dishes (Waiter will serve)</span>
+            <span class="section-count">${readyList.size()} món</span>
+        </div>
         <div id="ready" class="dish-container">
             <c:forEach var="dish" items="${readyList}">
                 <div class="dish-card" style="background-color: #90EE90;" data-id="${dish.orderDetailID}">
@@ -276,6 +295,11 @@
             }
             window.location.href = url.toString();
         }
+        
+        // Auto-refresh every 10 seconds
+        setTimeout(function() {
+            location.reload();
+        }, 10000);
     </script>
 
 </body>
