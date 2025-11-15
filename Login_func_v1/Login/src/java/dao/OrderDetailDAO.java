@@ -60,7 +60,7 @@ public class OrderDetailDAO extends DBContext {
         return list;
     }
     
-    // Lấy OrderDetail theo status cho ChefMonitor
+    // Lấy OrderDetail theo status cho ChefMonitor - CHỈ từ các order còn món chưa serve
     public List<OrderDetail> getOrderDetailsByStatus(String status) {
         List<OrderDetail> list = new ArrayList<>();
         String sql = """
@@ -70,6 +70,11 @@ public class OrderDetailDAO extends DBContext {
             LEFT JOIN Product p ON ps.ProductID = p.ProductID
             LEFT JOIN [Order] o ON od.OrderID = o.OrderID
             WHERE od.Status = ?
+            AND od.OrderID IN (
+                SELECT DISTINCT OrderID 
+                FROM OrderDetail 
+                WHERE Status != 'Served'
+            )
             ORDER BY od.OrderDetailID
         """;
         
@@ -186,7 +191,7 @@ public class OrderDetailDAO extends DBContext {
         }
     }
     
-    // Lấy OrderDetail theo status VÀ nhiều categories (for Chef filter)
+    // Lấy OrderDetail theo status VÀ nhiều categories (for Chef filter) - CHỈ từ các order còn món chưa serve
     public List<OrderDetail> getOrderDetailsByStatusAndCategories(String status, List<String> categoryNames) {
         List<OrderDetail> list = new ArrayList<>();
         if (categoryNames == null || categoryNames.isEmpty()) {
@@ -203,6 +208,11 @@ public class OrderDetailDAO extends DBContext {
             LEFT JOIN Category c ON p.CategoryID = c.CategoryID
             LEFT JOIN [Order] o ON od.OrderID = o.OrderID
             WHERE od.Status = ? AND c.CategoryName IN (%s)
+            AND od.OrderID IN (
+                SELECT DISTINCT OrderID 
+                FROM OrderDetail 
+                WHERE Status != 'Served'
+            )
             ORDER BY od.OrderDetailID
         """, placeholders);
         
@@ -246,7 +256,55 @@ public class OrderDetailDAO extends DBContext {
     
 
     
-    // Lấy OrderDetail theo status và loại trừ một category (ví dụ: loại trừ Topping)
+    // Lấy TẤT CẢ OrderDetail theo status (cho Waiter) - KHÔNG lọc theo order status
+    public List<OrderDetail> getAllOrderDetailsByStatus(String status) {
+        List<OrderDetail> list = new ArrayList<>();
+        String sql = """
+            SELECT od.*, p.ProductName, ps.SizeName, ps.SizeCode, o.TableID
+            FROM OrderDetail od
+            LEFT JOIN ProductSize ps ON od.ProductSizeID = ps.ProductSizeID
+            LEFT JOIN Product p ON ps.ProductID = p.ProductID
+            LEFT JOIN [Order] o ON od.OrderID = o.OrderID
+            WHERE od.Status = ?
+            ORDER BY od.OrderDetailID
+        """;
+        
+        OrderDetailToppingDAO toppingDAO = new OrderDetailToppingDAO();
+        
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                OrderDetail d = new OrderDetail();
+                d.setOrderDetailID(rs.getInt("OrderDetailID"));
+                d.setOrderID(rs.getInt("OrderID"));
+                d.setProductSizeID(rs.getInt("ProductSizeID"));
+                d.setQuantity(rs.getInt("Quantity"));
+                d.setTotalPrice(rs.getDouble("TotalPrice"));
+                d.setSpecialInstructions(rs.getString("SpecialInstructions"));
+                d.setEmployeeID(rs.getInt("EmployeeID"));
+                d.setStatus(rs.getString("Status"));
+                d.setStartTime(rs.getTimestamp("StartTime"));
+                d.setEndTime(rs.getTimestamp("EndTime"));
+                
+                // Thông tin bổ sung
+                d.setProductName(rs.getString("ProductName"));
+                d.setSizeName(rs.getString("SizeName"));
+                d.setSizeCode(rs.getString("SizeCode"));
+                
+                // Load toppings
+                d.setToppings(toppingDAO.getToppingsByOrderDetailID(d.getOrderDetailID()));
+                
+                list.add(d);
+            }
+        } catch (Exception e) { 
+            e.printStackTrace(); 
+        }
+        return list;
+    }
+    
+    // Lấy OrderDetail theo status và loại trừ một category (ví dụ: loại trừ Topping) - CHỈ từ các order còn món chưa serve
     public List<OrderDetail> getOrderDetailsByStatusExcludingCategory(String status, String excludedCategory) {
         List<OrderDetail> list = new ArrayList<>();
         String sql = """
@@ -257,6 +315,11 @@ public class OrderDetailDAO extends DBContext {
             LEFT JOIN Category c ON p.CategoryID = c.CategoryID
             LEFT JOIN [Order] o ON od.OrderID = o.OrderID
             WHERE od.Status = ? AND (c.CategoryName IS NULL OR c.CategoryName != ?)
+            AND od.OrderID IN (
+                SELECT DISTINCT OrderID 
+                FROM OrderDetail 
+                WHERE Status != 'Served'
+            )
             ORDER BY od.OrderDetailID
         """;
         

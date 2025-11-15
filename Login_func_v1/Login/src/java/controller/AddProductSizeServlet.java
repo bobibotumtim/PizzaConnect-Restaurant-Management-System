@@ -55,15 +55,11 @@ public class AddProductSizeServlet extends HttpServlet {
             }
             
             // Kiểm tra size trùng
-            try {
-                if (productSizeDAO.isSizeExistsForProduct(productId, sizeCode, null)) {
-                    session.setAttribute("message", "Size already exists for this product");
-                    session.setAttribute("messageType", "error");
-                    response.sendRedirect(request.getContextPath() + "/manageproduct");
-                    return;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+            if (productSizeDAO.isSizeExistsForProduct(productId, sizeCode, null)) {
+                session.setAttribute("message", "Size '" + sizeCode + "' is already exit in the product");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect(request.getContextPath() + "/manageproduct");
+                return;
             }
             
             if (price < 0) {

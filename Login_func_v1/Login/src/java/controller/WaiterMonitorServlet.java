@@ -18,9 +18,9 @@ public class WaiterMonitorServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        // Lấy danh sách món Ready và Served
-        List<OrderDetail> readyList = orderDetailDAO.getOrderDetailsByStatus("Ready");
-        List<OrderDetail> servedList = orderDetailDAO.getOrderDetailsByStatus("Served");
+        // Lấy danh sách món Ready và Served - dùng getAllOrderDetailsByStatus để hiển thị TẤT CẢ món
+        List<OrderDetail> readyList = orderDetailDAO.getAllOrderDetailsByStatus("Ready");
+        List<OrderDetail> servedList = orderDetailDAO.getAllOrderDetailsByStatus("Served");
 
         req.setAttribute("readyList", readyList);
         req.setAttribute("servedList", servedList);
