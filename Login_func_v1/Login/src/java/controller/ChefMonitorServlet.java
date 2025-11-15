@@ -84,8 +84,41 @@ public class ChefMonitorServlet extends HttpServlet {
         }
 
         boolean updated = false;
+        int affectedOrderId = 0;
 
-        if ("start".equals(action)) {
+        if ("cancel".equals(action)) {
+            // Lấy thông tin OrderDetail trước khi hủy để biết OrderID
+            List<OrderDetail> waitingList = orderDetailDAO.getOrderDetailsByStatusExcludingCategory("Waiting", "Topping");
+            List<OrderDetail> preparingList = orderDetailDAO.getOrderDetailsByStatusExcludingCategory("Preparing", "Topping");
+            
+            OrderDetail targetOrderDetail = null;
+            for (OrderDetail od : waitingList) {
+                if (od.getOrderDetailID() == orderDetailId) {
+                    targetOrderDetail = od;
+                    break;
+                }
+            }
+            if (targetOrderDetail == null) {
+                for (OrderDetail od : preparingList) {
+                    if (od.getOrderDetailID() == orderDetailId) {
+                        targetOrderDetail = od;
+                        break;
+                    }
+                }
+            }
+            
+            if (targetOrderDetail != null) {
+                affectedOrderId = targetOrderDetail.getOrderID();
+                // Hủy món - cập nhật status thành Cancelled
+                updated = orderDetailDAO.updateOrderDetailStatus(orderDetailId, "Cancelled", chef.getEmployeeID());
+                
+                if (updated) {
+                    // Tự động cập nhật Order status
+                    OrderDAO orderDAO = new OrderDAO();
+                    orderDAO.autoUpdateOrderStatusBasedOnDetails(affectedOrderId);
+                }
+            }
+        } else if ("start".equals(action)) {
             // Lấy thông tin OrderDetail trước khi cập nhật
             List<OrderDetail> waitingList = orderDetailDAO.getOrderDetailsByStatusExcludingCategory("Waiting", "Topping");
             

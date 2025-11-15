@@ -144,6 +144,7 @@
 
         .btn-start { background-color: #b0c4ff; }
         .btn-ready { background-color: #63f063; }
+        .btn-cancel { background-color: #ff6b6b; color: white; }
     </style>
 </head>
 
@@ -151,38 +152,33 @@
     <%@ include file="Sidebar.jsp" %>
     <%@ include file="NavBar.jsp" %>
     
-    <!-- Alert Messages -->
-    <c:if test="${not empty error}">
-        <div id="alertBox" class="fixed top-20 right-5 bg-red-500 text-white px-6 py-4 rounded-lg shadow-xl transition-opacity duration-500" style="z-index: 9999;">
-            <div class="flex items-center gap-2">
-                <span class="text-lg font-semibold">${error}</span>
-            </div>
-        </div>
-        <script>
-            // Fade out alert after 3 seconds
-            setTimeout(() => {
-                const box = document.getElementById("alertBox");
-                if (box) {
-                    box.style.opacity = "0";
-                    setTimeout(() => box.remove(), 500);
-                }
-            }, 3000);
-            
-            // Reload page after 5 seconds to clear error and resume normal operation
-            setTimeout(() => {
-                // Redirect to clean URL without error
-                const url = new URL(window.location.href);
-                const category = url.searchParams.get('category');
-                if (category && category !== 'All') {
-                    window.location.href = 'ChefMonitor?category=' + category;
-                } else {
-                    window.location.href = 'ChefMonitor';
-                }
-            }, 5000);
-        </script>
-    </c:if>
-    
     <div class="content-wrapper">
+        
+        <!-- Alert Messages -->
+        <c:if test="${not empty error}">
+            <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg" style="margin: 20px;">
+                <div style="display: flex; align-items: center;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span><strong>Lỗi:</strong> ${error}</span>
+                </div>
+            </div>
+            <script>
+                // Reload page after 5 seconds to clear error and resume normal operation
+                setTimeout(() => {
+                    const url = new URL(window.location.href);
+                    const category = url.searchParams.get('category');
+                    if (category && category !== 'All') {
+                        window.location.href = 'ChefMonitor?category=' + category;
+                    } else {
+                        window.location.href = 'ChefMonitor';
+                    }
+                }, 5000);
+            </script>
+        </c:if>
         <div class="top-bar">
             <div></div>
             <div>
@@ -271,6 +267,12 @@
                 <input type="hidden" name="category" value="${selectedCategory}">
                 <button type="submit" class="btn-action btn-ready">Ready to serve</button>
             </form>
+            <form id="cancelFormPreparing" action="ChefMonitor" method="post" style="display:inline;">
+                <input type="hidden" name="action" value="cancel">
+                <input type="hidden" id="selectedIdCancelPreparing" name="orderDetailId">
+                <input type="hidden" name="category" value="${selectedCategory}">
+                <button type="submit" class="btn-action btn-cancel" onclick="return confirm('Bạn có chắc muốn hủy món này?')">✕ Cancel</button>
+            </form>
         </div>
 
         <!-- ==================== Ready Section ==================== -->
@@ -310,6 +312,7 @@
             const id = el.getAttribute('data-id');
             document.getElementById('selectedIdStart').value = id;
             document.getElementById('selectedIdReady').value = id;
+            document.getElementById('selectedIdCancelPreparing').value = id;
         }
         
         function filterByCategory(category) {
@@ -324,9 +327,9 @@
         
         // Auto-refresh every 10 seconds - KHÔNG refresh khi có error
         <c:if test="${empty error}">
-        setTimeout(function() {
-            location.reload();
-        }, 10000);
+            setTimeout(function() {
+                location.reload();
+            }, 10000);
         </c:if>
     </script>
 

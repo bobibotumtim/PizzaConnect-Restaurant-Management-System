@@ -60,7 +60,7 @@ public class OrderDetailDAO extends DBContext {
         return list;
     }
     
-    // Lấy OrderDetail theo status cho ChefMonitor - CHỈ từ các order còn món chưa nấu xong
+    // Lấy OrderDetail theo status cho ChefMonitor - CHỈ từ các order còn món chưa serve
     public List<OrderDetail> getOrderDetailsByStatus(String status) {
         List<OrderDetail> list = new ArrayList<>();
         String sql = """
@@ -73,7 +73,7 @@ public class OrderDetailDAO extends DBContext {
             AND od.OrderID IN (
                 SELECT DISTINCT OrderID 
                 FROM OrderDetail 
-                WHERE Status NOT IN ('Served', 'Cancelled')
+                WHERE Status != 'Served'
             )
             ORDER BY od.OrderDetailID
         """;
@@ -191,7 +191,7 @@ public class OrderDetailDAO extends DBContext {
         }
     }
     
-    // Lấy OrderDetail theo status VÀ nhiều categories (for Chef filter) - CHỈ từ các order còn món chưa nấu xong
+    // Lấy OrderDetail theo status VÀ nhiều categories (for Chef filter) - CHỈ từ các order còn món chưa serve
     public List<OrderDetail> getOrderDetailsByStatusAndCategories(String status, List<String> categoryNames) {
         List<OrderDetail> list = new ArrayList<>();
         if (categoryNames == null || categoryNames.isEmpty()) {
@@ -211,7 +211,7 @@ public class OrderDetailDAO extends DBContext {
             AND od.OrderID IN (
                 SELECT DISTINCT OrderID 
                 FROM OrderDetail 
-                WHERE Status NOT IN ('Served', 'Cancelled')
+                WHERE Status != 'Served'
             )
             ORDER BY od.OrderDetailID
         """, placeholders);
@@ -304,7 +304,7 @@ public class OrderDetailDAO extends DBContext {
         return list;
     }
     
-    // Lấy OrderDetail theo status và loại trừ một category (ví dụ: loại trừ Topping) - CHỈ từ các order còn món chưa nấu xong
+    // Lấy OrderDetail theo status và loại trừ một category (ví dụ: loại trừ Topping) - CHỈ từ các order còn món chưa serve
     public List<OrderDetail> getOrderDetailsByStatusExcludingCategory(String status, String excludedCategory) {
         List<OrderDetail> list = new ArrayList<>();
         String sql = """
@@ -318,7 +318,7 @@ public class OrderDetailDAO extends DBContext {
             AND od.OrderID IN (
                 SELECT DISTINCT OrderID 
                 FROM OrderDetail 
-                WHERE Status NOT IN ('Served', 'Cancelled')
+                WHERE Status != 'Served'
             )
             ORDER BY od.OrderDetailID
         """;

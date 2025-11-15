@@ -27,40 +27,41 @@
 <%@ include file="Sidebar.jsp" %>
 <%@ include file="NavBar.jsp" %>
 
-<!-- Alert Messages -->
-<c:if test="${not empty sessionScope.message}">
-    <div id="alertBox" class="fixed top-20 right-5 ${sessionScope.messageType == 'error' ? 'bg-red-500' : 'bg-green-500'} text-white px-6 py-4 rounded-lg shadow-xl transition-opacity duration-500" style="z-index: 9999;">
-        <div class="flex items-center gap-2">
-            <span class="text-lg font-semibold">${sessionScope.message}</span>
-        </div>
-    </div>
-    <script>
-        setTimeout(() => {
-            const box = document.getElementById("alertBox");
-            if (box) {
-                box.style.opacity = "0";
-                setTimeout(() => box.remove(), 500);
-            }
-        }, 3000);
-    </script>
-    <c:remove var="message" scope="session" />
-    <c:remove var="messageType" scope="session" />
-</c:if>
-
 <!-- Main Content -->
 <div class="content-wrapper">
 <div class="flex-1 flex flex-col overflow-hidden">
-    <div class="bg-white border-b px-6 py-4 flex justify-between items-center">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-800">Manage Categories</h1>
-            <p class="text-sm text-gray-500">PizzaConnect Restaurant Management System</p>
-        </div>
-        <div class="text-gray-600">
-            Welcome, <strong>Admin</strong>
-        </div>
+    <div class="bg-white border-b px-6 py-4">
+        <h1 class="text-2xl font-bold text-gray-800">Manage Categories</h1>
+        <p class="text-sm text-gray-500">PizzaConnect Restaurant Management System</p>
     </div>
 
     <div class="flex-1 p-6 overflow-auto">
+        
+        <!-- Alert Messages -->
+        <c:if test="${not empty sessionScope.message}">
+            <div class="mb-4 p-4 ${sessionScope.messageType == 'error' ? 'bg-red-100 border-red-400 text-red-700' : 'bg-green-100 border-green-400 text-green-700'} border rounded-lg">
+                <div style="display: flex; align-items: center;">
+                    <c:choose>
+                        <c:when test="${sessionScope.messageType == 'error'}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                            </svg>
+                        </c:when>
+                        <c:otherwise>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                        </c:otherwise>
+                    </c:choose>
+                    <span>${sessionScope.message}</span>
+                </div>
+            </div>
+            <c:remove var="message" scope="session" />
+            <c:remove var="messageType" scope="session" />
+        </c:if>
         <div class="bg-gray-50 p-4 rounded-xl mb-6 flex flex-wrap gap-4 items-center">
             <div class="flex gap-2">
                 <button id="openAddModal" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">Add Category</button>
@@ -184,26 +185,23 @@
     });
 </script>
 
-<!-- Alert -->
+<!-- Success Message for URL params -->
 <c:if test="${param.message != null}">
-    <div id="alertBoxParam"
-         class="fixed top-20 right-5 bg-green-500 text-white px-6 py-4 rounded-lg shadow-xl" style="z-index: 9999;">
-        <c:choose>
-            <c:when test="${param.message == 'added'}">Category added successfully!</c:when>
-            <c:when test="${param.message == 'updated'}">Category updated successfully!</c:when>
-            <c:when test="${param.message == 'deleted'}">Category deleted successfully!</c:when>
-        </c:choose>
+    <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg" style="margin: 20px;">
+        <div style="display: flex; align-items: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <span>
+                <c:choose>
+                    <c:when test="${param.message == 'added'}">Category added successfully!</c:when>
+                    <c:when test="${param.message == 'updated'}">Category updated successfully!</c:when>
+                    <c:when test="${param.message == 'deleted'}">Category deleted successfully!</c:when>
+                </c:choose>
+            </span>
+        </div>
     </div>
-    <script>
-        setTimeout(() => {
-            const box = document.getElementById('alertBoxParam');
-            if (box) {
-                box.style.opacity = '0';
-                box.style.transition = 'opacity 0.5s';
-                setTimeout(() => box.remove(), 500);
-            }
-        }, 3000);
-    </script>
 </c:if>
 
 <script>
