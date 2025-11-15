@@ -20,14 +20,26 @@
         .success-message { color: #16a34a; font-size: 0.875rem; margin-top: 0.25rem; }
     </style>
 </head>
-<body class="min-h-screen ml-20">
-    <%-- Sidebar and Navbar --%>
-    <%@ include file="Sidebar.jsp" %>
-    <%@ include file="NavBar.jsp" %>
+<body class="min-h-screen">
+    <!-- Top Navigation Bar -->
+    <div class="bg-white shadow-md border-b px-6 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <div class="text-2xl font-bold text-orange-600">🍕 PizzaConnect</div>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="text-right">
+                <div class="font-semibold text-gray-800">${user.name}</div>
+                <div class="text-xs text-gray-500">${user.role == 1 ? "Admin" : user.role == 2 ? "Waiter" : "Customer"}</div>
+            </div>
+            <a href="waiter-dashboard" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 shadow-sm hover:shadow-md transition-all duration-200">
+                🏠 Dashboard
+            </a>
+        </div>
+    </div>
 
     <div class="flex">
         <!-- Tabbar -->
-        <div class="w-64 bg-white shadow-lg min-h-screen p-6 mt-16">
+        <div class="w-64 bg-white shadow-lg min-h-screen p-6">
             <div class="text-center mb-8">
                 <div class="w-20 h-20 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
                     <i data-lucide="user" class="w-10 h-10 text-white"></i>
@@ -56,7 +68,7 @@
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 p-8 mt-16">
+        <div class="flex-1 p-8">
             <!-- Personal Information Tab -->
             <div id="personal" class="tab-content ${empty activeTab or activeTab == 'personal' ? 'active' : ''}">
                 <div class="bg-white rounded-lg shadow-md p-6">
