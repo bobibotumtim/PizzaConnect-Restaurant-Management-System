@@ -49,7 +49,7 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            background: linear-gradient(135deg, #fed7aa 0%, #ffffff 50%, #fee2e2 100%);
             min-height: 100vh;
         }
         .sidebar {
@@ -157,8 +157,8 @@
         <div class="max-w-7xl mx-auto">
             <!-- Header -->
             <div class="mb-8">
-                <h1 class="text-4xl font-bold text-white mb-2">Inventory Monitor</h1>
-                <p class="text-white text-opacity-90">Track inventory levels and warning statuses</p>
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">Inventory Monitor</h1>
+                <p class="text-gray-600">Track inventory levels and warning statuses</p>
             </div>
 
             <!-- Statistics Cards -->

@@ -43,45 +43,19 @@ public class SalesReportServlet extends HttpServlet {
         }
         
         // Get parameters
-        String reportType = request.getParameter("reportType");
         String dateFrom = request.getParameter("dateFrom");
         String dateTo = request.getParameter("dateTo");
         String branch = request.getParameter("branch");
         String action = request.getParameter("action");
         
         // Set defaults if parameters are null
-        if (reportType == null) reportType = "daily";
         if (branch == null) branch = "all";
         
-        // Set default date range based on report type
+        // Set default date range (last 7 days)
         LocalDate today = LocalDate.now();
-        if (dateFrom == null || dateTo == null) {
-            switch (reportType) {
-                case "daily":
-                    dateFrom = today.minusDays(6).toString(); // Last 7 days
-                    dateTo = today.toString();
-                    break;
-                case "weekly":
-                    dateFrom = today.minusWeeks(4).toString(); // Last 4 weeks
-                    dateTo = today.toString();
-                    break;
-                case "monthly":
-                    dateFrom = today.minusMonths(3).toString(); // Last 3 months
-                    dateTo = today.toString();
-                    break;
-                case "quarterly":
-                    dateFrom = today.minusMonths(12).toString(); // Last year
-                    dateTo = today.toString();
-                    break;
-                case "yearly":
-                    dateFrom = today.minusYears(2).toString(); // Last 2 years
-                    dateTo = today.toString();
-                    break;
-                default: // custom
-                    if (dateFrom == null) dateFrom = today.minusDays(30).toString();
-                    if (dateTo == null) dateTo = today.toString();
-                    break;
-            }
+        if (dateFrom == null || dateTo == null || dateFrom.isEmpty() || dateTo.isEmpty()) {
+            dateFrom = today.minusDays(6).toString(); // Last 7 days
+            dateTo = today.toString();
         }
         
         try {
@@ -94,7 +68,9 @@ public class SalesReportServlet extends HttpServlet {
             // Validate date range
             if (!isValidDateRange(dateFrom, dateTo)) {
                 request.setAttribute("error", "Invalid date range. Please check your dates.");
-                setDefaultAttributes(request, reportType, dateFrom, dateTo, branch);
+                request.setAttribute("dateFrom", dateFrom);
+                request.setAttribute("dateTo", dateTo);
+                request.setAttribute("branch", branch);
                 request.getRequestDispatcher("view/GenerateSalesReports.jsp").forward(request, response);
                 return;
             }
@@ -117,7 +93,6 @@ public class SalesReportServlet extends HttpServlet {
             
             // Set attributes for JSP
             request.setAttribute("reportData", reportData);
-            request.setAttribute("reportType", reportType);
             request.setAttribute("dateFrom", dateFrom);
             request.setAttribute("dateTo", dateTo);
             request.setAttribute("branch", branch);
@@ -138,7 +113,9 @@ public class SalesReportServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Error generating report: " + e.getMessage());
-            setDefaultAttributes(request, reportType, dateFrom, dateTo, branch);
+            request.setAttribute("dateFrom", dateFrom);
+            request.setAttribute("dateTo", dateTo);
+            request.setAttribute("branch", branch);
         }
         
         // Forward to JSP
@@ -153,15 +130,13 @@ public class SalesReportServlet extends HttpServlet {
         
         if ("generate".equals(action)) {
             // Handle report generation - redirect to GET with parameters
-            String reportType = request.getParameter("reportType");
             String dateFrom = request.getParameter("dateFrom");
             String dateTo = request.getParameter("dateTo");
             String branch = request.getParameter("branch");
             
             StringBuilder redirectUrl = new StringBuilder("sales-reports?action=generate");
-            if (reportType != null) redirectUrl.append("&reportType=").append(reportType);
-            if (dateFrom != null) redirectUrl.append("&dateFrom=").append(dateFrom);
-            if (dateTo != null) redirectUrl.append("&dateTo=").append(dateTo);
+            if (dateFrom != null && !dateFrom.isEmpty()) redirectUrl.append("&dateFrom=").append(dateFrom);
+            if (dateTo != null && !dateTo.isEmpty()) redirectUrl.append("&dateTo=").append(dateTo);
             if (branch != null) redirectUrl.append("&branch=").append(branch);
             
             response.sendRedirect(redirectUrl.toString());
@@ -184,7 +159,6 @@ public class SalesReportServlet extends HttpServlet {
         String format = request.getParameter("format");
         String dateFrom = request.getParameter("dateFrom");
         String dateTo = request.getParameter("dateTo");
-        String reportType = request.getParameter("reportType");
         
         // Single branch system
         String branch = "main";

@@ -9,6 +9,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+        body {
+            background: linear-gradient(135deg, #fed7aa 0%, #ffffff 50%, #fee2e2 100%);
+            min-height: 100vh;
+        }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         .error-message { color: #dc2626; font-size: 0.875rem; margin-top: 0.25rem; }
@@ -16,7 +20,7 @@
         .success-message { color: #16a34a; font-size: 0.875rem; margin-top: 0.25rem; }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen ml-20">
+<body class="min-h-screen ml-20">
     <%-- Sidebar and Navbar --%>
     <%@ include file="Sidebar.jsp" %>
     <%@ include file="NavBar.jsp" %>

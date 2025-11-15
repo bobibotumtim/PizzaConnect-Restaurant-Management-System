@@ -207,7 +207,7 @@ PreparedStatement ps = conn.prepareStatement(sql.toString())) {
      */
     public List<CustomerFeedback> getPendingFeedback() {
         List<CustomerFeedback> feedbackList = new ArrayList<>();
-        String sql = "SELECT * FROM customer_feedback WHERE has_response = 0 ORDER BY rating ASC, feedback_date ASC";
+        String sql = "SELECT * FROM customer_feedback ORDER BY rating ASC, feedback_date ASC";
         
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -226,11 +226,11 @@ PreparedStatement ps = conn.prepareStatement(sql.toString())) {
     }
 
     /**
-     * Lấy feedback cần xử lý gấp (rating thấp và chưa phản hồi)
+     * Lấy feedback cần xử lý gấp (rating thấp)
      */
     public List<CustomerFeedback> getUrgentFeedback() {
         List<CustomerFeedback> feedbackList = new ArrayList<>();
-        String sql = "SELECT * FROM customer_feedback WHERE rating <= 2 AND has_response = 0 ORDER BY feedback_date ASC";
+        String sql = "SELECT * FROM customer_feedback WHERE rating <= 2 ORDER BY feedback_date ASC";
         
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -280,60 +280,23 @@ LOGGER.log(Level.SEVERE, "Error getting urgent feedback", e);
     }
 
     /**
-     * Thêm phản hồi cho feedback
+     * Thêm phản hồi cho feedback (disabled - response column not available)
      */
     public boolean addResponse(int feedbackId, String response, int userId) {
-        String sql = "UPDATE customer_feedback SET response = ?, has_response = 1, updated_at = GETDATE() WHERE feedback_id = ?";
-        
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            
-            ps.setString(1, response);
-            ps.setInt(2, feedbackId);
-            
-            int rowsAffected = ps.executeUpdate();
-            return rowsAffected > 0;
-            
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error adding response to feedback", e);
-            return false;
-        }
+        // Response functionality disabled - column not available in VIEW
+        LOGGER.log(Level.WARNING, "Response functionality is disabled - column not available in VIEW");
+        return false;
     }
 
     // ===== RESPONSE MANAGEMENT METHODS =====
 
     /**
-     * Cập nhật phản hồi cho feedback
+     * Cập nhật phản hồi cho feedback (disabled - response column not available)
      */
     public boolean updateResponse(int feedbackId, String response) {
-        // Validate response text
-        if (response == null || response.trim().isEmpty()) {
-            LOGGER.log(Level.WARNING, "Response text cannot be empty for feedback ID: " + feedbackId);
-            return false;
-        }
-        
-        String sql = "UPDATE customer_feedback SET response = ?, has_response = 1, updated_at = GETDATE() " +
-                    "WHERE feedback_id = ?";
-        
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            
-            ps.setString(1, response.trim());
-            ps.setInt(2, feedbackId);
-            
-int rowsAffected = ps.executeUpdate();
-            if (rowsAffected > 0) {
-                LOGGER.log(Level.INFO, "Response updated successfully for feedback ID: " + feedbackId);
-                return true;
-            } else {
-                LOGGER.log(Level.WARNING, "No feedback found with ID: " + feedbackId);
-                return false;
-            }
-            
-        } catch (SQLException e) {
-            LOGGER.log(Level.SEVERE, "Error updating response for feedback ID: " + feedbackId, e);
-            return false;
-        }
+        // Response functionality disabled - column not available in VIEW
+        LOGGER.log(Level.WARNING, "Response functionality is disabled - column not available in VIEW");
+        return false;
     }
 
     /**
@@ -422,7 +385,7 @@ int rowsAffected = ps.executeUpdate();
      * Lấy số feedback chờ phản hồi
      */
     public int getPendingResponseCount() {
-        String sql = "SELECT COUNT(*) as pending_count FROM customer_feedback WHERE has_response = 0";
+        String sql = "SELECT COUNT(*) as pending_count FROM customer_feedback";
         
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -443,7 +406,7 @@ int rowsAffected = ps.executeUpdate();
      * Kiểm tra có feedback cần xử lý gấp không
      */
     public boolean hasUrgentFeedback() {
-        String sql = "SELECT COUNT(*) as urgent_count FROM customer_feedback WHERE rating <= 2 AND has_response = 0";
+        String sql = "SELECT COUNT(*) as urgent_count FROM customer_feedback WHERE rating <= 2";
         
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -475,11 +438,11 @@ int rowsAffected = ps.executeUpdate();
         feedback.setRating(rs.getInt("rating"));
         feedback.setComment(rs.getString("comment"));
         feedback.setFeedbackDate(rs.getDate("feedback_date"));
-        feedback.setPizzaOrdered(rs.getString("pizza_ordered"));
-        feedback.setResponse(rs.getString("response"));
-        feedback.setHasResponse(rs.getBoolean("has_response"));
+        feedback.setPizzaOrdered(rs.getString("product_feedbacked")); // Column name in VIEW
+        // feedback.setResponse(rs.getString("response")); // Not available in VIEW
+        // feedback.setHasResponse(rs.getBoolean("has_response")); // Not available in VIEW
         feedback.setCreatedAt(rs.getTimestamp("created_at"));
-feedback.setUpdatedAt(rs.getTimestamp("updated_at"));
+        feedback.setUpdatedAt(rs.getTimestamp("updated_at"));
         
         return feedback;
     }
@@ -488,7 +451,7 @@ feedback.setUpdatedAt(rs.getTimestamp("updated_at"));
      * Lấy số feedback cần xử lý gấp
      */
     public int getUrgentFeedbackCount() {
-        String sql = "SELECT COUNT(*) as urgent_count FROM customer_feedback WHERE rating <= 2 AND has_response = 0";
+        String sql = "SELECT COUNT(*) as urgent_count FROM customer_feedback WHERE rating <= 2";
         
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);

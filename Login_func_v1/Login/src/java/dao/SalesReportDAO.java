@@ -155,6 +155,52 @@ public class SalesReportDAO extends DBContext {
     }
 
     /**
+     * Lấy doanh thu theo ngày của kỳ trước (cùng số ngày)
+     */
+    public List<DailyRevenue> getPreviousPeriodDailyRevenue(String dateFrom, String dateTo, String branch) {
+        List<DailyRevenue> dailyRevenue = new ArrayList<>();
+        
+        try {
+            // Tính số ngày giữa dateFrom và dateTo
+            java.time.LocalDate fromDate = java.time.LocalDate.parse(dateFrom);
+            java.time.LocalDate toDate = java.time.LocalDate.parse(dateTo);
+            long daysDiff = java.time.temporal.ChronoUnit.DAYS.between(fromDate, toDate);
+            
+            // Tính khoảng thời gian kỳ trước
+            java.time.LocalDate prevToDate = fromDate.minusDays(1);
+            java.time.LocalDate prevFromDate = prevToDate.minusDays(daysDiff);
+            
+            String sql = "SELECT CONVERT(VARCHAR, CONVERT(DATE, OrderDate), 103) as OrderDate, " +
+                        "SUM(TotalPrice) as DailyRevenue, " +
+                        "COUNT(*) as OrderCount " +
+                        "FROM [Order] " +
+                        "WHERE OrderDate >= ? AND OrderDate <= ? AND Status = 3 " +
+                        "GROUP BY CONVERT(DATE, OrderDate) " +
+                        "ORDER BY CONVERT(DATE, OrderDate)";
+            
+            try (Connection conn = getConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
+                
+                ps.setString(1, prevFromDate.toString());
+                ps.setString(2, prevToDate.toString() + " 23:59:59");
+                
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    DailyRevenue daily = new DailyRevenue(
+                        rs.getString("OrderDate"),
+                        rs.getDouble("DailyRevenue"),
+                        rs.getInt("OrderCount")
+                    );
+                    dailyRevenue.add(daily);
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error getting previous period daily revenue", e);
+        }
+        return dailyRevenue;
+    }
+
+    /**
      * Tính tỷ lệ tăng trưởng so với kỳ trước
      */
     public double getRevenueGrowth(String dateFrom, String dateTo, String branch) {
@@ -215,8 +261,11 @@ public class SalesReportDAO extends DBContext {
         double growthRate = getRevenueGrowth(dateFrom, dateTo, branch);
         List<TopProduct> topProducts = getTopProducts(dateFrom, dateTo, branch, 5);
         List<DailyRevenue> dailyRevenue = getDailyRevenue(dateFrom, dateTo, branch);
+        List<DailyRevenue> previousPeriodDailyRevenue = getPreviousPeriodDailyRevenue(dateFrom, dateTo, branch);
         
-        return new SalesReportData(totalRevenue, totalOrders, totalCustomers, 
+        SalesReportData data = new SalesReportData(totalRevenue, totalOrders, totalCustomers, 
                                   avgOrderValue, growthRate, topProducts, dailyRevenue);
+        data.setPreviousPeriodDailyRevenue(previousPeriodDailyRevenue);
+        return data;
     }
 }

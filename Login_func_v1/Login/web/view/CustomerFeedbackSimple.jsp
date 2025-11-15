@@ -11,6 +11,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+        body {
+            background: linear-gradient(135deg, #fed7aa 0%, #ffffff 50%, #fee2e2 100%);
+            min-height: 100vh;
+        }
         .sidebar {
             width: 5rem;
             transition: width 0.3s ease;
@@ -32,7 +36,7 @@
         }
     </style>
 </head>
-<body class="bg-gray-50">
+<body>
     <!-- Check authentication -->
     <%
         User currentUser = (User) session.getAttribute("user");
@@ -130,6 +134,110 @@
                 <p class="text-3xl font-bold"><%= stats != null ? stats.getFormattedPositiveRate() : "0%" %></p>
             </div>
             
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <i data-lucide="search" class="inline-block w-5 h-5 mr-2 text-orange-500"></i>
+                Tìm kiếm & Lọc
+            </h3>
+            
+            <form method="GET" action="${pageContext.request.contextPath}/customer-feedback" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Search by Name -->
+                    <div>
+                        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i data-lucide="user" class="inline-block w-4 h-4 mr-1"></i>
+                            Tìm theo tên khách hàng
+                        </label>
+                        <input 
+                            type="text" 
+                            id="search" 
+                            name="search" 
+                            value="<%= request.getAttribute("searchTerm") != null ? request.getAttribute("searchTerm") : "" %>"
+                            placeholder="Nhập tên khách hàng..."
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        />
+                    </div>
+                    
+                    <!-- Filter by Rating -->
+                    <div>
+                        <label for="rating" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i data-lucide="star" class="inline-block w-4 h-4 mr-1"></i>
+                            Lọc theo đánh giá
+                        </label>
+                        <select 
+                            id="rating" 
+                            name="rating"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        >
+                            <option value="all" <%= "all".equals(request.getAttribute("ratingFilter")) || request.getAttribute("ratingFilter") == null ? "selected" : "" %>>
+                                Tất cả đánh giá
+                            </option>
+                            <option value="5" <%= "5".equals(request.getAttribute("ratingFilter")) ? "selected" : "" %>>
+                                ★★★★★ (5 sao - Xuất sắc)
+                            </option>
+                            <option value="4" <%= "4".equals(request.getAttribute("ratingFilter")) ? "selected" : "" %>>
+                                ★★★★☆ (4 sao - Tốt)
+                            </option>
+                            <option value="3" <%= "3".equals(request.getAttribute("ratingFilter")) ? "selected" : "" %>>
+                                ★★★☆☆ (3 sao - Trung bình)
+                            </option>
+                            <option value="2" <%= "2".equals(request.getAttribute("ratingFilter")) ? "selected" : "" %>>
+                                ★★☆☆☆ (2 sao - Kém)
+                            </option>
+                            <option value="1" <%= "1".equals(request.getAttribute("ratingFilter")) ? "selected" : "" %>>
+                                ★☆☆☆☆ (1 sao - Rất kém)
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex gap-3">
+                    <button 
+                        type="submit"
+                        class="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition flex items-center gap-2"
+                    >
+                        <i data-lucide="search" class="w-4 h-4"></i>
+                        Tìm kiếm
+                    </button>
+                    <a 
+                        href="${pageContext.request.contextPath}/customer-feedback"
+                        class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition flex items-center gap-2"
+                    >
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                        Xóa bộ lọc
+                    </a>
+                </div>
+                
+                <!-- Active Filters Display -->
+                <% 
+                    String searchTerm = (String) request.getAttribute("searchTerm");
+                    String ratingFilter = (String) request.getAttribute("ratingFilter");
+                    boolean hasFilters = (searchTerm != null && !searchTerm.trim().isEmpty()) || 
+                                        (ratingFilter != null && !"all".equals(ratingFilter) && !ratingFilter.isEmpty());
+                    
+                    if (hasFilters) {
+                %>
+                    <div class="flex flex-wrap gap-2 pt-2 border-t">
+                        <span class="text-sm text-gray-600">Bộ lọc đang áp dụng:</span>
+                        <% if (searchTerm != null && !searchTerm.trim().isEmpty()) { %>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm flex items-center gap-1">
+                                <i data-lucide="user" class="w-3 h-3"></i>
+                                Tên: <%= searchTerm %>
+                            </span>
+                        <% } %>
+                        <% if (ratingFilter != null && !"all".equals(ratingFilter) && !ratingFilter.isEmpty()) { %>
+                            <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm flex items-center gap-1">
+                                <i data-lucide="star" class="w-3 h-3"></i>
+                                <%= ratingFilter %> sao
+                            </span>
+                        <% } %>
+                    </div>
+                <% } %>
+            </form>
         </div>
 
         <!-- Feedback List -->

@@ -10,6 +10,7 @@ public class SalesReportData {
     private double growthRate;
     private List<TopProduct> topProducts;
     private List<DailyRevenue> dailyRevenue;
+    private List<DailyRevenue> previousPeriodDailyRevenue;
 
     public SalesReportData() {
     }
@@ -81,6 +82,14 @@ public class SalesReportData {
 
     public void setDailyRevenue(List<DailyRevenue> dailyRevenue) {
         this.dailyRevenue = dailyRevenue;
+    }
+
+    public List<DailyRevenue> getPreviousPeriodDailyRevenue() {
+        return previousPeriodDailyRevenue;
+    }
+
+    public void setPreviousPeriodDailyRevenue(List<DailyRevenue> previousPeriodDailyRevenue) {
+        this.previousPeriodDailyRevenue = previousPeriodDailyRevenue;
     }
 
     @Override
