@@ -45,6 +45,7 @@
             return;
         }
         
+        String userName = currentUser.getName();
         List<CustomerFeedback> feedbackList = (List<CustomerFeedback>) request.getAttribute("feedbackList");
         FeedbackStats stats = (FeedbackStats) request.getAttribute("feedbackStats");
     %>
@@ -53,8 +54,8 @@
     <div class="sidebar fixed left-0 top-0 h-full bg-gray-900 flex flex-col py-6 z-50 overflow-hidden">
         <!-- Logo -->
         <div class="flex items-center px-4 mb-8">
-            <div class="text-orange-500 text-3xl min-w-[3rem] flex justify-center">
-                <i data-lucide="pizza" class="w-10 h-10"></i>
+            <div class="text-3xl min-w-[3rem] flex justify-center">
+                🍕
             </div>
             <span class="sidebar-text ml-3 text-white text-xl font-bold">PizzaConnect</span>
         </div>
@@ -93,29 +94,25 @@
                 <span class="sidebar-text ml-3">Customer Feedback</span>
             </a>
         </nav>
+    </div>
 
-        <!-- Logout -->
-        <div class="px-3">
-            <a href="${pageContext.request.contextPath}/logout"
-               class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-red-600 hover:text-white transition">
-                <div class="min-w-[2.5rem] flex justify-center">
-                    <i data-lucide="log-out" class="w-6 h-6"></i>
-                </div>
-                <span class="sidebar-text ml-3">Logout</span>
+    <!-- Top Navigation Bar -->
+    <div class="fixed top-0 left-20 right-0 bg-white shadow-md border-b px-6 py-3 flex items-center justify-between z-40">
+        <div class="text-2xl font-bold text-orange-600">🍕 PizzaConnect</div>
+        <div class="flex items-center gap-3">
+            <div class="text-right">
+                <div class="font-semibold text-gray-800"><%= userName %></div>
+                <div class="text-xs text-gray-500">Manager</div>
+            </div>
+            <a href="${pageContext.request.contextPath}/logout" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+                Logout
             </a>
         </div>
     </div>
 
     <!-- Main Content with left margin for sidebar -->
-    <div class="main-content p-6">
-        <!-- Header -->
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">
-                <i data-lucide="message-circle" class="inline-block w-8 h-8 mr-3 text-orange-500"></i>
-                Customer Feedback
-            </h1>
-            <p class="text-gray-600">View and manage customer feedback</p>
-        </div>
+    <div class="main-content p-6 mt-16">
 
         <!-- Statistics Cards -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">

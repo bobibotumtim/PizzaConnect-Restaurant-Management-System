@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Quick Report Date Logic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
+      <h1 class="text-2xl font-bold text-gray-800 mb-6">
+        Test Quick Report Date Logic
+      </h1>
+
+      <div class="mb-6">
+        <p class="text-gray-600 mb-2">
+          Ngày hiện tại: <span id="currentDate" class="font-semibold"></span>
+        </p>
+        <p class="text-gray-600 mb-2">
+          Thứ trong tuần: <span id="dayOfWeek" class="font-semibold"></span>
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Từ Ngày</label
+          >
+          <input
+            type="date"
+            id="dateFrom"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Đến Ngày</label
+          >
+          <input
+            type="date"
+            id="dateTo"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+          />
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-3 mb-6">
+        <button
+          onclick="setQuickReport('today')"
+          class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+        >
+          Hôm nay
+        </button>
+        <button
+          onclick="setQuickReport('week')"
+          class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
+        >
+          Tuần này
+        </button>
+        <button
+          onclick="setQuickReport('month')"
+          class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+        >
+          Tháng này
+        </button>
+        <button
+          onclick="setQuickReport('quarter')"
+          class="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600"
+        >
+          Quý này
+        </button>
+      </div>
+
+      <div id="result" class="bg-gray-50 p-4 rounded-lg">
+        <h3 class="font-semibold text-gray-800 mb-2">Kết quả:</h3>
+        <p class="text-gray-600">
+          Nhấn vào các nút trên để xem khoảng thời gian được chọn
+        </p>
+      </div>
+    </div>
+
+    <script>
+      // Display current date info
+      const today = new Date();
+      const daysOfWeek = [
+        "Chủ nhật",
+        "Thứ 2",
+        "Thứ 3",
+        "Thứ 4",
+        "Thứ 5",
+        "Thứ 6",
+        "Thứ 7",
+      ];
+      document.getElementById("currentDate").textContent = formatDate(today);
+      document.getElementById("dayOfWeek").textContent =
+        daysOfWeek[today.getDay()];
+
+      // Set quick report dates based on actual calendar periods
+      function setQuickReport(type) {
+        const today = new Date();
+        let dateFrom, dateTo;
+        let description = "";
+
+        switch (type) {
+          case "today":
+            // Today only
+            dateFrom = dateTo = formatDate(today);
+            description = "Hôm nay: " + formatDate(today);
+            break;
+
+          case "week":
+            // This week: Monday to Sunday
+            const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // If Sunday, go back 6 days
+            const monday = new Date(today);
+            monday.setDate(today.getDate() - daysToMonday);
+
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+
+            dateFrom = formatDate(monday);
+            dateTo = formatDate(sunday);
+            description =
+              "Tuần này (Thứ 2 - Chủ nhật): " + dateFrom + " đến " + dateTo;
+            break;
+
+          case "month":
+            // This month: First day to last day
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDay = new Date(
+              today.getFullYear(),
+              today.getMonth() + 1,
+              0
+            );
+
+            dateFrom = formatDate(firstDay);
+            dateTo = formatDate(lastDay);
+            description =
+              "Tháng này (Tháng " +
+              (today.getMonth() + 1) +
+              "): " +
+              dateFrom +
+              " đến " +
+              dateTo;
+            break;
+
+          case "quarter":
+            // This quarter: Q1 (Jan-Mar), Q2 (Apr-Jun), Q3 (Jul-Sep), Q4 (Oct-Dec)
+            const currentMonth = today.getMonth(); // 0-11
+            const quarterStartMonth = Math.floor(currentMonth / 3) * 3;
+            const quarterNum = Math.floor(currentMonth / 3) + 1;
+
+            const quarterStart = new Date(
+              today.getFullYear(),
+              quarterStartMonth,
+              1
+            );
+            const quarterEnd = new Date(
+              today.getFullYear(),
+              quarterStartMonth + 3,
+              0
+            );
+
+            dateFrom = formatDate(quarterStart);
+            dateTo = formatDate(quarterEnd);
+            description =
+              "Quý " +
+              quarterNum +
+              " năm " +
+              today.getFullYear() +
+              ": " +
+              dateFrom +
+              " đến " +
+              dateTo;
+            break;
+        }
+
+        // Update form fields
+        document.getElementById("dateFrom").value = dateFrom;
+        document.getElementById("dateTo").value = dateTo;
+
+        // Show result
+        const resultDiv = document.getElementById("result");
+        resultDiv.innerHTML = `
+                <h3 class="font-semibold text-gray-800 mb-2">Kết quả:</h3>
+                <p class="text-gray-700 font-medium mb-2">${description}</p>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <span class="text-gray-600">Từ ngày:</span>
+                        <span class="font-semibold text-blue-600">${dateFrom}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-600">Đến ngày:</span>
+                        <span class="font-semibold text-blue-600">${dateTo}</span>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">Số ngày: ${calculateDays(
+                  dateFrom,
+                  dateTo
+                )} ngày</p>
+            `;
+      }
+
+      // Helper function to format date as YYYY-MM-DD
+      function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+
+      // Calculate days between two dates
+      function calculateDays(dateFrom, dateTo) {
+        const from = new Date(dateFrom);
+        const to = new Date(dateTo);
+        const diffTime = Math.abs(to - from);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        return diffDays;
+      }
+    </script>
+  </body>
+</html>
