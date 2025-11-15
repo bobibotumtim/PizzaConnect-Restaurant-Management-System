@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="models.*, java.util.*, java.text.*" %>
+<%@ page import="dao.DiscountDAO" %>
 <%
     Order order = (Order) request.getAttribute("order");
     Payment payment = (Payment) request.getAttribute("payment");
@@ -32,21 +33,22 @@
         customerName = order != null && order.getCustomerName() != null ? order.getCustomerName() : "Khách vãng lai";
     }
     
-    // Tính toán lại từ database discounts nếu có
+   // Recalculate from database Discount
+    DiscountDAO discountDAO = new DiscountDAO();
     if (discounts != null && !discounts.isEmpty()) {
         double dbLoyaltyDiscount = 0;
         double dbRegularDiscount = 0;
         
         for (OrderDiscount od : discounts) {
-            // Giả sử discount ID 3 là loyalty discount (cần điều chỉnh theo database của bạn)
-            if (od.getDiscountId() == 3) {
+            Discount discount = discountDAO.getDiscountById(od.getDiscountId());
+            if (discount != null && discount.getDiscountType().equals("Loyalty")) {
                 dbLoyaltyDiscount += od.getAmount();
             } else {
                 dbRegularDiscount += od.getAmount();
             }
         }
         
-        // Ưu tiên sử dụng giá trị từ database
+        // Get data from database
         if (dbLoyaltyDiscount > 0) loyaltyDiscount = dbLoyaltyDiscount;
         if (dbRegularDiscount > 0) regularDiscount = dbRegularDiscount;
         if (dbLoyaltyDiscount + dbRegularDiscount > 0) {
@@ -227,11 +229,6 @@
             <div class="info-line">
                 <span>Khách hàng: <%= customerName %></span>
             </div>
-            <% if (order.getTableID() > 0) { %>
-            <div class="info-line">
-                <span>Bàn số: <%= order.getTableID() %></span>
-            </div>
-            <% } %>
             <div class="info-line">
                 <span>Hóa đơn số: <%= order.getOrderID() %></span>
             </div>
@@ -269,7 +266,7 @@
                 <% if (taxAmount > 0) { %>
                 <div class="amount-line">
                     <span>Thuế VAT (<%= (int)(taxRate * 100) %>%):</span>
-                    <span>+<%= numberFormat.format(taxAmount) %></span>
+                    <span><%= numberFormat.format(taxAmount) %></span>
                 </div>
                 <% } %>
                 
@@ -277,7 +274,7 @@
                 <% if (totalDiscount > 0) { %>
                     <div class="amount-line">
                         <span>Giảm giá:</span>
-                        <span>-<%= numberFormat.format(totalDiscount) %></span>
+                        <span><%= numberFormat.format(totalDiscount) %></span>
                     </div>
                     
                     <!-- Display discount breakdown -->
@@ -285,13 +282,13 @@
                         <% if (loyaltyDiscount > 0) { %>
                         <div class="discount-item">
                             <span>• Điểm thưởng:</span>
-                            <span>-<%= numberFormat.format(loyaltyDiscount) %></span>
+                            <span><%= numberFormat.format(loyaltyDiscount) %></span>
                         </div>
                         <% } %>
                         <% if (regularDiscount > 0) { %>
                         <div class="discount-item">
                             <span>• Khuyến mãi:</span>
-                            <span>-<%= numberFormat.format(regularDiscount) %></span>
+                            <span><%= numberFormat.format(regularDiscount) %></span>
                         </div>
                         <% } %>
                     </div>
@@ -324,7 +321,7 @@
                 </div>
                 
                 <div class="payment-instruction">
-                    - Thanh toán hóa đơn số <%= order.getOrderID() %>
+                    Thanh toán hóa đơn số <%= order.getOrderID() %>
                 </div>
                 <div class="payment-instruction">
                     Phần mềm chờ thu ngân xác nhận
