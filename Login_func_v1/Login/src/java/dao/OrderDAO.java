@@ -211,6 +211,7 @@ public class OrderDAO extends DBContext {
     }
 
     // 🟢 Get order details list – use passed connection (don't close parent connection)
+    // 🆕 UPDATED: Loại trừ món bị Cancelled khi hiển thị
     private List<OrderDetail> getOrderDetailsByOrderId(int orderId, Connection con) {
         List<OrderDetail> list = new ArrayList<>();
         String sql = """
@@ -218,7 +219,7 @@ public class OrderDAO extends DBContext {
             FROM OrderDetail od
             LEFT JOIN ProductSize ps ON od.ProductSizeID = ps.ProductSizeID
             LEFT JOIN Product p ON ps.ProductID = p.ProductID
-            WHERE od.OrderID = ?
+            WHERE od.OrderID = ? AND od.Status != 'Cancelled'
             ORDER BY od.OrderDetailID
         """;
         try (PreparedStatement ps = con.prepareStatement(sql)) {
@@ -1227,6 +1228,54 @@ public class OrderDAO extends DBContext {
         return false;
     }
 
+    /**
+     * 🆕 Tự động tính lại TotalPrice của Order dựa trên OrderDetail (loại trừ món Cancelled)
+     * Logic:
+     * - Tính tổng TotalPrice của các OrderDetail có Status != 'Cancelled'
+     * - Cộng thêm 10% thuế
+     * - Cập nhật vào Order.TotalPrice
+     * 
+     * @param orderId Order ID cần recalculate
+     * @return true nếu cập nhật thành công
+     */
+    public boolean recalculateOrderTotalPrice(int orderId) {
+        String sqlCalculate = """
+            SELECT ISNULL(SUM(TotalPrice), 0) as SubTotal
+            FROM OrderDetail
+            WHERE OrderID = ? AND Status != 'Cancelled'
+        """;
+        
+        try (Connection con = useConnection();
+             PreparedStatement ps = con.prepareStatement(sqlCalculate)) {
+            
+            ps.setInt(1, orderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    double subTotal = rs.getDouble("SubTotal");
+                    double totalWithTax = subTotal * 1.1; // Cộng 10% thuế
+                    
+                    // Cập nhật TotalPrice vào Order
+                    String sqlUpdate = "UPDATE [Order] SET TotalPrice = ? WHERE OrderID = ?";
+                    try (PreparedStatement psUpdate = con.prepareStatement(sqlUpdate)) {
+                        psUpdate.setDouble(1, totalWithTax);
+                        psUpdate.setInt(2, orderId);
+                        int updated = psUpdate.executeUpdate();
+                        
+                        if (updated > 0) {
+                            System.out.println("✅ Recalculated Order #" + orderId + " total: " + 
+                                             subTotal + " → with tax: " + totalWithTax);
+                            return true;
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Error recalculating order total price: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     // 🟢 Get all orders by customer ID (for Order History)
     public List<Order> getOrdersByCustomerId(int customerId) {
         List<Order> orders = new ArrayList<>();
@@ -1387,6 +1436,7 @@ public class OrderDAO extends DBContext {
 
     /**
      * Lấy danh sách tên món ăn trong order (để hiển thị trong feedback form)
+     * 🆕 UPDATED: Loại trừ món bị Cancelled
      * @param orderId ID của order
      * @return String chứa danh sách tên món, cách nhau bởi dấu phẩy
      */
@@ -1399,7 +1449,7 @@ public class OrderDAO extends DBContext {
             FROM OrderDetail od
             LEFT JOIN ProductSize ps ON od.ProductSizeID = ps.ProductSizeID
             LEFT JOIN Product p ON ps.ProductID = p.ProductID
-            WHERE od.OrderID = ?
+            WHERE od.OrderID = ? AND od.Status != 'Cancelled'
             ORDER BY od.OrderDetailID
         """;
         

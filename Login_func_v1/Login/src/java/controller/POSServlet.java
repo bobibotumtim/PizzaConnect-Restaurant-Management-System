@@ -1489,14 +1489,14 @@ public class POSServlet extends HttpServlet {
                         toppingTotal += topping.getToppingPrice();
                     }
                     
-                    // Calculate total price INCLUDING toppings
+                    // Calculate total price INCLUDING toppings (NO tax at OrderDetail level)
                     double itemTotal = (basePrice + toppingTotal) * quantity;
                     
                     // Create OrderDetail
                     OrderDetail detail = new OrderDetail();
                     detail.setProductSizeID(productSizeId > 0 ? productSizeId : 1);
                     detail.setQuantity(quantity > 0 ? quantity : 1);
-                    detail.setTotalPrice(itemTotal); // ✅ NOW includes toppings!
+                    detail.setTotalPrice(itemTotal); // ✅ Includes toppings (tax added at Order level)
                     
                     String instructions = productName;
                     if (sizeName != null && !sizeName.isEmpty()) {

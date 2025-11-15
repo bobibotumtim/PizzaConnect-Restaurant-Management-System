@@ -113,8 +113,15 @@ public class ChefMonitorServlet extends HttpServlet {
                 updated = orderDetailDAO.updateOrderDetailStatus(orderDetailId, "Cancelled", chef.getEmployeeID());
                 
                 if (updated) {
-                    // Tự động cập nhật Order status
                     OrderDAO orderDAO = new OrderDAO();
+                    
+                    // 🆕 Tự động tính lại tổng tiền (trừ món bị cancel)
+                    boolean priceRecalculated = orderDAO.recalculateOrderTotalPrice(affectedOrderId);
+                    if (priceRecalculated) {
+                        System.out.println("✅ Order #" + affectedOrderId + " total price recalculated after cancellation");
+                    }
+                    
+                    // Tự động cập nhật Order status
                     orderDAO.autoUpdateOrderStatusBasedOnDetails(affectedOrderId);
                 }
             }
