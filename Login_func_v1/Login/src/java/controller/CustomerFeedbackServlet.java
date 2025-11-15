@@ -25,13 +25,35 @@ public class CustomerFeedbackServlet extends HttpServlet {
         }
         
         try {
-            // Get feedback list and stats
-            List<CustomerFeedback> feedbackList = feedbackDAO.getAllFeedback();
+            // Get filter parameters
+            String searchTerm = request.getParameter("search");
+            String ratingFilterStr = request.getParameter("rating");
+            
+            Integer ratingFilter = null;
+            if (ratingFilterStr != null && !ratingFilterStr.isEmpty() && !"all".equals(ratingFilterStr)) {
+                try {
+                    ratingFilter = Integer.parseInt(ratingFilterStr);
+                } catch (NumberFormatException e) {
+                    // Invalid rating, ignore
+                }
+            }
+            
+            // Get feedback list with filters
+            List<CustomerFeedback> feedbackList;
+            if ((searchTerm != null && !searchTerm.trim().isEmpty()) || ratingFilter != null) {
+                feedbackList = feedbackDAO.searchFeedback(searchTerm, ratingFilter, null);
+            } else {
+                feedbackList = feedbackDAO.getAllFeedback();
+            }
+            
+            // Get stats
             FeedbackStats stats = feedbackDAO.getFeedbackStats();
             
             // Set attributes for JSP
             request.setAttribute("feedbackList", feedbackList);
             request.setAttribute("feedbackStats", stats);
+            request.setAttribute("searchTerm", searchTerm);
+            request.setAttribute("ratingFilter", ratingFilterStr);
             
             // Forward to JSP
             request.getRequestDispatcher("/view/CustomerFeedbackSimple.jsp").forward(request, response);

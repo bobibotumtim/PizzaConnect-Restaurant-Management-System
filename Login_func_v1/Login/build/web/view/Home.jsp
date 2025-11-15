@@ -309,56 +309,7 @@
                 </div>
             </div>
             
-            <!-- Quick Category Preview -->
-<%
-    if (productsByCategory != null && !productsByCategory.isEmpty()) {
-%>
-            <div class="mb-12">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-3xl font-bold text-gray-800">Browse by Category</h2>
-                    <a href="customer-menu" class="text-orange-600 hover:text-orange-700 font-semibold">
-                        See All →
-                    </a>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-<%
-        int categoryCount = 0;
-        for (Map.Entry<String, Map<Product, List<ProductSize>>> entry : productsByCategory.entrySet()) {
-            if (categoryCount >= 3) break;
-            String category = entry.getKey();
-            Map<Product, List<ProductSize>> products = entry.getValue();
-            categoryCount++;
-%>
-                    <a href="customer-menu?category=<%= category %>" 
-                       class="block bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all">
-                        <div class="h-32 bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
-                            <span class="text-5xl">
-<%
-            if (category.contains("Pizza")) {
-%>🍕<%
-            } else if (category.contains("Drink")) {
-%>🥤<%
-            } else if (category.contains("Topping")) {
-%>🧀<%
-            } else {
-%>🍽️<%
-            }
-%>
-                            </span>
-                        </div>
-                        <div class="p-6 text-center">
-                            <h3 class="text-xl font-bold text-gray-800 mb-2"><%= category %></h3>
-                            <p class="text-gray-600 text-sm"><%= products.size() %> items available</p>
-                        </div>
-                    </a>
-<%
-        }
-%>
-                </div>
-            </div>
-<%
-    }
-%>
+
             
         </div>
     </div>

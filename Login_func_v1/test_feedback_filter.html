@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Demo - Customer Feedback Filter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+  </head>
+  <body class="bg-gray-50 p-8">
+    <div class="max-w-6xl mx-auto">
+      <h1 class="text-3xl font-bold text-gray-900 mb-8">
+        <i
+          data-lucide="message-circle"
+          class="inline-block w-8 h-8 mr-3 text-orange-500"
+        ></i>
+        Demo: Customer Feedback Filter
+      </h1>
+
+      <!-- Search and Filter Section -->
+      <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+          <i
+            data-lucide="search"
+            class="inline-block w-5 h-5 mr-2 text-orange-500"
+          ></i>
+          Tìm kiếm & Lọc
+        </h3>
+
+        <form class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Search by Name -->
+            <div>
+              <label
+                for="search"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
+                <i data-lucide="user" class="inline-block w-4 h-4 mr-1"></i>
+                Tìm theo tên khách hàng
+              </label>
+              <input
+                type="text"
+                id="search"
+                name="search"
+                placeholder="Nhập tên khách hàng..."
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              />
+            </div>
+
+            <!-- Filter by Rating -->
+            <div>
+              <label
+                for="rating"
+                class="block text-sm font-medium text-gray-700 mb-2"
+              >
+                <i data-lucide="star" class="inline-block w-4 h-4 mr-1"></i>
+                Lọc theo đánh giá
+              </label>
+              <select
+                id="rating"
+                name="rating"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              >
+                <option value="all">Tất cả đánh giá</option>
+                <option value="5">★★★★★ (5 sao - Xuất sắc)</option>
+                <option value="4">★★★★☆ (4 sao - Tốt)</option>
+                <option value="3">★★★☆☆ (3 sao - Trung bình)</option>
+                <option value="2">★★☆☆☆ (2 sao - Kém)</option>
+                <option value="1">★☆☆☆☆ (1 sao - Rất kém)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex gap-3">
+            <button
+              type="button"
+              onclick="applyFilter()"
+              class="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition flex items-center gap-2"
+            >
+              <i data-lucide="search" class="w-4 h-4"></i>
+              Tìm kiếm
+            </button>
+            <button
+              type="button"
+              onclick="clearFilter()"
+              class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition flex items-center gap-2"
+            >
+              <i data-lucide="x" class="w-4 h-4"></i>
+              Xóa bộ lọc
+            </button>
+          </div>
+
+          <!-- Active Filters Display -->
+          <div id="activeFilters" class="hidden flex-wrap gap-2 pt-2 border-t">
+            <span class="text-sm text-gray-600">Bộ lọc đang áp dụng:</span>
+          </div>
+        </form>
+      </div>
+
+      <!-- Sample Feedback Cards -->
+      <div class="bg-white rounded-xl shadow-lg p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+          Feedback List (<span id="feedbackCount">6</span> items)
+        </h3>
+
+        <div
+          id="feedbackList"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
+          <!-- Sample Feedback 1 -->
+          <div
+            class="feedback-card bg-gray-50 rounded-lg p-6 border border-gray-200"
+            data-rating="5"
+            data-name="Nguyễn Văn A"
+          >
+            <div class="mb-4">
+              <h4 class="font-semibold text-gray-900">Nguyễn Văn A</h4>
+              <p class="text-sm text-gray-500">ID: CUST001</p>
+            </div>
+            <div class="mb-4">
+              <div class="text-yellow-400 text-lg">★★★★★</div>
+              <span
+                class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800"
+                >Xuất sắc</span
+              >
+            </div>
+            <div class="mb-4 p-3 bg-white rounded-lg">
+              <p class="text-sm text-gray-600">Order #1001</p>
+              <p class="text-sm text-gray-800 font-medium">
+                Pizza Hải Sản Deluxe
+              </p>
+            </div>
+            <div class="mb-4 bg-white p-3 rounded-lg border border-gray-200">
+              <p class="text-xs text-gray-500 mb-1 font-semibold">Nhận xét:</p>
+              <p class="text-gray-700 text-sm italic">
+                "Pizza rất ngon, giao hàng nhanh!"
+              </p>
+            </div>
+          </div>
+
+          <!-- Sample Feedback 2 -->
+          <div
+            class="feedback-card bg-gray-50 rounded-lg p-6 border border-gray-200"
+            data-rating="4"
+            data-name="Trần Thị B"
+          >
+            <div class="mb-4">
+              <h4 class="font-semibold text-gray-900">Trần Thị B</h4>
+              <p class="text-sm text-gray-500">ID: CUST002</p>
+            </div>
+            <div class="mb-4">
+              <div class="text-yellow-400 text-lg">★★★★☆</div>
+              <span
+                class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800"
+                >Tốt</span
+              >
+            </div>
+            <div class="mb-4 p-3 bg-white rounded-lg">
+              <p class="text-sm text-gray-600">Order #1002</p>
+              <p class="text-sm text-gray-800 font-medium">Pizza Pepperoni</p>
+            </div>
+            <div class="mb-4 bg-white p-3 rounded-lg border border-gray-200">
+              <p class="text-xs text-gray-500 mb-1 font-semibold">Nhận xét:</p>
+              <p class="text-gray-700 text-sm italic">"Khá ổn, sẽ quay lại"</p>
+            </div>
+          </div>
+
+          <!-- Sample Feedback 3 -->
+          <div
+            class="feedback-card bg-gray-50 rounded-lg p-6 border border-gray-200"
+            data-rating="3"
+            data-name="Lê Văn C"
+          >
+            <div class="mb-4">
+              <h4 class="font-semibold text-gray-900">Lê Văn C</h4>
+              <p class="text-sm text-gray-500">ID: CUST003</p>
+            </div>
+            <div class="mb-4">
+              <div class="text-yellow-400 text-lg">★★★☆☆</div>
+              <span
+                class="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800"
+                >Trung bình</span
+              >
+            </div>
+            <div class="mb-4 p-3 bg-white rounded-lg">
+              <p class="text-sm text-gray-600">Order #1003</p>
+              <p class="text-sm text-gray-800 font-medium">Pizza Phô Mai</p>
+            </div>
+            <div class="mb-4 bg-white p-3 rounded-lg border border-gray-200">
+              <p class="text-xs text-gray-500 mb-1 font-semibold">Nhận xét:</p>
+              <p class="text-gray-700 text-sm italic">"Bình thường"</p>
+            </div>
+          </div>
+
+          <!-- Sample Feedback 4 -->
+          <div
+            class="feedback-card bg-gray-50 rounded-lg p-6 border border-gray-200"
+            data-rating="2"
+            data-name="Phạm Thị D"
+          >
+            <div class="mb-4">
+              <h4 class="font-semibold text-gray-900">Phạm Thị D</h4>
+              <p class="text-sm text-gray-500">ID: CUST004</p>
+            </div>
+            <div class="mb-4">
+              <div class="text-yellow-400 text-lg">★★☆☆☆</div>
+              <span
+                class="text-xs px-2 py-1 rounded-full bg-red-100 text-red-800"
+                >Kém</span
+              >
+            </div>
+            <div class="mb-4 p-3 bg-white rounded-lg">
+              <p class="text-sm text-gray-600">Order #1004</p>
+              <p class="text-sm text-gray-800 font-medium">Pizza Gà BBQ</p>
+            </div>
+            <div class="mb-4 bg-white p-3 rounded-lg border border-gray-200">
+              <p class="text-xs text-gray-500 mb-1 font-semibold">Nhận xét:</p>
+              <p class="text-gray-700 text-sm italic">"Giao hàng chậm"</p>
+            </div>
+          </div>
+
+          <!-- Sample Feedback 5 -->
+          <div
+            class="feedback-card bg-gray-50 rounded-lg p-6 border border-gray-200"
+            data-rating="5"
+            data-name="Hoàng Văn E"
+          >
+            <div class="mb-4">
+              <h4 class="font-semibold text-gray-900">Hoàng Văn E</h4>
+              <p class="text-sm text-gray-500">ID: CUST005</p>
+            </div>
+            <div class="mb-4">
+              <div class="text-yellow-400 text-lg">★★★★★</div>
+              <span
+                class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800"
+                >Xuất sắc</span
+              >
+            </div>
+            <div class="mb-4 p-3 bg-white rounded-lg">
+              <p class="text-sm text-gray-600">Order #1005</p>
+              <p class="text-sm text-gray-800 font-medium">
+                Pizza Bò Beefsteak
+              </p>
+            </div>
+            <div class="mb-4 bg-white p-3 rounded-lg border border-gray-200">
+              <p class="text-xs text-gray-500 mb-1 font-semibold">Nhận xét:</p>
+              <p class="text-gray-700 text-sm italic">"Tuyệt vời!"</p>
+            </div>
+          </div>
+
+          <!-- Sample Feedback 6 -->
+          <div
+            class="feedback-card bg-gray-50 rounded-lg p-6 border border-gray-200"
+            data-rating="1"
+            data-name="Vũ Thị F"
+          >
+            <div class="mb-4">
+              <h4 class="font-semibold text-gray-900">Vũ Thị F</h4>
+              <p class="text-sm text-gray-500">ID: CUST006</p>
+            </div>
+            <div class="mb-4">
+              <div class="text-yellow-400 text-lg">★☆☆☆☆</div>
+              <span
+                class="text-xs px-2 py-1 rounded-full bg-red-100 text-red-800"
+                >Rất kém</span
+              >
+            </div>
+            <div class="mb-4 p-3 bg-white rounded-lg">
+              <p class="text-sm text-gray-600">Order #1006</p>
+              <p class="text-sm text-gray-800 font-medium">Pizza Margherita</p>
+            </div>
+            <div class="mb-4 bg-white p-3 rounded-lg border border-gray-200">
+              <p class="text-xs text-gray-500 mb-1 font-semibold">Nhận xét:</p>
+              <p class="text-gray-700 text-sm italic">"Không hài lòng"</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      lucide.createIcons();
+
+      function applyFilter() {
+        const searchValue = document
+          .getElementById("search")
+          .value.toLowerCase();
+        const ratingValue = document.getElementById("rating").value;
+        const cards = document.querySelectorAll(".feedback-card");
+        const activeFiltersDiv = document.getElementById("activeFilters");
+        let visibleCount = 0;
+
+        // Clear active filters display
+        activeFiltersDiv.innerHTML =
+          '<span class="text-sm text-gray-600">Bộ lọc đang áp dụng:</span>';
+        let hasFilters = false;
+
+        cards.forEach((card) => {
+          const name = card.getAttribute("data-name").toLowerCase();
+          const rating = card.getAttribute("data-rating");
+
+          let matchSearch = !searchValue || name.includes(searchValue);
+          let matchRating = ratingValue === "all" || rating === ratingValue;
+
+          if (matchSearch && matchRating) {
+            card.style.display = "block";
+            visibleCount++;
+          } else {
+            card.style.display = "none";
+          }
+        });
+
+        // Show active filters
+        if (searchValue) {
+          activeFiltersDiv.innerHTML += `
+                    <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm flex items-center gap-1">
+                        <i data-lucide="user" class="w-3 h-3"></i>
+                        Tên: ${searchValue}
+                    </span>
+                `;
+          hasFilters = true;
+        }
+
+        if (ratingValue !== "all") {
+          activeFiltersDiv.innerHTML += `
+                    <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm flex items-center gap-1">
+                        <i data-lucide="star" class="w-3 h-3"></i>
+                        ${ratingValue} sao
+                    </span>
+                `;
+          hasFilters = true;
+        }
+
+        if (hasFilters) {
+          activeFiltersDiv.classList.remove("hidden");
+          activeFiltersDiv.classList.add("flex");
+        } else {
+          activeFiltersDiv.classList.add("hidden");
+          activeFiltersDiv.classList.remove("flex");
+        }
+
+        document.getElementById("feedbackCount").textContent = visibleCount;
+        lucide.createIcons();
+      }
+
+      function clearFilter() {
+        document.getElementById("search").value = "";
+        document.getElementById("rating").value = "all";
+
+        const cards = document.querySelectorAll(".feedback-card");
+        cards.forEach((card) => {
+          card.style.display = "block";
+        });
+
+        document.getElementById("feedbackCount").textContent = cards.length;
+        document.getElementById("activeFilters").classList.add("hidden");
+        document.getElementById("activeFilters").classList.remove("flex");
+      }
+    </script>
+  </body>
+</html>

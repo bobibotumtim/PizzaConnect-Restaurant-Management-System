@@ -35,6 +35,54 @@ public class ProductSizeDAO extends DBContext {
         return list;
     }
 
+    /**
+     * ✅ MỚI: Lấy sizes có sẵn cho POS (chỉ size có AvailableQuantity > 0)
+     * Sử dụng VIEW v_ProductSizeAvailable để check inventory
+     */
+    public List<ProductSize> getAvailableSizesByProductId(int productId) {
+        List<ProductSize> list = new ArrayList<>();
+        String sql = """
+            SELECT 
+                v.ProductSizeID,
+                v.ProductID,
+                v.SizeCode,
+                v.Price,
+                v.AvailableQuantity
+            FROM v_ProductSizeAvailable v
+            WHERE v.ProductID = ?
+              AND v.AvailableQuantity > 0
+            ORDER BY 
+                CASE v.SizeCode
+                    WHEN 'S' THEN 1
+                    WHEN 'M' THEN 2
+                    WHEN 'L' THEN 3
+                    WHEN 'F' THEN 4
+                    ELSE 5
+                END
+        """;
+        
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, productId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    ProductSize psz = new ProductSize();
+                    psz.setProductSizeId(rs.getInt("ProductSizeID"));
+                    psz.setProductId(rs.getInt("ProductID"));
+                    psz.setSizeCode(rs.getString("SizeCode"));
+                    psz.setPrice(rs.getDouble("Price"));
+                    // Note: AvailableQuantity is checked but not stored in ProductSize model
+                    list.add(psz);
+                }
+            }
+            System.out.println("✅ ProductSizeDAO.getAvailableSizesByProductId(" + productId + ") returned " + list.size() + " sizes");
+        } catch (Exception e) {
+            System.err.println("❌ Error in getAvailableSizesByProductId: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     // Hàm này (thay đổi CSDL) phải nhận Connection và ném lỗi
     public int addProductSize(ProductSize size, Connection con) throws SQLException {
         String sql = "INSERT INTO ProductSize (ProductID, SizeCode, Price) VALUES (?, ?, ?)";

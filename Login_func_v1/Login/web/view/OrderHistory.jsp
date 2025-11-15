@@ -54,6 +54,161 @@
             background: #fee2e2;
             color: #991b1b;
         }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            padding: 0;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .close {
+            color: white;
+            float: right;
+            font-size: 32px;
+            font-weight: bold;
+            line-height: 1;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .close:hover {
+            transform: scale(1.2);
+        }
+
+        .stars {
+            font-size: 50px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .star {
+            cursor: pointer;
+            color: #ddd;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+
+        .star:hover {
+            transform: scale(1.2);
+        }
+
+        .star.selected {
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .rating-label {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 20px;
+            min-height: 30px;
+        }
+
+        .feedback-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        .feedback-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            animation: slideIn 0.3s;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            border: 1px solid #6ee7b7;
+            color: #065f46;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
+        }
     </style>
 </head>
 
@@ -265,13 +420,14 @@
                                                     <div class="text-sm text-gray-600">Share your feedback with us</div>
                                                 </div>
                                             </div>
-                                            <a href="${pageContext.request.contextPath}/simple-feedback?orderId=<%= order.getOrderID() %>" 
+                                            <button 
+                                               onclick="openFeedbackModal(<%= order.getOrderID() %>)"
                                                class="inline-flex items-center gap-2 bg-orange-500 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-orange-600 transition-all shadow-md hover:shadow-lg">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                                                 </svg>
                                                 Provide Feedback
-                                            </a>
+                                            </button>
                                         </div>
                                     </div>
                                 <% } else { %>
@@ -380,10 +536,275 @@
         </div>
     </div>
 
+    <!-- Feedback Modal -->
+    <div id="feedbackModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close" onclick="closeFeedbackModal()">&times;</span>
+                <h2 style="margin: 0; font-size: 24px;">⭐ Rate Your Experience</h2>
+                <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px;">Order #<span id="modalOrderId"></span></p>
+            </div>
+            <div class="modal-body">
+                <div id="feedbackMessage" style="display: none;"></div>
+                
+                <form id="feedbackForm">
+                    <input type="hidden" id="feedbackOrderId" name="orderId" value="" />
+                    <input type="hidden" name="productId" value="1" />
+                    <input type="hidden" id="rating" name="rating" value="" />
+
+                    <div class="rating-label" id="ratingLabel">Select your rating</div>
+                    
+                    <div class="stars" id="stars">
+                        <span class="star" data-rating="1">★</span>
+                        <span class="star" data-rating="2">★</span>
+                        <span class="star" data-rating="3">★</span>
+                        <span class="star" data-rating="4">★</span>
+                        <span class="star" data-rating="5">★</span>
+                    </div>
+
+                    <textarea
+                        class="feedback-textarea"
+                        name="comment"
+                        placeholder="Share your experience about the food, service... (optional)"
+                    ></textarea>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        <span id="submitBtnText">Submit Rating</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Initialize Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         lucide.createIcons();
+        
+        // Store context path from JSP
+        const contextPath = '${pageContext.request.contextPath}';
+
+        // Modal Functions
+        let currentOrderId = null;
+        
+        function openFeedbackModal(orderId) {
+            console.log('Opening feedback modal for Order ID:', orderId);
+            
+            if (!orderId || orderId === '' || orderId === 'undefined') {
+                alert('Lỗi: Order ID không hợp lệ');
+                console.error('Invalid orderId:', orderId);
+                return;
+            }
+            
+            // Store orderId
+            currentOrderId = orderId;
+            
+            document.getElementById('feedbackModal').classList.add('show');
+            document.getElementById('modalOrderId').textContent = orderId;
+            document.getElementById('feedbackOrderId').value = orderId;
+            document.body.style.overflow = 'hidden';
+            
+            // Verify orderId was set
+            const setOrderId = document.getElementById('feedbackOrderId').value;
+            console.log('OrderID set in hidden input:', setOrderId);
+            
+            // Reset form but keep orderId
+            resetFeedbackForm(orderId);
+        }
+
+        function closeFeedbackModal() {
+            document.getElementById('feedbackModal').classList.remove('show');
+            document.body.style.overflow = 'auto';
+            currentOrderId = null;
+            resetFeedbackForm();
+        }
+
+        function resetFeedbackForm(orderIdToKeep) {
+            selectedRating = 0;
+            document.getElementById('rating').value = '';
+            document.getElementById('ratingLabel').textContent = 'Select your rating';
+            document.querySelectorAll('.star').forEach(star => {
+                star.classList.remove('selected');
+            });
+            document.querySelector('textarea[name="comment"]').value = '';
+            document.getElementById('feedbackMessage').style.display = 'none';
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('submitBtnText').textContent = 'Submit Rating';
+            
+            // Keep orderId if provided
+            if (orderIdToKeep) {
+                document.getElementById('feedbackOrderId').value = orderIdToKeep;
+            } else if (currentOrderId) {
+                document.getElementById('feedbackOrderId').value = currentOrderId;
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('feedbackModal');
+            if (event.target == modal) {
+                closeFeedbackModal();
+            }
+        }
+
+        // Star Rating Logic
+        const stars = document.querySelectorAll('.star');
+        const ratingInput = document.getElementById('rating');
+        const ratingLabel = document.getElementById('ratingLabel');
+        let selectedRating = 0;
+
+        const ratingTexts = {
+            1: '⭐ Very Poor',
+            2: '⭐⭐ Poor',
+            3: '⭐⭐⭐ Average',
+            4: '⭐⭐⭐⭐ Good',
+            5: '⭐⭐⭐⭐⭐ Excellent'
+        };
+
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                selectedRating = parseInt(this.dataset.rating);
+                ratingInput.value = selectedRating;
+                ratingLabel.textContent = ratingTexts[selectedRating];
+
+                stars.forEach((s, i) => {
+                    if (i < selectedRating) {
+                        s.classList.add('selected');
+                    } else {
+                        s.classList.remove('selected');
+                    }
+                });
+            });
+
+            // Hover effect
+            star.addEventListener('mouseenter', function() {
+                const hoverRating = parseInt(this.dataset.rating);
+                stars.forEach((s, i) => {
+                    if (i < hoverRating) {
+                        s.style.color = '#ffd700';
+                    } else {
+                        s.style.color = '#ddd';
+                    }
+                });
+            });
+        });
+
+        document.getElementById('stars').addEventListener('mouseleave', function() {
+            stars.forEach((s, i) => {
+                if (i < selectedRating) {
+                    s.style.color = '#ffd700';
+                } else {
+                    s.style.color = '#ddd';
+                }
+            });
+        });
+
+        // Form Submission
+        document.getElementById('feedbackForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (!selectedRating) {
+                showMessage('Please select a rating!', 'error');
+                return;
+            }
+
+            // Get orderId - try multiple sources
+            let orderIdValue = document.getElementById('feedbackOrderId').value;
+            if (!orderIdValue || orderIdValue.trim() === '') {
+                orderIdValue = currentOrderId;
+            }
+            
+            // Validate orderId before submit
+            if (!orderIdValue || orderIdValue === '' || orderIdValue === 'undefined' || orderIdValue.trim() === '') {
+                showMessage('Error: Order ID not found. Please try again.', 'error');
+                console.error('OrderID is empty. Current:', currentOrderId, 'Form value:', document.getElementById('feedbackOrderId').value);
+                return;
+            }
+
+            // Ensure orderId is set in form before submission
+            document.getElementById('feedbackOrderId').value = orderIdValue;
+
+            const submitBtn = document.getElementById('submitBtn');
+            const submitBtnText = document.getElementById('submitBtnText');
+            submitBtn.disabled = true;
+            submitBtnText.textContent = 'Submitting...';
+
+            const formData = new FormData(this);
+            
+            // Debug: Log form data
+            console.log('Submitting feedback with data:');
+            for (let [key, value] of formData.entries()) {
+                console.log(`  ${key}: ${value}`);
+            }
+            
+            // Verify orderId in FormData
+            const formOrderId = formData.get('orderId');
+            if (!formOrderId || formOrderId.trim() === '') {
+                showMessage('Error: Order ID not included. Please try again.', 'error');
+                console.error('OrderID missing in FormData');
+                submitBtn.disabled = false;
+                submitBtnText.textContent = 'Submit Rating';
+                return;
+            }
+
+            try {
+                // Use contextPath variable instead of JSP expression in JavaScript
+                const submitUrl = contextPath + '/submit-feedback';
+                console.log('Submitting to URL:', submitUrl);
+                
+                // Build URLSearchParams from FormData to ensure proper encoding
+                const params = new URLSearchParams();
+                params.append('orderId', formOrderId);
+                params.append('rating', formData.get('rating') || '');
+                params.append('productId', formData.get('productId') || '1');
+                const comment = formData.get('comment');
+                if (comment) {
+                    params.append('comment', comment);
+                }
+                
+                console.log('Final submission params:');
+                console.log('  orderId:', params.get('orderId'));
+                console.log('  rating:', params.get('rating'));
+                console.log('  productId:', params.get('productId'));
+                console.log('  comment:', params.get('comment'));
+                
+                const response = await fetch(submitUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    },
+                    body: params.toString()
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage('✓ Thank you for your feedback! Page will reload...', 'success');
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    showMessage('Error: ' + result.message, 'error');
+                    submitBtn.disabled = false;
+                    submitBtnText.textContent = 'Submit Rating';
+                }
+            } catch (error) {
+                showMessage('Connection error: ' + error.message, 'error');
+                submitBtn.disabled = false;
+                submitBtnText.textContent = 'Submit Rating';
+            }
+        });
+
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('feedbackMessage');
+            messageDiv.className = 'alert alert-' + type;
+            messageDiv.innerHTML = '<strong>' + message + '</strong>';
+            messageDiv.style.display = 'block';
+            
+            // Scroll to message
+            messageDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
     </script>
 </body>
 </html>

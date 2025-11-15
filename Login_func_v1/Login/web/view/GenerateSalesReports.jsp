@@ -90,43 +90,55 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
   </head>
   <body class="flex h-screen bg-gray-50">
     <!-- Expandable Sidebar -->
-    <div class="sidebar fixed left-0 top-0 h-full bg-gray-900 flex flex-col py-6 z-50 overflow-hidden">
+    <div
+      class="sidebar fixed left-0 top-0 h-full bg-gray-900 flex flex-col py-6 z-50 overflow-hidden"
+    >
       <!-- Logo -->
       <div class="flex items-center px-4 mb-8">
         <div class="text-orange-500 text-3xl min-w-[3rem] flex justify-center">
           <i data-lucide="pizza" class="w-10 h-10"></i>
         </div>
-        <span class="sidebar-text ml-3 text-white text-xl font-bold">PizzaConnect</span>
+        <span class="sidebar-text ml-3 text-white text-xl font-bold"
+          >PizzaConnect</span
+        >
       </div>
 
       <!-- Navigation -->
       <nav class="flex-1 flex flex-col space-y-2 px-3">
-        <a href="${pageContext.request.contextPath}/manager-dashboard"
-           class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
+        <a
+          href="${pageContext.request.contextPath}/manager-dashboard"
+          class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition"
+        >
           <div class="min-w-[2.5rem] flex justify-center">
             <i data-lucide="home" class="w-6 h-6"></i>
           </div>
           <span class="sidebar-text ml-3">Dashboard</span>
         </a>
 
-        <a href="${pageContext.request.contextPath}/sales-reports"
-           class="flex items-center px-3 py-3 rounded-lg bg-orange-500 text-white">
+        <a
+          href="${pageContext.request.contextPath}/sales-reports"
+          class="flex items-center px-3 py-3 rounded-lg bg-orange-500 text-white"
+        >
           <div class="min-w-[2.5rem] flex justify-center">
             <i data-lucide="file-text" class="w-6 h-6"></i>
           </div>
           <span class="sidebar-text ml-3">Sales Reports</span>
         </a>
 
-        <a href="${pageContext.request.contextPath}/manager-users"
-           class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
+        <a
+          href="${pageContext.request.contextPath}/profile"
+          class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition"
+        >
           <div class="min-w-[2.5rem] flex justify-center">
-            <i data-lucide="users" class="w-6 h-6"></i>
+            <i data-lucide="user-circle" class="w-6 h-6"></i>
           </div>
-          <span class="sidebar-text ml-3">User Management</span>
+          <span class="sidebar-text ml-3">Edit Profile</span>
         </a>
 
-        <a href="${pageContext.request.contextPath}/customer-feedback"
-           class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
+        <a
+          href="${pageContext.request.contextPath}/customer-feedback"
+          class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition"
+        >
           <div class="min-w-[2.5rem] flex justify-center">
             <i data-lucide="message-circle" class="w-6 h-6"></i>
           </div>
@@ -136,26 +148,14 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
       <!-- Logout -->
       <div class="px-3">
-        <a href="${pageContext.request.contextPath}/logout"
-           class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-red-600 hover:text-white transition">
+        <a
+          href="${pageContext.request.contextPath}/logout"
+          class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-red-600 hover:text-white transition"
+        >
           <div class="min-w-[2.5rem] flex justify-center">
             <i data-lucide="log-out" class="w-6 h-6"></i>
           </div>
           <span class="sidebar-text ml-3">Logout</span>
-        </a>
-      </div>
-    </div>
-
-    <!-- Main Content -->
-    <div class="flex-1 ml-20">
-      <div class="main-content p-6">
-      <div class="flex flex-col items-center space-y-4">
-        <a
-          href="${pageContext.request.contextPath}/logout"
-          class="nav-btn text-gray-400 hover:bg-red-600 hover:text-white"
-          title="Logout"
-        >
-          <i data-lucide="log-out" class="w-6 h-6"></i>
         </a>
       </div>
     </div>
@@ -243,31 +243,21 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
             Cấu Hình Báo Cáo
           </h2>
 
-          <form id="reportForm" method="post" action="sales-reports" class="space-y-4">
+          <form
+            id="reportForm"
+            method="post"
+            action="sales-reports"
+            class="space-y-4"
+          >
             <input type="hidden" name="action" value="generate" />
-            <input type="hidden" id="exportFormat" name="format" value="excel" />
+            <input
+              type="hidden"
+              id="exportFormat"
+              name="format"
+              value="excel"
+            />
 
-            <div
-              class="form-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-            >
-              <!-- Report Type -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2"
-                  >Loại Báo Cáo</label
-                >
-                <select
-                  name="reportType"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                >
-                  <option value="daily">Báo Cáo Ngày</option>
-                  <option value="weekly">Báo Cáo Tuần</option>
-                  <option value="monthly">Báo Cáo Tháng</option>
-                  <option value="quarterly">Báo Cáo Quý</option>
-                  <option value="yearly">Báo Cáo Năm</option>
-                  <option value="custom">Tùy Chỉnh</option>
-                </select>
-              </div>
-
+            <div class="form-grid grid grid-cols-1 md:grid-cols-2 gap-4">
               <!-- Date From -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2"
@@ -277,6 +267,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
                   type="date"
                   name="dateFrom"
                   value="${dateFrom}"
+                  required
                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
               </div>
@@ -290,6 +281,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
                   type="date"
                   name="dateTo"
                   value="${dateTo}"
+                  required
                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
               </div>
@@ -488,7 +480,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
               </div>
             </div>
 
-            <!-- Daily Revenue -->
+            <!-- Daily Revenue Comparison -->
             <div
               class="bg-white rounded-xl shadow-lg p-6 border border-orange-100"
             >
@@ -499,57 +491,169 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
                   data-lucide="trending-up"
                   class="w-5 h-5 text-orange-500"
                 ></i>
-                Doanh Thu Theo Ngày
+                Doanh Thu Theo Thời Gian
               </h2>
 
-              <div class="space-y-3">
-                <c:choose>
-                  <c:when test="${not empty reportData.dailyRevenue}">
-                    <c:forEach var="daily" items="${reportData.dailyRevenue}">
-                      <div class="space-y-1">
-                        <div class="flex justify-between items-center text-sm">
-                          <span class="font-medium text-gray-700"
-                            >${daily.date}</span
+              <c:choose>
+                <c:when test="${not empty reportData.dailyRevenue}">
+                  <!-- Table Header -->
+                  <div class="overflow-x-auto">
+                    <table class="w-full">
+                      <thead>
+                        <tr class="border-b-2 border-gray-200">
+                          <th
+                            class="text-left py-3 px-4 font-semibold text-gray-700"
                           >
-                          <span class="font-semibold text-orange-600">
-                            <fmt:formatNumber
-                              value="${daily.revenue}"
-                              type="number"
-                              groupingUsed="true"
-                            />
-                            ₫
-                          </span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                          <div
-                            class="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden"
+                            Ngày
+                          </th>
+                          <th
+                            class="text-right py-3 px-4 font-semibold text-blue-600"
                           >
-                            <div
-                              class="bg-gradient-to-r from-orange-500 to-red-500 h-full rounded-full transition-all duration-500"
-                              data-revenue="${daily.revenue}"
-                              data-total="${reportData.totalRevenue}"
-                            ></div>
-                          </div>
-                          <span class="text-xs text-gray-500 w-16 text-right"
-                            >${daily.orders} đơn</span
+                            Kỳ Trước
+                          </th>
+                          <th
+                            class="text-right py-3 px-4 font-semibold text-orange-600"
                           >
-                        </div>
-                      </div>
-                    </c:forEach>
-                  </c:when>
-                  <c:otherwise>
-                    <div class="text-center py-8 text-gray-500">
-                      <i
-                        data-lucide="calendar"
-                        class="w-12 h-12 mx-auto mb-4 text-gray-300"
-                      ></i>
-                      <p>
-                        Không có dữ liệu doanh thu trong khoảng thời gian này
-                      </p>
-                    </div>
-                  </c:otherwise>
-                </c:choose>
-              </div>
+                            Kỳ Này
+                          </th>
+                          <th
+                            class="text-center py-3 px-4 font-semibold text-gray-700"
+                          >
+                            So Sánh
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <c:forEach
+                          var="daily"
+                          items="${reportData.dailyRevenue}"
+                          varStatus="status"
+                        >
+                          <tr class="border-b border-gray-100 hover:bg-gray-50">
+                            <td
+                              class="py-3 px-4 text-sm font-medium text-gray-700"
+                            >
+                              ${daily.date}
+                            </td>
+
+                            <!-- Previous Period Revenue -->
+                            <td class="py-3 px-4 text-right text-sm">
+                              <c:choose>
+                                <c:when
+                                  test="${not empty reportData.previousPeriodDailyRevenue && status.index < reportData.previousPeriodDailyRevenue.size()}"
+                                >
+                                  <span class="text-blue-600 font-semibold">
+                                    <fmt:formatNumber
+                                      value="${reportData.previousPeriodDailyRevenue[status.index].revenue}"
+                                      type="number"
+                                      groupingUsed="true"
+                                    />₫
+                                  </span>
+                                  <br />
+                                  <span class="text-xs text-gray-500"
+                                    >${reportData.previousPeriodDailyRevenue[status.index].orders}
+                                    đơn</span
+                                  >
+                                </c:when>
+                                <c:otherwise>
+                                  <span class="text-gray-400">-</span>
+                                </c:otherwise>
+                              </c:choose>
+                            </td>
+
+                            <!-- Current Period Revenue -->
+                            <td class="py-3 px-4 text-right text-sm">
+                              <span class="text-orange-600 font-semibold">
+                                <fmt:formatNumber
+                                  value="${daily.revenue}"
+                                  type="number"
+                                  groupingUsed="true"
+                                />₫
+                              </span>
+                              <br />
+                              <span class="text-xs text-gray-500"
+                                >${daily.orders} đơn</span
+                              >
+                            </td>
+
+                            <!-- Comparison -->
+                            <td class="py-3 px-4 text-center text-sm">
+                              <c:choose>
+                                <c:when
+                                  test="${not empty reportData.previousPeriodDailyRevenue && status.index < reportData.previousPeriodDailyRevenue.size()}"
+                                >
+                                  <c:set
+                                    var="prevRev"
+                                    value="${reportData.previousPeriodDailyRevenue[status.index].revenue}"
+                                  />
+                                  <c:set
+                                    var="currRev"
+                                    value="${daily.revenue}"
+                                  />
+                                  <c:choose>
+                                    <c:when test="${prevRev > 0}">
+                                      <c:set
+                                        var="change"
+                                        value="${((currRev - prevRev) / prevRev) * 100}"
+                                      />
+                                      <c:choose>
+                                        <c:when test="${change > 0}">
+                                          <span
+                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700"
+                                          >
+                                            ↑
+                                            <fmt:formatNumber
+                                              value="${change}"
+                                              maxFractionDigits="1"
+                                            />%
+                                          </span>
+                                        </c:when>
+                                        <c:when test="${change < 0}">
+                                          <span
+                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700"
+                                          >
+                                            ↓
+                                            <fmt:formatNumber
+                                              value="${-change}"
+                                              maxFractionDigits="1"
+                                            />%
+                                          </span>
+                                        </c:when>
+                                        <c:otherwise>
+                                          <span
+                                            class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700"
+                                          >
+                                            = 0%
+                                          </span>
+                                        </c:otherwise>
+                                      </c:choose>
+                                    </c:when>
+                                    <c:otherwise>
+                                      <span class="text-gray-400">-</span>
+                                    </c:otherwise>
+                                  </c:choose>
+                                </c:when>
+                                <c:otherwise>
+                                  <span class="text-gray-400">-</span>
+                                </c:otherwise>
+                              </c:choose>
+                            </td>
+                          </tr>
+                        </c:forEach>
+                      </tbody>
+                    </table>
+                  </div>
+                </c:when>
+                <c:otherwise>
+                  <div class="text-center py-8 text-gray-500">
+                    <i
+                      data-lucide="calendar"
+                      class="w-12 h-12 mx-auto mb-4 text-gray-300"
+                    ></i>
+                    <p>Không có dữ liệu doanh thu trong khoảng thời gian này</p>
+                  </div>
+                </c:otherwise>
+              </c:choose>
             </div>
           </div>
         </c:if>
@@ -697,43 +801,38 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
       function quickReport(type) {
         const today = new Date();
-        let dateFrom, dateTo, reportType;
+        let dateFrom, dateTo;
 
         switch (type) {
           case "today":
+            // Today only
             dateFrom = dateTo = today.toISOString().split("T")[0];
-            reportType = "daily";
             break;
           case "week":
-            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+            // Last 7 days
+            const weekAgo = new Date(today.getTime() - 6 * 24 * 60 * 60 * 1000);
             dateFrom = weekAgo.toISOString().split("T")[0];
             dateTo = today.toISOString().split("T")[0];
-            reportType = "weekly";
             break;
           case "month":
+            // Last 30 days
             const monthAgo = new Date(
-              today.getFullYear(),
-              today.getMonth() - 1,
-              today.getDate()
+              today.getTime() - 29 * 24 * 60 * 60 * 1000
             );
             dateFrom = monthAgo.toISOString().split("T")[0];
             dateTo = today.toISOString().split("T")[0];
-            reportType = "monthly";
             break;
           case "compare":
-            const twoMonthsAgo = new Date(
-              today.getFullYear(),
-              today.getMonth() - 2,
-              today.getDate()
+            // Last 14 days (for comparison)
+            const twoWeeksAgo = new Date(
+              today.getTime() - 13 * 24 * 60 * 60 * 1000
             );
-            dateFrom = twoMonthsAgo.toISOString().split("T")[0];
+            dateFrom = twoWeeksAgo.toISOString().split("T")[0];
             dateTo = today.toISOString().split("T")[0];
-            reportType = "custom";
             break;
         }
 
         // Update form and submit
-        document.querySelector('select[name="reportType"]').value = reportType;
         document.querySelector('input[name="dateFrom"]').value = dateFrom;
         document.querySelector('input[name="dateTo"]').value = dateTo;
         document.querySelector("form").submit();
@@ -749,90 +848,87 @@ uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
           bar.style.width = percentage + "%";
         });
       });
-      
+
       // Export functionality
       function setFormat(format) {
-        document.getElementById('exportFormat').value = format;
-        
+        document.getElementById("exportFormat").value = format;
+
         // Update button styles
         document.querySelectorAll('[id$="-btn"]').forEach((btn) => {
-          btn.className = "px-4 py-2 rounded-lg font-medium transition-all bg-gray-100 text-gray-700 hover:bg-gray-200";
+          btn.className =
+            "px-4 py-2 rounded-lg font-medium transition-all bg-gray-100 text-gray-700 hover:bg-gray-200";
         });
-        
-        document.getElementById(format + "-btn").className = "px-4 py-2 rounded-lg font-medium transition-all bg-orange-500 text-white shadow-md";
+
+        document.getElementById(format + "-btn").className =
+          "px-4 py-2 rounded-lg font-medium transition-all bg-orange-500 text-white shadow-md";
       }
-      
+
       function exportData() {
-        const form = document.getElementById('reportForm');
-        const reportType = form.reportType.value;
+        const form = document.getElementById("reportForm");
         const dateFrom = form.dateFrom.value;
         const dateTo = form.dateTo.value;
-        const exportFormat = document.getElementById('exportFormat').value;
-        
-        if (!reportType) {
-          alert('Vui lòng chọn loại báo cáo!');
-          return;
-        }
-        
+        const exportFormat = document.getElementById("exportFormat").value;
+
         if (!dateFrom || !dateTo) {
-          alert('Vui lòng chọn khoảng thời gian!');
+          alert("Vui lòng chọn khoảng thời gian!");
           return;
         }
-        
+
         if (new Date(dateFrom) > new Date(dateTo)) {
-          alert('Ngày bắt đầu không thể lớn hơn ngày kết thúc!');
+          alert("Ngày bắt đầu không thể lớn hơn ngày kết thúc!");
           return;
         }
-        
+
         const params = new URLSearchParams({
-          action: 'export',
-          reportType: reportType,
+          action: "export",
           dateFrom: dateFrom,
           dateTo: dateTo,
-          format: exportFormat || 'pdf'
+          format: exportFormat || "excel",
         });
-        
-        window.open('${pageContext.request.contextPath}/sales-reports?' + params.toString(), '_blank');
+
+        window.open(
+          "${pageContext.request.contextPath}/sales-reports?" +
+            params.toString(),
+          "_blank"
+        );
       }
-      
+
       function generateReport() {
-        const form = document.getElementById('reportForm');
-        form.action = '${pageContext.request.contextPath}/sales-reports';
-        form.method = 'GET';
-        
-        const reportType = form.reportType.value;
+        const form = document.getElementById("reportForm");
+        form.action = "${pageContext.request.contextPath}/sales-reports";
+        form.method = "GET";
+
         const dateFrom = form.dateFrom.value;
         const dateTo = form.dateTo.value;
-        
-        if (!reportType) {
-          alert('Vui lòng chọn loại báo cáo!');
-          return;
-        }
-        
+
         if (!dateFrom || !dateTo) {
-          alert('Vui lòng chọn khoảng thời gian!');
+          alert("Vui lòng chọn khoảng thời gian!");
           return;
         }
-        
+
         if (new Date(dateFrom) > new Date(dateTo)) {
-          alert('Ngày bắt đầu không thể lớn hơn ngày kết thúc!');
+          alert("Ngày bắt đầu không thể lớn hơn ngày kết thúc!");
           return;
         }
-        
+
         form.submit();
       }
-      
+
       function toggleExportDropdown() {
-        const dropdown = document.getElementById('exportDropdown');
-        dropdown.classList.toggle('hidden');
+        const dropdown = document.getElementById("exportDropdown");
+        dropdown.classList.toggle("hidden");
       }
-      
-      document.addEventListener('click', function(event) {
-        const dropdown = document.getElementById('exportDropdown');
-        const exportBtn = document.querySelector('.export-btn');
-        
-        if (exportBtn && !exportBtn.contains(event.target) && !dropdown.contains(event.target)) {
-          dropdown.classList.add('hidden');
+
+      document.addEventListener("click", function (event) {
+        const dropdown = document.getElementById("exportDropdown");
+        const exportBtn = document.querySelector(".export-btn");
+
+        if (
+          exportBtn &&
+          !exportBtn.contains(event.target) &&
+          !dropdown.contains(event.target)
+        ) {
+          dropdown.classList.add("hidden");
         }
       });
     </script>

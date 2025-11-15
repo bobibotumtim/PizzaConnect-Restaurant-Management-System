@@ -19,20 +19,13 @@
         }
         .modal-content textarea {resize: vertical; min-height:100px;}
         .modal-content button[type="submit"] {width:100%; padding:12px; font-size:16px; font-weight:600; margin-top:10px; background-color:#10B981;}
-        
-        /* Content wrapper for sidebar layout */
-        .content-wrapper {
-            margin-left: 80px;
-            width: calc(100% - 80px);
-            height: 100vh;
-            overflow: hidden;
-        }
     </style>
 </head>
 <body class="bg-gray-50">
 
 <!-- Include Sidebar -->
 <%@ include file="Sidebar.jsp" %>
+<%@ include file="NavBar.jsp" %>
 
 <!-- Alert Messages -->
 <c:if test="${not empty sessionScope.message}">

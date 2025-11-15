@@ -17,7 +17,12 @@ String userName = currentUser.getName(); %>
     <style>
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+        background: linear-gradient(
+          135deg,
+          #fed7aa 0%,
+          #ffffff 50%,
+          #fee2e2 100%
+        );
         min-height: 100vh;
       }
       .dashboard-card {
@@ -97,13 +102,13 @@ String userName = currentUser.getName(); %>
         </a>
 
         <a
-          href="${pageContext.request.contextPath}/manager-users"
+          href="${pageContext.request.contextPath}/profile"
           class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition"
         >
           <div class="min-w-[2.5rem] flex justify-center">
-            <i data-lucide="users" class="w-6 h-6"></i>
+            <i data-lucide="user-circle" class="w-6 h-6"></i>
           </div>
-          <span class="sidebar-text ml-3">User Management</span>
+          <span class="sidebar-text ml-3">Edit Profile</span>
         </a>
 
         <a
@@ -141,10 +146,10 @@ String userName = currentUser.getName(); %>
           >
             <i data-lucide="user-circle" class="w-12 h-12 text-orange-500"></i>
           </div>
-          <h1 class="text-4xl font-bold text-white mb-2">
+          <h1 class="text-4xl font-bold text-gray-800 mb-2">
             Welcome, <%= userName %>!
           </h1>
-          <p class="text-white text-opacity-90">
+          <p class="text-gray-600">
             Welcome to Pizza Store Restaurant Management System
           </p>
         </div>

@@ -8,7 +8,7 @@ public class EmployeeDAO extends DBContext {
 
     public Employee getEmployeeByUserID(int userID) {
         String sql = """
-                SELECT e.EmployeeID, e.Role AS JobRole, e.Specialization, u.*
+                SELECT e.EmployeeID, e.Role AS JobRole, u.*
                 FROM Employee e
                 JOIN [User] u ON e.UserID = u.UserID
                 WHERE e.UserID = ?
@@ -31,12 +31,11 @@ public class EmployeeDAO extends DBContext {
                         rs.getString("Gender"),
                         rs.getBoolean("isActive"));
 
-                // Gán jobRole và specialization từ Employee table
+                // Gán jobRole từ Employee table
                 Employee employee = new Employee(
                         rs.getInt("EmployeeID"),
                         rs.getString("JobRole"),
                         u);
-                employee.setSpecialization(rs.getString("Specialization"));
 
                 return employee;
             }
@@ -52,13 +51,12 @@ public class EmployeeDAO extends DBContext {
     }
 
     public int insertEmployee(Employee employee) {
-        String sql = "INSERT INTO Employee (UserID, Role, Specialization) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO Employee (UserID, Role) VALUES (?, ?)";
         
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, employee.getUserID());
             ps.setString(2, employee.getEmployeeRole());
-            ps.setString(3, employee.getSpecialization());
             
             int affectedRows = ps.executeUpdate();
             

@@ -29,22 +29,10 @@ public class ManagerUserManagementServlet extends HttpServlet {
         }
 
         User currentUser = (User) session.getAttribute("user");
-        Employee employee = (Employee) session.getAttribute("employee");
         
-        // Check if user is Admin or Manager
-        boolean isAuthorized = false;
-        if (currentUser.getRole() == 1) {
-            isAuthorized = true;
-        } else if (currentUser.getRole() == 2 && employee != null) {
-            String jobRole = employee.getJobRole();
-            System.out.println("[ManagerUserManagement] JobRole from employee: '" + jobRole + "'");
-            if (jobRole != null && jobRole.trim().equalsIgnoreCase("Manager")) {
-                isAuthorized = true;
-            }
-        }
-        
-        if (!isAuthorized) {
-            session.setAttribute("error", "Access denied. Manager role required.");
+        // SECURITY: Only Admin (role=1) can access User Management
+        // Manager (role=2) is NOT allowed
+        if (currentUser.getRole() != 1) {
             response.sendRedirect(request.getContextPath() + "/manager-dashboard");
             return;
         }
@@ -149,20 +137,10 @@ public class ManagerUserManagementServlet extends HttpServlet {
         }
 
         User user = (User) session.getAttribute("user");
-        Employee employee = (Employee) session.getAttribute("employee");
         
-        boolean isAuthorized = false;
-        if (user.getRole() == 1) {
-            isAuthorized = true;
-        } else if (user.getRole() == 2 && employee != null) {
-            String jobRole = employee.getJobRole();
-            if (jobRole != null && jobRole.trim().equalsIgnoreCase("Manager")) {
-                isAuthorized = true;
-            }
-        }
-        
-        if (!isAuthorized) {
-            session.setAttribute("error", "Access denied. Manager role required.");
+        // SECURITY: Only Admin (role=1) can access User Management
+        // Manager (role=2) is NOT allowed
+        if (user.getRole() != 1) {
             response.sendRedirect(request.getContextPath() + "/manager-dashboard");
             return;
         }

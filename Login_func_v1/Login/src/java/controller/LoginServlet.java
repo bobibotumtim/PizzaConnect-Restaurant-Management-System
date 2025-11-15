@@ -51,21 +51,26 @@ public class LoginServlet extends HttpServlet {
             Employee employee = empDAO.getEmployeeByUserID(user.getUserID());
             if (employee != null) {
                 session.setAttribute("employee", employee);
-                System.out.println("✅ Employee set to session: " + employee.getName() + " - Job Role: " + employee.getJobRole());
+                String jobRole = employee.getJobRole();
+                
+                System.out.println("========== EMPLOYEE LOGIN DEBUG ==========");
+                System.out.println("Employee Name: " + employee.getName());
+                System.out.println("Employee ID: " + employee.getEmployeeID());
+                System.out.println("Job Role: [" + jobRole + "]");
+                System.out.println("Job Role is null: " + (jobRole == null));
+                System.out.println("Job Role length: " + (jobRole != null ? jobRole.length() : "N/A"));
+                System.out.println("Job Role trim: [" + (jobRole != null ? jobRole.trim() : "null") + "]");
+                System.out.println("==========================================");
                 
                 // Check if employee is a Manager
-                String jobRole = employee.getJobRole();
-                if (jobRole != null && jobRole.equalsIgnoreCase("Manager")) {
-                    // Manager -> Redirect to Manager Dashboard
+                if (jobRole != null && jobRole.trim().equalsIgnoreCase("Manager")) {
                     System.out.println("👔 Manager detected - Redirecting to Manager Dashboard");
                     response.sendRedirect("manager-dashboard");
                     return;
                 }
                 
-                // Check if employee is a Chef (has specialization)
-                String specialization = employee.getSpecialization();
-                if (specialization != null && !specialization.trim().isEmpty() && !specialization.equalsIgnoreCase("None")) {
-                    // Chef -> Redirect to ChefMonitor
+                // Check if employee is a Chef
+                if (jobRole != null && jobRole.trim().equalsIgnoreCase("Chef")) {
                     System.out.println("🍳 Chef detected - Redirecting to ChefMonitor");
                     response.sendRedirect("ChefMonitor");
                     return;
