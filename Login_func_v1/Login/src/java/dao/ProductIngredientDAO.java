@@ -12,7 +12,7 @@ public class ProductIngredientDAO extends DBContext {
      */
     public List<Map<String, Object>> getAllInventories() {
         List<Map<String, Object>> list = new ArrayList<>();
-        String sql = "SELECT InventoryID, ItemName, Unit FROM Inventory WHERE Quantity > 0"; // Chỉ lấy hàng còn
+        String sql = "SELECT InventoryID, ItemName, Unit FROM Inventory WHERE Quantity > 0 AND Status != 'Inactive'"; // Chỉ lấy hàng còn và đang active
         try (Connection connection = getConnection();
              PreparedStatement ps = connection.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
