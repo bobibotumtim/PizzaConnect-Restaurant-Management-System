@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="models.User" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
 <html lang="en">
@@ -26,28 +27,33 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <!-- ✅ Removed Sidebar - Fullscreen layout -->
+<body class="bg-gray-50 min-h-screen flex overflow-hidden">
+    <!-- Sidebar -->
+    <jsp:include page="Sidebar.jsp" />
     
-    <!-- Top Navigation Bar -->
-    <div class="bg-white shadow-md border-b px-6 py-3 flex items-center justify-between">
-        <div class="flex items-center gap-4">
-            <div class="text-2xl font-bold text-orange-600">🔔 Waiter Monitor</div>
+    <div class="flex flex-col flex-1 overflow-auto" style="margin-left: 80px;">
+        <!-- Top Navigation Bar -->
+        <div class="bg-white shadow-md border-b px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="text-2xl font-bold text-orange-600">🔔 Waiter Monitor</div>
+            </div>
+            <div class="flex items-center gap-3">
+                <%
+                    User waiterUser = (User) session.getAttribute("user");
+                    if (waiterUser != null) {
+                %>
+                <div class="text-right mr-3">
+                    <div class="font-semibold text-gray-800"><%= waiterUser.getName() %></div>
+                    <div class="text-xs text-gray-500"><%= waiterUser.getRole() == 1 ? "Admin" : "Employee" %></div>
+                </div>
+                <% } %>
+                <a href="logout" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 shadow-sm hover:shadow-md transition-all duration-200">
+                    🚪 Logout
+                </a>
+            </div>
         </div>
-        <div class="flex items-center gap-3">
-            <a href="pos" class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
-                🍕 POS
-            </a>
-            <a href="manage-orders" class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
-                📋 Orders
-            </a>
-            <a href="waiter-dashboard" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 shadow-sm hover:shadow-md transition-all duration-200">
-                🏠 Dashboard
-            </a>
-        </div>
-    </div>
-    
-    <div class="w-full">
+        
+        <div class="w-full">
         <div class="max-w-7xl mx-auto px-6 py-8">
             
             <!-- Header - ✅ Chuẩn hóa gradient -->
@@ -219,5 +225,7 @@
             console.log('${readyList.size()} dishes ready to serve!');
         </c:if>
     </script>
+        </div> <!-- Close w-full wrapper -->
+    </div> <!-- Close flex-1 wrapper -->
 </body>
 </html>
