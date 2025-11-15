@@ -77,7 +77,6 @@
         <div class="w-64 bg-white border-r shadow-sm flex flex-col">
             <!-- Header - Đồng nhất với Cart -->
             <div class="p-4 border-b bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-                <h3 class="font-bold text-lg mb-2">Table Management</h3>
                 <input type="text" id="tableSearch" placeholder="Search table..." 
                        class="w-full px-3 py-2 rounded-lg text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 border-0 shadow-sm">
             </div>
@@ -705,7 +704,7 @@
                             'class="topping-btn p-3 rounded-lg border-2 transition-all bg-white text-gray-700 border-gray-300 hover:border-orange-400 text-left" ' +
                             'data-topping-id="' + topping.toppingID + '">' +
                         '<div class="font-semibold text-sm">' + topping.toppingName + '</div>' +
-                        '<div class="text-xs text-orange-600 font-bold">+' + formatCurrency(topping.price) + '</div>' +
+                        '<div class="text-xs text-orange-600 font-bold">+' + formatCurrency(topping.price) + 'đ</div>' +
                     '</button>'
                 ).join('');
                 updateSelectedToppingsDisplay();

@@ -15,16 +15,23 @@ public class CategoryDAO extends DBContext {
         );
     }
 
-    // Get all categories
+    // Get all categories sorted by custom display order
     public List<Category> getAllCategories() {
         List<Category> list = new ArrayList<>();
-        String sql = "SELECT * FROM Category WHERE IsDeleted = 0 ORDER BY CategoryName";
+        String sql = "SELECT * FROM Category WHERE IsDeleted = 0";
         try (Connection con = getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 list.add(mapResultSetToCategory(rs));
             }
+            
+            // Sort by custom display order
+            list.sort((c1, c2) -> {
+                int order1 = getCategoryDisplayOrder(c1.getCategoryName());
+                int order2 = getCategoryDisplayOrder(c2.getCategoryName());
+                return Integer.compare(order1, order2);
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -167,14 +174,29 @@ public class CategoryDAO extends DBContext {
     }
 
     /**
-     * ✅ MỚI: Lấy categories có products available cho POS
-     * Chỉ lấy categories có ít nhất 1 product với AvailableQuantity > 0
-     * Loại trừ category "Topping"
+     * Get display order for category sorting
+     * Order: Appetizer -> Pizza -> Drink -> Side Dish -> Dessert
+     */
+    private int getCategoryDisplayOrder(String categoryName) {
+        return switch (categoryName.toLowerCase()) {
+            case "appetizer" -> 1;
+            case "pizza" -> 2;
+            case "drink" -> 3;
+            case "side dish", "sidedish" -> 4;
+            case "dessert" -> 5;
+            default -> 99; // Unknown categories go to the end
+        };
+    }
+
+    /**
+     * ✅ Get categories with products available for POS
+     * Only get categories with at least 1 product with AvailableQuantity > 0
+     * Exclude "Topping" category
+     * Sorted by custom display order: Appetizer -> Pizza -> Drink -> Side Dish -> Dessert
      */
     public List<Category> getAvailableCategoriesForPOS() {
         List<Category> list = new ArrayList<>();
         
-        // ✅ FALLBACK: Nếu VIEW chưa có, dùng query đơn giản
         String sql = """
             SELECT DISTINCT 
                 c.CategoryID,
@@ -185,7 +207,6 @@ public class CategoryDAO extends DBContext {
             WHERE c.CategoryName != 'Topping'
               AND c.IsDeleted = 0
               AND p.IsAvailable = 1
-            ORDER BY c.CategoryName
         """;
         
         try (Connection con = getConnection();
@@ -195,7 +216,15 @@ public class CategoryDAO extends DBContext {
             while (rs.next()) {
                 list.add(mapResultSetToCategory(rs));
             }
-            System.out.println("✅ CategoryDAO.getAvailableCategoriesForPOS() returned " + list.size() + " categories");
+            
+            // Sort by custom display order
+            list.sort((c1, c2) -> {
+                int order1 = getCategoryDisplayOrder(c1.getCategoryName());
+                int order2 = getCategoryDisplayOrder(c2.getCategoryName());
+                return Integer.compare(order1, order2);
+            });
+            
+            System.out.println("✅ CategoryDAO.getAvailableCategoriesForPOS() returned " + list.size() + " categories in custom order");
         } catch (Exception e) {
             System.err.println("❌ Error in getAvailableCategoriesForPOS: " + e.getMessage());
             e.printStackTrace();

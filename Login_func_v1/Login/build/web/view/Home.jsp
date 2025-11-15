@@ -178,35 +178,46 @@
             <% if (!isLoggedIn) { %>
             <div class="carousel mb-12">
                 <div class="carousel-inner" id="carouselInner">
-                    <!-- Slide 1 -->
-                    <div class="carousel-item" style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);">
+                    <!-- Slide 1 - Pepperoni Pizza -->
+                    <div class="carousel-item" style="background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1628840042765-356cda07504e?w=1200&h=400&fit=crop&q=80') center/cover;">
                         <div class="text-center">
                             <h1 class="text-5xl font-bold mb-4">Welcome to PizzaConnect</h1>
                             <p class="text-xl mb-6">Delicious Pizza Delivered Hot & Fresh</p>
-                            <a href="#products" class="bg-white text-orange-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-all">
+                            <a href="#products" class="bg-white text-orange-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-all inline-block shadow-lg">
                                 Order Now
                             </a>
                         </div>
                     </div>
                     
-                    <!-- Slide 2 -->
-                    <div class="carousel-item" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);">
+                    <!-- Slide 2 - Margherita Pizza -->
+                    <div class="carousel-item" style="background: linear-gradient(rgba(220,38,38,0.4), rgba(153,27,27,0.4)), url('https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=1200&h=400&fit=crop&q=80') center/cover;">
                         <div class="text-center">
-                            <h1 class="text-5xl font-bold mb-4">Special Offers</h1>
+                            <h1 class="text-5xl font-bold mb-4">Special Offers Today</h1>
                             <p class="text-xl mb-6">Get 20% Off on Your First Order!</p>
-                            <a href="#products" class="bg-white text-red-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-all">
+                            <a href="#products" class="bg-white text-red-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-all inline-block shadow-lg">
                                 View Menu
                             </a>
                         </div>
                     </div>
                     
-                    <!-- Slide 3 -->
-                    <div class="carousel-item" style="background: linear-gradient(135deg, #059669 0%, #047857 100%);">
+                    <!-- Slide 3 - Fresh Pizza -->
+                    <div class="carousel-item" style="background: linear-gradient(rgba(5,150,105,0.4), rgba(4,120,87,0.4)), url('https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=1200&h=400&fit=crop&q=80') center/cover;">
                         <div class="text-center">
                             <h1 class="text-5xl font-bold mb-4">Fresh Ingredients</h1>
                             <p class="text-xl mb-6">Made with Love, Served with Care</p>
-                            <a href="#products" class="bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-all">
-                                Explore
+                            <a href="#products" class="bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-all inline-block shadow-lg">
+                                Explore Menu
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Slide 4 - Pizza Variety -->
+                    <div class="carousel-item" style="background: linear-gradient(rgba(124,58,237,0.4), rgba(91,33,182,0.4)), url('https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1200&h=400&fit=crop&q=80') center/cover;">
+                        <div class="text-center">
+                            <h1 class="text-5xl font-bold mb-4">Fast Delivery</h1>
+                            <p class="text-xl mb-6">Hot Pizza at Your Doorstep in 30 Minutes</p>
+                            <a href="#products" class="bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-all inline-block shadow-lg">
+                                Order Now
                             </a>
                         </div>
                     </div>
@@ -217,6 +228,7 @@
                     <div class="carousel-dot active" onclick="goToSlide(0)"></div>
                     <div class="carousel-dot" onclick="goToSlide(1)"></div>
                     <div class="carousel-dot" onclick="goToSlide(2)"></div>
+                    <div class="carousel-dot" onclick="goToSlide(3)"></div>
                 </div>
             </div>
             <% } %>

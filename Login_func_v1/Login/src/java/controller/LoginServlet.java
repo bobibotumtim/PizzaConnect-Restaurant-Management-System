@@ -22,18 +22,43 @@ public class LoginServlet extends HttpServlet {
         String phone = request.getParameter("phone");
         String pass = request.getParameter("pass");
 
+        // Server-side validation
+        if (phone == null || phone.trim().isEmpty()) {
+            request.setAttribute("mess", "Phone number is required!");
+            request.getRequestDispatcher("view/Login.jsp").forward(request, response);
+            return;
+        }
+        
+        if (pass == null || pass.isEmpty()) {
+            request.setAttribute("mess", "Password is required!");
+            request.getRequestDispatcher("view/Login.jsp").forward(request, response);
+            return;
+        }
+        
+        // Trim phone and validate format
+        phone = phone.trim();
+        if (!phone.matches("^[0-9]{10}$")) {
+            request.setAttribute("mess", "Phone number must be 10 digits!");
+            request.getRequestDispatcher("view/Login.jsp").forward(request, response);
+            return;
+        }
+        
+        // For login, we don't enforce strong password validation
+        // This allows users with old passwords to still login
+        // Strong password is only enforced during signup and password change
+
         UserDAO dao = new UserDAO();
         User user = null;
         try {
             user = dao.checkLogin(phone, pass);   
         } catch (Exception e) {
-            request.setAttribute("mess", "We are unable to process your login at the moment. Please try again later." + e.getMessage().toString());
+            request.setAttribute("mess", "System is under maintenance. Please try again later!");
             request.getRequestDispatcher("view/Login.jsp").forward(request, response);
             return;
         }
 
         if (user == null) {
-            request.setAttribute("mess", "Tên đăng nhập hoặc mật khẩu không đúng!");
+            request.setAttribute("mess", "Phone number or password is incorrect!");
             request.getRequestDispatcher("view/Login.jsp").forward(request, response);
             return;
         }
