@@ -61,7 +61,7 @@
     <!-- Top Navigation Bar - ✅ Đồng nhất với POS và WaiterMonitor -->
     <div class="bg-white shadow-md border-b px-6 py-3 flex items-center justify-between">
         <div class="flex items-center gap-4">
-            <div class="text-2xl font-bold text-orange-600">📋 Manage Orders</div>
+            <div class="text-2xl font-bold text-orange-600">🍕 Manage Orders</div>
         </div>
         <div class="flex items-center gap-3">
             <div class="text-right mr-3">
@@ -73,13 +73,13 @@
                 </div>
             </div>
             <a href="pos" class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
-                🍕 POS
+                New Order
             </a>
             <a href="WaiterMonitor" class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
-                🔔 Waiter
+                Waiter
             </a>
             <a href="waiter-dashboard" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 shadow-sm hover:shadow-md transition-all duration-200">
-                🏠 Dashboard
+                Dashboard
             </a>
         </div>
     </div>
@@ -490,18 +490,13 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Total Price</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Total Price (Tax Included)</label>
                         <div id="viewTotal" class="px-4 py-2 bg-gray-100 rounded-lg text-green-600 font-bold text-lg"></div>
                     </div>
 
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Order Items</label>
-                        <div id="viewItems" class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 max-h-48 overflow-y-auto"></div>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Note</label>
-                        <div id="viewNote" class="px-4 py-2 bg-gray-100 rounded-lg text-gray-600 italic min-h-[60px]"></div>
+                        <div id="viewItems" class="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 max-h-64 overflow-y-auto"></div>
                     </div>
                 </div>
 
@@ -593,13 +588,13 @@
         const modal = document.getElementById("editOrderModal");
         
         const url = ctx + '/manage-orders?action=getOrder&id=' + orderId;
-        console.log('📦 Fetching order details from:', url);
+        console.log('Fetching order details from:', url);
         
         fetch(url)
             .then(res => res.json())
             .then(data => {
-                console.log('📦 Order data received:', data);
-                console.log('📦 Number of items:', data.details ? data.details.length : 0);
+                console.log('Order data received:', data);
+                console.log('Number of items:', data.details ? data.details.length : 0);
                 
                 if (!data.success) {
                     alert("Could not load order data.");
@@ -615,11 +610,10 @@
                 document.getElementById("viewStatus").innerHTML = '<span class="px-3 py-1 rounded-full text-white bg-' + statusColor + '-500">' + statusText + '</span>';
                 document.getElementById("viewPayment").innerHTML = '<span class="px-3 py-1 rounded-full text-white bg-' + (o.paymentStatus === 'Paid' ? 'green' : 'orange') + '-500">' + (o.paymentStatus || 'Unpaid') + '</span>';
                 document.getElementById("viewTotal").textContent = (o.totalPrice || 0).toLocaleString('vi-VN') + ' VND';
-                document.getElementById("viewNote").textContent = o.note || 'No notes';
                 
                 // Load order items with toppings and prices
                 if (data.details && data.details.length > 0) {
-                    console.log('🍕 Rendering ' + data.details.length + ' items');
+                    console.log('Rendering ' + data.details.length + ' items');
                     
                     let itemsHTML = '<div class="space-y-3">';
                     let calculatedTotal = 0;
@@ -653,7 +647,7 @@
                         
                         // Base price
                         itemsHTML += '<div class="text-sm text-gray-600 mb-1">';
-                        itemsHTML += '💰 Base: ' + item.basePrice.toLocaleString('vi-VN') + ' VND';
+                        itemsHTML += 'Base: ' + item.basePrice.toLocaleString('vi-VN') + ' VND';
                         itemsHTML += '</div>';
                         
                         // Toppings
@@ -661,7 +655,7 @@
                             itemsHTML += '<div class="ml-3 mb-2">';
                             item.toppings.forEach(topping => {
                                 itemsHTML += '<div class="text-sm text-orange-600">';
-                                itemsHTML += '🧀 ' + topping.toppingName + ': +' + topping.price.toLocaleString('vi-VN') + ' VND';
+                                itemsHTML += topping.toppingName + ': +' + topping.price.toLocaleString('vi-VN') + ' VND';
                                 itemsHTML += '</div>';
                             });
                             itemsHTML += '</div>';
@@ -674,22 +668,6 @@
                         
                         itemsHTML += '</div>';
                     });
-                    
-                    // Add summary
-                    itemsHTML += '<div class="bg-blue-50 rounded-lg p-3 border-2 border-blue-300 mt-3">';
-                    itemsHTML += '<div class="flex justify-between items-center">';
-                    itemsHTML += '<div class="font-bold text-gray-700">Subtotal (' + data.details.length + ' items):</div>';
-                    itemsHTML += '<div class="font-bold text-blue-600">' + calculatedTotal.toLocaleString('vi-VN') + ' VND</div>';
-                    itemsHTML += '</div>';
-                    itemsHTML += '<div class="flex justify-between items-center text-sm text-gray-600 mt-1">';
-                    itemsHTML += '<div>Tax (10%):</div>';
-                    itemsHTML += '<div>' + (calculatedTotal * 0.1).toLocaleString('vi-VN') + ' VND</div>';
-                    itemsHTML += '</div>';
-                    itemsHTML += '<div class="flex justify-between items-center font-bold text-lg text-green-600 mt-2 pt-2 border-t border-blue-300">';
-                    itemsHTML += '<div>Grand Total:</div>';
-                    itemsHTML += '<div>' + (calculatedTotal * 1.1).toLocaleString('vi-VN') + ' VND</div>';
-                    itemsHTML += '</div>';
-                    itemsHTML += '</div>';
                     
                     itemsHTML += '</div>';
                     document.getElementById("viewItems").innerHTML = itemsHTML;
