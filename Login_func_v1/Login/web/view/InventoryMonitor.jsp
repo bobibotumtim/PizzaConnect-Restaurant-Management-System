@@ -360,6 +360,83 @@
                     </div>
                 <% } %>
             </div>
+
+            <!-- Pagination -->
+            <%
+                Integer currentPage = (Integer) request.getAttribute("currentPage");
+                Integer totalPages = (Integer) request.getAttribute("totalPages");
+                Integer totalItems = (Integer) request.getAttribute("totalItems");
+                Integer itemsPerPage = (Integer) request.getAttribute("itemsPerPage");
+                
+                if (currentPage == null) currentPage = 1;
+                if (totalPages == null) totalPages = 1;
+                if (totalItems == null) totalItems = 0;
+                if (itemsPerPage == null) itemsPerPage = 10;
+                
+                if (totalPages > 1) {
+            %>
+            <div class="bg-white rounded-xl shadow-lg p-6 mt-6">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <!-- Page Info -->
+                    <div class="text-sm text-gray-600">
+                        Showing <%= ((currentPage - 1) * itemsPerPage) + 1 %> to <%= Math.min(currentPage * itemsPerPage, totalItems) %> of <%= totalItems %> items
+                    </div>
+                    
+                    <!-- Pagination Controls -->
+                    <div class="flex items-center gap-2">
+                        <!-- First Page -->
+                        <% if (currentPage > 1) { %>
+                            <button onclick="goToPage(1)" class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition">
+                                <i data-lucide="chevrons-left" class="w-4 h-4"></i>
+                            </button>
+                        <% } %>
+                        
+                        <!-- Previous Page -->
+                        <% if (currentPage > 1) { %>
+                            <button onclick="goToPage(<%= currentPage - 1 %>)" class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition">
+                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            </button>
+                        <% } %>
+                        
+                        <!-- Page Numbers -->
+                        <%
+                            int startPage = Math.max(1, currentPage - 2);
+                            int endPage = Math.min(totalPages, currentPage + 2);
+                            
+                            for (int i = startPage; i <= endPage; i++) {
+                                if (i == currentPage) {
+                        %>
+                            <button class="px-4 py-2 rounded-lg bg-orange-500 text-white font-semibold">
+                                <%= i %>
+                            </button>
+                        <%
+                                } else {
+                        %>
+                            <button onclick="goToPage(<%= i %>)" class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition">
+                                <%= i %>
+                            </button>
+                        <%
+                                }
+                            }
+                        %>
+                        
+                        <!-- Next Page -->
+                        <% if (currentPage < totalPages) { %>
+                            <button onclick="goToPage(<%= currentPage + 1 %>)" class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition">
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </button>
+                        <% } %>
+                        
+                        <!-- Last Page -->
+                        <% if (currentPage < totalPages) { %>
+                            <button onclick="goToPage(<%= totalPages %>)" class="px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition">
+                                <i data-lucide="chevrons-right" class="w-4 h-4"></i>
+                            </button>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+            <% } %>
         </div>
     </div>
 
@@ -369,11 +446,19 @@
         // Initialize Lucide icons
         lucide.createIcons();
 
+        // Go to specific page
+        function goToPage(page) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('page', page);
+            window.location.href = url.toString();
+        }
+
         // Filter by warning level
         function filterByLevel(level) {
             const searchTerm = document.getElementById('searchInput').value;
             const url = new URL(window.location.href);
             url.searchParams.set('level', level);
+            url.searchParams.delete('page'); // Reset to page 1 when filtering
             if (searchTerm) {
                 url.searchParams.set('search', searchTerm);
             } else {
@@ -389,6 +474,7 @@
             searchTimeout = setTimeout(() => {
                 const searchTerm = e.target.value;
                 const url = new URL(window.location.href);
+                url.searchParams.delete('page'); // Reset to page 1 when searching
                 if (searchTerm) {
                     url.searchParams.set('search', searchTerm);
                 } else {
