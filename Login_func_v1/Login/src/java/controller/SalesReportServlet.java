@@ -194,22 +194,11 @@ public class SalesReportServlet extends HttpServlet {
         // Set defaults if parameters are null
         if (format == null) format = "pdf";
         
-        // Set default date range (this week: Monday to Sunday)
-        LocalDate today = LocalDate.now();
-        if (dateFrom == null || dateFrom.isEmpty()) {
-            // Calculate Monday of current week
-            java.time.DayOfWeek dayOfWeek = today.getDayOfWeek();
-            int daysToMonday = dayOfWeek.getValue() - 1; // Monday = 1, so subtract 1
-            LocalDate monday = today.minusDays(daysToMonday);
-            dateFrom = monday.toString();
-        }
-        if (dateTo == null || dateTo.isEmpty()) {
-            // Calculate Sunday of current week
-            java.time.DayOfWeek dayOfWeek = today.getDayOfWeek();
-            int daysToMonday = dayOfWeek.getValue() - 1;
-            LocalDate monday = today.minusDays(daysToMonday);
-            LocalDate sunday = monday.plusDays(6);
-            dateTo = sunday.toString();
+        // Validate that date parameters are provided - DO NOT set defaults
+        if (dateFrom == null || dateFrom.isEmpty() || dateTo == null || dateTo.isEmpty()) {
+            response.setContentType("text/html; charset=UTF-8");
+            response.getWriter().write("<html><body><script>alert('Please select a date range before exporting!'); window.close();</script></body></html>");
+            return;
         }
         
         // Debug logging
@@ -245,10 +234,10 @@ public class SalesReportServlet extends HttpServlet {
             StringBuilder html = new StringBuilder();
             
             html.append("<!DOCTYPE html>");
-            html.append("<html lang='vi'>");
+            html.append("<html lang='en'>");
             html.append("<head>");
             html.append("<meta charset='UTF-8'>");
-            html.append("<title>Báo Cáo Bán Hàng - PizzaConnect</title>");
+            html.append("<title>Sales Report - PizzaConnect</title>");
             html.append("<style>");
             html.append("body { font-family: Arial, sans-serif; margin: 20px; }");
             html.append("h1 { color: #f97316; text-align: center; }");
@@ -265,36 +254,36 @@ public class SalesReportServlet extends HttpServlet {
             html.append("<body>");
             
             // Header
-            html.append("<h1>BÁO CÁO BÁN HÀNG</h1>");
+            html.append("<h1>SALES REPORT</h1>");
             html.append("<h2>PIZZA CONNECT RESTAURANT</h2>");
             html.append("<div class='summary'>");
-            html.append("<p><strong>Khoảng thời gian:</strong> ").append(dateFrom).append(" đến ").append(dateTo).append("</p>");
-            html.append("<p><strong>Ngày tạo báo cáo:</strong> ").append(new java.util.Date()).append("</p>");
+            html.append("<p><strong>Period:</strong> ").append(dateFrom).append(" to ").append(dateTo).append("</p>");
+            html.append("<p><strong>Report generated:</strong> ").append(new java.text.SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", java.util.Locale.ENGLISH).format(new java.util.Date())).append("</p>");
             html.append("</div>");
             
             // Summary Statistics
-            html.append("<h2>TỔNG QUAN</h2>");
+            html.append("<h2>SUMMARY</h2>");
             html.append("<table>");
-            html.append("<tr><th>Chỉ Số</th><th>Giá Trị</th></tr>");
+            html.append("<tr><th>Metric</th><th>Value</th></tr>");
             
             if (reportData != null) {
-                html.append("<tr><td>Tổng Doanh Thu</td><td class='currency'>")
+                html.append("<tr><td>Total Revenue</td><td class='currency'>")
                     .append(String.format("%,.0f ₫", reportData.getTotalRevenue())).append("</td></tr>");
-                html.append("<tr><td>Tổng Đơn Hàng</td><td>").append(reportData.getTotalOrders()).append("</td></tr>");
-                html.append("<tr><td>Tổng Khách Hàng</td><td>").append(reportData.getTotalCustomers()).append("</td></tr>");
-                html.append("<tr><td>Giá Trị Trung Bình</td><td class='currency'>")
+                html.append("<tr><td>Total Orders</td><td>").append(reportData.getTotalOrders()).append("</td></tr>");
+                html.append("<tr><td>Total Customers</td><td>").append(reportData.getTotalCustomers()).append("</td></tr>");
+                html.append("<tr><td>Average Order Value</td><td class='currency'>")
                     .append(String.format("%,.0f ₫", reportData.getAvgOrderValue())).append("</td></tr>");
-                html.append("<tr><td>Tỷ Lệ Tăng Trưởng</td><td>")
+                html.append("<tr><td>Growth Rate</td><td>")
                     .append(String.format("%.1f%%", reportData.getGrowthRate())).append("</td></tr>");
             } else {
-                html.append("<tr><td colspan='2'>Không có dữ liệu trong khoảng thời gian này</td></tr>");
+                html.append("<tr><td colspan='2'>No data available for this period</td></tr>");
             }
             html.append("</table>");
             
             // Top Products
-            html.append("<h2>TOP 5 SẢN PHẨM BÁN CHẠY</h2>");
+            html.append("<h2>TOP 5 BEST-SELLING PRODUCTS</h2>");
             html.append("<table>");
-            html.append("<tr><th>Hạng</th><th>Tên Sản Phẩm</th><th>Số Lượng</th><th>Doanh Thu</th></tr>");
+            html.append("<tr><th>Rank</th><th>Product Name</th><th>Quantity</th><th>Revenue</th></tr>");
             
             if (reportData != null && reportData.getTopProducts() != null) {
                 int rank = 1;
@@ -307,14 +296,14 @@ public class SalesReportServlet extends HttpServlet {
                     html.append("</tr>");
                 }
             } else {
-                html.append("<tr><td colspan='4'>Không có dữ liệu sản phẩm</td></tr>");
+                html.append("<tr><td colspan='4'>No product data available</td></tr>");
             }
             html.append("</table>");
             
             // Daily Revenue
-            html.append("<h2>DOANH THU THEO NGÀY</h2>");
+            html.append("<h2>DAILY REVENUE</h2>");
             html.append("<table>");
-            html.append("<tr><th>Ngày</th><th>Doanh Thu</th><th>Số Đơn Hàng</th></tr>");
+            html.append("<tr><th>Date</th><th>Revenue</th><th>Number of Orders</th></tr>");
             
             if (reportData != null && reportData.getDailyRevenue() != null) {
                 for (models.DailyRevenue daily : reportData.getDailyRevenue()) {
@@ -325,14 +314,14 @@ public class SalesReportServlet extends HttpServlet {
                     html.append("</tr>");
                 }
             } else {
-                html.append("<tr><td colspan='3'>Không có dữ liệu doanh thu</td></tr>");
+                html.append("<tr><td colspan='3'>No revenue data available</td></tr>");
             }
             html.append("</table>");
             
             // Footer
             html.append("<div style='margin-top: 50px; text-align: center; font-size: 12px; color: #666;'>");
-            html.append("<p>© 2024 PizzaConnect Restaurant Management System</p>");
-            html.append("<p>Báo cáo được tạo tự động bởi hệ thống</p>");
+            html.append("<p>© 2025 PizzaConnect Restaurant Management System</p>");
+            html.append("<p>Report automatically generated by the system</p>");
             html.append("</div>");
             
             html.append("</body>");
