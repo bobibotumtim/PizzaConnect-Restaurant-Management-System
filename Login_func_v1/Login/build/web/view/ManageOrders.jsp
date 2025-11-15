@@ -47,7 +47,7 @@
     </style>
 </head>
 
-<body class="min-h-screen bg-gray-50 flex overflow-hidden">
+<body class="bg-gray-50 flex h-screen overflow-hidden">
     <% 
         User currentUser = (User) request.getAttribute("currentUser"); 
         User sessionUser = (User) session.getAttribute("user"); 
@@ -61,7 +61,7 @@
     <!-- Sidebar -->
     <jsp:include page="Sidebar.jsp" />
 
-    <div class="flex flex-col flex-1 overflow-auto" style="margin-left: 80px;">
+    <div class="flex flex-col flex-1 overflow-y-auto" style="margin-left: 80px;">
         <!-- Top Navigation Bar - ✅ Đồng nhất với POS và WaiterMonitor -->
         <div class="bg-white shadow-md border-b px-6 py-3 flex items-center justify-between">
             <div class="flex items-center gap-4">
