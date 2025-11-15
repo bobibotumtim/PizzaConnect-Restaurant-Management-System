@@ -60,24 +60,47 @@ public class InventoryMonitorServlet extends HttpServlet {
         String level = request.getParameter("level");
         String search = request.getParameter("search");
         
-        List<InventoryMonitorItem> items;
+        // Get pagination parameters
+        int page = 1;
+        int itemsPerPage = 10;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) page = 1;
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
+        
+        List<InventoryMonitorItem> allItems;
         
         // Get items based on parameters
         if (search != null && !search.trim().isEmpty()) {
             if (level != null && !level.isEmpty() && !"ALL".equalsIgnoreCase(level)) {
                 // Search with filter
-                items = inventoryMonitorDAO.searchItemsWithFilter(search.trim(), level);
+                allItems = inventoryMonitorDAO.searchItemsWithFilter(search.trim(), level);
             } else {
                 // Search only
-                items = inventoryMonitorDAO.searchItems(search.trim());
+                allItems = inventoryMonitorDAO.searchItems(search.trim());
             }
         } else if (level != null && !level.isEmpty() && !"ALL".equalsIgnoreCase(level)) {
             // Filter only
-            items = inventoryMonitorDAO.getItemsByWarningLevel(level);
+            allItems = inventoryMonitorDAO.getItemsByWarningLevel(level);
         } else {
             // Get all items
-            items = inventoryMonitorDAO.getAllMonitorItems();
+            allItems = inventoryMonitorDAO.getAllMonitorItems();
         }
+        
+        // Calculate pagination
+        int totalItems = allItems.size();
+        int totalPages = (int) Math.ceil((double) totalItems / itemsPerPage);
+        if (page > totalPages && totalPages > 0) page = totalPages;
+        
+        // Get items for current page
+        int startIndex = (page - 1) * itemsPerPage;
+        int endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+        List<InventoryMonitorItem> items = allItems.subList(startIndex, endIndex);
         
         // Get warning level counts for statistics
         Map<String, Integer> counts = inventoryMonitorDAO.getWarningLevelCounts();
@@ -87,6 +110,10 @@ public class InventoryMonitorServlet extends HttpServlet {
         request.setAttribute("counts", counts);
         request.setAttribute("currentLevel", level != null ? level : "ALL");
         request.setAttribute("searchTerm", search != null ? search : "");
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalItems", totalItems);
+        request.setAttribute("itemsPerPage", itemsPerPage);
         
         // Forward to JSP
         request.getRequestDispatcher("/view/InventoryMonitor.jsp").forward(request, response);
