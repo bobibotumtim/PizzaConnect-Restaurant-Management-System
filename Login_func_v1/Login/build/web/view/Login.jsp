@@ -36,7 +36,7 @@
             </a>
             
             <div>
-                <a href="home" class="btn btn-link mt-2">
+                <a href="${pageContext.request.contextPath}/home" class="btn btn-link mt-2">
                     <i class="fas fa-home"></i> Back to Home
                 </a>
 
