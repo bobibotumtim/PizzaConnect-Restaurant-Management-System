@@ -116,6 +116,16 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
         </a>
 
         <a
+          href="${pageContext.request.contextPath}/inventorymonitor"
+          class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition"
+        >
+          <div class="min-w-[2.5rem] flex justify-center">
+            <i data-lucide="package" class="w-6 h-6"></i>
+          </div>
+          <span class="sidebar-text ml-3">Inventory Monitor</span>
+        </a>
+
+        <a
           href="${pageContext.request.contextPath}/sales-reports"
           class="flex items-center px-3 py-3 rounded-lg bg-orange-500 text-white"
         >
@@ -690,34 +700,37 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
       function formatDate(date) {
         try {
           if (!date) {
-            console.error('formatDate: date is null or undefined');
+            console.error("formatDate: date is null or undefined");
             return null;
           }
-          
+
           // Ensure it's a Date object
           let dateObj = date instanceof Date ? date : new Date(date);
-          
+
           // Check if date is valid
           if (isNaN(dateObj.getTime())) {
-            console.error('formatDate: Invalid date object:', date);
+            console.error("formatDate: Invalid date object:", date);
             return null;
           }
-          
+
           // Use toISOString and extract date part (YYYY-MM-DD)
           // Adjust for timezone offset
           const year = dateObj.getFullYear();
           const month = dateObj.getMonth() + 1;
           const day = dateObj.getDate();
-          
+
           // Format as YYYY-MM-DD
-          const formatted = year + '-' + 
-                           String(month).padStart(2, '0') + '-' + 
-                           String(day).padStart(2, '0');
-          
-          console.log('formatDate:', date, '->', formatted);
+          const formatted =
+            year +
+            "-" +
+            String(month).padStart(2, "0") +
+            "-" +
+            String(day).padStart(2, "0");
+
+          console.log("formatDate:", date, "->", formatted);
           return formatted;
         } catch (error) {
-          console.error('formatDate error:', error, 'for date:', date);
+          console.error("formatDate error:", error, "for date:", date);
           return null;
         }
       }
@@ -725,18 +738,18 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
       // Set quick report dates based on actual calendar periods
       function setQuickReport(type) {
         try {
-          console.log('setQuickReport called with type:', type);
-          
+          console.log("setQuickReport called with type:", type);
+
           if (!type) {
-            console.error('setQuickReport: type parameter is missing');
-            alert('Lỗi: Không xác định được loại báo cáo');
+            console.error("setQuickReport: type parameter is missing");
+            alert("Lỗi: Không xác định được loại báo cáo");
             return;
           }
-          
+
           const today = new Date();
-          console.log('Today date object:', today);
-          console.log('Today is valid:', !isNaN(today.getTime()));
-          
+          console.log("Today date object:", today);
+          console.log("Today is valid:", !isNaN(today.getTime()));
+
           let dateFrom, dateTo;
 
           switch (type) {
@@ -744,9 +757,9 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
               // Today only
               dateFrom = formatDate(today);
               dateTo = formatDate(today);
-              console.log('Today report:', dateFrom, 'to', dateTo);
+              console.log("Today report:", dateFrom, "to", dateTo);
               if (!dateFrom || !dateTo) {
-                throw new Error('Không thể tính toán ngày hôm nay');
+                throw new Error("Không thể tính toán ngày hôm nay");
               }
               break;
 
@@ -764,15 +777,19 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
               dateFrom = formatDate(monday);
               dateTo = formatDate(sunday);
-              console.log('Week report:', dateFrom, 'to', dateTo);
+              console.log("Week report:", dateFrom, "to", dateTo);
               if (!dateFrom || !dateTo) {
-                throw new Error('Không thể tính toán ngày tuần này');
+                throw new Error("Không thể tính toán ngày tuần này");
               }
               break;
 
             case "month":
               // This month: First day to last day
-              const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+              const firstDay = new Date(
+                today.getFullYear(),
+                today.getMonth(),
+                1
+              );
               firstDay.setHours(0, 0, 0, 0);
               const lastDay = new Date(
                 today.getFullYear(),
@@ -783,9 +800,9 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
               dateFrom = formatDate(firstDay);
               dateTo = formatDate(lastDay);
-              console.log('Month report:', dateFrom, 'to', dateTo);
+              console.log("Month report:", dateFrom, "to", dateTo);
               if (!dateFrom || !dateTo) {
-                throw new Error('Không thể tính toán ngày tháng này');
+                throw new Error("Không thể tính toán ngày tháng này");
               }
               break;
 
@@ -809,83 +826,116 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
               dateFrom = formatDate(quarterStart);
               dateTo = formatDate(quarterEnd);
-              console.log('Quarter report:', dateFrom, 'to', dateTo);
+              console.log("Quarter report:", dateFrom, "to", dateTo);
               if (!dateFrom || !dateTo) {
-                throw new Error('Không thể tính toán ngày quý này');
+                throw new Error("Không thể tính toán ngày quý này");
               }
               break;
-              
+
             default:
-              console.error('setQuickReport: Unknown type:', type);
-              alert('Lỗi: Loại báo cáo không hợp lệ');
+              console.error("setQuickReport: Unknown type:", type);
+              alert("Lỗi: Loại báo cáo không hợp lệ");
               return;
           }
 
           // Update form fields immediately
-          const dateFromInput = document.querySelector('input[name="dateFrom"]');
+          const dateFromInput = document.querySelector(
+            'input[name="dateFrom"]'
+          );
           const dateToInput = document.querySelector('input[name="dateTo"]');
           const form = document.getElementById("reportForm");
-          
-          console.log('Looking for elements:', {
+
+          console.log("Looking for elements:", {
             dateFromInput: !!dateFromInput,
             dateToInput: !!dateToInput,
-            form: !!form
+            form: !!form,
           });
-          
+
           if (!dateFromInput || !dateToInput) {
-            console.error('Could not find date input fields');
-            alert('Lỗi: Không tìm thấy các trường ngày tháng');
+            console.error("Could not find date input fields");
+            alert("Lỗi: Không tìm thấy các trường ngày tháng");
             return;
           }
-          
+
           if (!form) {
-            console.error('Could not find form');
-            alert('Lỗi: Không tìm thấy form');
+            console.error("Could not find form");
+            alert("Lỗi: Không tìm thấy form");
             return;
           }
-          
+
           // Validate dates before proceeding
-          if (!dateFrom || !dateTo || dateFrom === 'undefined' || dateTo === 'undefined' || dateFrom === 'null' || dateTo === 'null') {
-            console.error('Invalid dates calculated:', { dateFrom, dateTo });
-            alert('Lỗi: Không thể tính toán ngày tháng. Vui lòng thử lại.');
+          if (
+            !dateFrom ||
+            !dateTo ||
+            dateFrom === "undefined" ||
+            dateTo === "undefined" ||
+            dateFrom === "null" ||
+            dateTo === "null"
+          ) {
+            console.error("Invalid dates calculated:", { dateFrom, dateTo });
+            alert("Lỗi: Không thể tính toán ngày tháng. Vui lòng thử lại.");
             return;
           }
-          
-          console.log('Calculated dates - dateFrom:', dateFrom, 'dateTo:', dateTo);
-          
+
+          console.log(
+            "Calculated dates - dateFrom:",
+            dateFrom,
+            "dateTo:",
+            dateTo
+          );
+
           // Update the date input fields (for visual feedback)
           dateFromInput.value = dateFrom;
           dateToInput.value = dateTo;
-          console.log('Updated form fields - dateFrom:', dateFrom, 'dateTo:', dateTo);
-          
+          console.log(
+            "Updated form fields - dateFrom:",
+            dateFrom,
+            "dateTo:",
+            dateTo
+          );
+
           // Instead of submitting form, redirect directly with GET request
           // Build a clean URL from scratch to avoid any existing invalid parameters
           const basePath = window.location.pathname;
-          const redirectUrl = basePath + '?action=generate&dateFrom=' + encodeURIComponent(dateFrom) + '&dateTo=' + encodeURIComponent(dateTo);
-          
-          console.log('Redirecting to:', redirectUrl);
-          console.log('Date values being sent:', {
+          const redirectUrl =
+            basePath +
+            "?action=generate&dateFrom=" +
+            encodeURIComponent(dateFrom) +
+            "&dateTo=" +
+            encodeURIComponent(dateTo);
+
+          console.log("Redirecting to:", redirectUrl);
+          console.log("Date values being sent:", {
             dateFrom: dateFrom,
             dateTo: dateTo,
             dateFromType: typeof dateFrom,
-            dateToType: typeof dateTo
+            dateToType: typeof dateTo,
           });
-          
+
           // Double check before redirect
-          if (!dateFrom || !dateTo || dateFrom === '--' || dateTo === '--' || dateFrom === 'null' || dateTo === 'null') {
-            console.error('ABORTING: Invalid dates detected before redirect:', { dateFrom, dateTo });
-            alert('Lỗi: Không thể tính toán ngày tháng. Vui lòng thử lại.');
+          if (
+            !dateFrom ||
+            !dateTo ||
+            dateFrom === "--" ||
+            dateTo === "--" ||
+            dateFrom === "null" ||
+            dateTo === "null"
+          ) {
+            console.error("ABORTING: Invalid dates detected before redirect:", {
+              dateFrom,
+              dateTo,
+            });
+            alert("Lỗi: Không thể tính toán ngày tháng. Vui lòng thử lại.");
             return;
           }
-          
+
           window.location.href = redirectUrl;
-          
         } catch (error) {
-          console.error('Error in setQuickReport:', error);
-          alert('Lỗi khi tạo báo cáo: ' + error.message);
+          console.error("Error in setQuickReport:", error);
+          alert("Lỗi khi tạo báo cáo: " + error.message);
         }
       }
-      
+
       // Make sure function is available globally
       window.setQuickReport = setQuickReport;
       window.formatDate = formatDate;
@@ -899,22 +949,22 @@ prefix="c" %> <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
           const percentage = total > 0 ? (revenue / total) * 100 : 0;
           bar.style.width = percentage + "%";
         });
-        
+
         // Verify setQuickReport function is available
-        if (typeof setQuickReport === 'function') {
-          console.log('setQuickReport function is available');
+        if (typeof setQuickReport === "function") {
+          console.log("setQuickReport function is available");
         } else {
-          console.error('setQuickReport function is NOT available!');
+          console.error("setQuickReport function is NOT available!");
         }
-        
+
         // Test if form and inputs exist
         const form = document.getElementById("reportForm");
         const dateFromInput = document.querySelector('input[name="dateFrom"]');
         const dateToInput = document.querySelector('input[name="dateTo"]');
-        console.log('DOM elements check:', {
+        console.log("DOM elements check:", {
           form: !!form,
           dateFromInput: !!dateFromInput,
-          dateToInput: !!dateToInput
+          dateToInput: !!dateToInput,
         });
       });
 

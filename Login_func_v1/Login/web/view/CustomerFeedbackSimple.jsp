@@ -70,6 +70,14 @@
                 <span class="sidebar-text ml-3">Dashboard</span>
             </a>
 
+            <a href="${pageContext.request.contextPath}/inventorymonitor"
+               class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
+                <div class="min-w-[2.5rem] flex justify-center">
+                    <i data-lucide="package" class="w-6 h-6"></i>
+                </div>
+                <span class="sidebar-text ml-3">Inventory Monitor</span>
+            </a>
+
             <a href="${pageContext.request.contextPath}/sales-reports"
                class="flex items-center px-3 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition">
                 <div class="min-w-[2.5rem] flex justify-center">

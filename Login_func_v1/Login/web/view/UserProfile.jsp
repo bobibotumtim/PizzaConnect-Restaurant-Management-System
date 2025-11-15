@@ -33,7 +33,18 @@
             <div class="flex items-center gap-3">
                 <div class="text-right">
                     <div class="font-semibold text-gray-800">${user.name}</div>
-                    <div class="text-xs text-gray-500">${user.role == 1 ? "Admin" : user.role == 2 ? "Waiter" : "Customer"}</div>
+                    <div class="text-xs text-gray-500">
+                        <c:choose>
+                            <c:when test="${user.role == 1}">Admin</c:when>
+                            <c:when test="${user.role == 2}">
+                                <c:choose>
+                                    <c:when test="${not empty employee and employee.jobRole == 'Manager'}">Manager</c:when>
+                                    <c:otherwise>Waiter</c:otherwise>
+                                </c:choose>
+                            </c:when>
+                            <c:otherwise>Customer</c:otherwise>
+                        </c:choose>
+                    </div>
                 </div>
                 <a href="logout" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 shadow-sm hover:shadow-md transition-all duration-200">
                     🚪 Logout
