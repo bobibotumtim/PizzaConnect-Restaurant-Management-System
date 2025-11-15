@@ -7,7 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DBContext {
-    private static final String USER = "duongbui";
+    private static final String USER = "sa";
     private static final String PASSWORD = "123";
     private static final String URL = "jdbc:sqlserver://localhost:1433;databaseName=pizza_demo_DB_FinalModel_Combined;encrypt=true;trustServerCertificate=true";
 
