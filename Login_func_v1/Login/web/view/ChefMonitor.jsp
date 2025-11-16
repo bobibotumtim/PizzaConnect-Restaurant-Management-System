@@ -239,7 +239,7 @@
         <!-- ==================== Preparing Section ==================== -->
         <div class="section-title section-preparing">
             <span>🔥 Preparing Dishes</span>
-            <span class="section-count">${preparingList.size()} món</span>
+            <span class="section-count">${preparingList.size()} dishes</span>
         </div>
         <div id="ongoing" class="dish-container">
             <c:forEach var="dish" items="${preparingList}">
@@ -271,14 +271,14 @@
                 <input type="hidden" name="action" value="cancel">
                 <input type="hidden" id="selectedIdCancelPreparing" name="orderDetailId">
                 <input type="hidden" name="category" value="${selectedCategory}">
-                <button type="submit" class="btn-action btn-cancel" onclick="return confirm('Bạn có chắc muốn hủy món này?')">✕ Cancel</button>
+                <button type="submit" class="btn-action btn-cancel" onclick="return confirm('You want to cancel?')">✕ Cancel</button>
             </form>
         </div>
 
         <!-- ==================== Ready Section ==================== -->
         <div class="section-title section-ready">
             <span>✅ Ready Dishes (Waiter will serve)</span>
-            <span class="section-count">${readyList.size()} món</span>
+            <span class="section-count">${readyList.size()} dishes</span>
         </div>
         <div id="ready" class="dish-container">
             <c:forEach var="dish" items="${readyList}">
