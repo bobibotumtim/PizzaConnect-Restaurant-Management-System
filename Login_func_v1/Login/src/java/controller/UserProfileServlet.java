@@ -154,7 +154,7 @@ public class UserProfileServlet extends HttpServlet {
 
         // Save updates using proper update method
         try {
-            boolean updated = userDAO.updateUser(updatedUser);
+            boolean updated = userDAO.updateUserProfile(updatedUser);
             if (updated) {
                 // Refresh user data from database
                 User refreshedUser = userDAO.getUserById(currentUser.getUserID());

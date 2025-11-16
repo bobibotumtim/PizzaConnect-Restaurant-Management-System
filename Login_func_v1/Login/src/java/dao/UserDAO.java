@@ -172,6 +172,35 @@ public class UserDAO extends DBContext {
         return false;
     }
 
+    public boolean updateUserProfile(User user) {
+        String sql = """
+                    UPDATE [User]
+                    SET Name=?, Role=?, Email=?, Phone=?, DateOfBirth=?, Gender=?, IsActive=?
+                    WHERE UserID=?
+                """;
+        try (Connection connection = getConnection();
+                PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, user.getName());
+            ps.setInt(2, user.getRole());
+            ps.setString(3, user.getEmail());
+            ps.setString(4, user.getPhone());
+            if (user.getDateOfBirth() != null) {
+                ps.setDate(5, new java.sql.Date(user.getDateOfBirth().getTime()));
+            } else {
+                ps.setNull(5, Types.DATE);
+            }
+            ps.setString(6, user.getGender());
+            ps.setBoolean(7, user.isActive());
+            ps.setInt(8, user.getUserID());
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error updating user profile: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     // Delete user by ID
     public boolean deleteUser(int userId) {
         String sql = "DELETE FROM [User] WHERE UserID = ?";
