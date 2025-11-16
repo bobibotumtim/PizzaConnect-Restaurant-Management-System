@@ -26,25 +26,106 @@ public class SignupServlet extends HttpServlet {
         String birthdateStr = request.getParameter("birthdate");
 
         HttpSession session = request.getSession();
-        UserDAO userDao = new UserDAO();
-        CustomerDAO cusDao = new CustomerDAO();
-
-        // 🔹 Kiểm tra user đã tồn tại (dựa vào email hoặc phone)
-        if (userDao.isUserExists(email)) {
-            session.setAttribute("error", "Email đã tồn tại!");
+        
+        // 🔹 Server-side validation
+        
+        // Validate fullname
+        if (fullname == null || fullname.trim().isEmpty()) {
+            session.setAttribute("error", "Full name is required!");
+            response.sendRedirect("view/Signup.jsp");
+            return;
+        }
+        fullname = fullname.trim();
+        if (fullname.length() < 2 || fullname.length() > 100) {
+            session.setAttribute("error", "Full name must be 2-100 characters!");
             response.sendRedirect("view/Signup.jsp");
             return;
         }
         
-        if (userDao.isUserExists(phone)) {
-            session.setAttribute("error", "Số điện thoại đã tồn tại!");
+        // Validate email
+        if (email == null || email.trim().isEmpty()) {
+            session.setAttribute("error", "Email is required!");
+            response.sendRedirect("view/Signup.jsp");
+            return;
+        }
+        email = email.trim().toLowerCase();
+        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            session.setAttribute("error", "Invalid email format!");
+            response.sendRedirect("view/Signup.jsp");
+            return;
+        }
+        
+        // Validate phone (optional but if provided must be valid)
+        if (phone != null && !phone.trim().isEmpty()) {
+            phone = phone.trim();
+            if (!phone.matches("^[0-9]{10}$")) {
+                session.setAttribute("error", "Phone number must be 10 digits!");
+                response.sendRedirect("view/Signup.jsp");
+                return;
+            }
+        }
+        
+        // Validate password
+        if (password == null || password.isEmpty()) {
+            session.setAttribute("error", "Password is required!");
+            response.sendRedirect("view/Signup.jsp");
+            return;
+        }
+        if (password.length() < 8) {
+            session.setAttribute("error", "Password must be at least 8 characters!");
+            response.sendRedirect("view/Signup.jsp");
+            return;
+        }
+        if (password.length() > 50) {
+            session.setAttribute("error", "Password cannot exceed 50 characters!");
+            response.sendRedirect("view/Signup.jsp");
+            return;
+        }
+        // Strong password validation: must contain uppercase, lowercase, and digit
+        if (!password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$")) {
+            session.setAttribute("error", "Password must contain at least one uppercase letter, one lowercase letter, and one number!");
+            response.sendRedirect("view/Signup.jsp");
+            return;
+        }
+        
+        // Validate password match
+        if (repassword == null || !password.equals(repassword)) {
+            session.setAttribute("error", "Passwords do not match!");
+            response.sendRedirect("view/Signup.jsp");
+            return;
+        }
+        
+        // Validate gender
+        if (gender == null || gender.trim().isEmpty()) {
+            session.setAttribute("error", "Please select gender!");
+            response.sendRedirect("view/Signup.jsp");
+            return;
+        }
+        if (!gender.equals("Male") && !gender.equals("Female") && !gender.equals("Other")) {
+            session.setAttribute("error", "Invalid gender selection!");
+            response.sendRedirect("view/Signup.jsp");
+            return;
+        }
+        
+        // Validate birthdate
+        if (birthdateStr == null || birthdateStr.trim().isEmpty()) {
+            session.setAttribute("error", "Please enter date of birth!");
             response.sendRedirect("view/Signup.jsp");
             return;
         }
 
-        // 🔹 Kiểm tra mật khẩu khớp
-        if (!password.equals(repassword)) {
-            session.setAttribute("error", "Mật khẩu không trùng khớp!");
+        UserDAO userDao = new UserDAO();
+        CustomerDAO cusDao = new CustomerDAO();
+
+        // Check if user already exists (by email or phone)
+        if (userDao.isUserExists(email)) {
+            session.setAttribute("error", "Email is already registered!");
+            response.sendRedirect("view/Signup.jsp");
+            return;
+        }
+        
+        if (phone != null && !phone.isEmpty() && userDao.isUserExists(phone)) {
+            session.setAttribute("error", "Phone number is already registered!");
             response.sendRedirect("view/Signup.jsp");
             return;
         }

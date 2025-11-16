@@ -291,30 +291,32 @@ public class UserProfileServlet extends HttpServlet {
         Map<String, String> errors = new HashMap<>();
 
         // Current password validation
-        if (oldPassword == null || oldPassword.trim().isEmpty()) {
-            errors.put("oldPassword", "Current password is required");
+        if (oldPassword == null || oldPassword.isEmpty()) {
+            errors.put("oldPassword", "Please enter current password");
         } else if (oldPassword.length() < 8) {
-            errors.put("oldPassword", "Current password must be at least 8 characters long");
+            errors.put("oldPassword", "Password must be at least 8 characters");
         } else if (!BCrypt.checkpw(oldPassword, user.getPassword())) {
-            errors.put("oldPassword", "The current password you entered is incorrect");
+            errors.put("oldPassword", "Current password is incorrect");
         }
 
         // New password validation
-        if (newPassword == null || newPassword.trim().isEmpty()) {
-            errors.put("newPassword", "New password is required");
+        if (newPassword == null || newPassword.isEmpty()) {
+            errors.put("newPassword", "Please enter new password");
         } else if (newPassword.length() < 8) {
-            errors.put("newPassword", "New password must be at least 8 characters long");
-        } else if (!newPassword.matches("^(?=.*[A-Za-z])(?=.*\\d).{8,}$")) {
-            errors.put("newPassword", "Password must contain at least one letter and one number");
-        } else if (BCrypt.checkpw(newPassword, user.getPassword())) {
-            errors.put("newPassword", "New password cannot be the same as your current password");
+            errors.put("newPassword", "New password must be at least 8 characters");
+        } else if (newPassword.length() > 50) {
+            errors.put("newPassword", "Password cannot exceed 50 characters");
+        } else if (!newPassword.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$")) {
+            errors.put("newPassword", "Password must contain at least one uppercase letter, one lowercase letter, and one number");
+        } else if (oldPassword != null && !oldPassword.isEmpty() && BCrypt.checkpw(newPassword, user.getPassword())) {
+            errors.put("newPassword", "New password must be different from current password");
         }
 
         // Confirm password validation
-        if (confirmPassword == null || confirmPassword.trim().isEmpty()) {
-            errors.put("confirmPassword", "Please confirm your new password");
+        if (confirmPassword == null || confirmPassword.isEmpty()) {
+            errors.put("confirmPassword", "Please confirm new password");
         } else if (!newPassword.equals(confirmPassword)) {
-            errors.put("confirmPassword", "New passwords do not match. Please enter the same password in both fields");
+            errors.put("confirmPassword", "Passwords do not match");
         }
 
         return errors;

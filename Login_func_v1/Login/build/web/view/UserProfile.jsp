@@ -15,9 +15,18 @@
         }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .error-message { color: #dc2626; font-size: 0.875rem; margin-top: 0.25rem; }
+        .error-message { color: #dc2626; font-size: 0.875rem; margin-top: 0.25rem; display: none; }
         .input-error { border-color: #dc2626; }
         .success-message { color: #16a34a; font-size: 0.875rem; margin-top: 0.25rem; }
+        .password-strength {
+            height: 5px;
+            margin-top: 5px;
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+        .strength-weak { background-color: #dc2626; width: 33%; }
+        .strength-medium { background-color: #fbbf24; width: 66%; }
+        .strength-strong { background-color: #16a34a; width: 100%; }
     </style>
 </head>
 <body class="min-h-screen flex overflow-hidden">
@@ -205,9 +214,9 @@
                         <!-- Current Password -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Current Password *</label>
-                            <input type="password" name="oldPassword" 
+                            <input type="password" name="oldPassword" id="oldPassword"
                                    class="w-full p-2 border border-gray-300 rounded-lg ${not empty fieldErrors.oldPassword ? 'input-error' : ''}" 
-                                   placeholder="Enter your current password"
+                                   placeholder="Enter current password"
                                    required minlength="8" maxlength="50">
                             <div id="oldPasswordError" class="error-message">
                                 <c:if test="${not empty fieldErrors.oldPassword}">${fieldErrors.oldPassword}</c:if>
@@ -217,23 +226,23 @@
                         <!-- New Password -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">New Password *</label>
-                            <input type="password" name="newPassword" 
+                            <input type="password" name="newPassword" id="newPassword"
                                    class="w-full p-2 border border-gray-300 rounded-lg ${not empty fieldErrors.newPassword ? 'input-error' : ''}" 
-                                   placeholder="At least 8 characters with letters and numbers"
-                                   required minlength="8" maxlength="50"
-                                   pattern="^(?=.*[A-Za-z])(?=.*\d).{8,}$">
+                                   placeholder="Minimum 8 characters"
+                                   required minlength="8" maxlength="50">
+                            <div class="password-strength" id="passwordStrength"></div>
                             <div id="newPasswordError" class="error-message">
                                 <c:if test="${not empty fieldErrors.newPassword}">${fieldErrors.newPassword}</c:if>
                             </div>
-                            <div class="text-sm text-gray-500 mt-1">Must contain at least one letter and one number</div>
+                            <div class="text-sm text-gray-500 mt-1">Must contain uppercase, lowercase, and number</div>
                         </div>
                         
                         <!-- Confirm New Password -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Confirm New Password *</label>
-                            <input type="password" name="confirmPassword" 
+                            <input type="password" name="confirmPassword" id="confirmPassword"
                                    class="w-full p-2 border border-gray-300 rounded-lg ${not empty fieldErrors.confirmPassword ? 'input-error' : ''}" 
-                                   placeholder="Re-enter your new password"
+                                   placeholder="Re-enter new password"
                                    required minlength="8" maxlength="50">
                             <div id="confirmPasswordError" class="error-message">
                                 <c:if test="${not empty fieldErrors.confirmPassword}">${fieldErrors.confirmPassword}</c:if>
@@ -383,6 +392,33 @@
             return isValid;
         }
 
+        // Password strength indicator
+        document.getElementById('newPassword')?.addEventListener('input', function() {
+            const password = this.value;
+            const strengthBar = document.getElementById('passwordStrength');
+            
+            if (password.length === 0) {
+                strengthBar.className = 'password-strength';
+                return;
+            }
+            
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (password.length >= 12) strength++;
+            if (/[a-z]/.test(password)) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/\d/.test(password)) strength++;
+            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+            
+            if (strength < 3) {
+                strengthBar.className = 'password-strength strength-weak';
+            } else if (strength <= 4) {
+                strengthBar.className = 'password-strength strength-medium';
+            } else {
+                strengthBar.className = 'password-strength strength-strong';
+            }
+        });
+
         function validatePasswordForm() {
             let isValid = true;
 
@@ -391,39 +427,47 @@
             const confirmPassword = document.querySelector('input[name="confirmPassword"]');
 
             // Current password validation
-            if (!oldPassword.value.trim()) {
-                showError('oldPasswordError', 'Please enter your current password');
+            if (!oldPassword.value) {
+                showError('oldPasswordError', 'Please enter current password');
                 oldPassword.classList.add('input-error');
                 isValid = false;
             } else if (oldPassword.value.length < 8) {
-                showError('oldPasswordError', 'Current password must be at least 8 characters');
+                showError('oldPasswordError', 'Password must be at least 8 characters');
                 oldPassword.classList.add('input-error');
                 isValid = false;
             }
 
             // New password validation
-            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
-            if (!newPassword.value.trim()) {
-                showError('newPasswordError', 'Please enter a new password');
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+            if (!newPassword.value) {
+                showError('newPasswordError', 'Please enter new password');
                 newPassword.classList.add('input-error');
                 isValid = false;
             } else if (newPassword.value.length < 8) {
-                showError('newPasswordError', 'New password must be at least 8 characters long');
+                showError('newPasswordError', 'New password must be at least 8 characters');
+                newPassword.classList.add('input-error');
+                isValid = false;
+            } else if (newPassword.value.length > 50) {
+                showError('newPasswordError', 'Password cannot exceed 50 characters');
                 newPassword.classList.add('input-error');
                 isValid = false;
             } else if (!passwordRegex.test(newPassword.value)) {
-                showError('newPasswordError', 'Password must contain at least one letter and one number');
+                showError('newPasswordError', 'Password must contain uppercase, lowercase, and number');
+                newPassword.classList.add('input-error');
+                isValid = false;
+            } else if (oldPassword.value === newPassword.value) {
+                showError('newPasswordError', 'New password must be different from current password');
                 newPassword.classList.add('input-error');
                 isValid = false;
             }
 
             // Confirm password validation
-            if (!confirmPassword.value.trim()) {
-                showError('confirmPasswordError', 'Please confirm your new password');
+            if (!confirmPassword.value) {
+                showError('confirmPasswordError', 'Please confirm new password');
                 confirmPassword.classList.add('input-error');
                 isValid = false;
             } else if (newPassword.value !== confirmPassword.value) {
-                showError('confirmPasswordError', 'New passwords do not match. Please enter the same password in both fields');
+                showError('confirmPasswordError', 'Passwords do not match');
                 confirmPassword.classList.add('input-error');
                 isValid = false;
             }
@@ -435,12 +479,14 @@
             const element = document.getElementById(elementId);
             if (element) {
                 element.textContent = message;
+                element.style.display = 'block';
             }
         }
 
         function clearErrors() {
             document.querySelectorAll('.error-message').forEach(el => {
                 el.textContent = '';
+                el.style.display = 'none';
             });
             document.querySelectorAll('.input-error').forEach(el => {
                 el.classList.remove('input-error');
