@@ -1,7 +1,6 @@
 package controller;
 
 import dao.UserDAO;
-import dao.OrderDAO;
 import dao.EmployeeDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.*;
@@ -28,33 +27,9 @@ public class AdminServlet extends HttpServlet {
 
         User currentUser = (User) session.getAttribute("user");
         
-        // Check if user is Admin or Manager
-        boolean isAuthorized = false;
-        Employee employee = (Employee) session.getAttribute("employee");
-        
-        System.out.println("[AdminServlet doGet] currentUser.role=" + currentUser.getRole());
-        System.out.println("[AdminServlet doGet] employee=" + employee);
-        if (employee != null) {
-            System.out.println("[AdminServlet doGet] employee.jobRole=" + employee.getJobRole());
-        }
-        
-        if (currentUser.getRole() == 1) {
-            // Admin has access
-            isAuthorized = true;
-            System.out.println("[AdminServlet doGet] Authorized as Admin");
-        } else if (currentUser.getRole() == 2) {
-            // Check if Employee is Manager
-            if (employee != null && "Manager".equalsIgnoreCase(employee.getJobRole())) {
-                isAuthorized = true;
-                System.out.println("[AdminServlet doGet] Authorized as Manager");
-            } else {
-                System.out.println("[AdminServlet doGet] NOT authorized - employee is null or not Manager");
-            }
-        }
-        
-        if (!isAuthorized) {
-            System.out.println("[AdminServlet doGet] Access DENIED - redirecting to dashboard");
-            session.setAttribute("error", "Access denied. Admin or Manager role required.");
+        // Check if user is Admin ONLY
+        if (currentUser.getRole() != 1) {
+            session.setAttribute("error", "Access denied. Admin role required.");
             response.sendRedirect(request.getContextPath() + "/dashboard");
             return;
         }
@@ -62,11 +37,8 @@ public class AdminServlet extends HttpServlet {
         UserDAO userDAO = new UserDAO();
         EmployeeDAO employeeDAO = new EmployeeDAO();
 
-        // === Phần lọc role (đã sửa) ===
+        // Get role filter from URL parameter
         String roleFilter = request.getParameter("roleFilter");
-        if (roleFilter == null || roleFilter.trim().isEmpty()) {
-            roleFilter = request.getParameter("role");
-        }
         if (roleFilter == null || roleFilter.trim().isEmpty()) {
             roleFilter = "all";
         }
@@ -113,15 +85,9 @@ public class AdminServlet extends HttpServlet {
             }
         }
 
-        // Debug thông tin lọc
-        System.out.println("[AdminServlet] roleParam=" + request.getParameter("role")
-                + " roleFilter=" + roleFilter
-                + ", filteredUsers.size=" + (filteredUsers == null ? 0 : filteredUsers.size()));
 
-        OrderDAO orderDAO = new OrderDAO();
-        int totalOrders = orderDAO.countAllOrders();
 
-        // Lấy số trang hiện tại (nếu không có thì mặc định = 1)
+        // Get current page number (default = 1)
         int page = 1;
         String pageParam = request.getParameter("page");
         if (pageParam != null) {
@@ -131,24 +97,19 @@ public class AdminServlet extends HttpServlet {
             }
         }
 
-        // Phân trang dựa trên filteredUsers
+        // Pagination
         int totalUsers = filteredUsers.size();
         int totalPages = Math.max(1, (int) Math.ceil((double) totalUsers / USERS_PER_PAGE));
-        if (page < 1) {
-            page = 1;
-        }
-        if (page > totalPages) {
-            page = totalPages;
-        }
+        if (page < 1) page = 1;
+        if (page > totalPages) page = totalPages;
 
         int start = (page - 1) * USERS_PER_PAGE;
         int end = Math.min(start + USERS_PER_PAGE, totalUsers);
         List<User> paginatedUsers = filteredUsers.subList(start, end);
 
-        // Gửi dữ liệu sang JSP
+        // Send data to JSP
         request.setAttribute("users", paginatedUsers);
         request.setAttribute("currentUser", currentUser);
-        request.setAttribute("totalOrders", totalOrders);
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("selectedRole", roleFilter);
@@ -172,7 +133,7 @@ public class AdminServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Kiểm tra session và quyền admin/manager
+        // Check session and admin permission
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
             response.sendRedirect("Login");
@@ -181,22 +142,9 @@ public class AdminServlet extends HttpServlet {
 
         User user = (User) session.getAttribute("user");
         
-        // Check if user is Admin or Manager
-        boolean isAuthorized = false;
-        if (user.getRole() == 1) {
-            // Admin has access
-            isAuthorized = true;
-        } else if (user.getRole() == 2) {
-            // Check if Employee is Manager
-            Employee employee = (Employee) session.getAttribute("employee");
-            if (employee != null && "Manager".equalsIgnoreCase(employee.getJobRole())) {
-                isAuthorized = true;
-            }
-        }
-        
-        if (!isAuthorized) {
-            System.out.println("[AdminServlet doPost] Access DENIED");
-            session.setAttribute("error", "Access denied. Admin or Manager role required.");
+        // Check if user is Admin ONLY
+        if (user.getRole() != 1) {
+            session.setAttribute("error", "Access denied. Admin role required.");
             response.sendRedirect(request.getContextPath() + "/dashboard");
             return;
         }
@@ -212,12 +160,11 @@ public class AdminServlet extends HttpServlet {
                     if (userId == user.getUserID()) {
                         session.setAttribute("error", "Cannot delete your own account!");
                     } else {
-                        System.out.println("[AdminServlet] Attempting to delete userID: " + userId);
                         boolean success = userDAO.deleteUser(userId);
                         if (success) {
-                            session.setAttribute("message", "✅ User deleted successfully!");
+                            session.setAttribute("message", "User deleted successfully!");
                         } else {
-                            session.setAttribute("error", "❌ Failed to delete user! Check database constraints.");
+                            session.setAttribute("error", "Failed to delete user! Check database constraints.");
                         }
                     }
                 }
@@ -268,7 +215,7 @@ public class AdminServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        // Redirect để tránh submit lại form
+        // Redirect to avoid form resubmission
         response.sendRedirect("admin");
     }
 }
