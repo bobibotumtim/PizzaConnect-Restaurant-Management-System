@@ -191,7 +191,7 @@
             <div class="d-flex flex-wrap gap-2">
                 <button type="button" class="btn ${selectedCategory == 'All' ? 'btn-primary' : 'btn-outline-primary'}" 
                         onclick="filterByCategory('All')" style="min-width: 100px;">
-                    Tất cả
+                    All
                 </button>
                 <c:forEach var="cat" items="${categories}">
                     <button type="button" class="btn ${selectedCategory == cat ? 'btn-primary' : 'btn-outline-primary'}" 
@@ -206,7 +206,7 @@
     <div>
         <div class="section-title section-waiting">
             <span>⏳ Waiting Dishes</span>
-            <span class="section-count">${waitingList.size()} món</span>
+            <span class="section-count">${waitingList.size()} dishes</span>
         </div>
         <div id="waiting" class="dish-container">
             <c:forEach var="dish" items="${waitingList}">
