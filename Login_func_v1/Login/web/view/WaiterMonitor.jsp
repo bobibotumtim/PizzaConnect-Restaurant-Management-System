@@ -27,11 +27,11 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex overflow-hidden">
+<body class="bg-gray-50 min-h-screen flex">
     <!-- Sidebar -->
     <jsp:include page="Sidebar.jsp" />
     
-    <div class="flex flex-col flex-1 overflow-auto" style="margin-left: 80px;">
+    <div class="flex flex-col flex-1" style="margin-left: 80px; height: 100vh; overflow-y: auto;">
         <!-- Top Navigation Bar -->
         <div class="bg-white shadow-md border-b px-6 py-3 flex items-center justify-between">
             <div class="flex items-center gap-4">
@@ -53,8 +53,8 @@
             </div>
         </div>
         
-        <div class="w-full">
-        <div class="max-w-7xl mx-auto px-6 py-8">
+        <div class="w-full flex-1">
+        <div class="max-w-7xl mx-auto px-6 py-8 pb-20">
             
             <!-- Error Message -->
             <c:if test="${not empty error}">
