@@ -294,14 +294,12 @@
             </div>
         </div>
 
-        <%-- 1. Modal Thêm Product (ĐƠN GIẢN) --%>
-        <%-- 1. Modal Thêm Product (ĐƠN GIẢN) --%>
+        <%-- 1. Modal Thêm Product --%>
         <div id="addProductModal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <h2>Add New Product</h2>
-                <%-- ✅ THAY ĐỔI 1: Thêm enctype="multipart/form-data" --%>
-                <form action="${pageContext.request.contextPath}/AddProductServlet" method="post" enctype="multipart/form-data">
+                <form action="${pageContext.request.contextPath}/AddProductServlet" method="post">
                     <div class="form-group">
                         <label>Product Name:</label>
                         <input type="text" name="productName" required>
@@ -319,26 +317,24 @@
                             </c:forEach>
                         </select>
                     </div>
-                    <%-- ✅ THAY ĐỔI 2: Thay input type="text" bằng type="file" --%>
                     <div class="form-group">
-                        <label>Product Image (File):</label>
-                        <input type="file" name="productImage" accept="image/*">
+                        <label>Product Image URL:</label>
+                        <input type="text" name="imageUrl" placeholder="Enter image URL">
+                        <small class="text-gray-500">Enter the full URL of the product image</small>
                     </div>
                     <button type="submit">Save Product</button>
                 </form>
             </div>
         </div>
 
-        <%-- 2. Modal Sửa Product (ĐƠN GIẢN) --%>
+        <%-- 2. Modal Sửa Product --%>
         <div id="editProductModal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <h2>Edit Product</h2>
-                <%-- ✅ THAY ĐỔI 3: Thêm enctype="multipart/form-data" --%>
-                <form action="${pageContext.request.contextPath}/EditProductServlet" method="post" enctype="multipart/form-data">
+                <form action="${pageContext.request.contextPath}/EditProductServlet" method="post">
                     <input type="hidden" name="productId" id="editProductId">
-                    <%-- Thêm input hidden để lưu URL ảnh cũ --%>
-                    <input type="hidden" name="existingImageUrl" id="existingImageUrl"> 
+                    <input type="hidden" name="existingImageUrl" id="existingImageUrl">
                     <div class="form-group">
                         <label>Product Name:</label>
                         <input type="text" name="productName" id="editProductName" required>
@@ -356,11 +352,14 @@
                             </c:forEach>
                         </select>
                     </div>
-                    <%-- ✅ THAY ĐỔI 4: Thay input type="text" bằng type="file" --%>
                     <div class="form-group">
-                        <label>New Product Image (Optional):</label>
-                        <input type="file" name="newProductImage" id="editNewProductImage" accept="image/*">
-                        <p class="text-xs text-gray-500 mt-1">Leave blank to keep current image.</p>
+                        <label>Current Image:</label>
+                        <div id="currentImagePreview" class="mb-2"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>New Image URL (optional):</label>
+                        <input type="text" name="imageUrl" id="editImageUrl" placeholder="Enter new image URL">
+                        <small class="text-gray-500">Leave empty to keep current image</small>
                     </div>
                     <button type="submit">Update Product</button>
                 </form>
@@ -422,25 +421,29 @@
 
                     // === 2. Mở Modal Edit Product ===
                     if (editBtn) {
-                        const data = editBtn.dataset; // Lấy data từ button
+                        const data = editBtn.dataset;
                         document.getElementById("editProductId").value = data.id;
                         document.getElementById("editProductName").value = data.name;
                         document.getElementById("editDescription").value = data.desc;
                         document.getElementById("editCategoryName").value = data.category;
                         
-                        // ✅ Dòng này đã được thay thế để lưu URL cũ vào input hidden mới
                         const existingImageUrlInput = document.getElementById("existingImageUrl");
                         if (existingImageUrlInput) {
-                            existingImageUrlInput.value = data.image;
+                            existingImageUrlInput.value = data.image || '';
                         }
                         
-                        // Reset input file để không gửi file cũ
-                        const editNewProductImageInput = document.getElementById("editNewProductImage");
-                        if (editNewProductImageInput) {
-                            editNewProductImageInput.value = ''; 
+                        const editImageUrlInput = document.getElementById("editImageUrl");
+                        if (editImageUrlInput) {
+                            editImageUrlInput.value = data.image || '';
+                        }
+                        
+                        const currentImagePreview = document.getElementById("currentImagePreview");
+                        if (currentImagePreview && data.image) {
+                            currentImagePreview.innerHTML = '<img src="' + data.image + '" class="w-20 h-20 rounded-lg object-cover border" alt="Current">';
+                        } else if (currentImagePreview) {
+                            currentImagePreview.innerHTML = '<span class="text-gray-400 italic">No image</span>';
                         }
 
-                        // Cuối cùng mới hiển thị modal
                         editProductModal.style.display = "block";
                     }
 
