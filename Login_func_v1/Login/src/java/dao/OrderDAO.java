@@ -1187,7 +1187,7 @@ public class OrderDAO extends DBContext {
                 if (rs.next()) {
                     int totalItems = rs.getInt("TotalItems");
                     int notReadyItems = rs.getInt("NotReadyItems");
-                    int readyItems = rs.getInt("ReadyItems");
+//                    int readyItems = rs.getInt("ReadyItems");
                     
                     // Lấy current order status
                     Order order = getOrderById(orderId);
@@ -1212,11 +1212,11 @@ public class OrderDAO extends DBContext {
                         // Chỉ auto-update khi order đang ở Waiting (0) hoặc Ready (1)
                         // Không tự động thay đổi khi đã Dining (2), Completed (3), Cancelled (4)
                         boolean updated = updateOrderStatus(orderId, newStatus);
-                        if (updated) {
-                            System.out.println("✅ Auto-updated Order #" + orderId + " status: " + 
-                                             currentStatus + " → " + newStatus + 
-                                             " (Not Ready: " + notReadyItems + ", Ready: " + readyItems + ")");
-                        }
+//                        if (updated) {
+//                            System.out.println("✅ Auto-updated Order #" + orderId + " status: " + 
+//                                             currentStatus + " → " + newStatus + 
+//                                             " (Not Ready: " + notReadyItems + ", Ready: " + readyItems + ")");
+//                        }
                         return updated;
                     }
                 }
