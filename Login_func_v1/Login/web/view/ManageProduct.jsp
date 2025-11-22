@@ -334,7 +334,6 @@
                 <h2>Edit Product</h2>
                 <form action="${pageContext.request.contextPath}/EditProductServlet" method="post">
                     <input type="hidden" name="productId" id="editProductId">
-                    <input type="hidden" name="existingImageUrl" id="existingImageUrl">
                     <div class="form-group">
                         <label>Product Name:</label>
                         <input type="text" name="productName" id="editProductName" required>

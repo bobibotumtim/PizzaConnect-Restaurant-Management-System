@@ -22,12 +22,7 @@ public class EditProductServlet extends HttpServlet {
         String productName = request.getParameter("productName");
         String description = request.getParameter("description");
         String categoryName = request.getParameter("categoryName");
-        String existingImageUrl = request.getParameter("existingImageUrl");
-        String newImageUrl = request.getParameter("imageUrl");
-        
-        String imageUrl = (newImageUrl != null && !newImageUrl.trim().isEmpty()) 
-                          ? newImageUrl.trim() 
-                          : (existingImageUrl != null ? existingImageUrl : "");
+        String imageUrl = request.getParameter("imageUrl");
 
         HttpSession session = request.getSession();
         
