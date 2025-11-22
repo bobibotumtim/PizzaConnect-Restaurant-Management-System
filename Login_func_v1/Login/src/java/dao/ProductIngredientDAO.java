@@ -65,57 +65,70 @@ public class ProductIngredientDAO extends DBContext {
     }
 
     /**
-     * Thêm MỘT thành phần (nhận Connection từ Service)
+     * Thêm MỘT thành phần (tự quản lý connection)
      */
-    public boolean addIngredient(ProductIngredient pi, Connection con) throws SQLException {
+    public boolean addIngredient(ProductIngredient pi) {
         String sql = "INSERT INTO ProductIngredient (ProductSizeID, InventoryID, QuantityNeeded, Unit) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, pi.getProductSizeId());
             ps.setInt(2, pi.getInventoryId());
             ps.setDouble(3, pi.getQuantityNeeded());
             ps.setString(4, pi.getUnit());
             return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        // Ném lỗi ra để Service rollback
+        return false;
     }
 
     /**
-     * Xóa TẤT CẢ thành phần của MỘT size (nhận Connection từ Service)
-     * Đây là hàm mấu chốt cho nghiệp vụ "Update All"
+     * Xóa TẤT CẢ thành phần của MỘT size (tự quản lý connection)
      */
-    public boolean deleteAllIngredientsByProductSizeId(int productSizeId, Connection con) throws SQLException {
+    public boolean deleteAllIngredientsByProductSizeId(int productSizeId) {
         String sql = "DELETE FROM ProductIngredient WHERE ProductSizeID = ?";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, productSizeId);
-            ps.executeUpdate(); // Thực thi, không cần quan tâm số dòng
+            ps.executeUpdate();
             return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        // Ném lỗi ra để Service rollback
+        return false;
     }
-    
-    public boolean updateIngredient(ProductIngredient pi, Connection con) throws SQLException {
+    /**
+     * Cập nhật thông tin nguyên liệu (tự quản lý connection)
+     */
+    public boolean updateIngredient(ProductIngredient pi) {
         String sql = "UPDATE ProductIngredient SET QuantityNeeded=?, Unit=? WHERE ProductSizeID=? AND InventoryID=?";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setDouble(1, pi.getQuantityNeeded());
             ps.setString(2, pi.getUnit());
             ps.setInt(3, pi.getProductSizeId());
             ps.setInt(4, pi.getInventoryId());
             return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        // Ném lỗi ra để Service rollback
+        return false;
     }
 
     /**
-     * MỚI: Xóa một thành phần (nhận Connection từ Service)
+     * Xóa một thành phần (tự quản lý connection)
      */
-    public boolean deleteIngredient(int productSizeId, int inventoryId, Connection con) throws SQLException {
+    public boolean deleteIngredient(int productSizeId, int inventoryId) {
         String sql = "DELETE FROM ProductIngredient WHERE ProductSizeID=? AND InventoryID=?";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, productSizeId);
             ps.setInt(2, inventoryId);
             return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        // Ném lỗi ra để Service rollback
+        return false;
     }
     
     /**

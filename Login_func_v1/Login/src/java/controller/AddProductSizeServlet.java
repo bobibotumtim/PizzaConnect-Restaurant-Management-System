@@ -1,6 +1,5 @@
 package controller;
 
-import dao.DBContext;
 import dao.ProductDAO;
 import dao.ProductSizeDAO;
 import dao.ProductIngredientDAO;
@@ -8,8 +7,6 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import models.Product;
@@ -22,14 +19,12 @@ public class AddProductSizeServlet extends HttpServlet {
     private ProductDAO productDAO;
     private ProductSizeDAO productSizeDAO;
     private ProductIngredientDAO ingredientDAO;
-    private DBContext dbContext;
 
     @Override
     public void init() throws ServletException {
         productDAO = new ProductDAO();
         productSizeDAO = new ProductSizeDAO();
         ingredientDAO = new ProductIngredientDAO();
-        dbContext = new DBContext();
     }
 
     @Override
@@ -102,15 +97,34 @@ public class AddProductSizeServlet extends HttpServlet {
                 }
             }
 
-            // 5. Thực hiện Transaction
-            boolean result = addSizeWithIngredients(newSize, ingredients);
+            // 5. Thêm ProductSize
+            int newProductSizeId = productSizeDAO.addProductSize(newSize);
+            
+            if (newProductSizeId == -1) {
+                session.setAttribute("message", "Error adding new size.");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect(request.getContextPath() + "/manageproduct");
+                return;
+            }
 
-            if (result) {
+            // 6. Thêm các nguyên liệu
+            boolean allIngredientsAdded = true;
+            if (ingredients != null && !ingredients.isEmpty()) {
+                for (ProductIngredient pi : ingredients) {
+                    pi.setProductSizeId(newProductSizeId);
+                    if (!ingredientDAO.addIngredient(pi)) {
+                        allIngredientsAdded = false;
+                        break;
+                    }
+                }
+            }
+
+            if (allIngredientsAdded) {
                 session.setAttribute("message", "New size added successfully!");
                 session.setAttribute("messageType", "success");
             } else {
-                session.setAttribute("message", "Error adding new size.");
-                session.setAttribute("messageType", "error");
+                session.setAttribute("message", "Size added but some ingredients failed.");
+                session.setAttribute("messageType", "warning");
             }
 
         } catch (NumberFormatException e) {
@@ -148,7 +162,6 @@ public class AddProductSizeServlet extends HttpServlet {
                 String unit = units[i];
 
                 if (qty > 0) {
-                    // productSizeId sẽ được set bên trong Service
                     ProductIngredient pi = new ProductIngredient(0, invId, qty, unit);
                     list.add(pi);
                 }
@@ -157,45 +170,5 @@ public class AddProductSizeServlet extends HttpServlet {
             }
         }
         return list;
-    }
-    
-    private boolean addSizeWithIngredients(ProductSize size, List<ProductIngredient> ingredients) {
-        Connection con = null;
-        try {
-            con = dbContext.getConnection();
-            con.setAutoCommit(false);
-
-            int newProductSizeId = productSizeDAO.addProductSize(size, con);
-            if (newProductSizeId == -1) {
-                throw new SQLException("Không thể tạo ProductSize, không lấy được ID.");
-            }
-
-            if (ingredients != null) {
-                for (ProductIngredient pi : ingredients) {
-                    pi.setProductSizeId(newProductSizeId);
-                    ingredientDAO.addIngredient(pi, con);
-                }
-            }
-            
-            con.commit();
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            try {
-                if (con != null) con.rollback();
-            } catch (SQLException e2) {
-                e2.printStackTrace();
-            }
-            return false;
-        } finally {
-            try {
-                if (con != null) {
-                    con.setAutoCommit(true);
-                    con.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
     }
 }

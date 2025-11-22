@@ -1,18 +1,13 @@
 package controller;
 
-import dao.DBContext;
 import dao.ProductSizeDAO;
 import dao.ProductIngredientDAO;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import models.ProductIngredient;
 import models.ProductSize;
 
@@ -21,13 +16,11 @@ public class EditProductSizeServlet extends HttpServlet {
 
     private ProductSizeDAO productSizeDAO;
     private ProductIngredientDAO ingredientDAO;
-    private DBContext dbContext;
 
     @Override
     public void init() throws ServletException {
         productSizeDAO = new ProductSizeDAO();
         ingredientDAO = new ProductIngredientDAO();
-        dbContext = new DBContext();
     }
 
     @Override
@@ -109,15 +102,53 @@ public class EditProductSizeServlet extends HttpServlet {
                 }
             }
 
-            // 5. Thực hiện Transaction
-            boolean result = updateSizeWithIngredients(sizeToUpdate, newIngredients);
+            // 5. Cập nhật thông tin ProductSize
+            if (!productSizeDAO.updateProductSize(sizeToUpdate)) {
+                session.setAttribute("message", "Error updating size.");
+                session.setAttribute("messageType", "error");
+                response.sendRedirect(request.getContextPath() + "/manageproduct");
+                return;
+            }
 
-            if (result) {
+            // 6. Xử lý công thức nguyên liệu
+            List<ProductIngredient> oldIngredients = ingredientDAO.getIngredientsByProductSizeId(productSizeId);
+            java.util.Set<Integer> newInventoryIds = new java.util.HashSet<>();
+
+            // 6.1. Thêm hoặc cập nhật nguyên liệu mới
+            boolean allIngredientsProcessed = true;
+            if (newIngredients != null) {
+                for (ProductIngredient pi : newIngredients) {
+                    newInventoryIds.add(pi.getInventoryId());
+                    pi.setProductSizeId(productSizeId);
+
+                    boolean exists = oldIngredients.stream()
+                                    .anyMatch(old -> old.getInventoryId() == pi.getInventoryId());
+                    
+                    if (exists) {
+                        if (!ingredientDAO.updateIngredient(pi)) {
+                            allIngredientsProcessed = false;
+                        }
+                    } else {
+                        if (!ingredientDAO.addIngredient(pi)) {
+                            allIngredientsProcessed = false;
+                        }
+                    }
+                }
+            }
+            
+            // 6.2. Xóa các công thức cũ không còn trong list mới
+            for (ProductIngredient oldPi : oldIngredients) {
+                if (!newInventoryIds.contains(oldPi.getInventoryId())) {
+                    ingredientDAO.deleteIngredient(productSizeId, oldPi.getInventoryId());
+                }
+            }
+
+            if (allIngredientsProcessed) {
                 session.setAttribute("message", "Size updated successfully!");
                 session.setAttribute("messageType", "success");
             } else {
-                session.setAttribute("message", "Error updating size.");
-                session.setAttribute("messageType", "error");
+                session.setAttribute("message", "Size updated but some ingredients failed.");
+                session.setAttribute("messageType", "warning");
             }
 
         } catch (NumberFormatException e) {
@@ -165,64 +196,5 @@ public class EditProductSizeServlet extends HttpServlet {
             }
         }
         return list;
-    }
-    
-    private boolean updateSizeWithIngredients(ProductSize size, List<ProductIngredient> newIngredients) {
-        Connection con = null;
-        try {
-            con = dbContext.getConnection();
-            con.setAutoCommit(false);
-
-            // 1. Cập nhật thông tin ProductSize
-            productSizeDAO.updateProductSize(size, con);
-
-            // 2. Xử lý công thức
-            int productSizeId = size.getProductSizeId();
-            List<ProductIngredient> oldIngredients = ingredientDAO.getIngredientsByProductSizeId(productSizeId);
-            Set<Integer> newInventoryIds = new HashSet<>();
-
-            if (newIngredients != null) {
-                for (ProductIngredient pi : newIngredients) {
-                    newInventoryIds.add(pi.getInventoryId());
-                    pi.setProductSizeId(productSizeId);
-
-                    boolean exists = oldIngredients.stream()
-                                    .anyMatch(old -> old.getInventoryId() == pi.getInventoryId());
-                    
-                    if (exists) {
-                        ingredientDAO.updateIngredient(pi, con);
-                    } else {
-                        ingredientDAO.addIngredient(pi, con);
-                    }
-                }
-            }
-            
-            // 3. Xóa các công thức cũ không còn trong list mới
-            for (ProductIngredient oldPi : oldIngredients) {
-                if (!newInventoryIds.contains(oldPi.getInventoryId())) {
-                    ingredientDAO.deleteIngredient(productSizeId, oldPi.getInventoryId(), con);
-                }
-            }
-
-            con.commit();
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            try {
-                if (con != null) con.rollback();
-            } catch (SQLException e2) {
-                e2.printStackTrace();
-            }
-            return false;
-        } finally {
-            try {
-                if (con != null) {
-                    con.setAutoCommit(true);
-                    con.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
     }
 }

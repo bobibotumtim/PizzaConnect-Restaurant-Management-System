@@ -7,7 +7,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import models.ProductIngredient;
 
 public class ProductSizeDAO extends DBContext {
 
@@ -83,10 +86,13 @@ public class ProductSizeDAO extends DBContext {
         return list;
     }
 
-    // Hàm này (thay đổi CSDL) phải nhận Connection và ném lỗi
-    public int addProductSize(ProductSize size, Connection con) throws SQLException {
+    /**
+     * Thêm ProductSize và trả về ID mới (tự quản lý connection)
+     */
+    public int addProductSize(ProductSize size) {
         String sql = "INSERT INTO ProductSize (ProductID, SizeCode, Price) VALUES (?, ?, ?)";
-        try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, size.getProductId());
             ps.setString(2, size.getSizeCode());
             ps.setDouble(3, size.getPrice());
@@ -96,11 +102,12 @@ public class ProductSizeDAO extends DBContext {
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
                     return rs.getInt(1); // Trả về ProductSizeID
-                } else {
-                    throw new SQLException("Thêm ProductSize thất bại, không lấy được ID.");
                 }
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+        return -1; // Thất bại
     }
 
     // Hàm này (thay đổi CSDL) phải nhận Connection và ném lỗi
@@ -138,18 +145,20 @@ public class ProductSizeDAO extends DBContext {
     }
 
     /**
-     * Cập nhật thông tin cơ bản của Size (Hàm này (thay đổi CSDL) phải
-     * nhận Connection và ném lỗi)
+     * Cập nhật thông tin cơ bản của Size (tự quản lý connection)
      */
-    public boolean updateProductSize(ProductSize size, Connection con) throws SQLException {
+    public boolean updateProductSize(ProductSize size) {
         String sql = "UPDATE ProductSize SET SizeCode = ?, Price = ? WHERE ProductSizeID = ?";
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, size.getSizeCode());
             ps.setDouble(2, size.getPrice());
             ps.setInt(3, size.getProductSizeId());
             return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        // Ném lỗi ra ngoài để Service rollback
+        return false;
     }
     
     // Check if size exists for product (for validation)
