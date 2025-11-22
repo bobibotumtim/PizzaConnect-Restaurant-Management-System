@@ -90,7 +90,7 @@
                 </thead>
                 <tbody class="divide-y">
                     <c:forEach var="c" items="${categories}">
-                        <tr class="hover:bg-gray-50">
+                        <tr class="hover:bg-orange-50">
                             <td class="px-4 py-2 font-semibold">#${c.categoryId}</td>
                             <td class="px-4 py-2 font-medium">${c.categoryName}</td>
                             <td class="px-4 py-2 text-gray-600">${c.description}</td>
@@ -167,7 +167,11 @@
     const closes = document.querySelectorAll('.close');
 
     openAdd.onclick = () => addModal.style.display = 'block';
-    closes.forEach(c => c.onclick = () => { addModal.style.display = 'none'; editModal.style.display = 'none'; });
+    
+    closes.forEach(c => c.onclick = () => { 
+        addModal.style.display = 'none'; 
+        editModal.style.display = 'none'; 
+    });
 
     window.onclick = e => {
         if (e.target === addModal) addModal.style.display = 'none';

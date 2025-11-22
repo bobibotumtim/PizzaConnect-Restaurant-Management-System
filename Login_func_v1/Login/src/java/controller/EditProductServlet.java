@@ -2,20 +2,17 @@ package controller;
 
 import dao.CategoryDAO;
 import dao.ProductDAO;
-import dao.DBContext;
 import models.Product;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.*;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
+
 @WebServlet(name = "EditProductServlet", urlPatterns = {"/EditProductServlet"})
 public class EditProductServlet extends HttpServlet {
 
     private ProductDAO productDAO = new ProductDAO();
     private CategoryDAO categoryDAO = new CategoryDAO();
-    private DBContext dbContext = new DBContext();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -30,7 +27,7 @@ public class EditProductServlet extends HttpServlet {
         
         String imageUrl = (newImageUrl != null && !newImageUrl.trim().isEmpty()) 
                           ? newImageUrl.trim() 
-                          : existingImageUrl;
+                          : (existingImageUrl != null ? existingImageUrl : "");
 
         HttpSession session = request.getSession();
         
@@ -42,15 +39,18 @@ public class EditProductServlet extends HttpServlet {
             return;
         }
         
-        try {
-            if (productDAO.isProductNameExists(productName, productId)) {
-                session.setAttribute("message", "Product name already exists");
-                session.setAttribute("messageType", "error");
-                response.sendRedirect(request.getContextPath() + "/manageproduct");
-                return;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (productDAO.isProductNameExists(productName, productId)) {
+            session.setAttribute("message", "Product name already exists");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect(request.getContextPath() + "/manageproduct");
+            return;
+        }
+
+        if (categoryDAO.getCategoryByName(categoryName) == null) {
+            session.setAttribute("message", "Invalid category");
+            session.setAttribute("messageType", "error");
+            response.sendRedirect(request.getContextPath() + "/manageproduct");
+            return;
         }
 
         Product product = new Product();
@@ -61,7 +61,7 @@ public class EditProductServlet extends HttpServlet {
         product.setImageUrl(imageUrl);
         product.setAvailable(true);
 
-        boolean result = updateBaseProduct(product);
+        boolean result = productDAO.updateProduct(product);
         
         if (result) {
             session.setAttribute("message", "Product updated successfully!");
@@ -72,36 +72,5 @@ public class EditProductServlet extends HttpServlet {
         }
         
         response.sendRedirect(request.getContextPath() + "/manageproduct");
-    }
-    
-    private boolean updateBaseProduct(Product product) {
-        Connection con = null;
-        try {
-            con = dbContext.getConnection();
-            con.setAutoCommit(false);
-
-            int categoryId = categoryDAO.getCategoryIdByName(product.getCategoryName(), con);
-            productDAO.updateBaseProduct(product, categoryId, con);
-            
-            con.commit();
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            try {
-                if (con != null) con.rollback();
-            } catch (SQLException e2) {
-                e2.printStackTrace();
-            }
-            return false;
-        } finally {
-            try {
-                if (con != null) {
-                    con.setAutoCommit(true);
-                    con.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
     }
 }

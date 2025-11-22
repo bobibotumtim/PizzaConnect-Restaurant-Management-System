@@ -109,44 +109,89 @@ public class ProductDAO extends DBContext {
         return null;
     }
 
-    // SỬA LẠI: Hàm addProduct chỉ INSERT vào bảng Product
-    // Nhận Connection và CategoryID từ Service, ném lỗi ra ngoài
-    public int addProduct(Product product, int categoryId, Connection con) throws SQLException {
+    public boolean addProduct(Product product) {
+        Connection con = null;
         String sql = "INSERT INTO Product (ProductName, Description, CategoryID, ImageURL, IsAvailable) VALUES (?, ?, ?, ?, ?)";
         
-        try (PreparedStatement psProd = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            psProd.setString(1, product.getProductName());
-            psProd.setString(2, product.getDescription());
-            psProd.setInt(3, categoryId); // Lấy ID từ Service
-            psProd.setString(4, product.getImageUrl());
-            psProd.setBoolean(5, product.isAvailable());
+        try {
+            con = getConnection();
+            con.setAutoCommit(false);
             
-            int affectedRows = psProd.executeUpdate();
-            if (affectedRows == 0) {
-                throw new SQLException("Thêm product thất bại.");
+            CategoryDAO categoryDAO = new CategoryDAO();
+            int categoryId = categoryDAO.getCategoryIdByName(product.getCategoryName(), con);
+            
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setString(1, product.getProductName());
+                ps.setString(2, product.getDescription());
+                ps.setInt(3, categoryId);
+                ps.setString(4, product.getImageUrl());
+                ps.setBoolean(5, product.isAvailable());
+                
+                ps.executeUpdate();
             }
-
-            try (ResultSet rs = psProd.getGeneratedKeys()) {
-                if (rs.next()) {
-                    return rs.getInt(1); // Trả về ProductID mới
-                } else {
-                    throw new SQLException("Không lấy được ProductID vừa tạo.");
+            
+            con.commit();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                if (con != null) con.rollback();
+            } catch (SQLException e2) {
+                e2.printStackTrace();
+            }
+            return false;
+        } finally {
+            try {
+                if (con != null) {
+                    con.setAutoCommit(true);
+                    con.close();
                 }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
         }
     }
 
-    // SỬA LẠI: Hàm updateProduct chỉ UPDATE bảng Product
-    public boolean updateProduct(Product product, int categoryId, Connection con) throws SQLException {
+    public boolean updateProduct(Product product) {
+        Connection con = null;
         String sql = "UPDATE Product SET ProductName=?, Description=?, CategoryID=?, ImageURL=?, IsAvailable=? WHERE ProductID=?";
-        try (PreparedStatement psProd = con.prepareStatement(sql)) {
-            psProd.setString(1, product.getProductName());
-            psProd.setString(2, product.getDescription());
-            psProd.setInt(3, categoryId);
-            psProd.setString(4, product.getImageUrl());
-            psProd.setBoolean(5, product.isAvailable());
-            psProd.setInt(6, product.getProductId());
-            return psProd.executeUpdate() > 0;
+        
+        try {
+            con = getConnection();
+            con.setAutoCommit(false);
+            
+            CategoryDAO categoryDAO = new CategoryDAO();
+            int categoryId = categoryDAO.getCategoryIdByName(product.getCategoryName(), con);
+            
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setString(1, product.getProductName());
+                ps.setString(2, product.getDescription());
+                ps.setInt(3, categoryId);
+                ps.setString(4, product.getImageUrl());
+                ps.setBoolean(5, product.isAvailable());
+                ps.setInt(6, product.getProductId());
+                ps.executeUpdate();
+            }
+            
+            con.commit();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                if (con != null) con.rollback();
+            } catch (SQLException e2) {
+                e2.printStackTrace();
+            }
+            return false;
+        } finally {
+            try {
+                if (con != null) {
+                    con.setAutoCommit(true);
+                    con.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
