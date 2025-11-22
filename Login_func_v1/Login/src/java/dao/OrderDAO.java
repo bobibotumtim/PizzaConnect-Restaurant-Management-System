@@ -1187,7 +1187,7 @@ public class OrderDAO extends DBContext {
                 if (rs.next()) {
                     int totalItems = rs.getInt("TotalItems");
                     int notReadyItems = rs.getInt("NotReadyItems");
-//                    int readyItems = rs.getInt("ReadyItems");
+                    int readyItems = rs.getInt("ReadyItems");
                     
                     // Lấy current order status
                     Order order = getOrderById(orderId);
