@@ -116,10 +116,11 @@ public class ChefMonitorServlet extends HttpServlet {
                     OrderDAO orderDAO = new OrderDAO();
                     
                     // 🆕 Tự động tính lại tổng tiền (trừ món bị cancel)
-                    boolean priceRecalculated = orderDAO.recalculateOrderTotalPrice(affectedOrderId);
-                    if (priceRecalculated) {
-                        System.out.println("✅ Order #" + affectedOrderId + " total price recalculated after cancellation");
-                    }
+                    orderDAO.recalculateOrderTotalPrice(affectedOrderId);
+                    //boolean priceRecalculated = orderDAO.recalculateOrderTotalPrice(affectedOrderId);
+                    //if (priceRecalculated) {
+                    //    System.out.println("✅ Order #" + affectedOrderId + " total price recalculated after cancellation");
+                    //}
                     
                     // Tự động cập nhật Order status
                     orderDAO.autoUpdateOrderStatusBasedOnDetails(affectedOrderId);
@@ -161,7 +162,7 @@ public class ChefMonitorServlet extends HttpServlet {
                 boolean hasEnoughIngredients = checkIngredientsAvailability(targetOrderDetail);
                 
                 if (!hasEnoughIngredients) {
-                    req.setAttribute("error", "⚠️ Not enough ingredients to complete this dish!");
+                    req.setAttribute("error", "Not enough ingredients to complete this dish!");
                     doGet(req, resp);
                     return;
                 }
@@ -174,8 +175,8 @@ public class ChefMonitorServlet extends HttpServlet {
                     boolean ingredientsDeducted = deductIngredientsForOrderDetail(targetOrderDetail);
                     
                     if (!ingredientsDeducted) {
-                        System.err.println("⚠️ Dish marked as Ready but error occurred while deducting ingredients");
-                        req.setAttribute("error", "⚠️ Dish is ready but error occurred while updating inventory!");
+                        System.err.println("Dish marked as Ready but error occurred while deducting ingredients");
+                        req.setAttribute("error", "Dish is ready but error occurred while updating inventory!");
                     }
                     
                     // 🆕 Tự động cập nhật Order status dựa trên OrderDetail
@@ -237,7 +238,7 @@ public class ChefMonitorServlet extends HttpServlet {
                     );
                     
                     if (!toppingDeducted) {
-                        System.err.println("⚠️ Unable to deduct ingredients for topping: " + topping.getToppingName());
+                        System.err.println("Unable to deduct ingredients for topping: " + topping.getToppingName());
                     }
                 }
             }
@@ -245,7 +246,7 @@ public class ChefMonitorServlet extends HttpServlet {
             return true;
             
         } catch (Exception e) {
-            System.err.println("❌ Error while deducting ingredients: " + e.getMessage());
+            System.err.println("Error while deducting ingredients: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -272,7 +273,7 @@ public class ChefMonitorServlet extends HttpServlet {
             
             if (!inventoryDAO.hasEnoughInventory(inventoryId, quantityNeeded)) {
                 String itemName = inventoryDAO.getItemNameById(inventoryId);
-                System.err.println("❌ Not enough ingredients: " + itemName + " (needed: " + quantityNeeded + ")");
+                System.err.println("Not enough ingredients: " + itemName + " (needed: " + quantityNeeded + ")");
                 return false;
             }
         }
@@ -285,7 +286,7 @@ public class ChefMonitorServlet extends HttpServlet {
             boolean deducted = inventoryDAO.deductInventory(inventoryId, quantityNeeded);
             if (!deducted) {
                 String itemName = inventoryDAO.getItemNameById(inventoryId);
-                System.err.println("❌ Unable to deduct ingredient: " + itemName);
+                System.err.println("Unable to deduct ingredient: " + itemName);
                 return false;
             }
         }
@@ -333,7 +334,7 @@ public class ChefMonitorServlet extends HttpServlet {
             return true;
             
         } catch (Exception e) {
-            System.err.println("❌ Error while checking ingredients: " + e.getMessage());
+            System.err.println("Error while checking ingredients: " + e.getMessage());
             e.printStackTrace();
             return false;
         }

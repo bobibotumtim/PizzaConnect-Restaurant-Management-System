@@ -56,7 +56,8 @@ public class ManageCategoryServlet extends HttpServlet {
         String desc = request.getParameter("description");
 
         HttpSession session = request.getSession();
-
+        
+        //Add
         if (idStr == null || idStr.isEmpty()) {
             // Add new category - Validate
             try {
@@ -80,6 +81,7 @@ public class ManageCategoryServlet extends HttpServlet {
                 session.setAttribute("message", "Error adding category.");
                 session.setAttribute("messageType", "error");
             }
+        //Update
         } else {
             // Update existing category - Validate
             int id = Integer.parseInt(idStr);

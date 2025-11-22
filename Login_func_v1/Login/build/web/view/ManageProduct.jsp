@@ -294,14 +294,12 @@
             </div>
         </div>
 
-        <%-- 1. Modal Thêm Product (ĐƠN GIẢN) --%>
-        <%-- 1. Modal Thêm Product (ĐƠN GIẢN) --%>
+        <%-- 1. Modal Thêm Product --%>
         <div id="addProductModal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <h2>Add New Product</h2>
-                <%-- ✅ THAY ĐỔI 1: Thêm enctype="multipart/form-data" --%>
-                <form action="${pageContext.request.contextPath}/AddProductServlet" method="post" enctype="multipart/form-data">
+                <form action="${pageContext.request.contextPath}/AddProductServlet" method="post">
                     <div class="form-group">
                         <label>Product Name:</label>
                         <input type="text" name="productName" required>
@@ -319,26 +317,23 @@
                             </c:forEach>
                         </select>
                     </div>
-                    <%-- ✅ THAY ĐỔI 2: Thay input type="text" bằng type="file" --%>
                     <div class="form-group">
-                        <label>Product Image (File):</label>
-                        <input type="file" name="productImage" accept="image/*">
+                        <label>Product Image URL:</label>
+                        <input type="text" name="imageUrl" placeholder="Enter image URL">
+                        <small class="text-gray-500">Enter the full URL of the product image</small>
                     </div>
                     <button type="submit">Save Product</button>
                 </form>
             </div>
         </div>
 
-        <%-- 2. Modal Sửa Product (ĐƠN GIẢN) --%>
+        <%-- 2. Modal Sửa Product --%>
         <div id="editProductModal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <h2>Edit Product</h2>
-                <%-- ✅ THAY ĐỔI 3: Thêm enctype="multipart/form-data" --%>
-                <form action="${pageContext.request.contextPath}/EditProductServlet" method="post" enctype="multipart/form-data">
+                <form action="${pageContext.request.contextPath}/EditProductServlet" method="post">
                     <input type="hidden" name="productId" id="editProductId">
-                    <%-- Thêm input hidden để lưu URL ảnh cũ --%>
-                    <input type="hidden" name="existingImageUrl" id="existingImageUrl"> 
                     <div class="form-group">
                         <label>Product Name:</label>
                         <input type="text" name="productName" id="editProductName" required>
@@ -356,11 +351,14 @@
                             </c:forEach>
                         </select>
                     </div>
-                    <%-- ✅ THAY ĐỔI 4: Thay input type="text" bằng type="file" --%>
                     <div class="form-group">
-                        <label>New Product Image (Optional):</label>
-                        <input type="file" name="newProductImage" id="editNewProductImage" accept="image/*">
-                        <p class="text-xs text-gray-500 mt-1">Leave blank to keep current image.</p>
+                        <label>Current Image:</label>
+                        <div id="currentImagePreview" class="mb-2"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>New Image URL (optional):</label>
+                        <input type="text" name="imageUrl" id="editImageUrl" placeholder="Enter new image URL">
+                        <small class="text-gray-500">Leave empty to keep current image</small>
                     </div>
                     <button type="submit">Update Product</button>
                 </form>
@@ -422,25 +420,29 @@
 
                     // === 2. Mở Modal Edit Product ===
                     if (editBtn) {
-                        const data = editBtn.dataset; // Lấy data từ button
+                        const data = editBtn.dataset;
                         document.getElementById("editProductId").value = data.id;
                         document.getElementById("editProductName").value = data.name;
                         document.getElementById("editDescription").value = data.desc;
                         document.getElementById("editCategoryName").value = data.category;
                         
-                        // ✅ Dòng này đã được thay thế để lưu URL cũ vào input hidden mới
                         const existingImageUrlInput = document.getElementById("existingImageUrl");
                         if (existingImageUrlInput) {
-                            existingImageUrlInput.value = data.image;
+                            existingImageUrlInput.value = data.image || '';
                         }
                         
-                        // Reset input file để không gửi file cũ
-                        const editNewProductImageInput = document.getElementById("editNewProductImage");
-                        if (editNewProductImageInput) {
-                            editNewProductImageInput.value = ''; 
+                        const editImageUrlInput = document.getElementById("editImageUrl");
+                        if (editImageUrlInput) {
+                            editImageUrlInput.value = data.image || '';
+                        }
+                        
+                        const currentImagePreview = document.getElementById("currentImagePreview");
+                        if (currentImagePreview && data.image) {
+                            currentImagePreview.innerHTML = '<img src="' + data.image + '" class="w-20 h-20 rounded-lg object-cover border" alt="Current">';
+                        } else if (currentImagePreview) {
+                            currentImagePreview.innerHTML = '<span class="text-gray-400 italic">No image</span>';
                         }
 
-                        // Cuối cùng mới hiển thị modal
                         editProductModal.style.display = "block";
                     }
 
@@ -451,7 +453,7 @@
                         contentDiv.innerHTML = "Loading...";
                         viewSizesModal.style.display = "block";
 
-                        // ✅ SỬA LỖI: Dùng scriptlet trực tiếp (Cách bạn đã xác nhận)
+                        
                         fetch("<%= request.getContextPath() %>/ViewProductSizesServlet?productId=" + productId)
                                 .then(res => res.ok ? res.text() : Promise.reject(res.status))
                                 .then(html => {
@@ -470,7 +472,7 @@
                         viewSizesModal.style.display = "none";
                         addSizeModal.style.display = "block";
 
-                        // ✅ SỬA LỖI: Áp dụng cách mới
+                        
                         fetch("<%= request.getContextPath() %>/LoadAddSizeFormServlet?productId=" + productId)
                                 .then(res => res.ok ? res.text() : Promise.reject(res.status))
                                 .then(html => contentDiv.innerHTML = html)
@@ -486,7 +488,7 @@
                         viewSizesModal.style.display = "none";
                         editSizeModal.style.display = "block";
 
-                        // ✅ SỬA LỖI: Áp dụng cách mới
+                        
                         fetch("<%= request.getContextPath() %>/LoadEditSizeFormServlet?productSizeId=" + sizeId)
                                 .then(res => res.ok ? res.text() : Promise.reject(res.status))
                                 .then(html => contentDiv.innerHTML = html)
@@ -593,91 +595,91 @@
 
                     // === 9. Thêm hàng (Modal Edit Size) ===
                     if (editAddIngBtn) {
-    e.preventDefault();
+                    e.preventDefault();
 
-    const tableBody = document.getElementById('ingredientTable_EditSize')?.querySelector('tbody');
-    const select = document.getElementById('editNewIngredientSelect_EditSize');
-    const qtyInputEl = document.getElementById('editNewQuantity_EditSize');
-    const unitInputEl = document.getElementById('editNewUnit_EditSize');
+                    const tableBody = document.getElementById('ingredientTable_EditSize')?.querySelector('tbody');
+                    const select = document.getElementById('editNewIngredientSelect_EditSize');
+                    const qtyInputEl = document.getElementById('editNewQuantity_EditSize');
+                    const unitInputEl = document.getElementById('editNewUnit_EditSize');
 
-    if (!tableBody || !select || !qtyInputEl || !unitInputEl)
-        return;
+                    if (!tableBody || !select || !qtyInputEl || !unitInputEl)
+                        return;
 
-    const selectedOption = select.options[select.selectedIndex];
-    const ingId = selectedOption.value;
-    const ingName = selectedOption.text;
-    const qtyValue = qtyInputEl.value.trim();
-    const unit = selectedOption.getAttribute('data-unit') || '';
+                    const selectedOption = select.options[select.selectedIndex];
+                    const ingId = selectedOption.value;
+                    const ingName = selectedOption.text;
+                    const qtyValue = qtyInputEl.value.trim();
+                    const unit = selectedOption.getAttribute('data-unit') || '';
 
-    if (!ingId) {
-        alert("Please select an ingredient.");
-        return;
-    }
+                    if (!ingId) {
+                        alert("Please select an ingredient.");
+                        return;
+                    }
 
-    if (!qtyValue || parseFloat(qtyValue) <= 0) {
-        alert("Please enter a valid quantity.");
-        return;
-    }
+                    if (!qtyValue || parseFloat(qtyValue) <= 0) {
+                        alert("Please enter a valid quantity.");
+                        return;
+                    }
 
-    console.log("Adding ingredient:", { ingName, qtyValue, ingId, unit });
+                    console.log("Adding ingredient:", { ingName, qtyValue, ingId, unit });
 
-    // ✅ Tạo DOM element thủ công (không dùng innerHTML)
-    const tr = document.createElement('tr');
-    tr.classList.add('border-b');
+                    // ✅ Tạo DOM element thủ công (không dùng innerHTML)
+                    const tr = document.createElement('tr');
+                    tr.classList.add('border-b');
 
-    // Tên nguyên liệu
-    const tdName = document.createElement('td');
-    tdName.className = 'px-2 py-1';
-    tdName.textContent = ingName;
+                    // Tên nguyên liệu
+                    const tdName = document.createElement('td');
+                    tdName.className = 'px-2 py-1';
+                    tdName.textContent = ingName;
 
-    // Số lượng + hidden inventoryId
-    const tdQty = document.createElement('td');
-    tdQty.className = 'px-2 py-1';
+                    // Số lượng + hidden inventoryId
+                    const tdQty = document.createElement('td');
+                    tdQty.className = 'px-2 py-1';
 
-    const qtyInput = document.createElement('input');
-    qtyInput.type = 'number';
-    qtyInput.step = '0.01';
-    qtyInput.name = 'quantity[]';
-    qtyInput.value = qtyValue;
-    qtyInput.className = 'border p-1 w-24';
+                    const qtyInput = document.createElement('input');
+                    qtyInput.type = 'number';
+                    qtyInput.step = '0.01';
+                    qtyInput.name = 'quantity[]';
+                    qtyInput.value = qtyValue;
+                    qtyInput.className = 'border p-1 w-24';
 
-    const hiddenInv = document.createElement('input');
-    hiddenInv.type = 'hidden';
-    hiddenInv.name = 'inventoryId[]';
-    hiddenInv.value = ingId;
+                    const hiddenInv = document.createElement('input');
+                    hiddenInv.type = 'hidden';
+                    hiddenInv.name = 'inventoryId[]';
+                    hiddenInv.value = ingId;
 
-    tdQty.append(qtyInput, hiddenInv);
+                    tdQty.append(qtyInput, hiddenInv);
 
-    // Đơn vị
-    const tdUnit = document.createElement('td');
-    tdUnit.className = 'px-2 py-1';
-    const unitInput = document.createElement('input');
-    unitInput.type = 'text';
-    unitInput.name = 'unit[]';
-    unitInput.value = unit;
-    unitInput.className = 'border p-1 w-20';
-    unitInput.readOnly = true;
-    tdUnit.appendChild(unitInput);
+                    // Đơn vị
+                    const tdUnit = document.createElement('td');
+                    tdUnit.className = 'px-2 py-1';
+                    const unitInput = document.createElement('input');
+                    unitInput.type = 'text';
+                    unitInput.name = 'unit[]';
+                    unitInput.value = unit;
+                    unitInput.className = 'border p-1 w-20';
+                    unitInput.readOnly = true;
+                    tdUnit.appendChild(unitInput);
 
-    // Nút xoá
-    const tdAction = document.createElement('td');
-    tdAction.className = 'px-2 py-1 text-center';
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.textContent = '✕';
-    removeBtn.className = 'removeBtn bg-red-500 text-white px-2 py-1 rounded inline-flex justify-center items-center';
-    removeBtn.addEventListener('click', () => tr.remove());
-    tdAction.appendChild(removeBtn);
+                    // Nút xoá
+                    const tdAction = document.createElement('td');
+                    tdAction.className = 'px-2 py-1 text-center';
+                    const removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.textContent = '✕';
+                    removeBtn.className = 'removeBtn bg-red-500 text-white px-2 py-1 rounded inline-flex justify-center items-center';
+                    removeBtn.addEventListener('click', () => tr.remove());
+                    tdAction.appendChild(removeBtn);
 
-    // Gắn tất cả lại
-    tr.append(tdName, tdQty, tdUnit, tdAction);
-    tableBody.appendChild(tr);
+                    // Gắn tất cả lại
+                    tr.append(tdName, tdQty, tdUnit, tdAction);
+                    tableBody.appendChild(tr);
 
-    // ✅ Reset form
-    select.selectedIndex = 0;
-    qtyInputEl.value = '';
-    unitInputEl.value = '';
-}
+                    // ✅ Reset form
+                    select.selectedIndex = 0;
+                    qtyInputEl.value = '';
+                    unitInputEl.value = '';
+                }
 
 
 

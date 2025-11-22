@@ -182,7 +182,7 @@
         <div class="top-bar">
             <div></div>
             <div>
-                <button onclick="location.reload()" class="btn btn-primary">🔄 Refresh</button>
+                <button onclick="location.reload()" class="btn btn-primary">Refresh</button>
             </div>
         </div>
         
@@ -205,7 +205,7 @@
     <!-- ==================== Waiting Section ==================== -->
     <div>
         <div class="section-title section-waiting">
-            <span>⏳ Waiting Dishes</span>
+            <span>Waiting Dishes</span>
             <span class="section-count">${waitingList.size()} dishes</span>
         </div>
         <div id="waiting" class="dish-container">
@@ -220,7 +220,7 @@
                     <div class="quantity">x${dish.quantity}</div>
                     <c:if test="${not empty dish.toppings}">
                         <div class="topping" style="font-weight: 600; color: #FFD700;">
-                            🧀 <c:forEach var="topping" items="${dish.toppings}" varStatus="status">${topping.toppingName}<c:if test="${!status.last}">, </c:if></c:forEach>
+                            + <c:forEach var="topping" items="${dish.toppings}" varStatus="status">${topping.toppingName}<c:if test="${!status.last}">, </c:if></c:forEach>
                         </div>
                     </c:if>
                 </div>
@@ -238,7 +238,7 @@
 
         <!-- ==================== Preparing Section ==================== -->
         <div class="section-title section-preparing">
-            <span>🔥 Preparing Dishes</span>
+            <span>Preparing Dishes</span>
             <span class="section-count">${preparingList.size()} dishes</span>
         </div>
         <div id="ongoing" class="dish-container">
@@ -253,7 +253,7 @@
                     <div class="quantity">x${dish.quantity}</div>
                     <c:if test="${not empty dish.toppings}">
                         <div class="topping" style="font-weight: 600; color: #8B4513;">
-                            🧀 <c:forEach var="topping" items="${dish.toppings}" varStatus="status">${topping.toppingName}<c:if test="${!status.last}">, </c:if></c:forEach>
+                            + <c:forEach var="topping" items="${dish.toppings}" varStatus="status">${topping.toppingName}<c:if test="${!status.last}">, </c:if></c:forEach>
                         </div>
                     </c:if>
                 </div>
@@ -277,7 +277,7 @@
 
         <!-- ==================== Ready Section ==================== -->
         <div class="section-title section-ready">
-            <span>✅ Ready Dishes (Waiter will serve)</span>
+            <span>Ready Dishes (Waiter will serve)</span>
             <span class="section-count">${readyList.size()} dishes</span>
         </div>
         <div id="ready" class="dish-container">
@@ -292,7 +292,7 @@
                     <div class="quantity">x${dish.quantity}</div>
                     <c:if test="${not empty dish.toppings}">
                         <div class="topping" style="font-weight: 600; color: #228B22;">
-                            🧀 <c:forEach var="topping" items="${dish.toppings}" varStatus="status">${topping.toppingName}<c:if test="${!status.last}">, </c:if></c:forEach>
+                            + <c:forEach var="topping" items="${dish.toppings}" varStatus="status">${topping.toppingName}<c:if test="${!status.last}">, </c:if></c:forEach>
                         </div>
                     </c:if>
                 </div>
