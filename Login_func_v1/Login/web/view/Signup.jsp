@@ -178,7 +178,8 @@
             
             // Validate email
             const email = document.getElementById('mail').value.trim();
-            const emailRegex = /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+            const emailRegex = /^[A-Za-z0-9._%+\-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/;
+                               
             if (email === '') {
                 showError('mail', 'Please enter email');
                 isValid = false;
