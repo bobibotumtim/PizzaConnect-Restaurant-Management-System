@@ -131,8 +131,44 @@ public class EditUserServlet extends HttpServlet {
             return;
         }
 
+        // Validate email format
+        if (!email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
+            request.setAttribute("error", "Invalid email format!");
+            request.setAttribute("currentUser", currentUser);
+            // Reload user data
+            try {
+                int userId = Integer.parseInt(userIdStr);
+                UserDAO userDAO = new UserDAO();
+                User editUser = userDAO.getUserById(userId);
+                request.setAttribute("editUser", editUser);
+            } catch (NumberFormatException e) {
+                response.sendRedirect("admin");
+                return;
+            }
+            request.getRequestDispatcher("/view/EditUser.jsp").forward(request, response);
+            return;
+        }
+
         if (phone == null || phone.trim().isEmpty()) {
             request.setAttribute("error", "Phone number is required!");
+            request.setAttribute("currentUser", currentUser);
+            // Reload user data
+            try {
+                int userId = Integer.parseInt(userIdStr);
+                UserDAO userDAO = new UserDAO();
+                User editUser = userDAO.getUserById(userId);
+                request.setAttribute("editUser", editUser);
+            } catch (NumberFormatException e) {
+                response.sendRedirect("admin");
+                return;
+            }
+            request.getRequestDispatcher("/view/EditUser.jsp").forward(request, response);
+            return;
+        }
+
+        // Validate phone format: 0[1-9] followed by 8 digits
+        if (!phone.matches("^0[1-9]\\d{8}$")) {
+            request.setAttribute("error", "Invalid phone format! Must be 10 digits starting with 0[1-9]");
             request.setAttribute("currentUser", currentUser);
             // Reload user data
             try {
@@ -167,8 +203,9 @@ public class EditUserServlet extends HttpServlet {
 
         // Password validation (only if password is provided)
         if (password != null && !password.trim().isEmpty()) {
-            if (password.length() < 6) {
-                request.setAttribute("error", "Password must be at least 6 characters long!");
+            // Validate password: >=8 chars, 1 uppercase, 1 lowercase, 1 digit
+            if (!password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$")) {
+                request.setAttribute("error", "Password must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 digit!");
                 request.setAttribute("currentUser", currentUser);
                 // Reload user data
                 try {

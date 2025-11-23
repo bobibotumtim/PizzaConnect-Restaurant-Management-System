@@ -81,6 +81,14 @@ public class AddUserServlet extends HttpServlet {
             return;
         }
 
+        // Validate email format
+        if (!email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
+            request.setAttribute("error", "Invalid email format!");
+            request.setAttribute("currentUser", currentUser);
+            request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
+            return;
+        }
+
         if (phone == null || phone.trim().isEmpty()) {
             request.setAttribute("error", "Phone number is required!");
             request.setAttribute("currentUser", currentUser);
@@ -88,8 +96,17 @@ public class AddUserServlet extends HttpServlet {
             return;
         }
 
-        if (password == null || password.length() < 6) {
-            request.setAttribute("error", "Password must be at least 6 characters long!");
+        // Validate phone format: 0[1-9] followed by 8 digits
+        if (!phone.matches("^0[1-9]\\d{8}$")) {
+            request.setAttribute("error", "Invalid phone format! Must be 10 digits starting with 0[1-9]");
+            request.setAttribute("currentUser", currentUser);
+            request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
+            return;
+        }
+
+        // Validate password: >=8 chars, 1 uppercase, 1 lowercase, 1 digit
+        if (password == null || !password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$")) {
+            request.setAttribute("error", "Password must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 digit!");
             request.setAttribute("currentUser", currentUser);
             request.getRequestDispatcher("/view/AddUser.jsp").forward(request, response);
             return;

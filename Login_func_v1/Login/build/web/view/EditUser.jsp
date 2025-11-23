@@ -112,16 +112,23 @@
                         <div>
                             <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
                             <input type="email" id="email" name="email" required 
+                                   pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
                                    value="<%= editUser.getEmail() != null ? editUser.getEmail() : "" %>"
                                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                   placeholder="Enter email address">
+                                   placeholder="example@domain.com"
+                                   title="Enter a valid email address">
+                            <p class="text-xs text-gray-500 mt-1">Example: user@example.com</p>
                         </div>
                         <div>
                             <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
                             <input type="tel" id="phone" name="phone" required 
+                                   pattern="^0[1-9]\d{8}$"
+                                   maxlength="10"
                                    value="<%= editUser.getPhone() != null ? editUser.getPhone() : "" %>"
                                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                   placeholder="Enter phone number">
+                                   placeholder="0912345678"
+                                   title="Phone must be 10 digits starting with 0[1-9]">
+                            <p class="text-xs text-gray-500 mt-1">10 digits starting with 0[1-9] (e.g., 0912345678)</p>
                         </div>
                         <div>
                             <label for="role" class="block text-sm font-medium text-gray-700 mb-2">User Role *</label>
@@ -155,9 +162,12 @@
                         </div>
                         <div>
                             <label for="password" class="block text-sm font-medium text-gray-700 mb-2">New Password (Leave blank to keep current)</label>
-                            <input type="password" id="password" name="password" minlength="6"
+                            <input type="password" id="password" name="password" minlength="8"
+                                   pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$"
                                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                   placeholder="Enter new password">
+                                   placeholder="Min 8 chars, 1 uppercase, 1 lowercase, 1 digit"
+                                   title="Password must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 digit">
+                            <p class="text-xs text-gray-500 mt-1">Must contain: 1 uppercase, 1 lowercase, 1 digit, min 8 characters</p>
                         </div>
                         <div>
                             <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
@@ -247,10 +257,28 @@
         
         // Form validation
         document.querySelector('form').addEventListener('submit', function(e) {
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             const role = document.getElementById('role').value;
             const employeeRole = document.getElementById('employeeRole').value;
+            
+            // Validate email
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!emailRegex.test(email)) {
+                e.preventDefault();
+                alert('Invalid email format!');
+                return false;
+            }
+            
+            // Validate phone: 0[1-9] followed by 8 digits
+            const phoneRegex = /^0[1-9]\d{8}$/;
+            if (!phoneRegex.test(phone)) {
+                e.preventDefault();
+                alert('Invalid phone format! Must be 10 digits starting with 0[1-9]');
+                return false;
+            }
             
             if (password && confirmPassword && password !== confirmPassword) {
                 e.preventDefault();
@@ -258,10 +286,14 @@
                 return false;
             }
             
-            if (password && password.length < 6) {
-                e.preventDefault();
-                alert('Password must be at least 6 characters long!');
-                return false;
+            // Validate password if provided: >=8 chars, 1 uppercase, 1 lowercase, 1 digit
+            if (password) {
+                const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+                if (!passwordRegex.test(password)) {
+                    e.preventDefault();
+                    alert('Password must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 digit!');
+                    return false;
+                }
             }
             
             if (role === '2' && !employeeRole) {
