@@ -89,18 +89,4 @@ public class EmployeeDAO extends DBContext {
         return false;
     }
 
-    public boolean deleteEmployee(int userID) {
-        String sql = "DELETE FROM Employee WHERE UserID = ?";
-        
-        try (Connection con = getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, userID);
-            
-            return ps.executeUpdate() > 0;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        return false;
-    }
 }

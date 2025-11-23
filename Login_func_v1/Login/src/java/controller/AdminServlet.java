@@ -26,7 +26,7 @@ public class AdminServlet extends HttpServlet {
         }
 
         User currentUser = (User) session.getAttribute("user");
-        
+
         // Check if user is Admin ONLY
         if (currentUser.getRole() != 1) {
             session.setAttribute("error", "Access denied. Admin role required.");
@@ -48,8 +48,8 @@ public class AdminServlet extends HttpServlet {
 
         if ("all".equalsIgnoreCase(roleFilter)) {
             filteredUsers = allUsers;
-        } else if ("Manager".equals(roleFilter) || "Cashier".equals(roleFilter) ||
-                "Waiter".equals(roleFilter) || "Chef".equals(roleFilter)) {
+        } else if ("Manager".equals(roleFilter)
+                || "Waiter".equals(roleFilter) || "Chef".equals(roleFilter)) {
             // Filter by employee role
             filteredUsers = new ArrayList<>();
             for (User user : allUsers) {
@@ -85,8 +85,6 @@ public class AdminServlet extends HttpServlet {
             }
         }
 
-
-
         // Get current page number (default = 1)
         int page = 1;
         String pageParam = request.getParameter("page");
@@ -100,8 +98,12 @@ public class AdminServlet extends HttpServlet {
         // Pagination
         int totalUsers = filteredUsers.size();
         int totalPages = Math.max(1, (int) Math.ceil((double) totalUsers / USERS_PER_PAGE));
-        if (page < 1) page = 1;
-        if (page > totalPages) page = totalPages;
+        if (page < 1) {
+            page = 1;
+        }
+        if (page > totalPages) {
+            page = totalPages;
+        }
 
         int start = (page - 1) * USERS_PER_PAGE;
         int end = Math.min(start + USERS_PER_PAGE, totalUsers);
@@ -141,7 +143,7 @@ public class AdminServlet extends HttpServlet {
         }
 
         User user = (User) session.getAttribute("user");
-        
+
         // Check if user is Admin ONLY
         if (user.getRole() != 1) {
             session.setAttribute("error", "Access denied. Admin role required.");
@@ -153,22 +155,7 @@ public class AdminServlet extends HttpServlet {
         UserDAO userDAO = new UserDAO();
 
         try {
-            if ("delete".equals(action)) {
-                String userIdStr = request.getParameter("userId");
-                if (userIdStr != null) {
-                    int userId = Integer.parseInt(userIdStr);
-                    if (userId == user.getUserID()) {
-                        session.setAttribute("error", "Cannot delete your own account!");
-                    } else {
-                        boolean success = userDAO.deleteUser(userId);
-                        if (success) {
-                            session.setAttribute("message", "User deleted successfully!");
-                        } else {
-                            session.setAttribute("error", "Failed to delete user! Check database constraints.");
-                        }
-                    }
-                }
-            } else if ("suspend".equals(action)) {
+            if ("suspend".equals(action)) {
                 String userIdStr = request.getParameter("userId");
                 if (userIdStr != null) {
                     int userId = Integer.parseInt(userIdStr);

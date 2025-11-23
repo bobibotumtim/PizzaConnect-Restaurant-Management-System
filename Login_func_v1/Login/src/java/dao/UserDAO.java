@@ -201,44 +201,6 @@ public class UserDAO extends DBContext {
         return false;
     }
 
-    // Delete user by ID
-    public boolean deleteUser(int userId) {
-        String sql = "DELETE FROM [User] WHERE UserID = ?";
-        try (Connection connection = getConnection()) {
-            System.out.println("[DEBUG] Starting delete for UserID: " + userId);
-
-            if (connection == null || connection.isClosed()) {
-                System.out.println("[ERROR] Database connection is null or closed!");
-                return false;
-            }
-
-            // ✅ Tắt kiểm tra khóa ngoại tạm thời (SQL Server)
-            try (Statement st = connection.createStatement()) {
-                st.execute("EXEC sp_msforeachtable 'ALTER TABLE ? NOCHECK CONSTRAINT ALL'");
-            }
-
-            try (PreparedStatement ps = connection.prepareStatement(sql)) {
-                ps.setInt(1, userId);
-                int rows = ps.executeUpdate();
-                System.out.println("[DEBUG] Rows affected in User table: " + rows);
-                return rows > 0;
-            } finally {
-                // ✅ Bật lại constraint
-                try (Statement st2 = connection.createStatement()) {
-                    st2.execute("EXEC sp_msforeachtable 'ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL'");
-                }
-            }
-
-        } catch (SQLException e) {
-            System.out.println("[SQL ERROR] Delete user failed!");
-            System.out.println("Message: " + e.getMessage());
-            System.out.println("SQLState: " + e.getSQLState());
-            System.out.println("ErrorCode: " + e.getErrorCode());
-            e.printStackTrace();
-        }
-        return false;
-    }
-
     // Test database connection
     public boolean testConnection() {
         try (Connection connection = getConnection()) {

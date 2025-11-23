@@ -106,31 +106,7 @@ public class CustomerDAO extends DBContext {
         return false;
     }
 
-    // Delete customer by CustomerID
-    public boolean deleteCustomer(int customerID) {
-        String sql = "DELETE FROM Customer WHERE CustomerID = ?";
-        try (Connection connection = getConnection();
-                PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, customerID);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            System.err.println("❌ Lỗi khi xóa khách hàng: " + e.getMessage());
-        }
-        return false;
-    }
 
-    // Delete customer by UserID
-    public boolean deleteCustomerByUserId(int userID) {
-        String sql = "DELETE FROM Customer WHERE UserID = ?";
-        try (Connection connection = getConnection();
-                PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, userID);
-            return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            System.err.println("❌ Lỗi khi xóa khách hàng theo UserID: " + e.getMessage());
-        }
-        return false;
-    }
 
     // Map ResultSet to Customer object - Keep original for backward compatibility
     private Customer mapCustomer(ResultSet rs) throws SQLException {

@@ -118,7 +118,6 @@
                                     class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500">
                                 <option value="">Select Employee Role</option>
                                 <option value="Manager">Manager</option>
-                                <option value="Cashier">Cashier</option>
                                 <option value="Waiter">Waiter</option>
                                 <option value="Chef">Chef</option>
                             </select>

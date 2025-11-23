@@ -30,20 +30,6 @@
             if (!"all".equalsIgnoreCase(selectedRole)) {
                 roleParam = "&roleFilter=" + selectedRole;
             }
-        
-            // Calculate stats
-            int totalUsers = users != null ? users.size() : 0;
-            int adminCount = 0;
-            int employeeCount = 0;
-            int customerCount = 0;
-            if (users != null) {
-                for (User user : users) {
-                    if (user.getRole() == 1) adminCount++;
-                    else if (user.getRole() == 2) employeeCount++;
-                    else if (user.getRole() == 3) customerCount++;
-                }
-            }
-            int orderCount = totalOrders != null ? totalOrders : 0;
         %>
 
         <!-- Main Content -->
@@ -68,57 +54,6 @@
                 </div>
                 <% } %>
 
-                <!-- Statistics Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-600">Total Users</p>
-                                <p class="text-2xl font-bold text-gray-800 mt-1"><%= totalUsers %></p>
-                            </div>
-                            <div class="p-3 bg-blue-100 rounded-lg">
-                                <i data-lucide="users" class="w-6 h-6 text-blue-600"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-600">Admins</p>
-                                <p class="text-2xl font-bold text-red-600 mt-1"><%= adminCount %></p>
-                            </div>
-                            <div class="p-3 bg-red-100 rounded-lg">
-                                <i data-lucide="shield" class="w-6 h-6 text-red-600"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-600">Employees</p>
-                                <p class="text-2xl font-bold text-orange-600 mt-1"><%= employeeCount %></p>
-                            </div>
-                            <div class="p-3 bg-orange-100 rounded-lg">
-                                <i data-lucide="briefcase" class="w-6 h-6 text-orange-600"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-sm font-medium text-gray-600">Customers</p>
-                                <p class="text-2xl font-bold text-green-600 mt-1"><%= customerCount %></p>
-                            </div>
-                            <div class="p-3 bg-green-100 rounded-lg">
-                                <i data-lucide="user-check" class="w-6 h-6 text-green-600"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- User Management Table -->
                 <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                     <div class="bg-gray-800 text-white px-6 py-4 flex justify-between items-center">
@@ -138,8 +73,6 @@
                                                                     ? "selected" : "" %>>Employee - All</option>
                                 <option value="Manager" <%="Manager" .equals(selectedRole)
                                                                     ? "selected" : "" %>>Manager</option>
-                                <option value="Cashier" <%="Cashier" .equals(selectedRole)
-                                                                    ? "selected" : "" %>>Cashier</option>
                                 <option value="Waiter" <%="Waiter" .equals(selectedRole)
                                                                     ? "selected" : "" %>>Waiter</option>
                                 <option value="Chef" <%="Chef" .equals(selectedRole)
@@ -242,9 +175,6 @@
                                                 <i data-lucide="play" class="w-3 h-3 inline mr-1"></i>Activate
                                             </button>
                                             <% } %>
-                                            <button type="button" class="text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-3 py-1 rounded text-xs delete-btn" data-user-id="<%= user.getUserID() %>">
-                                                <i data-lucide="trash-2" class="w-3 h-3 inline mr-1"></i>Delete
-                                            </button>
                                         </div>
                                         <% } else { %>
                                         <span class="text-gray-400 text-xs italic">Current User</span>
@@ -295,26 +225,6 @@
                     <% } %>
 
                     <% } %>
-                </div>
-            </div>
-        </div>
-
-        <!-- Delete Confirmation Modal -->
-        <div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50">
-            <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-bold text-gray-800 flex items-center">
-                        <i data-lucide="alert-triangle" class="w-5 h-5 mr-2 text-red-500"></i>
-                        Delete User
-                    </h2>
-                    <button onclick="closeModal('deleteModal')" class="text-gray-400 hover:text-gray-600">
-                        <i data-lucide="x" class="w-5 h-5"></i>
-                    </button>
-                </div>
-                <p class="text-gray-600 mb-6">Are you sure you want to delete this user? This action cannot be undone.</p>
-                <div class="flex justify-end space-x-3">
-                    <button onclick="closeModal('deleteModal')" class="px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg">Cancel</button>
-                    <button onclick="confirmDelete()" class="px-4 py-2 bg-red-500 text-white hover:bg-red-600 rounded-lg">Delete</button>
                 </div>
             </div>
         </div>
@@ -376,11 +286,6 @@
             // Modal functions
             let currentUserId = null;
 
-            function showDeleteModal(userId) {
-                currentUserId = userId;
-                document.getElementById('deleteModal').classList.remove('hidden');
-            }
-
             function showSuspendModal(userId) {
                 currentUserId = userId;
                 document.getElementById('suspendModal').classList.remove('hidden');
@@ -394,29 +299,6 @@
             function closeModal(modalId) {
                 document.getElementById(modalId).classList.add('hidden');
                 currentUserId = null;
-            }
-
-            function confirmDelete() {
-                if (currentUserId) {
-                    const form = document.createElement('form');
-                    form.method = 'POST';
-                    form.action = 'admin';
-
-                    const actionInput = document.createElement('input');
-                    actionInput.type = 'hidden';
-                    actionInput.name = 'action';
-                    actionInput.value = 'delete';
-                    form.appendChild(actionInput);
-
-                    const userIdInput = document.createElement('input');
-                    userIdInput.type = 'hidden';
-                    userIdInput.name = 'userId';
-                    userIdInput.value = currentUserId;
-                    form.appendChild(userIdInput);
-
-                    document.body.appendChild(form);
-                    form.submit();
-                }
             }
 
             function confirmSuspend() {
@@ -468,13 +350,6 @@
             // Initialize event listeners
             document.addEventListener('DOMContentLoaded', function () {
                 // Add event listeners for action buttons
-                document.querySelectorAll('.delete-btn').forEach(btn => {
-                    btn.addEventListener('click', function () {
-                        const userId = this.getAttribute('data-user-id');
-                        showDeleteModal(userId);
-                    });
-                });
-
                 document.querySelectorAll('.suspend-btn').forEach(btn => {
                     btn.addEventListener('click', function () {
                         const userId = this.getAttribute('data-user-id');
@@ -491,7 +366,7 @@
 
                 // Close modal when clicking outside
                 window.onclick = function (event) {
-                    const modals = ['deleteModal', 'suspendModal', 'activateModal'];
+                    const modals = ['suspendModal', 'activateModal'];
                     modals.forEach(modalId => {
                         const modal = document.getElementById(modalId);
                         if (event.target === modal) {

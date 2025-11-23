@@ -166,7 +166,7 @@ public class AddUserServlet extends HttpServlet {
                     }
 
                     // Validate employee role
-                    if (!employeeRole.equals("Manager") && !employeeRole.equals("Cashier") &&
+                    if (!employeeRole.equals("Manager") &&
                             !employeeRole.equals("Waiter") && !employeeRole.equals("Chef")) {
                         request.setAttribute("error", "Invalid employee role selected!");
                         request.setAttribute("currentUser", currentUser);

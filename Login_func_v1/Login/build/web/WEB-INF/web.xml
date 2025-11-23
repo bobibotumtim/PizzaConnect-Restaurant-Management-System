@@ -44,7 +44,6 @@
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
-
     <servlet>
         <servlet-name>UserProfileServlet</servlet-name>
         <servlet-class>controller.UserProfileServlet</servlet-class>
@@ -61,7 +60,6 @@
         <servlet-name>ForgotPasswordServlet</servlet-name>
         <url-pattern>/forgot-password</url-pattern>
     </servlet-mapping>
-
     <!-- Fallback cho /view/Login (không có .jsp) -->
     <servlet>
         <servlet-name>LoginPageServlet</servlet-name>
@@ -71,7 +69,6 @@
         <servlet-name>LoginPageServlet</servlet-name>
         <url-pattern>/view/Login</url-pattern>
     </servlet-mapping>
-    
     <!-- Admin Servlet -->
     <servlet>
         <servlet-name>AdminServlet</servlet-name>
@@ -81,7 +78,6 @@
         <servlet-name>AdminServlet</servlet-name>
         <url-pattern>/admin</url-pattern>
     </servlet-mapping>
-    
     <!-- Add User Servlet -->
     <servlet>
         <servlet-name>AddUserServlet</servlet-name>
@@ -91,7 +87,6 @@
         <servlet-name>AddUserServlet</servlet-name>
         <url-pattern>/adduser</url-pattern>
     </servlet-mapping>
-    
     <!-- Edit User Servlet -->
     <servlet>
         <servlet-name>EditUserServlet</servlet-name>
@@ -101,7 +96,6 @@
         <servlet-name>EditUserServlet</servlet-name>
         <url-pattern>/edituser</url-pattern>
     </servlet-mapping>
-    
     <!-- Dashboard Controller -->
     <servlet>
         <servlet-name>DashboardController</servlet-name>
@@ -111,7 +105,6 @@
         <servlet-name>DashboardController</servlet-name>
         <url-pattern>/dashboard</url-pattern>
     </servlet-mapping>
-
     <!-- POS Servlet -->
     <servlet>
         <servlet-name>POSServlet</servlet-name>
@@ -121,7 +114,6 @@
         <servlet-name>POSServlet</servlet-name>
         <url-pattern>/pos</url-pattern>
     </servlet-mapping>
-
     <!-- Manage Orders Servlet -->
     <servlet>
         <servlet-name>ManageOrderServlet</servlet-name>
@@ -131,7 +123,6 @@
         <servlet-name>ManageOrderServlet</servlet-name>
         <url-pattern>/manage-orders</url-pattern>
     </servlet-mapping>
-
     <!-- Discount Servlet -->
     <servlet>
         <servlet-name>DiscountServlet</servlet-name>
@@ -141,7 +132,6 @@
         <servlet-name>DiscountServlet</servlet-name>
         <url-pattern>/discount</url-pattern>
     </servlet-mapping>
-
     <!-- Verify Code Servlet -->
     <servlet>
         <servlet-name>VerifyCodeServlet</servlet-name>
@@ -151,8 +141,8 @@
         <servlet-name>VerifyCodeServlet</servlet-name>
         <url-pattern>/verifyCode</url-pattern>
     </servlet-mapping>
-        <!-- Discount Import Servlet -->
-        <servlet>
+    <!-- Discount Import Servlet -->
+    <servlet>
         <servlet-name>DiscountImportServlet</servlet-name>
         <servlet-class>controller.DiscountImportServlet</servlet-class>
     </servlet>
@@ -168,7 +158,6 @@
         <servlet-name>ManageToppingServlet</servlet-name>
         <url-pattern>/manage-topping</url-pattern>
     </servlet-mapping>
-
     <!-- Kitchen Monitor Servlet -->
     <servlet>
         <servlet-name>ChefMonitorServlet</servlet-name>
@@ -178,7 +167,6 @@
         <servlet-name>ChefMonitorServlet</servlet-name>
         <url-pattern>/chef-monitor</url-pattern>
     </servlet-mapping>
-
     <!-- Sales Report Servlet -->
     <servlet>
         <servlet-name>SalesReportServlet</servlet-name>
@@ -188,7 +176,6 @@
         <servlet-name>SalesReportServlet</servlet-name>
         <url-pattern>/sales-reports</url-pattern>
     </servlet-mapping>
-
     <!-- Waiter Monitor Servlet -->
     <servlet>
         <servlet-name>WaiterMonitorServlet</servlet-name>
@@ -198,7 +185,6 @@
         <servlet-name>WaiterMonitorServlet</servlet-name>
         <url-pattern>/waiter-monitor</url-pattern>
     </servlet-mapping>
-
     <!-- Test Export Direct Servlet -->
     <servlet>
         <servlet-name>TestExportDirectServlet</servlet-name>
@@ -208,7 +194,6 @@
         <servlet-name>TestExportDirectServlet</servlet-name>
         <url-pattern>/test-export</url-pattern>
     </servlet-mapping>
-
     <!-- Inventory Management Servlet - Temporarily commented out for debugging -->
     <!--
     <servlet>
@@ -233,7 +218,6 @@
         <servlet-name>HomeServlet</servlet-name>
         <url-pattern>/home</url-pattern>
     </servlet-mapping>
-
     <servlet>
         <servlet-name>InventoryServlet</servlet-name>
         <servlet-class>controller.InventoryServlet</servlet-class>
@@ -246,7 +230,6 @@
         <servlet-name>InventoryServlet</servlet-name>
         <url-pattern>/manageinventory</url-pattern>
     </servlet-mapping>
-
     <servlet>
         <servlet-name>CustomerMenuServlet</servlet-name>
         <servlet-class>controller.CustomerMenuServlet</servlet-class>
@@ -255,7 +238,6 @@
         <servlet-name>CustomerMenuServlet</servlet-name>
         <url-pattern>/customer-menu</url-pattern>
     </servlet-mapping>
-
     <!-- Customer Feedback Servlet -->
     <servlet>
         <servlet-name>CustomerFeedbackServlet</servlet-name>
@@ -265,7 +247,6 @@
         <servlet-name>CustomerFeedbackServlet</servlet-name>
         <url-pattern>/customer-feedback</url-pattern>
     </servlet-mapping>
-
     <!-- Bill Servlet -->
     <servlet>
         <servlet-name>BillServlet</servlet-name>
@@ -275,7 +256,6 @@
         <servlet-name>BillServlet</servlet-name>
         <url-pattern>/bill</url-pattern>
     </servlet-mapping>
-
     <!-- Test Session Data Servlet -->
     <servlet>
         <servlet-name>TestSessionServlet</servlet-name>
@@ -285,7 +265,6 @@
         <servlet-name>TestSessionServlet</servlet-name>
         <url-pattern>/test-session</url-pattern>
     </servlet-mapping>
-
     <!-- Manager Dashboard Servlet -->
     <servlet>
         <servlet-name>ManagerDashboardServlet</servlet-name>
@@ -295,17 +274,7 @@
         <servlet-name>ManagerDashboardServlet</servlet-name>
         <url-pattern>/manager-dashboard</url-pattern>
     </servlet-mapping>
-
     <!-- Manager User Management Servlet -->
-    <servlet>
-        <servlet-name>ManagerUserManagementServlet</servlet-name>
-        <servlet-class>controller.ManagerUserManagementServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ManagerUserManagementServlet</servlet-name>
-        <url-pattern>/manager-users</url-pattern>
-    </servlet-mapping>
-
     <!-- Test Inventory Monitor Servlet -->
     <servlet>
         <servlet-name>TestInventoryMonitorServlet</servlet-name>
@@ -315,7 +284,6 @@
         <servlet-name>TestInventoryMonitorServlet</servlet-name>
         <url-pattern>/test-inventory-monitor</url-pattern>
     </servlet-mapping>
-
     <!-- Inventory Monitor Servlet -->
     <servlet>
         <servlet-name>InventoryMonitorServlet</servlet-name>
@@ -329,9 +297,7 @@
         <servlet-name>InventoryMonitorServlet</servlet-name>
         <url-pattern>/inventory-monitor</url-pattern>
     </servlet-mapping>
-
     <!-- ===== POST-PAYMENT FEEDBACK SERVLETS ===== -->
-    
     <!-- Feedback Prompt Servlet - Hiển thị trang prompt sau thanh toán -->
     <servlet>
         <servlet-name>FeedbackPromptServlet</servlet-name>
@@ -341,7 +307,6 @@
         <servlet-name>FeedbackPromptServlet</servlet-name>
         <url-pattern>/feedback-prompt</url-pattern>
     </servlet-mapping>
-
     <!-- Post Payment Feedback Servlet - Xử lý submit feedback -->
     <servlet>
         <servlet-name>PostPaymentFeedbackServlet</servlet-name>
@@ -351,7 +316,6 @@
         <servlet-name>PostPaymentFeedbackServlet</servlet-name>
         <url-pattern>/submit-feedback</url-pattern>
     </servlet-mapping>
-
     <!-- Feedback Form Servlet - Hiển thị form đánh giá -->
     <servlet>
         <servlet-name>FeedbackFormServlet</servlet-name>
@@ -361,7 +325,6 @@
         <servlet-name>FeedbackFormServlet</servlet-name>
         <url-pattern>/feedback-form</url-pattern>
     </servlet-mapping>
-
     <!-- Feedback Confirmation Servlet - Hiển thị trang cảm ơn -->
     <servlet>
         <servlet-name>FeedbackConfirmationServlet</servlet-name>
@@ -371,6 +334,4 @@
         <servlet-name>FeedbackConfirmationServlet</servlet-name>
         <url-pattern>/feedback-confirmation</url-pattern>
     </servlet-mapping>
-
 </web-app>
-

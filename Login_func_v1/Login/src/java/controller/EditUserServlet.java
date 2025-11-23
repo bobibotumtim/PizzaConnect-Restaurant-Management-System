@@ -287,7 +287,7 @@ public class EditUserServlet extends HttpServlet {
                     }
 
                     // Validate employee role
-                    if (!employeeRole.equals("Manager") && !employeeRole.equals("Cashier") &&
+                    if (!employeeRole.equals("Manager") &&
                             !employeeRole.equals("Waiter") && !employeeRole.equals("Chef")) {
                         request.setAttribute("error", "Invalid employee role selected!");
                         request.setAttribute("currentUser", currentUser);
@@ -296,10 +296,7 @@ public class EditUserServlet extends HttpServlet {
                         return;
                     }
 
-                    // Nếu role cũ là Customer, xóa customer record
-                    if (oldRole == 3) {
-                        customerDAO.deleteCustomerByUserId(userId);
-                    }
+                    // Nếu role cũ là Customer, không xóa customer record
 
                     // Kiểm tra xem employee record đã tồn tại chưa
                     Employee existingEmployee = employeeDAO.getEmployeeByUserId(userId);
@@ -314,10 +311,7 @@ public class EditUserServlet extends HttpServlet {
                         employeeDAO.insertEmployee(employee);
                     }
                 } else if (role == 3) { // Customer
-                    // Nếu role cũ là Employee, xóa employee record
-                    if (oldRole == 2) {
-                        employeeDAO.deleteEmployee(userId);
-                    }
+                    // Nếu role cũ là Employee, không xóa employee record
 
                     // Kiểm tra xem customer record đã tồn tại chưa
                     Customer existingCustomer = customerDAO.getCustomerByUserID(userId);
@@ -329,12 +323,7 @@ public class EditUserServlet extends HttpServlet {
                         customerDAO.insertCustomer(customer);
                     }
                 } else if (role == 1) { // Admin
-                    // Xóa employee hoặc customer record nếu có
-                    if (oldRole == 2) {
-                        employeeDAO.deleteEmployee(userId);
-                    } else if (oldRole == 3) {
-                        customerDAO.deleteCustomerByUserId(userId);
-                    }
+                    // Không xóa employee hoặc customer record
                 }
 
                 request.setAttribute("message", "User updated successfully!");
