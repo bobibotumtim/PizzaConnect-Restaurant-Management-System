@@ -1,76 +1,12 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="models.*, java.util.*, java.text.*" %>
-<%@ page import="dao.CustomerDAO" %>
-<%@ page import="dao.ProductSizeDAO" %>
-<%
-    Order order = (Order) request.getAttribute("order");
-    List<Discount> discounts = (List<Discount>) request.getAttribute("discounts");
-    Double tax = (Double) request.getAttribute("tax");
-    Double taxRate = (Double) request.getAttribute("taxRate");
-    Double totalWithTax = (Double) request.getAttribute("totalWithTax");
-    Discount loyaltyDiscount = (Discount) request.getAttribute("loyaltyDiscount");
-    Integer conversionRate = (Integer) request.getAttribute("conversionRate");
-    Double currentDiscount = (Double) request.getAttribute("currentDiscount");
-    
-    // Get search results
-    List<User> searchResults = (List<User>) request.getAttribute("searchResults");
-    List<Customer> customerSearchResults = (List<Customer>) request.getAttribute("customerSearchResults");
-    String searchPhone = (String) request.getAttribute("searchPhone");
-    
-    // Default values
-    if (conversionRate == null) conversionRate = 100;
-    if (searchResults == null) searchResults = new ArrayList<>();
-    if (customerSearchResults == null) customerSearchResults = new ArrayList<>();
-    if (currentDiscount == null) currentDiscount = 0.0;
-    if (discounts == null) discounts = new ArrayList<>();
-    if (tax == null) tax = 0.0;
-    if (taxRate == null) taxRate = 0.1;
-    if (totalWithTax == null) totalWithTax = order != null ? order.getTotalPrice() * 1.1 : 0;
-    
-    CustomerDAO customerDAO = new CustomerDAO();
-    
-    NumberFormat numberFormat = NumberFormat.getNumberInstance(new Locale("vi", "VN"));
-    
-    
-    // Calculate original total from items (base price + toppings)
-    Double calculatedOriginalTotal = 0.0;
-    if (order != null) {
-        for (OrderDetail item : order.getDetails()) {
-            calculatedOriginalTotal += item.getTotalPrice();
-        }
-    }
-    
-    // Use calculated total instead of order total price
-    Double originalTotalValue = calculatedOriginalTotal;
-    if (originalTotalValue == null) originalTotalValue = 0.0;
-
-    // Create JavaScript variables from JSP
-    double orderTotalPrice = originalTotalValue;
-    int orderId = order != null ? order.getOrderID() : 0;
-
-    ProductSizeDAO productSizeDAO = new ProductSizeDAO();
-    
-    // Create map to save base price of each product size
-    Map<Integer, Double> originalPriceMap = new HashMap<>();
-    if (order != null) {
-        for (OrderDetail item : order.getDetails()) {
-            try {
-                ProductSize productSize = productSizeDAO.getProductSizeById(item.getProductSizeID());
-                if (productSize != null) {
-                    originalPriceMap.put(item.getProductSizeID(), productSize.getPrice());
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment - Order #<%= order != null ? order.getOrderID() : "" %></title>
+    <title>Payment - Order #<c:out value="${order.orderID}" /></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .selected-row {
@@ -151,7 +87,7 @@
                         </div>
                         <div>
                             <h1 class="text-2xl font-bold">Payment Processing</h1>
-                            <p class="text-blue-100">Order #<%= order != null ? order.getOrderID() : "" %></p>
+                            <p class="text-blue-100">Order #<c:out value="${order.orderID}" /></p>
                         </div>
                     </div>
                     <a href="${pageContext.request.contextPath}/manage-orders"
@@ -163,12 +99,14 @@
         </div>
 
         <div class="max-w-full mx-auto px-6 py-4">
-            <% if (order == null) { %>
-                <div class="text-center py-16">
-                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Order Not Found</h3>
-                    <p class="text-gray-500">The requested order could not be found.</p>
-                </div>
-            <% } else { %>
+            <c:choose>
+                <c:when test="${empty order}">
+                    <div class="text-center py-16">
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2">Order Not Found</h3>
+                        <p class="text-gray-500">The requested order could not be found.</p>
+                    </div>
+                </c:when>
+                <c:otherwise>
             <!-- 3-Column Layout Container -->
             <div class="payment-container">
                 
@@ -183,13 +121,20 @@
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-1">Order ID</label>
                                     <div class="px-4 py-2 bg-gray-100 rounded-lg text-gray-800 font-mono">
-                                        <%= order.getOrderID() %>
+                                        <c:out value="${order.orderID}" />
                                     </div>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-1">Table ID</label>
                                     <div class="px-4 py-2 bg-gray-100 rounded-lg text-gray-800">
-                                        <%= order.getTableID() > 0 ? order.getTableID() : "Takeaway" %>
+                                        <c:choose>
+                                            <c:when test="${order.tableID > 0}">
+                                                <c:out value="${order.tableID}" />
+                                            </c:when>
+                                            <c:otherwise>
+                                                Takeaway
+                                            </c:otherwise>
+                                        </c:choose>
                                     </div>
                                 </div>
                             </div>
@@ -199,56 +144,57 @@
                         <div class="flex-1 scrollable-section">
                             <label class="block text-sm font-semibold text-gray-700 mb-3">Order Items</label>
                             <div class="space-y-3">
-                                <% for (OrderDetail item : order.getDetails()) { 
-                                    // Get base price from map
-                                    Double originalUnitPrice = originalPriceMap.get(item.getProductSizeID());
-                                    if (originalUnitPrice == null) originalUnitPrice = 0.0;
-                                    Double originalItemPrice = originalUnitPrice * item.getQuantity();
-                                %>
-                                <div class="border border-gray-200 rounded-lg p-4">
-                                    <div class="flex justify-between items-start mb-2">
-                                        <div>
-                                            <h4 class="font-semibold text-gray-800"><%= item.getProductName() %></h4>
-                                            <% if (item.getSizeName() != null && !item.getSizeName().isEmpty()) { %>
-                                                <span class="text-sm text-gray-600">Size: <%= item.getSizeName() %></span>
-                                            <% } %>
-                                        </div>
-                                        <div class="text-right">
-                                            <!-- Display item base price by product size price * item quantity -->
-                                            <div class="font-bold text-gray-900">
-                                                <%= numberFormat.format(originalItemPrice) %> VND
-                                            </div>
-                                            <div class="text-sm text-gray-600">
-                                                × <%= item.getQuantity() %>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <c:forEach var="item" items="${order.details}">
+                                    <c:set var="originalUnitPrice" value="${originalPriceMap[item.productSizeID]}" />
+                                    <c:if test="${empty originalUnitPrice}">
+                                        <c:set var="originalUnitPrice" value="0.0" />
+                                    </c:if>
+                                    <c:set var="originalItemPrice" value="${originalUnitPrice * item.quantity}" />
                                     
-                                    <% if (item.getToppings() != null && !item.getToppings().isEmpty()) { %>
-                                    <div class="mt-2">
-                                        <h5 class="text-sm font-semibold text-gray-700 mb-1">Toppings:</h5>
-                                        <div class="space-y-1">
-                                            <% for (OrderDetailTopping topping : item.getToppings()) { %>
-                                            <div class="flex justify-between text-sm">
-                                                <span class="text-gray-600">+ <%= topping.getToppingName() %></span>
-                                                <span class="text-gray-600"><%= numberFormat.format(topping.getToppingPrice() * item.getQuantity()) %> VND</span>
+                                    <div class="border border-gray-200 rounded-lg p-4">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <div>
+                                                <h4 class="font-semibold text-gray-800"><c:out value="${item.productName}" /></h4>
+                                                <c:if test="${not empty item.sizeName}">
+                                                    <span class="text-sm text-gray-600">Size: <c:out value="${item.sizeName}" /></span>
+                                                </c:if>
                                             </div>
-                                            <% } %>
+                                            <div class="text-right">
+                                                <!-- Display item base price by product size price * item quantity -->
+                                                <div class="font-bold text-gray-900">
+                                                    <fmt:formatNumber value="${originalItemPrice}" pattern="#,###" /> VND
+                                                </div>
+                                                <div class="text-sm text-gray-600">
+                                                    × <c:out value="${item.quantity}" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <c:if test="${not empty item.toppings}">
+                                        <div class="mt-2">
+                                            <h5 class="text-sm font-semibold text-gray-700 mb-1">Toppings:</h5>
+                                            <div class="space-y-1">
+                                                <c:forEach var="topping" items="${item.toppings}">
+                                                <div class="flex justify-between text-sm">
+                                                    <span class="text-gray-600">+ <c:out value="${topping.toppingName}" /></span>
+                                                    <span class="text-gray-600"><fmt:formatNumber value="${topping.toppingPrice * item.quantity}" pattern="#,###" /> VND</span>
+                                                </div>
+                                                </c:forEach>
+                                            </div>
+                                        </div>
+                                        </c:if>
+                                        
+                                        <!-- Display item total price (include topping) -->
+                                        <div class="mt-2 pt-2 border-t text-sm">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">Item total:</span>
+                                                <span class="font-semibold text-gray-800">
+                                                    <fmt:formatNumber value="${item.totalPrice}" pattern="#,###" /> VND
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                    <% } %>
-                                    
-                                    <!-- Display item total price (include topping) -->
-                                    <div class="mt-2 pt-2 border-t text-sm">
-                                        <div class="flex justify-between">
-                                            <span class="text-gray-600">Item total:</span>
-                                            <span class="font-semibold text-gray-800">
-                                                <%= numberFormat.format(item.getTotalPrice()) %> VND
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <% } %>
+                                </c:forEach>
                             </div>
                         </div>
 
@@ -256,7 +202,7 @@
                         <div class="border-t pt-4 mt-4">
                             <div class="flex justify-between items-center text-lg font-bold">
                                 <span>Total Amount:</span>
-                                <span class="text-green-600"><%= numberFormat.format(originalTotalValue) %> VND</span>
+                                <span class="text-green-600"><fmt:formatNumber value="${originalTotalValue}" pattern="#,###" /> VND</span>
                             </div>
                         </div>
                     </div>
@@ -275,12 +221,12 @@
                                 </label>
                                 <form method="post" action="${pageContext.request.contextPath}/payment" class="relative">
                                     <input type="hidden" name="action" value="searchCustomer">
-                                    <input type="hidden" name="orderId" value="<%= order.getOrderID() %>">
+                                    <input type="hidden" name="orderId" value="${order.orderID}">
                                     <div class="flex gap-2">
                                         <input type="text" name="searchPhone" 
                                                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                placeholder="Enter phone number..."
-                                               value="<%= searchPhone != null ? searchPhone : "" %>">
+                                               value="<c:out value='${searchPhone}' />">
                                         <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                                             Search
                                         </button>
@@ -295,32 +241,36 @@
                         <!-- Scrollable Search Results -->
                         <div class="flex-1 scrollable-section">
                             <!-- Search Results -->
-                            <% if (!customerSearchResults.isEmpty()) { %>
+                            <c:if test="${not empty customerSearchResults}">
                             <div class="border border-gray-300 rounded-lg bg-white shadow-lg mb-4">
                                 <div class="p-2 bg-gray-50 border-b">
                                     <span class="text-sm font-semibold text-gray-700">Search Results:</span>
                                 </div>
-                                <% for (Customer customer : customerSearchResults) { %>
+                                <c:forEach var="customer" items="${customerSearchResults}">
                                 <div class="customer-option" 
-                                     onclick="selectCustomer(<%= customer.getCustomerID() %>, 
-                                                            '<%= customer.getName() != null ? customer.getName().replace("'", "\\'") : "" %>', 
-                                                            '<%= customer.getPhone() != null ? customer.getPhone() : "" %>', 
-                                                            <%= customer.getLoyaltyPoint() %>)">
-                                    <div class="font-semibold"><%= customer.getName() != null ? customer.getName() : "N/A" %></div>
+                                     data-customer='{
+                                         "id": ${customer.customerID},
+                                         "name": "<c:out value='${customer.name != null ? customer.name : ""}' />",
+                                         "phone": "<c:out value='${customer.phone != null ? customer.phone : ""}' />",
+                                         "points": ${customer.loyaltyPoint}
+                                     }'>
+                                    <div class="font-semibold"><c:out value="${customer.name != null ? customer.name : 'N/A'}" /></div>
                                     <div class="text-sm text-gray-600">
-                                        <%= customer.getPhone() != null ? customer.getPhone() : "N/A" %> 
-                                        <% if (customer.getLoyaltyPoint() > 0) { %>
-                                            • <%= customer.getLoyaltyPoint() %> points
-                                        <% } %>
+                                        <c:out value="${customer.phone != null ? customer.phone : 'N/A'}" /> 
+                                        <c:if test="${customer.loyaltyPoint > 0}">
+                                            • <c:out value="${customer.loyaltyPoint}" /> points
+                                        </c:if>
                                     </div>
                                 </div>
-                                <% } %>
+                                </c:forEach>
                             </div>
-                            <% } else if (searchPhone != null && !searchPhone.isEmpty()) { %>
+                            </c:if>
+                            
+                            <c:if test="${not empty searchPhone and empty customerSearchResults}">
                             <div class="p-3 text-center text-gray-500 border border-gray-300 rounded-lg bg-white mb-4">
-                                No customers found for "<%= searchPhone %>"
+                                No customers found for "<c:out value="${searchPhone}" />"
                             </div>
-                            <% } %>
+                            </c:if>
 
                             <!-- Selected Customer Info -->
                             <div id="customerInfo" class="hidden border border-gray-200 rounded-lg p-4 bg-gray-50 mb-4">
@@ -363,7 +313,7 @@
                                 </div>
                                 <div id="loyaltyError" class="text-red-600 text-sm mt-1 hidden"></div>
                                 <div class="text-xs text-gray-500 mt-1">
-                                    Conversion rate: <%= conversionRate %> points = 1,000 VND
+                                    Conversion rate: <c:out value="${conversionRate}" /> points = 1,000 VND
                                 </div>
                             </div>
 
@@ -392,43 +342,46 @@
                     <div class="section-content">
                         <!-- Scrollable Discounts -->
                         <div class="flex-1 scrollable-section mb-4">
-                            <% if (discounts.isEmpty()) { %>
-                                <div class="text-center py-8 text-gray-500">
-                                    <svg class="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
-                                    </svg>
-                                    <p class="mt-2">No discounts available for this order amount.</p>
-                                </div>
-                            <% } else { %>
-                                <div class="space-y-2">
-                                    <% for (Discount discount : discounts) { %>
-                                    <div class="discount-row border border-gray-200 rounded-lg p-3 hover:bg-gray-50 cursor-pointer"
-                                         onclick="selectDiscount(this, <%= discount.getDiscountId() %>)"
-                                         data-discount-id="<%= discount.getDiscountId() %>"
-                                         data-discount-type="<%= discount.getDiscountType() %>"
-                                         data-discount-value="<%= discount.getValue() %>"
-                                         data-max-discount="<%= discount.getMaxDiscount() != null ? discount.getMaxDiscount() : 0 %>">
-                                        <div class="flex justify-between items-start">
-                                            <div>
-                                                <h4 class="font-semibold text-gray-800"><%= discount.getDescription() %></h4>
-                                                <div class="text-sm text-gray-600">
-                                                    Type: <%= discount.getDiscountType() %> | 
-                                                    Value: <%= discount.getValue() %> <%= "Percentage".equals(discount.getDiscountType()) ? "%" : "VND" %>
-                                                    <% if (discount.getMaxDiscount() != null && discount.getMaxDiscount() > 0) { %>
-                                                        | Max: <%= numberFormat.format(discount.getMaxDiscount()) %> VND
-                                                    <% } %>
+                            <c:choose>
+                                <c:when test="${empty discounts}">
+                                    <div class="text-center py-8 text-gray-500">
+                                        <svg class="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
+                                        </svg>
+                                        <p class="mt-2">No discounts available for this order amount.</p>
+                                    </div>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="space-y-2">
+                                        <c:forEach var="discount" items="${discounts}">
+                                        <div class="discount-row border border-gray-200 rounded-lg p-3 hover:bg-gray-50 cursor-pointer"
+                                             onclick="selectDiscount(this, ${discount.discountId})"
+                                             data-discount-id="${discount.discountId}"
+                                             data-discount-type="${discount.discountType}"
+                                             data-discount-value="${discount.value}"
+                                             data-max-discount="${discount.maxDiscount != null ? discount.maxDiscount : 0}">
+                                            <div class="flex justify-between items-start">
+                                                <div>
+                                                    <h4 class="font-semibold text-gray-800"><c:out value="${discount.description}" /></h4>
+                                                    <div class="text-sm text-gray-600">
+                                                        Type: <c:out value="${discount.discountType}" /> | 
+                                                        Value: <c:out value="${discount.value}" /> <c:if test="${discount.discountType == 'Percentage'}">%</c:if>
+                                                        <c:if test="${discount.maxDiscount != null and discount.maxDiscount > 0}">
+                                                            | Max: <fmt:formatNumber value="${discount.maxDiscount}" pattern="#,###" /> VND
+                                                        </c:if>
+                                                    </div>
+                                                    <c:if test="${discount.minOrderTotal > 0}">
+                                                    <div class="text-xs text-gray-500">
+                                                        Min order: <fmt:formatNumber value="${discount.minOrderTotal}" pattern="#,###" /> VND
+                                                    </div>
+                                                    </c:if>
                                                 </div>
-                                                <% if (discount.getMinOrderTotal() > 0) { %>
-                                                <div class="text-xs text-gray-500">
-                                                    Min order: <%= numberFormat.format(discount.getMinOrderTotal()) %> VND
-                                                </div>
-                                                <% } %>
                                             </div>
                                         </div>
+                                        </c:forEach>
                                     </div>
-                                    <% } %>
-                                </div>
-                            <% } %>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
 
                         <!-- Fixed Payment Summary -->
@@ -438,11 +391,11 @@
                             <div class="space-y-2">
                                 <div class="flex justify-between">
                                     <span>Original Total:</span>
-                                    <span id="originalTotal"><%= numberFormat.format(originalTotalValue) %> VND</span>
+                                    <span id="originalTotal"><fmt:formatNumber value="${originalTotalValue}" pattern="#,###" /> VND</span>
                                 </div>
                                 <div class="flex justify-between">
                                     <span>Tax (10%):</span>
-                                    <span id="taxDisplay"><%= numberFormat.format(tax) %> VND</span>
+                                    <span id="taxDisplay"><fmt:formatNumber value="${tax}" pattern="#,###" /> VND</span>
                                 </div>
                                 <div class="flex justify-between text-green-600">
                                     <span>Loyalty Discount:</span>
@@ -454,7 +407,7 @@
                                 </div>
                                 <div class="border-t pt-2 flex justify-between font-bold text-lg">
                                     <span>Final Amount:</span>
-                                    <span id="finalAmount" class="text-green-600"><%= numberFormat.format(totalWithTax) %> VND</span>
+                                    <span id="finalAmount" class="text-green-600"><fmt:formatNumber value="${totalWithTax}" pattern="#,###" /> VND</span>
                                 </div>
                             </div>
 
@@ -467,7 +420,8 @@
                     </div>
                 </div>
             </div>
-            <% } %>
+                </c:otherwise>
+            </c:choose>
         </div>
     </div>
 
@@ -530,7 +484,7 @@
     <!-- Hidden form for final payment confirmation -->
     <form id="paymentForm" action="${pageContext.request.contextPath}/payment" method="post" class="hidden">
         <input type="hidden" name="action" value="confirmPayment">
-        <input type="hidden" name="orderId" value="<%= order != null ? order.getOrderID() : "" %>">
+        <input type="hidden" name="orderId" value="${order.orderID}">
         <input type="hidden" name="customerId" id="formCustomerId" value="0">
         <input type="hidden" name="loyaltyPointsUsed" id="formLoyaltyPointsUsed" value="0">
         <input type="hidden" name="discountId" id="formDiscountId" value="0">
@@ -544,37 +498,46 @@
     let selectedDiscountId = null;
     let loyaltyDiscountAmount = 0;
     let regularDiscountAmount = 0;
-    let conversionRate = <%= conversionRate %>;
-    let originalTotal = <%= originalTotalValue %>;
-    let taxRate = <%= taxRate %>;
-    let currentOrderId = <%= orderId %>;
+    let conversionRate = ${conversionRate};
+    let originalTotal = ${originalTotalValue};
+    let taxRate = ${taxRate};
+    let currentOrderId = ${order.orderID};
 
     // Create discounts array from JSP
     let availableDiscounts = [
-        <% for (int i = 0; i < discounts.size(); i++) { 
-            Discount discount = discounts.get(i);
-            if (i > 0) { %>,<% } %>
+        <c:forEach var="discount" items="${discounts}" varStatus="status">
         {
-            discountId: <%= discount.getDiscountId() %>,
-            discountType: '<%= discount.getDiscountType() %>',
-            value: <%= discount.getValue() %>,
-            maxDiscount: <%= discount.getMaxDiscount() != null ? discount.getMaxDiscount() : 0 %>,
-            minOrderTotal: <%= discount.getMinOrderTotal() %>
-        }
-        <% } %>
+            discountId: ${discount.discountId},
+            discountType: '${discount.discountType}',
+            value: ${discount.value},
+            maxDiscount: ${discount.maxDiscount != null ? discount.maxDiscount : 0},
+            minOrderTotal: ${discount.minOrderTotal}
+        }<c:if test="${not status.last}">,</c:if>
+        </c:forEach>
     ];
 
-    function selectCustomer(customerId, name, phone, loyaltyPoints) {
+    // Initialize customer selection
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add click event listeners to customer options
+        document.querySelectorAll('.customer-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const customerData = JSON.parse(this.getAttribute('data-customer'));
+                selectCustomer(customerData);
+            });
+        });
+    });
+
+    function selectCustomer(customerData) {
         selectedCustomer = {
-            customerId: customerId,
-            name: name,
-            phone: phone,
-            loyaltyPoints: loyaltyPoints
+            customerId: customerData.id,
+            name: customerData.name,
+            phone: customerData.phone,
+            loyaltyPoints: customerData.points
         };
         
-        document.getElementById('customerName').textContent = name;
-        document.getElementById('customerPhone').textContent = phone;
-        document.getElementById('customerPoints').textContent = loyaltyPoints || 0;
+        document.getElementById('customerName').textContent = customerData.name;
+        document.getElementById('customerPhone').textContent = customerData.phone;
+        document.getElementById('customerPoints').textContent = customerData.points || 0;
         
         document.getElementById('customerInfo').classList.remove('hidden');
         document.getElementById('loyaltySection').classList.remove('hidden');

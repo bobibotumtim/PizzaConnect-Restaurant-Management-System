@@ -5,6 +5,7 @@ import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.WebServlet;
 import java.io.IOException;
 import java.sql.Connection;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import models.*;
@@ -19,6 +20,7 @@ public class PaymentServlet extends HttpServlet {
     private DiscountDAO discountDAO;
     private OrderDiscountDAO orderDiscountDAO;
     private PaymentDAO paymentDAO;
+    private ProductSizeDAO productSizeDAO;
 
     @Override
     public void init() throws ServletException {
@@ -28,6 +30,7 @@ public class PaymentServlet extends HttpServlet {
         discountDAO = new DiscountDAO();
         orderDiscountDAO = new OrderDiscountDAO();
         paymentDAO = new PaymentDAO();
+        productSizeDAO = new ProductSizeDAO();
     }
 
     @Override
@@ -65,20 +68,12 @@ public class PaymentServlet extends HttpServlet {
             // Calculate current discount of order
             double currentDiscount = orderDiscountDAO.getTotalDiscountAmount(orderId);
 
-            // Set discount amount for display in JSP
-            request.setAttribute("currentDiscount", currentDiscount);
-            request.setAttribute("tax", tax);
-            request.setAttribute("taxRate", taxRate);
-            request.setAttribute("totalWithTax", totalWithTax);
-
             // Get all active discounts (excluding loyalty) and filter by min order total
             List<Discount> availableDiscounts = discountDAO.getDiscountsByStatus(true, 1, null, null, null, null);
             List<Discount> applicableDiscounts = new ArrayList<>();
 
             for (Discount discount : availableDiscounts) {
                 if (!"Loyalty".equals(discount.getDiscountType())) {
-                    // Check min order total condition - only get discount that has min order total
-                    // <= order total
                     if (discount.getMinOrderTotal() <= order.getTotalPrice()) {
                         applicableDiscounts.add(discount);
                     }
@@ -109,15 +104,46 @@ public class PaymentServlet extends HttpServlet {
                         customerSearchResults.add(customer);
                     }
                 }
-                request.setAttribute("customerSearchResults", customerSearchResults);
             }
 
+            // Calculate original total from items
+            Double calculatedOriginalTotal = 0.0;
+            if (order != null) {
+                for (OrderDetail item : order.getDetails()) {
+                    calculatedOriginalTotal += item.getTotalPrice();
+                }
+            }
+
+            // Create map for original prices
+            Map<Integer, Double> originalPriceMap = new HashMap<>();
+            if (order != null) {
+                for (OrderDetail item : order.getDetails()) {
+                    try {
+                        ProductSize productSize = productSizeDAO.getProductSizeById(item.getProductSizeID());
+                        if (productSize != null) {
+                            originalPriceMap.put(item.getProductSizeID(), productSize.getPrice());
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            // Set request attributes
             request.setAttribute("order", order);
             request.setAttribute("discounts", applicableDiscounts);
             request.setAttribute("loyaltyDiscount", loyaltyDiscount);
             request.setAttribute("conversionRate", loyaltyDiscount != null ? (int) loyaltyDiscount.getValue() : 100);
             request.setAttribute("searchResults", searchResults);
+            request.setAttribute("customerSearchResults", customerSearchResults);
             request.setAttribute("searchPhone", searchPhone);
+            request.setAttribute("currentDiscount", currentDiscount);
+            request.setAttribute("tax", tax);
+            request.setAttribute("taxRate", taxRate);
+            request.setAttribute("totalWithTax", totalWithTax);
+            request.setAttribute("originalTotalValue", calculatedOriginalTotal);
+            request.setAttribute("originalPriceMap", originalPriceMap);
+            request.setAttribute("numberFormat", NumberFormat.getNumberInstance(new Locale("vi", "VN")));
 
             request.getRequestDispatcher("/view/Payment.jsp").forward(request, response);
 
@@ -292,12 +318,10 @@ public class PaymentServlet extends HttpServlet {
                         Customer customer = userDAO.getCustomerByCustomerId(customerId);
                         if (customer != null) {
                             int currentPoints = customer.getLoyaltyPoint();
-                            int totalPoints = currentPoints + earnedPoints; // only plus pts because it had been
-                                                                            // subtract before
+                            int totalPoints = currentPoints + earnedPoints;
                             userDAO.updateCustomerLoyaltyPoints(customerId, totalPoints);
-                            System.out
-                                    .println(
-                                            "Earned loyalty points: " + earnedPoints + " (total: " + totalPoints + ")");
+                            System.out.println(
+                                    "Earned loyalty points: " + earnedPoints + " (total: " + totalPoints + ")");
                         }
                     }
                 }
@@ -383,7 +407,7 @@ public class PaymentServlet extends HttpServlet {
             }
             return discountAmount;
         } else if ("Fixed".equals(discount.getDiscountType())) {
-            return Math.min(discount.getValue(), orderAmount); // Not exeed max discount value
+            return Math.min(discount.getValue(), orderAmount);
         }
         return 0;
     }

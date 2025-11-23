@@ -1,67 +1,11 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="models.*, java.util.*, java.text.*" %>
-<%@ page import="dao.DiscountDAO" %>
-<%
-    Order order = (Order) request.getAttribute("order");
-    Payment payment = (Payment) request.getAttribute("payment");
-    Double subtotal = (Double) request.getAttribute("subtotal");
-    Double originalTotal = (Double) request.getAttribute("originalTotal");
-    Double taxAmount = (Double) request.getAttribute("taxAmount");
-    Double taxRate = (Double) request.getAttribute("taxRate");
-    Double discountAmount = (Double) request.getAttribute("discountAmount");
-    Double loyaltyDiscount = (Double) request.getAttribute("loyaltyDiscount");
-    Double regularDiscount = (Double) request.getAttribute("regularDiscount");
-    Double totalDiscount = (Double) request.getAttribute("totalDiscount");
-    Double finalAmount = (Double) request.getAttribute("finalAmount");
-    List<OrderDiscount> discounts = (List<OrderDiscount>) request.getAttribute("discounts");
-    String currentDate = (String) request.getAttribute("currentDate");
-    Boolean embedded = (Boolean) request.getAttribute("embedded");
-    String customerName = (String) request.getAttribute("customerName");
-    
-    if (embedded == null) embedded = false;
-    if (discounts == null) discounts = new ArrayList<>();
-    if (discountAmount == null) discountAmount = 0.0;
-    if (loyaltyDiscount == null) loyaltyDiscount = 0.0;
-    if (regularDiscount == null) regularDiscount = 0.0;
-    if (totalDiscount == null) totalDiscount = 0.0;
-    if (finalAmount == null) finalAmount = order != null ? order.getTotalPrice() : 0.0;
-    if (subtotal == null) subtotal = order != null ? order.getTotalPrice() : 0.0;
-    if (originalTotal == null) originalTotal = subtotal;
-    if (taxAmount == null) taxAmount = 0.0;
-    if (taxRate == null) taxRate = 0.1;
-    if (customerName == null) {
-        customerName = order != null && order.getCustomerName() != null ? order.getCustomerName() : "Khách vãng lai";
-    }
-    
-   // Recalculate from database Discount
-    DiscountDAO discountDAO = new DiscountDAO();
-    if (discounts != null && !discounts.isEmpty()) {
-        double dbLoyaltyDiscount = 0;
-        double dbRegularDiscount = 0;
-        
-        for (OrderDiscount od : discounts) {
-            Discount discount = discountDAO.getDiscountById(od.getDiscountId());
-            if (discount != null && discount.getDiscountType().equals("Loyalty")) {
-                dbLoyaltyDiscount += od.getAmount();
-            } else {
-                dbRegularDiscount += od.getAmount();
-            }
-        }
-        
-        // Get data from database
-        if (dbLoyaltyDiscount > 0) loyaltyDiscount = dbLoyaltyDiscount;
-        if (dbRegularDiscount > 0) regularDiscount = dbRegularDiscount;
-        if (dbLoyaltyDiscount + dbRegularDiscount > 0) {
-            totalDiscount = dbLoyaltyDiscount + dbRegularDiscount;
-        }
-    }
-    
-    NumberFormat numberFormat = NumberFormat.getNumberInstance(new Locale("vi", "VN"));
-%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Bill - Order #<%= order != null ? order.getOrderID() : "" %></title>
+    <title>Bill - Order #<c:out value="${order.orderID}" /></title>
     <style>
         * {
             margin: 0;
@@ -207,146 +151,142 @@
         }
     </style>
 </head>
-<body class="<%= embedded ? "embedded-bill" : "" %>">
-    <% if (order == null) { %>
-        <div class="text-center py-8 text-red-600">
-            <p>Order not found or invalid order ID</p>
-        </div>
-    <% } else { %>
-        <div class="bill-container">
-            <!-- Header -->
-            <div class="header">
-                <h1>HÓA ĐƠN THANH TOÁN</h1>
-                <p class="text-bold">Pizza Store</p>
-                <p>KM29 - ĐL Thăng Long</p>
-                <p>ĐT: 012345678-0987654321</p>
+<body class="${embedded ? 'embedded-bill' : ''}">
+    <c:choose>
+        <c:when test="${empty order}">
+            <div class="text-center py-8 text-red-600">
+                <p>Order not found or invalid order ID</p>
             </div>
-
-            <!-- Order Info -->
-            <div class="info-line">
-                <span><%= currentDate %></span>
-            </div>
-            <div class="info-line">
-                <span>Khách hàng: <%= customerName %></span>
-            </div>
-            <div class="info-line">
-                <span>Hóa đơn số: <%= order.getOrderID() %></span>
-            </div>
-
-            <div class="divider"></div>
-
-            <!-- Order Items -->
-            <table class="items-table">
-                <tbody>
-                    <% for (OrderDetail item : order.getDetails()) { %>
-                    <tr>
-                        <td class="item-name">
-                            <%= item.getProductName() %>
-                            <% if (item.getSizeName() != null && !item.getSizeName().isEmpty()) { %>
-                                (<%= item.getSizeName() %>)
-                            <% } %>
-                        </td>
-                        <td class="item-qty"><%= item.getQuantity() %></td>
-                        <td class="item-price"><%= numberFormat.format(item.getTotalPrice()) %></td>
-                    </tr>
-                    <% } %>
-                </tbody>
-            </table>
-
-            <div class="divider"></div>
-
-            <!-- Amount Calculation with Tax and Discount Breakdown -->
-            <div class="amount-section">
-                <div class="amount-line">
-                    <span>Tạm tính:</span>
-                    <span><%= numberFormat.format(originalTotal) %></span>
+        </c:when>
+        <c:otherwise>
+            <div class="bill-container">
+                <!-- Header -->
+                <div class="header">
+                    <h1>HÓA ĐƠN THANH TOÁN</h1>
+                    <p class="text-bold">Pizza Store</p>
+                    <p>KM29 - ĐL Thăng Long</p>
+                    <p>ĐT: 012345678-0987654321</p>
                 </div>
-                
-                <!-- Display tax -->
-                <% if (taxAmount > 0) { %>
-                <div class="amount-line">
-                    <span>Thuế VAT (<%= (int)(taxRate * 100) %>%):</span>
-                    <span><%= numberFormat.format(taxAmount) %></span>
+
+                <!-- Order Info -->
+                <div class="info-line">
+                    <span><c:out value="${currentDate}" /></span>
                 </div>
-                <% } %>
-                
-                <!-- Display discount details -->
-                <% if (totalDiscount > 0) { %>
+                <div class="info-line">
+                    <span>Khách hàng: <c:out value="${customerName}" /></span>
+                </div>
+                <div class="info-line">
+                    <span>Hóa đơn số: <c:out value="${order.orderID}" /></span>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Order Items -->
+                <table class="items-table">
+                    <tbody>
+                        <c:forEach var="item" items="${order.details}">
+                        <tr>
+                            <td class="item-name">
+                                <c:out value="${item.productName}" />
+                                <c:if test="${not empty item.sizeName}">
+                                    (<c:out value="${item.sizeName}" />)
+                                </c:if>
+                            </td>
+                            <td class="item-qty"><c:out value="${item.quantity}" /></td>
+                            <td class="item-price"><fmt:formatNumber value="${item.totalPrice}" pattern="#,###" /></td>
+                        </tr>
+                        </c:forEach>
+                    </tbody>
+                </table>
+
+                <div class="divider"></div>
+
+                <!-- Amount Calculation with Tax and Discount Breakdown -->
+                <div class="amount-section">
                     <div class="amount-line">
-                        <span>Giảm giá:</span>
-                        <span><%= numberFormat.format(totalDiscount) %></span>
+                        <span>Tạm tính:</span>
+                        <span><fmt:formatNumber value="${originalTotal}" pattern="#,###" /></span>
                     </div>
                     
-                    <!-- Display discount breakdown -->
-                    <div class="discount-breakdown">
-                        <% if (loyaltyDiscount > 0) { %>
-                        <div class="discount-item">
-                            <span>• Điểm thưởng:</span>
-                            <span><%= numberFormat.format(loyaltyDiscount) %></span>
-                        </div>
-                        <% } %>
-                        <% if (regularDiscount > 0) { %>
-                        <div class="discount-item">
-                            <span>• Khuyến mãi:</span>
-                            <span><%= numberFormat.format(regularDiscount) %></span>
-                        </div>
-                        <% } %>
+                    <!-- Display tax -->
+                    <c:if test="${taxAmount > 0}">
+                    <div class="amount-line">
+                        <span>Thuế VAT (<fmt:formatNumber value="${taxRate * 100}" pattern="#" />%):</span>
+                        <span><fmt:formatNumber value="${taxAmount}" pattern="#,###" /></span>
                     </div>
-                <% } %>
-                
-                <div class="amount-line total-line">
-                    <span>Tổng cộng:</span>
-                    <span><%= numberFormat.format(finalAmount) %></span>
+                    </c:if>
+                    
+                    <!-- Display discount details -->
+                    <c:if test="${totalDiscount > 0}">
+                        <div class="amount-line">
+                            <span>Giảm giá:</span>
+                            <span><fmt:formatNumber value="${totalDiscount}" pattern="#,###" /></span>
+                        </div>
+                        
+                        <!-- Display discount breakdown -->
+                        <div class="discount-breakdown">
+                            <c:if test="${loyaltyDiscount > 0}">
+                            <div class="discount-item">
+                                <span>• Điểm thưởng:</span>
+                                <span><fmt:formatNumber value="${loyaltyDiscount}" pattern="#,###" /></span>
+                            </div>
+                            </c:if>
+                            <c:if test="${regularDiscount > 0}">
+                            <div class="discount-item">
+                                <span>• Khuyến mãi:</span>
+                                <span><fmt:formatNumber value="${regularDiscount}" pattern="#,###" /></span>
+                            </div>
+                            </c:if>
+                        </div>
+                    </c:if>
+                    
+                    <div class="amount-line total-line">
+                        <span>Tổng cộng:</span>
+                        <span><fmt:formatNumber value="${finalAmount}" pattern="#,###" /></span>
+                    </div>
                 </div>
-            </div>
 
-            <div class="divider"></div>
-            
-            <!-- QR Code Payment Section with final amount -->
-            <div class="qr-section">
-                <div class="text-bold" style="margin-bottom: 5px;">
-                    Thanh toán bằng QR Banking
-                </div>
-                <div class="payment-instruction">
-                    Số dư ứng dụng ngân hàng để quét mã QR
-                </div>
+                <div class="divider"></div>
                 
-                <div class="qr-code">
-                    <img src="<%= payment != null && payment.getQrCodeURL() != null ? payment.getQrCodeURL() : generateQRCodeURL(finalAmount, order.getOrderID()) %>" 
-                         alt="QR Code">
+                <!-- QR Code Payment Section with final amount -->
+                <div class="qr-section">
+                    <div class="text-bold" style="margin-bottom: 5px;">
+                        Thanh toán bằng QR Banking
+                    </div>
+                    <div class="payment-instruction">
+                        Số dư ứng dụng ngân hàng để quét mã QR
+                    </div>
+                    
+                    <div class="qr-code">
+                        <c:choose>
+                            <c:when test="${not empty payment and not empty payment.qrCodeURL}">
+                                <img src="${payment.qrCodeURL}" alt="QR Code">
+                            </c:when>
+                            <c:otherwise>
+                                <img src="${qrCodeUrl}" alt="QR Code">
+                            </c:otherwise>
+                        </c:choose>
+                    </div>
+                    
+                    <div class="text-bold" style="margin: 5px 0;">
+                        Số tiền: <fmt:formatNumber value="${finalAmount}" pattern="#,###" /> VND
+                    </div>
+                    
+                    <div class="payment-instruction">
+                        Thanh toán hóa đơn số <c:out value="${order.orderID}" />
+                    </div>
+                    <div class="payment-instruction">
+                        Phần mềm chờ thu ngân xác nhận
+                    </div>
                 </div>
-                
-                <div class="text-bold" style="margin: 5px 0;">
-                    Số tiền: <%= numberFormat.format(finalAmount) %> VND
-                </div>
-                
-                <div class="payment-instruction">
-                    Thanh toán hóa đơn số <%= order.getOrderID() %>
-                </div>
-                <div class="payment-instruction">
-                    Phần mềm chờ thu ngân xác nhận
-                </div>
-            </div>
 
-            <!-- Footer -->
-            <div class="footer">
-                <p>Cảm ơn quý khách!</p>
-                <p>Hẹn gặp lại!</p>
+                <!-- Footer -->
+                <div class="footer">
+                    <p>Cảm ơn quý khách!</p>
+                    <p>Hẹn gặp lại!</p>
+                </div>
             </div>
-        </div>
-    <% } %>
+        </c:otherwise>
+    </c:choose>
 </body>
 </html>
-
-<%!
-    private String generateQRCodeURL(double amount, int orderId) {
-        // Generate QR code URL with dynamic information
-        String baseUrl = "https://img.vietqr.io/image/BIDV-5106949427-compact2.jpg";
-        String amountStr = String.format("%.0f", amount);
-        String addInfo = "Thanh%20toan%20order%20" + orderId;
-
-        return baseUrl + "?amount=" + amountStr +
-                "&addInfo=" + addInfo +
-                "&accountName=Pizza%20Store";
-    }
-%>
