@@ -266,41 +266,6 @@
                 </div>
             </div>
         
-            <!-- Statistics -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white rounded-xl shadow-md p-6 text-center">
-                    <div class="text-4xl font-bold text-green-600" id="availableCount">0</div>
-                    <div class="text-gray-600 text-sm mt-2">Available Tables</div>
-                </div>
-                <div class="bg-white rounded-xl shadow-md p-6 text-center">
-                    <div class="text-4xl font-bold text-orange-600" id="occupiedCount">0</div>
-                    <div class="text-gray-600 text-sm mt-2">Occupied Tables</div>
-                </div>
-                <div class="bg-white rounded-xl shadow-md p-6 text-center">
-                    <div class="text-4xl font-bold text-orange-500" id="totalTables">0</div>
-                    <div class="text-gray-600 text-sm mt-2">Total Tables</div>
-                </div>
-            </div>
-            
-            <!-- Filter Section -->
-            <div class="bg-white rounded-xl shadow-md p-6 mb-8">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Filter by Status</h3>
-                <div class="flex flex-wrap gap-3">
-                    <button class="filter-btn px-6 py-2 rounded-lg font-medium transition-all bg-orange-500 text-white" data-filter="all">
-                        <i class="fas fa-th"></i> All Tables
-                    </button>
-                    <button class="filter-btn px-6 py-2 rounded-lg font-medium transition-all bg-gray-100 text-gray-700 hover:bg-gray-200" data-filter="available">
-                        <i class="fas fa-check-circle"></i> Available
-                    </button>
-                    <button class="filter-btn px-6 py-2 rounded-lg font-medium transition-all bg-gray-100 text-gray-700 hover:bg-gray-200" data-filter="occupied">
-                        <i class="fas fa-utensils"></i> Occupied
-                    </button>
-                    <button class="filter-btn px-6 py-2 rounded-lg font-medium transition-all bg-gray-100 text-gray-700 hover:bg-gray-200" data-filter="unavailable">
-                        <i class="fas fa-times-circle"></i> Unavailable
-                    </button>
-                </div>
-            </div>
-        
             <!-- Tables Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="tablesGrid">
                 <c:forEach var="table" items="${tables}">
@@ -418,46 +383,6 @@
         // Initialize Lucide icons
         lucide.createIcons();
         
-        // Update statistics
-        function updateStats() {
-            const cards = document.querySelectorAll('.table-card');
-            let available = 0, occupied = 0, total = cards.length;
-            
-            cards.forEach(card => {
-                const status = card.dataset.status;
-                if (status === 'available') available++;
-                else if (status === 'occupied') occupied++;
-            });
-            
-            document.getElementById('availableCount').textContent = available;
-            document.getElementById('occupiedCount').textContent = occupied;
-            document.getElementById('totalTables').textContent = total;
-        }
-        
-        // Filter functionality
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                // Update active button
-                document.querySelectorAll('.filter-btn').forEach(b => {
-                    b.classList.remove('bg-orange-500', 'text-white');
-                    b.classList.add('bg-gray-100', 'text-gray-700');
-                });
-                this.classList.remove('bg-gray-100', 'text-gray-700');
-                this.classList.add('bg-orange-500', 'text-white');
-                
-                const filter = this.dataset.filter;
-                const cards = document.querySelectorAll('.table-card');
-                
-                cards.forEach(card => {
-                    if (filter === 'all' || card.dataset.status === filter) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-            });
-        });
-        
         // Table card click handler (only for available tables)
         document.querySelectorAll('.table-card').forEach(card => {
             card.addEventListener('click', function(e) {
@@ -574,9 +499,6 @@
         setInterval(() => {
             location.reload();
         }, 30000);
-        
-        // Initialize stats on load
-        updateStats();
     </script>
     
     <!-- Lock Table Modal -->
