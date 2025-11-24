@@ -320,7 +320,6 @@
                     <div class="form-group">
                         <label>Product Image URL:</label>
                         <input type="text" name="imageUrl" placeholder="Enter image URL">
-                        <small class="text-gray-500">Enter the full URL of the product image</small>
                     </div>
                     <button type="submit">Save Product</button>
                 </form>
@@ -358,7 +357,6 @@
                     <div class="form-group">
                         <label>New Image URL (optional):</label>
                         <input type="text" name="imageUrl" id="editImageUrl" placeholder="Enter new image URL">
-                        <small class="text-gray-500">Leave empty to keep current image</small>
                     </div>
                     <button type="submit">Update Product</button>
                 </form>
