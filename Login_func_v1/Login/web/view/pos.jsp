@@ -558,6 +558,27 @@
                     formatCurrency(minPrice) + 'đ' : 
                     formatCurrency(minPrice) + 'đ - ' + formatCurrency(maxPrice) + 'đ';
                 
+                // Calculate total available quantity across all sizes
+                const totalAvailable = product.sizes.reduce((sum, size) => sum + (size.availableQuantity || 0), 0);
+                const totalInt = Math.floor(totalAvailable);
+                
+                // Hiển thị số lượng món có thể nấu với màu sắc phù hợp
+                let stockStatus, stockColor;
+                if (totalInt >= 999) {
+                    // Unlimited (không có công thức nguyên liệu)
+                    stockColor = 'text-blue-600';
+                    stockStatus = '<span class="' + stockColor + '">♾️ Không giới hạn</span>';
+                } else if (totalInt === 0) {
+                    stockColor = 'text-red-600';
+                    stockStatus = '<span class="' + stockColor + '">❌ Hết hàng</span>';
+                } else if (totalInt <= 10) {
+                    stockColor = 'text-orange-600';
+                    stockStatus = '<span class="' + stockColor + '">⚠️ Còn ' + totalInt + ' món</span>';
+                } else {
+                    stockColor = 'text-green-600';
+                    stockStatus = '<span class="' + stockColor + '">✅ Còn ' + totalInt + ' món</span>';
+                }
+                
                 return '<button onclick="handleProductClick(' + product.id + ')" ' +
                         'class="bg-gradient-to-br from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 p-4 rounded-lg border border-orange-200 transition-all text-left group hover:shadow-md">' +
                     '<div class="font-semibold text-gray-800 text-sm mb-2 group-hover:text-orange-700">' +
@@ -567,7 +588,7 @@
                         priceDisplay +
                     '</div>' +
                     '<div class="text-xs text-gray-500 mt-1">' +
-                        product.sizes.length + ' size' + (product.sizes.length > 1 ? 's' : '') + ' available' +
+                        product.sizes.length + ' size' + (product.sizes.length > 1 ? 's' : '') + ' • ' + stockStatus +
                     '</div>' +
                 '</button>';
             }).join('');
@@ -607,14 +628,39 @@
             
             // Show sizes
             const sizeGrid = document.getElementById('sizeGrid');
-            sizeGrid.innerHTML = selectedProduct.sizes.map(size => 
-                '<button onclick="selectSize(' + size.sizeId + ')" ' +
+            sizeGrid.innerHTML = selectedProduct.sizes.map(size => {
+                const availQty = size.availableQuantity || 0;
+                const qtyInt = Math.floor(availQty);
+                
+                // Luôn hiển thị số lượng có thể nấu
+                let qtyDisplay, qtyColor, qtyIcon;
+                if (qtyInt >= 999) {
+                    // Unlimited (không có công thức nguyên liệu)
+                    qtyColor = 'text-blue-600';
+                    qtyIcon = '♾️';
+                    qtyDisplay = '<div class="text-xs ' + qtyColor + ' font-semibold mt-1">' + qtyIcon + ' Không giới hạn</div>';
+                } else if (qtyInt === 0) {
+                    qtyColor = 'text-red-600';
+                    qtyIcon = '❌';
+                    qtyDisplay = '<div class="text-xs ' + qtyColor + ' font-semibold mt-1">' + qtyIcon + ' Hết hàng (0 món)</div>';
+                } else if (qtyInt <= 5) {
+                    qtyColor = 'text-orange-600';
+                    qtyIcon = '⚠️';
+                    qtyDisplay = '<div class="text-xs ' + qtyColor + ' font-semibold mt-1">' + qtyIcon + ' Còn ' + qtyInt + ' món</div>';
+                } else {
+                    qtyColor = 'text-green-600';
+                    qtyIcon = '✅';
+                    qtyDisplay = '<div class="text-xs ' + qtyColor + ' font-semibold mt-1">' + qtyIcon + ' Còn ' + qtyInt + ' món</div>';
+                }
+                
+                return '<button onclick="selectSize(' + size.sizeId + ')" ' +
                         'class="size-btn p-4 rounded-lg border-2 transition-all font-semibold bg-white text-gray-700 border-gray-300 hover:border-orange-400 text-left" ' +
                         'data-size-id="' + size.sizeId + '">' +
                     '<div class="font-bold text-lg">' + size.sizeName + '</div>' +
                     '<div class="text-orange-600 font-bold">' + formatCurrency(size.price) + 'đ</div>' +
-                '</button>'
-            ).join('');
+                    qtyDisplay +
+                '</button>';
+            }).join('');
             
             // Show toppings section only for Pizza
             const toppingsSection = document.getElementById('toppingsSection');

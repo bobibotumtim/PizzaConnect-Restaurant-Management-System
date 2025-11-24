@@ -7,7 +7,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+<<<<<<< Updated upstream
 import java.util.List;
+=======
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import models.ProductIngredient;
+>>>>>>> Stashed changes
 
 public class ProductSizeDAO extends DBContext {
 
@@ -35,8 +44,104 @@ public class ProductSizeDAO extends DBContext {
         return list;
     }
 
+<<<<<<< Updated upstream
     // Hàm này (thay đổi CSDL) phải nhận Connection và ném lỗi
     public int addProductSize(ProductSize size, Connection con) throws SQLException {
+=======
+    /**
+     * ✅ MỚI: Lấy sizes có sẵn cho POS
+     * Sử dụng VIEW v_ProductSizeAvailable để check inventory
+     * 
+     * Logic:
+     * - Nếu size KHÔNG có trong view → Không có ingredients → Hiển thị unlimited (999)
+     * - Nếu size CÓ trong view → Có ingredients → Hiển thị số lượng thực tế (kể cả 0)
+     */
+    public List<ProductSize> getAvailableSizesByProductId(int productId) {
+        List<ProductSize> list = new ArrayList<>();
+        
+        // Bước 1: Lấy TẤT CẢ sizes của product (kể cả không có ingredients)
+        String sqlAllSizes = """
+            SELECT 
+                ps.ProductSizeID,
+                ps.ProductID,
+                ps.SizeCode,
+                ps.Price
+            FROM ProductSize ps
+            WHERE ps.ProductID = ?
+              AND ps.IsDeleted = 0
+            ORDER BY 
+                CASE ps.SizeCode
+                    WHEN 'S' THEN 1
+                    WHEN 'M' THEN 2
+                    WHEN 'L' THEN 3
+                    WHEN 'F' THEN 4
+                    ELSE 5
+                END
+        """;
+        
+        // Bước 2: Lấy AvailableQuantity từ view (chỉ có sizes có ingredients)
+        String sqlAvailQty = """
+            SELECT 
+                ProductSizeID,
+                AvailableQuantity
+            FROM v_ProductSizeAvailable
+            WHERE ProductID = ?
+        """;
+        
+        try (Connection con = getConnection()) {
+            // Lấy tất cả sizes
+            Map<Integer, ProductSize> sizeMap = new HashMap<>();
+            try (PreparedStatement ps = con.prepareStatement(sqlAllSizes)) {
+                ps.setInt(1, productId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        ProductSize psz = new ProductSize();
+                        psz.setProductSizeId(rs.getInt("ProductSizeID"));
+                        psz.setProductId(rs.getInt("ProductID"));
+                        psz.setSizeCode(rs.getString("SizeCode"));
+                        psz.setPrice(rs.getDouble("Price"));
+                        psz.setAvailableQuantity(999); // Default: unlimited
+                        sizeMap.put(psz.getProductSizeId(), psz);
+                    }
+                }
+            }
+            
+            // Cập nhật AvailableQuantity cho sizes có ingredients
+            try (PreparedStatement ps = con.prepareStatement(sqlAvailQty)) {
+                ps.setInt(1, productId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        int sizeId = rs.getInt("ProductSizeID");
+                        double availQty = rs.getDouble("AvailableQuantity");
+                        
+                        ProductSize psz = sizeMap.get(sizeId);
+                        if (psz != null) {
+                            // Size có trong view → Có ingredients → Dùng số lượng thực tế
+                            psz.setAvailableQuantity(availQty);
+                            System.out.println("🔍 ProductSizeID=" + sizeId + 
+                                             ", SizeCode=" + psz.getSizeCode() + 
+                                             ", AvailableQuantity=" + availQty + " (has ingredients)");
+                        }
+                    }
+                }
+            }
+            
+            // Thêm vào list
+            list.addAll(sizeMap.values());
+            
+            System.out.println("✅ ProductSizeDAO.getAvailableSizesByProductId(" + productId + ") returned " + list.size() + " sizes");
+        } catch (Exception e) {
+            System.err.println("❌ Error in getAvailableSizesByProductId: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    /**
+     * Thêm ProductSize và trả về ID mới (tự quản lý connection)
+     */
+    public int addProductSize(ProductSize size) {
+>>>>>>> Stashed changes
         String sql = "INSERT INTO ProductSize (ProductID, SizeCode, Price) VALUES (?, ?, ?)";
         try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, size.getProductId());

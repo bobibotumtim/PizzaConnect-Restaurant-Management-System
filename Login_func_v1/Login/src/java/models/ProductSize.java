@@ -5,6 +5,7 @@ public class ProductSize {
     private int productId; // chỉ cần ID thay vì Product object
     private String sizeCode;
     private double price;
+    private double availableQuantity; // Available quantity from inventory
 
     public ProductSize() {}
 
@@ -34,6 +35,9 @@ public class ProductSize {
     public double getPrice() { return price; }
     public void setPrice(double price) { this.price = price; }
 
+    public double getAvailableQuantity() { return availableQuantity; }
+    public void setAvailableQuantity(double availableQuantity) { this.availableQuantity = availableQuantity; }
+
     @Override
     public String toString() {
         return "ProductSize{" +
@@ -41,6 +45,7 @@ public class ProductSize {
                 ", productId=" + productId +
                 ", sizeCode='" + sizeCode + '\'' +
                 ", price=" + price +
+                ", availableQuantity=" + availableQuantity +
                 '}';
     }
 }

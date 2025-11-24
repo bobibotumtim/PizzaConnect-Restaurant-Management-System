@@ -46,6 +46,48 @@ public class ProductDAO extends DBContext {
         return list;
     }
 
+<<<<<<< Updated upstream
+=======
+    /**
+     * ✅ MỚI: Lấy products có sẵn cho POS
+     * Sử dụng VIEW v_ProductSizeAvailable để check inventory
+     * Loại trừ category "Topping"
+     * Hiển thị tất cả products, kể cả không có ingredients (sẽ hiển thị unlimited)
+     */
+    public List<Product> getAvailableProductsForPOS() {
+        List<Product> list = new ArrayList<>();
+        String sql = """
+            SELECT DISTINCT 
+                p.ProductID, 
+                p.ProductName, 
+                p.Description, 
+                c.CategoryName, 
+                p.ImageURL, 
+                p.IsAvailable
+            FROM Product p
+            JOIN Category c ON p.CategoryID = c.CategoryID
+            WHERE c.CategoryName != 'Topping'
+              AND p.IsAvailable = 1
+              AND c.IsDeleted = 0
+            ORDER BY c.CategoryName, p.ProductName
+        """;
+        
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            
+            while (rs.next()) {
+                list.add(mapResultSetToProduct(rs));
+            }
+            System.out.println("✅ ProductDAO.getAvailableProductsForPOS() returned " + list.size() + " products");
+        } catch (Exception e) {
+            System.err.println("❌ Error in getAvailableProductsForPOS: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+>>>>>>> Stashed changes
     // SỬA LẠI: Chỉ lấy 1 Product cơ bản (không kèm size)
     public Product getBaseProductById(int productId) {
         String sql = """
