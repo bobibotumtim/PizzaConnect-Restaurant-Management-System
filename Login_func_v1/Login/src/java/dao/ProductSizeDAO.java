@@ -74,7 +74,7 @@ public class ProductSizeDAO extends DBContext {
                     psz.setProductId(rs.getInt("ProductID"));
                     psz.setSizeCode(rs.getString("SizeCode"));
                     psz.setPrice(rs.getDouble("Price"));
-                    // Note: AvailableQuantity is checked but not stored in ProductSize model
+                    psz.setAvailableQuantity(rs.getDouble("AvailableQuantity")); // ✅ SET AvailableQuantity
                     list.add(psz);
                 }
             }

@@ -168,7 +168,8 @@ public class POSServlet extends HttpServlet {
                     json.append("\"sizeId\": ").append(size.getProductSizeId()).append(",");
                     json.append("\"sizeCode\": \"").append(size.getSizeCode()).append("\",");
                     json.append("\"sizeName\": \"").append(getSizeName(size.getSizeCode())).append("\",");
-                    json.append("\"price\": ").append(size.getPrice());
+                    json.append("\"price\": ").append(size.getPrice()).append(",");
+                    json.append("\"availableQuantity\": ").append(size.getAvailableQuantity());
                     json.append("}");
                 }
                 
