@@ -51,11 +51,26 @@
                 <a href="${pageContext.request.contextPath}/view/ForgotPassword.jsp?stage=email" class="btn btn-link mt-2">Resend OTP</a>
             </form>
             <% } else if ("reset".equals(stage)) { %>
-            <form action="${pageContext.request.contextPath}/forgot-password" method="post">
+            <form action="${pageContext.request.contextPath}/forgot-password" method="post" id="resetPasswordForm">
                 <h1 class="h4 mb-3 text-center">Reset Password</h1>
                 <input type="hidden" name="action" value="resetPassword">
-                <input name="newPassword" type="password" class="form-control mb-3" placeholder="New Password" minlength="6" required>
-                <input name="confirmPassword" type="password" class="form-control mb-3" placeholder="Confirm Password" minlength="6" required>
+                
+                <div class="form-group">
+                    <input name="newPassword" type="password" id="newPassword" class="form-control mb-2" 
+                           placeholder="New Password" 
+                           pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$"
+                           title="Password must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 digit"
+                           minlength="8" required>
+                    <small class="form-text text-muted">
+                        Must contain: 1 uppercase, 1 lowercase, 1 digit, min 8 characters
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <input name="confirmPassword" type="password" id="confirmPassword" class="form-control mb-3" 
+                           placeholder="Confirm Password" minlength="8" required>
+                </div>
+                
                 <button class="btn btn-success btn-block" type="submit">
                     <i class="fas fa-save"></i> Save Password
                 </button>
@@ -65,5 +80,46 @@
             </form>
             <% } %>
         </div>
+        
+        <script>
+            // Password validation for reset form
+            document.addEventListener('DOMContentLoaded', function() {
+                const resetForm = document.getElementById('resetPasswordForm');
+                if (resetForm) {
+                    const newPassword = document.getElementById('newPassword');
+                    const confirmPassword = document.getElementById('confirmPassword');
+                    
+                    // Real-time password match validation
+                    confirmPassword.addEventListener('input', function() {
+                        if (newPassword.value !== confirmPassword.value) {
+                            confirmPassword.setCustomValidity('Passwords do not match');
+                        } else {
+                            confirmPassword.setCustomValidity('');
+                        }
+                    });
+                    
+                    // Form submission validation
+                    resetForm.addEventListener('submit', function(e) {
+                        const password = newPassword.value;
+                        const confirm = confirmPassword.value;
+                        
+                        // Validate password pattern
+                        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+                        if (!passwordRegex.test(password)) {
+                            e.preventDefault();
+                            alert('Password must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 digit!');
+                            return false;
+                        }
+                        
+                        // Validate password match
+                        if (password !== confirm) {
+                            e.preventDefault();
+                            alert('Passwords do not match!');
+                            return false;
+                        }
+                    });
+                }
+            });
+        </script>
     </body>
 </html>

@@ -112,8 +112,17 @@ public class ForgotPasswordServlet extends HttpServlet {
 
                 String newPass = request.getParameter("newPassword");
                 String confirm = request.getParameter("confirmPassword");
+                
+                // Validate password not empty and match
                 if (newPass == null || confirm == null || newPass.trim().isEmpty() || !newPass.equals(confirm)) {
                     sessionHttp.setAttribute("error", "Password is invalid or does not match!");
+                    response.sendRedirect(request.getContextPath() + "/view/ForgotPassword.jsp?stage=reset");
+                    return;
+                }
+                
+                // Validate password strength: min 8 chars, 1 uppercase, 1 lowercase, 1 digit
+                if (!isValidPassword(newPass)) {
+                    sessionHttp.setAttribute("error", "Password must be at least 8 characters with 1 uppercase, 1 lowercase, and 1 digit!");
                     response.sendRedirect(request.getContextPath() + "/view/ForgotPassword.jsp?stage=reset");
                     return;
                 }
@@ -141,6 +150,15 @@ public class ForgotPasswordServlet extends HttpServlet {
         StringBuilder sb = new StringBuilder(len);
         for (int i = 0; i < len; i++) sb.append(digits.charAt(rnd.nextInt(digits.length())));
         return sb.toString();
+    }
+    
+    // Validate password: min 8 chars, 1 uppercase, 1 lowercase, 1 digit
+    private boolean isValidPassword(String password) {
+        if (password == null || password.length() < 8) {
+            return false;
+        }
+        // Pattern: ^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$
+        return password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$");
     }
 
     private void clearOtp(HttpSession session) {
