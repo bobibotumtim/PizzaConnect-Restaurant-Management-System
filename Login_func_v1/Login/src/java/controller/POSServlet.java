@@ -1154,6 +1154,8 @@ public class POSServlet extends HttpServlet {
                 System.out.println("✅ Toppings saved successfully!");
                 
                 System.out.println("✅✅✅ SUCCESS! Added items to Order #" + orderId + " ✅✅✅");
+                
+                boolean update = orderDAO.updateOrderStatus(orderId, 0);
                 return true;
             } else {
                 System.err.println("❌ Failed to add items to order");
