@@ -633,8 +633,8 @@
                 const minPrice = Math.min(...prices);
                 const maxPrice = Math.max(...prices);
                 const priceDisplay = minPrice === maxPrice ? 
-                    formatCurrency(minPrice) + 'đ' : 
-                    formatCurrency(minPrice) + 'đ - ' + formatCurrency(maxPrice) + 'đ';
+                    formatCurrency(minPrice) + '' : 
+                    formatCurrency(minPrice) + ' - ' + formatCurrency(maxPrice) + '';
                 
                 return '<button onclick="handleProductClick(' + product.id + ')" ' +
                         'class="bg-gradient-to-br from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 p-4 rounded-lg border border-orange-200 transition-all text-left group hover:shadow-md">' +
@@ -690,7 +690,8 @@
                         'class="size-btn p-4 rounded-lg border-2 transition-all font-semibold bg-white text-gray-700 border-gray-300 hover:border-orange-400 text-left" ' +
                         'data-size-id="' + size.sizeId + '">' +
                     '<div class="font-bold text-lg">' + size.sizeName + '</div>' +
-                    '<div class="text-orange-600 font-bold">' + formatCurrency(size.price) + 'đ</div>' +
+                    '<div class="text-orange-600 font-bold">' + formatCurrency(size.price) + '</div>' +
+                    '<div class="text-orange-600 font-bold">Quantity: ' + size.quantity + '</div>' +
                 '</button>'
             ).join('');
             

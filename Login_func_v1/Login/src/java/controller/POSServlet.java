@@ -152,6 +152,7 @@ public class POSServlet extends HttpServlet {
                 
                 // ✅ SỬA: Chỉ lấy sizes có AvailableQuantity > 0
                 List<ProductSize> sizes = productSizeDAO.getAvailableSizesByProductId(product.getProductId());
+                Map<Integer, Integer> m = productSizeDAO.getAvailableSizesByProductId1(product.getProductId());
                 
                 json.append("{");
                 json.append("\"id\": ").append(product.getProductId()).append(",");
@@ -168,11 +169,13 @@ public class POSServlet extends HttpServlet {
                     json.append("\"sizeId\": ").append(size.getProductSizeId()).append(",");
                     json.append("\"sizeCode\": \"").append(size.getSizeCode()).append("\",");
                     json.append("\"sizeName\": \"").append(getSizeName(size.getSizeCode())).append("\",");
-                    json.append("\"price\": ").append(size.getPrice());
+                    json.append("\"price\": ").append(size.getPrice()).append(",");
+                    json.append("\"quantity\": ").append(m.get(size.getProductSizeId()));
                     json.append("}");
                 }
                 
                 json.append("]}");
+                
             }
             
             if (!firstCategory) {
@@ -201,6 +204,7 @@ public class POSServlet extends HttpServlet {
             default: return sizeCode;
         }
     }
+    
     
     /**
      * Helper method to escape JSON strings
@@ -1155,7 +1159,9 @@ public class POSServlet extends HttpServlet {
                 
                 System.out.println("✅✅✅ SUCCESS! Added items to Order #" + orderId + " ✅✅✅");
                 
-                boolean update = orderDAO.updateOrderStatus(orderId, 0);
+                if(orderDAO.getOrderById(orderId).getStatus() < 2){
+                    boolean update = orderDAO.updateOrderStatus(orderId, 0);
+                }
                 return true;
             } else {
                 System.err.println("❌ Failed to add items to order");
@@ -1536,4 +1542,9 @@ public class POSServlet extends HttpServlet {
      * Add items to existing order
      */
     
+//    public static void main(String[] args) {
+//        POSServlet po = new POSServlet();
+//        
+//        po.handleProductsAPI(req, resp);
+//    }
 }

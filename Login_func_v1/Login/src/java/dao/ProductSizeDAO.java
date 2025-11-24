@@ -9,8 +9,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import models.ProductIngredient;
+import models.Temp;
+import java.util.HashMap;
 
 public class ProductSizeDAO extends DBContext {
 
@@ -74,16 +77,51 @@ public class ProductSizeDAO extends DBContext {
                     psz.setProductId(rs.getInt("ProductID"));
                     psz.setSizeCode(rs.getString("SizeCode"));
                     psz.setPrice(rs.getDouble("Price"));
-                    // Note: AvailableQuantity is checked but not stored in ProductSize model
+//                    psz.setQuantity((int) Math.floor(rs.getDouble("AvailableQuantity")));
                     list.add(psz);
                 }
             }
-            System.out.println("✅ ProductSizeDAO.getAvailableSizesByProductId(" + productId + ") returned " + list.size() + " sizes");
+            
         } catch (Exception e) {
-            System.err.println("❌ Error in getAvailableSizesByProductId: " + e.getMessage());
+            
             e.printStackTrace();
         }
         return list;
+    }
+    
+    public Map<Integer, Integer> getAvailableSizesByProductId1(int productId) {
+        Map<Integer, Integer> m = new HashMap<>();
+        String sql = """
+            SELECT 
+                v.ProductSizeID,
+                v.AvailableQuantity
+            FROM v_ProductSizeAvailable v
+            WHERE v.ProductID = ?
+              AND v.AvailableQuantity > 0
+                     
+            ORDER BY 
+                CASE v.SizeCode
+                    WHEN 'S' THEN 1
+                    WHEN 'M' THEN 2
+                    WHEN 'L' THEN 3
+                    WHEN 'F' THEN 4
+                    ELSE 5
+                END
+        """;
+        
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, productId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    m.put(rs.getInt("ProductSizeID"), (int) Math.floor(rs.getDouble("AvailableQuantity")));
+                    System.out.println(rs.getInt("ProductSizeID") + " " + (int) Math.floor(rs.getDouble("AvailableQuantity")));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return m;
     }
 
     /**
@@ -185,4 +223,13 @@ public class ProductSizeDAO extends DBContext {
         }
         return false;
     }
+    
+    public static void main(String[] args) {
+        ProductSizeDAO dao = new ProductSizeDAO();
+        
+        Map<Integer, Integer> a = dao.getAvailableSizesByProductId1(1);
+        
+        
+    }
+            
 }
