@@ -1196,11 +1196,7 @@ public class OrderDAO extends DBContext {
                     int currentStatus = order.getStatus();
                     int newStatus = currentStatus;
                     
-                    // Logic tự động cập nhật
-                    if (notReadyItems > 0) {
-                        // Có món đang chờ hoặc đang làm → Waiting
-                        newStatus = 0;
-                    } else if (readyItems == totalItems && totalItems > 0) {
+                    if (readyItems == totalItems && totalItems > 0) {
                         // Tất cả món đã Ready → Ready (chỉ khi đang ở Waiting)
                         if (currentStatus == 0) {
                             newStatus = 1;
